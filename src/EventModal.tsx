@@ -34,7 +34,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
       <div ref={box} className={`modal ${closing ? 'closing' : ''}`} role="dialog" aria-modal="true" aria-label={e.title}
         style={{ '--c': g?.color } as React.CSSProperties} onClick={ev => ev.stopPropagation()}>
         <button className="close" onClick={onClose} aria-label="Cerrar">×</button>
-        <div className={`modal-hero ${isBanner && f0Splash ? 'tall' : isBanner && e.image ? 'bnr' : ''}`}>
+        <div className={`modal-hero ${isBanner && f0Splash ? 'tall' : isBanner && e.gameId === 'uma' && e.image ? 'bnr' : ''}`}>
           <Img className={`hero-art ${e.gameId}`} src={art} />
           <div className="modal-hero-fade" />
           <div className="modal-title">

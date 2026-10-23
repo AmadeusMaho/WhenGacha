@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "start": "node server/index.mjs",
-    "build:prod": "tsc -b && vite build --mode proxy"
+    "build:prod": "tsc -b && vite build"
   },
   "dependencies": {
     "react": "^19.3.1",

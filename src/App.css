@@ -343,3 +343,16 @@ header { transition: background .3s, border-color .3s; }
 .modal-hero.bnr { height: auto; aspect-ratio: 512 / 200; }
 .modal-hero.bnr .hero-art { object-position: center; }
 .modal-hero.bnr .modal-hero-fade { background: linear-gradient(transparent 55%, #181826); }
+
+/* ====== separación por tipo: banners / eventos / desafíos ====== */
+.sec-band { position: absolute; left: 0; right: 0; z-index: 1; border-top: 1px solid rgba(255, 255, 255, .07); pointer-events: none; }
+.sec-band.banner { background: linear-gradient(180deg, rgba(251, 191, 36, .07), transparent 70%); }
+.sec-band.event { background: linear-gradient(180deg, rgba(56, 189, 248, .06), transparent 70%); }
+.sec-band.challenge { background: linear-gradient(180deg, rgba(244, 114, 182, .07), transparent 70%); }
+.sec-title { position: sticky; left: 184px; display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px 0; font-size: .68rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.sec-band.banner .sec-title { color: #fcd34d; } .sec-band.event .sec-title { color: #7dd3fc; } .sec-band.challenge .sec-title { color: #f9a8d4; }
+.kind-group + .kind-group { margin-top: 22px; }
+.kind-head { display: flex; align-items: center; gap: 8px; margin: 4px 0 12px; font-size: .8rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--text); }
+.kind-head small { color: var(--muted); font-weight: 600; }
+.kind-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 10px currentColor; }
+.kind-dot.banner { background: #fbbf24; color: #fbbf24; } .kind-dot.event { background: #38bdf8; color: #38bdf8; } .kind-dot.challenge { background: #f472b6; color: #f472b6; }

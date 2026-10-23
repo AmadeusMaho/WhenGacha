@@ -1,5 +1,5 @@
 export type Cadence = 'daily' | 'weekly' | 'once'
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {

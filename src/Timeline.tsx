@@ -7,6 +7,9 @@ import type { Game, GameEvent, Kind } from './types'
 const DAY = 86_400_000
 const LABEL_W = 176
 const ROW_H = 40
+const KIND_ORDER: Kind[] = ['banner', 'event', 'challenge']
+const SECTION_LABEL: Record<Kind, string> = { banner: 'Banners', event: 'Eventos', challenge: 'Desafíos' }
+const HEAD_H = 22
 const ZOOMS = [{ label: '2 semanas', ppd: 56 }, { label: '6 semanas', ppd: 28 }, { label: '3 meses', ppd: 14 }]
 type View = 'timeline' | 'grid'
 
@@ -95,8 +98,16 @@ function Gantt({ state, games, now, open, kinds, hideDone, zoom }: Ctx & Filters
           </div>
 
           {lanes.map(g => {
-            const packed = packRows(visible.filter(e => e.gameId === g.id))
-            const rows = Math.max(1, ...packed.map(p => p.row + 1))
+            const mine = visible.filter(e => e.gameId === g.id)
+            let y = 26
+            const sections = KIND_ORDER.flatMap(k => {
+              const packed = packRows(mine.filter(e => e.kind === k))
+              if (!packed.length) return []
+              const rows = Math.max(...packed.map(p => p.row + 1))
+              const sec = { k, packed, top: y, height: HEAD_H + rows * ROW_H + 6 }
+              y += sec.height
+              return [sec]
+            })
             const patches = state.patches.filter(p => p.gameId === g.id && +new Date(p.date) > t0)
             return (
               <div key={g.id} className="tl-lane" style={cssVar(g)}>
@@ -104,7 +115,7 @@ function Gantt({ state, games, now, open, kinds, hideDone, zoom }: Ctx & Filters
                   <GameAvatar game={g} state={state} size={36} />
                   <span><strong>{g.short}</strong><small>{g.name}</small></span>
                 </div>
-                <div className="tl-track" style={{ width, height: 26 + rows * ROW_H + 6 }}>
+                <div className="tl-track" style={{ width, height: Math.max(y, 26 + ROW_H) }}>
                   {weeks.map(t => <i key={t} className="grid-line" style={{ left: x(t) }} />)}
                   <i className="now-line" style={{ left: x(now) }} />
                   {patches.map(p => (
@@ -113,8 +124,14 @@ function Gantt({ state, games, now, open, kinds, hideDone, zoom }: Ctx & Filters
                       ◆ v{p.version}
                     </span>
                   ))}
-                  {!packed.length && <span className="lane-empty">Sin eventos con estos filtros</span>}
-                  {packed.map(({ item: e, row }) => <Bar key={e.id} e={e} row={row} x={x} now={now} done={!!state.done[e.id]} open={open} />)}
+                  {!sections.length && <span className="lane-empty">Sin eventos con estos filtros</span>}
+                  {sections.map(sec => (
+                    <div key={sec.k} className={`sec-band ${sec.k}`} style={{ top: sec.top, height: sec.height }}>
+                      <span className="sec-title">{SECTION_LABEL[sec.k]} · {sec.packed.length}</span>
+                    </div>
+                  ))}
+                  {sections.flatMap(sec => sec.packed.map(({ item: e, row }) =>
+                    <Bar key={e.id} e={e} top={sec.top + HEAD_H + row * ROW_H} x={x} now={now} done={!!state.done[e.id]} open={open} />))}
                 </div>
               </div>
             )
@@ -126,7 +143,7 @@ function Gantt({ state, games, now, open, kinds, hideDone, zoom }: Ctx & Filters
   )
 }
 
-function Bar({ e, row, x, now, done, open }: { e: GameEvent; row: number; x: (t: number) => number; now: number; done: boolean; open: (e: GameEvent) => void }) {
+function Bar({ e, top, x, now, done, open }: { e: GameEvent; top: number; x: (t: number) => number; now: number; done: boolean; open: (e: GameEvent) => void }) {
   const s = +new Date(e.start), en = +new Date(e.end)
   const left = Math.max(0, x(s))
   const w = Math.max(14, x(en) - left)
@@ -135,7 +152,7 @@ function Bar({ e, row, x, now, done, open }: { e: GameEvent; row: number; x: (t:
   return (
     <button
       className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''}`}
-      style={{ left, width: w, top: 26 + row * ROW_H }}
+      style={{ left, width: w, top }}
       onClick={() => open(e)}
       title={`${e.title}\n${fmtDate(s)} → ${fmtDate(en)} · ${s > now ? `empieza en ${countdown(s - now)}` : en > now ? `quedan ${countdown(en - now)}` : 'terminado'}${e.pulls ? `\n~${e.pulls} tiradas` : ''}`}
     >
@@ -206,9 +223,18 @@ function GridView({ state, games, now, open, kinds, hideDone }: Ctx & Filters) {
                 <div className="grow"><h2>{g.name}</h2><small>{live} activos · {list.length - live} próximos</small></div>
               </header>
               {!list.length && <p className="muted">Sin eventos con estos filtros.</p>}
-              <div className="grid">
-                {list.map((e, i) => <EventCard key={e.id} e={e} g={g} i={i} now={now} done={!!state.done[e.id]} open={open} />)}
-              </div>
+              {KIND_ORDER.map(k => {
+                const items = list.filter(e => e.kind === k)
+                if (!items.length) return null
+                return (
+                  <div key={k} className="kind-group">
+                    <h3 className="kind-head"><span className={`kind-dot ${k}`} />{SECTION_LABEL[k]} <small>{items.length}</small></h3>
+                    <div className="grid">
+                      {items.map((e, i) => <EventCard key={e.id} e={e} g={g} i={i} now={now} done={!!state.done[e.id]} open={open} />)}
+                    </div>
+                  </div>
+                )
+              })}
             </section>
           )
         })}
@@ -271,7 +297,7 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
   const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
   const faces = e.featured.map(f => faceOf(e.gameId, f)).filter(Boolean) as string[]
   return (
-    <article className={`ecard ${done ? 'done' : ''} ${e.kind === 'banner' && e.image ? 'bnr' : ''}`} style={{ ...cssVar(g), ...stagger }} onClick={() => open(e)} tabIndex={0} onKeyDown={k => k.key === 'Enter' && open(e)}>
+    <article className={`ecard ${done ? 'done' : ''} ${e.kind === 'banner' && e.gameId === 'uma' && e.image ? 'bnr' : ''}`} style={{ ...cssVar(g), ...stagger }} onClick={() => open(e)} tabIndex={0} onKeyDown={k => k.key === 'Enter' && open(e)}>
       <div className="ecard-img">
         {faces.length > 0 && !e.image ? <div className="ecard-faces">{faces.slice(0, 3).map(s => <Img key={s} src={s} />)}</div> : <Img src={img} />}
         <div className="fade" />

@@ -10,6 +10,7 @@ const CFG: Partial<Record<ApiKey, Cfg>> = {
   genshin: { host: 'genshin-impact.fandom.com', template: 'Versions', majors: [1, 2, 3, 4, 5, 'Luna', 7, 8] },
   starrail: { host: 'honkai-star-rail.fandom.com', template: 'Version Table', majors: [1, 2, 3, 4, 5, 6, 7, 8] },
   zenless: { host: 'zenless-zone-zero.fandom.com', template: 'Versions', majors: [1, 2, 3, 4, 5] },
+  wuwa: { host: 'wutheringwaves.fandom.com', template: 'Versions', majors: [1, 2, 3, 4, 5] },
 }
 
 export interface VersionRow { version: string; name?: string; date: string }
@@ -74,7 +75,22 @@ export function buildPatches(gameId: string, derived: Patch[], history: VersionR
     const h = map.get(d.version)
     map.set(d.version, h ? { ...h, end: d.estimated ? h.end : d.end ?? h.end } : d)
   }
-  return finalize([...map.values()], cycleDays)
+  return withNextEstimate(gameId, finalize([...map.values()], cycleDays), cycleDays)
+}
+
+/** Si la wiki aún no lista la versión siguiente, se estima con el ciclo típico del juego. */
+function withNextEstimate(gameId: string, list: Patch[], cycleDays: number): Patch[] {
+  const now = Date.now()
+  if (!cycleDays || !list.length || list.some(p => +new Date(p.date) > now)) return list
+  const last = list[list.length - 1]
+  const m = /^(\d+)\.(\d+)$/.exec(last.version)
+  if (!m) return list
+  const next = `${m[1]}.${+m[2] + 1}`
+  const date = last.end ?? new Date(+new Date(last.date) + cycleDays * DAY).toISOString()
+  return [...list, {
+    id: `${gameId}:patch:${next}`, gameId, version: next, date, end: new Date(+new Date(date) + cycleDays * DAY).toISOString(),
+    notes: 'Estimado: según la duración típica de las versiones.', source: 'api', estimated: true,
+  }]
 }
 
 /** Cada versión termina cuando empieza la siguiente; la última usa su fin conocido o el ciclo típico. */

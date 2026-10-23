@@ -1,6 +1,7 @@
 import type { Game } from '../types'
-import { syncCzn } from './czn'
+import { syncGachafocus } from './gachafocus'
 import { syncGame, type GameSync } from './ennead'
+import { syncNikke } from './nikke'
 import { syncUma } from './uma'
 import { buildPatches, fetchHistory, finalize } from './versions'
 import { syncArknights, syncEndfield } from './wiki'
@@ -17,7 +18,13 @@ export async function syncSource(game: Game): Promise<GameSync> {
       return { ...s, patches: finalize(s.patches, game.patchCycleDays) }
     }
     case 'uma': return syncUma(id)
-    case 'czn': return syncCzn(id)
+    case 'czn':
+    case 'nte': return syncGachafocus(id, game.api)
+    case 'nikke': return syncNikke(id)
+    case 'wuwa': {
+      const [s, history] = await Promise.all([syncGachafocus(id, 'wuwa'), fetchHistory('wuwa').catch(() => [])])
+      return { ...s, patches: buildPatches(id, [], history, game.patchCycleDays) }
+    }
     case 'genshin':
     case 'starrail':
     case 'zenless': {
@@ -29,4 +36,4 @@ export async function syncSource(game: Game): Promise<GameSync> {
 }
 
 /** Las wikis y sitios de la comunidad se consultan menos seguido para no abusar. */
-export const staleMs = (g: Game) => (g.api === 'genshin' || g.api === 'starrail' || g.api === 'zenless' ? HOUR : g.api === 'uma' || g.api === 'czn' ? 3 * HOUR : 6 * HOUR)
+export const staleMs = (g: Game) => (g.api === 'genshin' || g.api === 'starrail' || g.api === 'zenless' ? HOUR : g.api === 'arknights' || g.api === 'endfield' ? 6 * HOUR : 3 * HOUR)

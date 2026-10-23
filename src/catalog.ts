@@ -14,9 +14,10 @@ export const CATALOG: Game[] = [
   def('endfield', 'Arknights: Endfield', 'EF', 'Hypergryph', '#aed581', '#355018', 42, 'endfield.wiki.gg', 'Endfield', 'endfield'),
   def('uma', 'Umamusume: Pretty Derby', 'UMA', 'Cygames', '#ff8fb8', '#7a2a52', 0, 'umamusume.fandom.com', 'Umamusume Pretty Derby', 'uma'),
   def('czn', 'Chaos Zero Nightmare', 'CZN', 'Smilegate', '#c084fc', '#3b1a5a', 0, 'chaos-zero-nightmare.fandom.com', 'Chaos Zero Nightmare', 'czn'),
+  def('wuwa', 'Wuthering Waves', 'WW', 'Kuro Games', '#4dd0e1', '#0f4a52', 42, 'wutheringwaves.fandom.com', 'Wuthering Waves', 'wuwa'),
+  def('nikke', 'Goddess of Victory: Nikke', 'NK', 'Shift Up', '#f06292', '#6b1f3a', 0, 'nikke-goddess-of-victory-international.fandom.com', 'Goddess of Victory: Nikke', 'nikke'),
+  def('nte', 'Neverness to Everness', 'NTE', 'Hotta Studio', '#e879f9', '#5a1f66', 0, 'neverness-to-everness.fandom.com', 'Neverness to Everness', 'nte'),
   // Sin fuente de datos abierta y estable todavía:
-  def('wuwa', 'Wuthering Waves', 'WW', 'Kuro Games', '#4dd0e1', '#0f4a52', 42, 'wutheringwaves.fandom.com', 'Wuthering Waves'),
-  def('nikke', 'Goddess of Victory: Nikke', 'NK', 'Shift Up', '#f06292', '#6b1f3a', 0, 'nikke-goddess-of-victory-international.fandom.com', 'Goddess of Victory: Nikke'),
   def('bluearchive', 'Blue Archive', 'BA', 'Nexon', '#64b5f6', '#1b3f78', 0, 'bluearchive.fandom.com', 'Blue Archive'),
   def('fgo', 'Fate/Grand Order', 'FGO', 'Aniplex', '#ffd54f', '#6b5410', 0, 'fategrandorder.fandom.com', 'Fate/Grand Order'),
 ]

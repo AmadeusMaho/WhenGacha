@@ -63,8 +63,9 @@ export function MyGachas({ ctx, sync, syncing }: { ctx: Ctx; sync: (force?: bool
         </div>
         {msg && <p className="muted">{msg}</p>}
         <p className="muted small">
-          Fuentes: <code>api.ennead.cc</code> (Genshin, HSR, ZZZ), wikis de Fandom y wiki.gg (historial de parches, Arknights y Endfield),
-          {' '}<code>uma.moe</code> (Umamusume) y <code>czn.gg</code> (Chaos Zero Nightmare). Son datos de la comunidad y pueden ir con retraso;
+          Fuentes: <code>api.ennead.cc</code> (Genshin, HSR, ZZZ), wikis de Fandom y wiki.gg (historial de parches, Arknights, Endfield y eventos de Nikke),
+          {' '}<code>uma.moe</code> (Umamusume), <code>gachafocus.com.br</code> (Chaos Zero Nightmare, Wuthering Waves y Neverness to Everness)
+          y <code>lootandwaifus.com</code> (banners de Nikke). Son datos de la comunidad y pueden ir con retraso;
           si una fuente cambia su formato, ese juego deja de actualizarse.
         </p>
       </section>
