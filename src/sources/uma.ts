@@ -1,4 +1,5 @@
 import type { GameEvent, Kind } from '../types'
+import { viaProxy } from '../net'
 import type { GameSync } from './ennead'
 
 /**
@@ -33,7 +34,7 @@ const imageOf = (r: Raw) => (r.image?.startsWith('http') ? r.image : r.image_pat
 const clean = (s?: string) => s?.replace(/<br\s*\/?>/gi, ' · ').replace(/<[^>]+>/g, '').trim() || undefined
 
 export async function syncUma(gameId: string): Promise<GameSync> {
-  const res = await fetch(`${BASE}/resources/current/banner_timeline.json`)
+  const res = await fetch(viaProxy(`${BASE}/resources/current/banner_timeline.json`))
   if (!res.ok) throw new Error(`uma.moe → HTTP ${res.status}`)
   const json = (await res.json()) as { events?: Raw[] }
   const from = Date.now() - 3 * DAY

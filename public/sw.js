@@ -20,7 +20,7 @@ self.addEventListener('fetch', e => {
   const url = new URL(req.url)
 
   // Datos: red primero, caché si no hay conexión.
-  if (url.hostname === 'api.ennead.cc') {
+  if (url.hostname === 'api.ennead.cc' || url.pathname === '/proxy') {
     e.respondWith(
       fetch(req).then(res => { const copy = res.clone(); caches.open(API).then(c => c.put(req, copy)); return res })
         .catch(() => caches.match(req)),

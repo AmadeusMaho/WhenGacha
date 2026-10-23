@@ -1,4 +1,5 @@
 import type { ApiKey, Featured, GameEvent, Kind, Patch, PromoCode, RewardItem } from '../types'
+import { viaProxy } from '../net'
 
 const BASE = 'https://api.ennead.cc/mihoyo'
 
@@ -98,7 +99,7 @@ export interface GameSync {
 }
 
 async function getJson<T>(url: string): Promise<T> {
-  const res = await fetch(url)
+  const res = await fetch(viaProxy(url))
   if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`)
   return res.json() as Promise<T>
 }

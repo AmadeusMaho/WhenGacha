@@ -1,4 +1,5 @@
 import type { ApiKey, Patch } from '../types'
+import { viaProxy } from '../net'
 
 const DAY = 86_400_000
 
@@ -41,7 +42,7 @@ export async function fetchHistory(api: ApiKey): Promise<VersionRow[]> {
 
   const text = cfg.majors.map(m => `{{${cfg.template}|${m}}}`).join('')
   const qs = new URLSearchParams({ action: 'parse', contentmodel: 'wikitext', prop: 'text', format: 'json', origin: '*', text })
-  const res = await fetch(`https://${cfg.host}/api.php?${qs}`)
+  const res = await fetch(viaProxy(`https://${cfg.host}/api.php?${qs}`))
   if (!res.ok) throw new Error(`${cfg.host} → HTTP ${res.status}`)
   const html = (await res.json())?.parse?.text?.['*'] as string | undefined
   if (!html) return []

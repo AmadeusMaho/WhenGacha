@@ -1,4 +1,5 @@
 import type { Featured, GameEvent } from '../types'
+import { viaProxy } from '../net'
 import type { GameSync } from './ennead'
 
 /**
@@ -41,7 +42,7 @@ function parsePeriod(body: string, postDate: string): { start: Date; end: Date }
 }
 
 export async function syncCzn(gameId: string): Promise<GameSync> {
-  const res = await fetch(URL)
+  const res = await fetch(viaProxy(URL))
   if (!res.ok) throw new Error(`czn.gg → HTTP ${res.status}`)
   const posts = (await res.json()) as {
     id: number; date: string; link: string; title: { rendered: string }; content: { rendered: string }

@@ -1,4 +1,5 @@
 import type { Featured, GameEvent, Kind, Patch } from '../types'
+import { viaProxy } from '../net'
 import type { GameSync } from './ennead'
 
 /**
@@ -11,7 +12,7 @@ interface Row { [k: string]: string }
 
 async function cargo(wiki: string, params: Record<string, string>): Promise<Row[]> {
   const qs = new URLSearchParams({ action: 'cargoquery', format: 'json', origin: '*', limit: '500', ...params })
-  const res = await fetch(`https://${wiki}/api.php?${qs}`)
+  const res = await fetch(viaProxy(`https://${wiki}/api.php?${qs}`))
   if (!res.ok) throw new Error(`${wiki} → HTTP ${res.status}`)
   const json = await res.json()
   if (json.error) throw new Error(`${wiki}: ${json.error.info ?? json.error.code}`)
@@ -41,7 +42,7 @@ async function fileMap(host: string, names: (string | undefined)[]): Promise<Map
       titles: uniq.slice(i, i + 40).map(n => `File:${n}`).join('|'),
     })
     try {
-      const res = await fetch(`https://${host}/api.php?${qs}`)
+      const res = await fetch(viaProxy(`https://${host}/api.php?${qs}`))
       const pages = Object.values((await res.json())?.query?.pages ?? {}) as { title: string; imageinfo?: { thumburl?: string; url: string }[] }[]
       for (const p of pages) {
         const info = p.imageinfo?.[0]

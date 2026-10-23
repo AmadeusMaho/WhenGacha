@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react'
 import { CATALOG } from './catalog'
+import { viaProxy } from './net'
 import type { AppState, Featured, Game, GameEvent } from './types'
 
 /**
@@ -57,7 +58,7 @@ function want(key: string, run: () => Promise<string>, v?: string) {
 
 /* ---------- consultas a MediaWiki ---------- */
 const api = (host: string, params: Record<string, string>) =>
-  fetch(`https://${host}/api.php?${new URLSearchParams({ format: 'json', origin: '*', ...params })}`).then(r => {
+  fetch(viaProxy(`https://${host}/api.php?${new URLSearchParams({ format: 'json', origin: '*', ...params })}`)).then(r => {
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     return r.json()
   })
