@@ -1,0 +1,2 @@
+# WhenGacha
+Popular Gacha Tracker
