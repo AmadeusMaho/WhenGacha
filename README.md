@@ -1,6 +1,8 @@
 # WhenGacha
 Popular Gacha Tracker: línea de tiempo de eventos, banners y parches de tus gachas, con datos que se cargan solos.
 
+Idiomas: español, inglés y chino. Se usa el del navegador y se cambia con el icono del globo de la cabecera.
+
 Juegos con datos automáticos: Genshin Impact, Honkai: Star Rail, Zenless Zone Zero, Arknights, Arknights: Endfield, Umamusume, Chaos Zero Nightmare, Wuthering Waves, Nikke y Neverness to Everness.
 
 ## Desarrollo

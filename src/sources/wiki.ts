@@ -77,7 +77,8 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
     const title = rerun ? `${r.event.replace(/\/Rerun$/i, '')} (Rerun)` : r.event
     return make(gameId, 'event', r.event + r.startTime, title, toIso(r.startTime, -7), toIso(r.endTime, -7), {
       image: r.image ? files.get(norm(r.image)) : undefined,
-      description: 'Servidor Global. Horas aproximadas (zona UTC-7).',
+      description: '⟦d.akServer⟧',
+      precision: 'approx',
     })
   }))
   return { events, patches: [], codes: [] }
@@ -97,14 +98,14 @@ export async function syncEndfield(gameId: string): Promise<GameSync> {
 
   const files = await fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image)])
   const evs = compact(events.map(r => make(gameId, /challenge/i.test(r.Type) ? 'challenge' : 'event', r.Event + r.AmeuStartTime, r.Event,
-    toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), { image: r.Image ? files.get(norm(r.Image)) : undefined, description: r.Type ? `Tipo: ${r.Type}. Servidor AMEU.` : undefined })))
+    toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), { image: r.Image ? files.get(norm(r.Image)) : undefined, description: r.Type ? `⟦d.efType|${r.Type}⟧` : undefined })))
 
   const bns = compact(banners.map(r => {
     const names = (r.RateUpOperator || r.LimitedOperators || '').split(';').filter(Boolean)
     const featured: Featured[] = names.slice(0, 3).map(name => ({ name, rarity: 6 }))
     return make(gameId, 'banner', r.Banner + r.AmeuStartTime, names.length ? names.join(' / ') : r.Banner,
       toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), {
-        image: r.Image ? files.get(norm(r.Image)) : undefined, featured, description: `Banner «${r.Banner}»`,
+        image: r.Image ? files.get(norm(r.Image)) : undefined, featured, description: `⟦d.efBanner|${r.Banner}⟧`,
       })
   }))
 

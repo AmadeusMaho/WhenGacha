@@ -74,7 +74,7 @@ function parseTiles(gameId: string, cfg: Config, doc: Document, section: 'events
       out.push({
         id: `${gameId}:banner:${id}`, gameId, kind: 'banner',
         title: featured.length ? featured.map(f => f.name).join(' / ') : title,
-        description: [`${weapon ? 'Banner de arma' : 'Banner de personaje'} · ${title}`, desc].filter(Boolean).join('\n'),
+        description: [`${weapon ? '⟦d.weaponBanner⟧' : '⟦d.charBanner⟧'} · ${title}`, desc].filter(Boolean).join('\n'),
         image, start: dates.start, end: dates.end, items: [], featured, pulls: 0, source: 'api',
       })
       return

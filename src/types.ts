@@ -50,6 +50,10 @@ export interface GameEvent {
   pulls: number
   /** Horas estimadas (opcional, para el veredicto). */
   hours?: number
+  /** Campaña menor (p. ej. recompensas de entrenamiento): se oculta por defecto. */
+  minor?: boolean
+  /** estimated = fecha aún no confirmada; approx = fechas reales pero con horas aproximadas. */
+  precision?: 'estimated' | 'approx'
   source: 'api' | 'manual' | 'feed'
 }
 

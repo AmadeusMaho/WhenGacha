@@ -31,6 +31,9 @@ const kindOf = (t: string): Kind => (BANNERS.has(t) ? 'banner' : CHALLENGES.has(
 
 const imageOf = (r: Raw) => (r.image?.startsWith('http') ? r.image : r.image_path ? `${BASE}/${r.image_path}` : undefined)
 
+/** Campañas pequeñas y repetitivas (recompensas por carrera, misiones sueltas). */
+const MINOR = /(training|breeding) reward|celebration missions|missions,? part/i
+
 const clean = (s?: string) => s?.replace(/<br\s*\/?>/gi, ' · ').replace(/<[^>]+>/g, '').trim() || undefined
 
 export async function syncUma(gameId: string): Promise<GameSync> {
@@ -48,14 +51,13 @@ export async function syncUma(gameId: string): Promise<GameSync> {
     const kind = kindOf(r.type)
     const names = (r.card_type === 'support' ? r.related_support_card_names : r.related_characters) ?? []
     const uniq = [...new Set(names)]
-    const label = kind === 'banner' ? `${r.card_type === 'support' ? 'Cartas de apoyo' : 'Uma'}` : undefined
+    const label = kind === 'banner' ? (r.card_type === 'support' ? '⟦d.supportCards⟧' : '⟦d.umas⟧') : undefined
     events.push({
       id: `${gameId}:${kind}:${r.id}`,
       gameId,
       kind,
       title: kind === 'banner' && uniq.length > 0 && uniq.length <= 3 ? uniq.join(' / ') : r.title,
-      description: [clean(r.description), label && uniq.length ? `${label}: ${uniq.slice(0, 6).join(', ')}${uniq.length > 6 ? '…' : ''}` : undefined,
-        r.is_confirmed === false ? 'Fecha estimada: aún no confirmada.' : undefined].filter(Boolean).join('\n') || undefined,
+      description: [clean(r.description), label && uniq.length ? `${label}: ${uniq.slice(0, 6).join(', ')}${uniq.length > 6 ? '…' : ''}` : undefined].filter(Boolean).join('\n') || undefined,
       image: imageOf(r),
       start: r.global_release_date,
       end: r.estimated_end_date,
@@ -63,6 +65,8 @@ export async function syncUma(gameId: string): Promise<GameSync> {
       featured: kind === 'banner' ? uniq.slice(0, 3).map(name => ({ name, rarity: 3 })) : [],
       pulls: 0,
       source: 'api',
+      minor: kind === 'event' && MINOR.test(r.title) ? true : undefined,
+      precision: r.is_confirmed === false ? 'estimated' : undefined,
     })
   }
   return { events, patches: [], codes: [] }

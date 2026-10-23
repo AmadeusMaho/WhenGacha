@@ -45,8 +45,8 @@ async function loadBanners(gameId: string): Promise<GameEvent[]> {
     const featured: Featured[] = [{ name, icon, rarity: /\bssr\b/.test(row.className) ? 5 : 4, tag: traits.slice(0, 3).join(' · ') || undefined }]
     out.push({
       id: `${gameId}:banner:${name}:${new Date(start).toISOString().slice(0, 10)}`, gameId, kind: 'banner', title: name,
-      description: `Banner de personaje${traits.length ? ` · ${traits.join(' · ')}` : ''}`,
-      start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured, pulls: 0, source: 'api',
+      description: `⟦d.charBanner⟧${traits.length ? ` · ${traits.join(' · ')}` : ''}`,
+      start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured, pulls: 0, source: 'api', precision: 'approx',
     })
   })
   return out
@@ -95,8 +95,8 @@ async function loadEvents(gameId: string): Promise<GameEvent[]> {
     const image = raw.startsWith('https') ? raw.replace(/scale-to-width-down\/\d+/, 'scale-to-width-down/640') : undefined
     out.push({
       id: `${gameId}:event:${name}:${new Date(range.start).toISOString().slice(0, 10)}`, gameId, kind: 'event', title: name,
-      description: 'Evento del servidor Global (horas en UTC+9 según la wiki).',
-      image, start: new Date(range.start).toISOString(), end: new Date(range.end).toISOString(), items: [], featured: [], pulls: 0, source: 'api',
+      description: '⟦d.nikkeEvent⟧',
+      image, start: new Date(range.start).toISOString(), end: new Date(range.end).toISOString(), items: [], featured: [], pulls: 0, source: 'api', precision: 'approx',
     })
   }
   return out

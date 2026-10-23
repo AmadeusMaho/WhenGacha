@@ -375,3 +375,85 @@ header { transition: background .3s, border-color .3s; }
 .gcard-hero > img { display: block; backface-visibility: hidden; }
 .gcard-hero .fade { inset: 0 0 -2px; background: linear-gradient(transparent 20%, #151a2e); }
 .gcard-body { position: relative; background: #151a2e; }
+
+/* ====== línea de tiempo con scroll propio: eje y nombre del juego siempre visibles ====== */
+.tl { max-height: calc(100vh - 270px); min-height: 360px; overflow: auto; --label-w: 176px; scroll-margin-top: 84px; overscroll-behavior: auto; }
+.tl-corner, .tl-label { width: var(--label-w); }
+.tl-label { align-items: flex-start; padding: 0; }
+.tl-label-in { position: sticky; top: 46px; display: flex; align-items: center; gap: 10px; padding: 12px; width: 100%; min-width: 0; }
+.tl-label-in > span { min-width: 0; }
+.tl-lane.folded .tl-label-in { position: static; }
+.bar-in, .sec-title { left: calc(var(--label-w) + 8px); }
+.bar.est { border-style: dashed; }
+.prec { margin-left: 4px; color: #fcd34d; font-weight: 700; text-transform: none; letter-spacing: 0; cursor: help; }
+
+/* plegar juegos */
+.fold { flex: none; margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); color: var(--text); cursor: pointer; font-size: .8rem; transition: background .2s, color .2s, transform .3s var(--spring); }
+.fold:hover { background: var(--c); color: #000; transform: scale(1.12); }
+.gsec.folded { padding-bottom: 10px; }
+.gsec.folded .gsec-head { margin-bottom: 0; }
+
+/* chips para saltar a un juego */
+.jump { display: flex; gap: 8px; flex-wrap: wrap; margin: -4px 0 14px; }
+.jump-chip { --c: #888; display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border-radius: 999px; font: inherit; font-size: .8rem; font-weight: 700; letter-spacing: .04em; color: var(--text); cursor: pointer; background: rgba(255, 255, 255, .05); border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); transition: transform .25s var(--ease), background .25s, box-shadow .25s; }
+.jump-chip:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--c) 24%, transparent); box-shadow: 0 6px 16px color-mix(in srgb, var(--c) 30%, transparent); }
+.jump-chip:active { transform: scale(.95); }
+.jump-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.jump-chip.ghost { color: var(--muted); border-style: dashed; border-color: var(--line); } .jump-chip.ghost:hover { color: var(--text); background: rgba(255, 255, 255, .08); box-shadow: none; }
+
+/* resumen: termina en 72 h */
+.soon-strip { margin: 0 0 16px; }
+.soon-strip h3 { margin: 0 0 8px; }
+.soon-list { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity; scrollbar-width: thin; }
+.soon-card { --c: #888; flex: 0 0 auto; scroll-snap-align: start; display: flex; align-items: center; gap: 10px; max-width: 320px; padding: 8px 12px 8px 8px; border-radius: 16px; font: inherit; color: var(--text); text-align: left; cursor: pointer;
+  background: var(--panel); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); transition: transform .3s var(--ease), box-shadow .3s, border-color .3s; }
+.soon-card:hover { transform: translateY(-3px); border-color: var(--c); box-shadow: 0 10px 24px color-mix(in srgb, var(--c) 30%, transparent); }
+.soon-card:active { transform: scale(.97); }
+.soon-img { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; object-position: 50% 15%; background: #222; flex: none; }
+.soon-txt { display: grid; min-width: 0; line-height: 1.25; }
+.soon-txt b { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
+.soon-card em { flex: none; padding: 2px 9px; border-radius: 999px; font-size: .78rem; font-weight: 700; font-style: normal; color: #fcd34d; background: rgba(251, 191, 36, .16); }
+.soon-card.urgent em { color: #fda4af; background: rgba(244, 63, 94, .22); }
+
+/* "Mostrar más" */
+.more-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
+
+/* ====== banners con splash art: vuelven a ser tarjetas altas; toda la sección del juego mide lo mismo ====== */
+.gsec .kind-group.tall .grid { grid-auto-rows: auto; align-items: start; }
+.gsec .kind-group.tall .grid > .bcard, .gsec .kind-group.tall .grid > .ecard { height: auto; aspect-ratio: 3 / 4; contain-intrinsic-size: auto 520px; }
+.gsec .kind-group.tall .grid > .ecard .ecard-img { flex: 1 1 auto; height: auto; min-height: 0; aspect-ratio: auto; }
+.gsec .kind-group.tall .grid > .ecard .ecard-body { flex: 0 0 auto; }
+.nopatch { margin-top: 18px; line-height: 2; }
+.nopatch .tag { margin: 0 4px; }
+
+@media (max-width: 700px) {
+  .tl { max-height: calc(100vh - 210px); min-height: 320px; }
+  .tl-label-in { flex-direction: column; gap: 6px; padding: 10px 6px; }
+  .fold { margin-left: 0; }
+  .jump { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; }
+  .jump-chip { flex: none; }
+}
+
+/* ====== selector de idioma ====== */
+.lang { position: relative; }
+.lang-btn { gap: 6px; padding: 5px 11px; }
+.lang-btn svg { opacity: .85; }
+.lang-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 150px; margin: 0; padding: 6px; list-style: none; border-radius: 14px; background: rgba(16, 20, 38, .97); border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0, 0, 0, .5); animation: rise .2s var(--ease); }
+.lang-menu button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border: none; border-radius: 10px; background: none; color: var(--text); font: inherit; cursor: pointer; transition: background .15s; }
+.lang-menu button:hover { background: rgba(255, 255, 255, .08); }
+.lang-menu button.on { color: #fff; background: linear-gradient(135deg, rgba(244, 114, 182, .35), rgba(56, 189, 248, .3)); }
+.lang-menu i { font-style: normal; }
+
+/* ====== títulos de sección (Banners / Eventos / Weeklies): más grandes, claros y separados ====== */
+.sec-title { padding: 8px 12px 0; font-size: .92rem; font-weight: 800; letter-spacing: .07em; }
+.sec-band.banner .sec-title { color: #fde68a; } .sec-band.event .sec-title { color: #bae6fd; } .sec-band.challenge .sec-title { color: #fbcfe8; }
+.sec-band { border-top-color: rgba(255, 255, 255, .13); }
+.kind-group + .kind-group { margin-top: 38px; }
+.kind-head { gap: 10px; margin: 6px 0 18px; padding-bottom: 10px; font-size: 1.05rem; font-weight: 800; letter-spacing: .06em; color: #fff; border-bottom: 1px solid rgba(255, 255, 255, .12); }
+.kind-head small { font-size: .85rem; color: #c7c9e0; }
+.kind-dot { width: 12px; height: 12px; }
+
+@media (max-width: 700px) {
+  /* En celular el botón de idioma queda a la izquierda: el menú se abre hacia la derecha para no salirse de la pantalla */
+  .lang-menu { left: 0; right: auto; }
+}

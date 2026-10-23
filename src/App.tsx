@@ -3,7 +3,9 @@ import { flushSync } from 'react-dom'
 import './App.css'
 import { CATALOG } from './catalog'
 import EventModal, { lastPointer } from './EventModal'
+import { t, useLang } from './i18n'
 import { useImages } from './images'
+import LangSwitch from './LangSwitch'
 import { fireDue, mirrorAlerts } from './notify'
 import { useAutoSync, useStore } from './store'
 import TimelineTab from './Timeline'
@@ -12,17 +14,18 @@ import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
 
 type Tab = 'timeline' | 'mine' | 'patches'
-const TABS: [Tab, string][] = [['timeline', 'Línea de tiempo'], ['mine', 'Mis gachas'], ['patches', 'Parches']]
+const TABS: [Tab, 'tab.timeline' | 'tab.mine' | 'tab.patches'][] = [['timeline', 'tab.timeline'], ['mine', 'tab.mine'], ['patches', 'tab.patches']]
 
 interface InstallEvent extends Event { prompt(): Promise<void> }
 
-const ago = (t?: number) => {
-  if (!t) return 'sin sincronizar'
-  const m = Math.round((Date.now() - t) / 60000)
-  return m < 1 ? 'hace un momento' : m < 60 ? `hace ${m} min` : `hace ${Math.round(m / 60)} h`
+const ago = (ts?: number) => {
+  if (!ts) return t('ago.never')
+  const m = Math.round((Date.now() - ts) / 60000)
+  return m < 1 ? t('ago.now') : m < 60 ? t('ago.min', { n: m }) : t('ago.hour', { n: Math.round(m / 60) })
 }
 
 export default function App() {
+  useLang() // vuelve a dibujar toda la interfaz al cambiar de idioma
   const [state, setState] = useStore()
   const { status, sync } = useAutoSync(state, setState)
   useImages(state)
@@ -45,8 +48,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 30_000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => setNow(Date.now()), 30_000)
+    return () => clearInterval(timer)
   }, [])
 
   useEffect(() => {
@@ -59,8 +62,8 @@ export default function App() {
   useEffect(() => {
     mirrorAlerts(state)
     fireDue(state)
-    const t = setInterval(() => fireDue(state), 60_000)
-    return () => clearInterval(t)
+    const timer = setInterval(() => fireDue(state), 60_000)
+    return () => clearInterval(timer)
   }, [state])
 
   const games = useMemo(() => [...CATALOG, ...state.customGames], [state.customGames])
@@ -85,16 +88,17 @@ export default function App() {
       <header>
         <div className="brand"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /><h1>WhenGacha</h1></div>
         <nav>
-          {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{label}</button>)}
+          {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{t(label)}</button>)}
         </nav>
         <div className="head-actions">
-          <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title="Sincronizar ahora">
-            <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> {status.busy ? 'Sincronizando' : ago(Math.max(0, ...Object.values(state.synced)))}
+          <LangSwitch />
+          <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
+            <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> {status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}
           </button>
-          {installEv && <button className="btn sm primary" onClick={() => installEv.prompt()}>⭳ Instalar app</button>}
+          {installEv && <button className="btn sm primary" onClick={() => installEv.prompt()}>{t('install')}</button>}
         </div>
       </header>
-      {status.error && <div className="banner-err">{status.error}. Se muestran los últimos datos guardados.</div>}
+      {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.join(', ') })}</div>}
       <main key={tab}>
         {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} />}
         {tab === 'mine' && <MyGachas ctx={ctx} sync={sync} syncing={status.busy} />}

@@ -4,11 +4,21 @@ import { staleMs, syncSource } from './sources'
 import type { AppState } from './types'
 
 const KEY = 'whengacha:v2'
+/** Sube este número cuando cambie el formato de los datos descargados: se vuelven a descargar una vez. */
+const SCHEMA = '3'
+const SCHEMA_KEY = 'whengacha:schema'
 
 function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) return { ...initialState(), ...JSON.parse(raw) }
+    if (raw) {
+      const saved = { ...initialState(), ...JSON.parse(raw) } as AppState
+      if (localStorage.getItem(SCHEMA_KEY) !== SCHEMA) {
+        localStorage.setItem(SCHEMA_KEY, SCHEMA)
+        return { ...saved, events: [], patches: [], codes: {}, synced: {} } // se conservan tus juegos, tareas y completados
+      }
+      return saved
+    }
   } catch {
     /* storage no disponible o corrupto */
   }
@@ -27,18 +37,21 @@ export function useStore() {
   return [state, setState] as const
 }
 
-export type SyncStatus = { busy: boolean; error?: string; last?: number }
+export type SyncStatus = { busy: boolean; failed?: string[]; last?: number }
 
 /** Sincroniza los juegos con API (eventos, banners, desafíos, parches y códigos). */
 export function useAutoSync(state: AppState, setState: React.Dispatch<React.SetStateAction<AppState>>) {
   const [status, setStatus] = useState<SyncStatus>({ busy: false })
   const syncedRef = useRef(state.synced)
   syncedRef.current = state.synced
+  const trackedRef = useRef(state.tracked)
+  trackedRef.current = state.tracked
 
   const sync = useCallback(async (force = false) => {
-    const targets = CATALOG.filter(g => g.api && (force || Date.now() - (syncedRef.current[g.id] ?? 0) > staleMs(g)))
+    // Solo se consultan los juegos que sigues (los demás no hacen falta hasta que los agregues).
+    const targets = CATALOG.filter(g => g.api && trackedRef.current.includes(g.id) && (force || Date.now() - (syncedRef.current[g.id] ?? 0) > staleMs(g)))
     if (!targets.length) return
-    setStatus(s => ({ ...s, busy: true, error: undefined }))
+    setStatus(s => ({ ...s, busy: true, failed: undefined }))
     const results = await Promise.allSettled(targets.map(g => syncSource(g)))
     const failed: string[] = []
     setState(s => {
@@ -58,16 +71,18 @@ export function useAutoSync(state: AppState, setState: React.Dispatch<React.SetS
       })
       return next
     })
-    setStatus({ busy: false, last: Date.now(), error: failed.length ? `No se pudo sincronizar: ${failed.join(', ')}` : undefined })
+    setStatus({ busy: false, last: Date.now(), failed: failed.length ? failed : undefined })
   }, [setState])
 
+  // Se vuelve a sincronizar cuando agregas un juego.
+  const trackedKey = state.tracked.join(',')
   useEffect(() => {
     sync()
     const t = setInterval(() => sync(), 15 * 60 * 1000)
     const onOnline = () => sync(true)
     window.addEventListener('online', onOnline)
     return () => { clearInterval(t); window.removeEventListener('online', onOnline) }
-  }, [sync])
+  }, [sync, trackedKey])
 
   return { status, sync }
 }

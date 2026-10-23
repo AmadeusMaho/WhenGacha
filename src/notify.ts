@@ -1,4 +1,5 @@
 import { CATALOG } from './catalog'
+import { t } from './i18n'
 import type { AppState } from './types'
 
 const SEEN_KEY = 'whengacha:notified'
@@ -15,11 +16,11 @@ export function buildAlerts(state: AppState, now = Date.now()): Alert[] {
     const end = +new Date(e.end)
     if (end < now) continue
     const g = games.find(x => x.id === e.gameId)
-    const kind = e.kind === 'banner' ? 'El banner' : e.kind === 'challenge' ? 'El desafío' : 'El evento'
+    const kind = t(e.kind === 'banner' ? 'notif.banner' : e.kind === 'challenge' ? 'notif.challenge' : 'notif.event')
     out.push({
       key: `${e.id}:${e.end}`,
       title: `${g?.short ?? ''} · ${e.title}`,
-      body: `${kind} termina pronto${e.pulls ? ` (~${e.pulls} tiradas)` : ''}.`,
+      body: `${kind}${e.pulls ? t('notif.pulls', { n: e.pulls }) : ''}.`,
       at: end - state.leadHours * HOUR,
       end,
     })

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { locale } from './i18n'
 import { bannerArt, eventImage, faceOf, gameImage, wallpaperOf } from './images'
 import type { AppState, Game, GameEvent } from './types'
 
@@ -12,9 +13,9 @@ export interface Ctx {
 }
 
 export const fmtDate = (iso: string | number) =>
-  new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short' })
+  new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 export const fmtDateY = (iso: string | number) =>
-  new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' })
+  new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' })
 
 export const cssVar = (g?: Game) => ({ '--c': g?.color ?? '#888', '--c2': g?.color2 ?? '#333' }) as React.CSSProperties
 

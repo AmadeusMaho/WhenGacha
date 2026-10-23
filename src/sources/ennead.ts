@@ -75,13 +75,13 @@ function mapBanner(gameId: string, r: Raw, idx: number): GameEvent {
   const featured: Featured[] = (top.length ? top : chars.slice(0, 1)).map(c => ({ name: c.name, icon: c.icon, rarity: star(c), tag: c.element ?? c.profession, full: c.full_name }))
   const gearTop = gear.filter(c => star(c) === 5).slice(0, 2)
   const weaponBanner = /weapon|engine|light/i.test(`${r.name} ${r.banner_type ?? ''}`) && !chars.length
-  const label = weaponBanner || (!chars.length && gear.length) ? 'Banner de arma' : 'Banner de personaje'
+  const label = weaponBanner || (!chars.length && gear.length) ? '⟦d.weaponBanner⟧' : '⟦d.charBanner⟧'
   const names = featured.map(f => f.name).join(' / ') || gearTop.map(c => c.name).join(' / ')
   return {
     id: `${gameId}:banner:${r.id ?? r.banner_type}:${r.version}:${idx}:${r.start_time}`,
     gameId,
     kind: 'banner',
-    title: names ? `${names}` : label,
+    title: names || r.name || `v${r.version}`,
     description: `${label} · v${r.version}${gearTop.length ? ` · ${gearTop.map(c => c.name).join(', ')}` : ''}`,
     start: iso(r.start_time!),
     end: iso(r.end_time!),
