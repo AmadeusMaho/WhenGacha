@@ -26,10 +26,10 @@ export const es = {
   'time.ended': 'Terminado',
   'kind1.event': 'Evento',
   'kind1.banner': 'Banner',
-  'kind1.challenge': 'Semanal',
+  'kind1.challenge': 'Rotatorio',
   'kindN.event': 'Eventos',
   'kindN.banner': 'Banners',
-  'kindN.challenge': 'Semanales',
+  'kindN.challenge': 'Rotatorios',
 
   // veredicto
   'v.ended': 'Terminado',
@@ -39,7 +39,7 @@ export const es = {
   'v.poor': 'Poco rentable',
   'v.noPulls': 'Sin tiradas',
   'v.must': 'Imperdible',
-  'v.challenge': 'Semanal',
+  'v.challenge': 'Rotatorio',
 
   // pestaña línea de tiempo
   'tl.empty': 'Elige tus gachas para ver sus eventos.',
@@ -159,7 +159,7 @@ export const es = {
 
   // avisos del navegador
   'notif.banner': 'El banner termina pronto',
-  'notif.challenge': 'El semanal termina pronto',
+  'notif.challenge': 'El rotatorio termina pronto',
   'notif.event': 'El evento termina pronto',
   'notif.pulls': ' (~{n} tiradas)',
 
@@ -198,10 +198,10 @@ export const en: Record<Key, string> = {
   'time.ended': 'Ended',
   'kind1.event': 'Event',
   'kind1.banner': 'Banner',
-  'kind1.challenge': 'Weekly',
+  'kind1.challenge': 'Rotation',
   'kindN.event': 'Events',
   'kindN.banner': 'Banners',
-  'kindN.challenge': 'Weeklies',
+  'kindN.challenge': 'Rotations',
 
   'v.ended': 'Ended',
   'v.banner': 'Banner',
@@ -210,7 +210,7 @@ export const en: Record<Key, string> = {
   'v.poor': 'Low value',
   'v.noPulls': 'No pulls',
   'v.must': 'Must do',
-  'v.challenge': 'Weekly',
+  'v.challenge': 'Rotation',
 
   'tl.empty': 'Pick your gachas to see their events.',
   'btn.choose': '＋ Pick my gachas',
@@ -325,7 +325,7 @@ export const en: Record<Key, string> = {
   'patch.typical': 'Typical: {n} d',
 
   'notif.banner': 'The banner ends soon',
-  'notif.challenge': 'The weekly ends soon',
+  'notif.challenge': 'The rotation ends soon',
   'notif.event': 'The event ends soon',
   'notif.pulls': ' (~{n} pulls)',
 
@@ -361,10 +361,10 @@ export const zh: Record<Key, string> = {
   'time.ended': '已结束',
   'kind1.event': '活动',
   'kind1.banner': '卡池',
-  'kind1.challenge': '每周',
+  'kind1.challenge': '轮换',
   'kindN.event': '活动',
   'kindN.banner': '卡池',
-  'kindN.challenge': '每周',
+  'kindN.challenge': '轮换',
 
   'v.ended': '已结束',
   'v.banner': '卡池',
@@ -373,7 +373,7 @@ export const zh: Record<Key, string> = {
   'v.poor': '收益较低',
   'v.noPulls': '无抽数',
   'v.must': '不容错过',
-  'v.challenge': '每周',
+  'v.challenge': '轮换',
 
   'tl.empty': '选择你的游戏，查看它们的活动。',
   'btn.choose': '＋ 选择我的游戏',
@@ -488,7 +488,7 @@ export const zh: Record<Key, string> = {
   'patch.typical': '常见时长：{n} 天',
 
   'notif.banner': '卡池即将结束',
-  'notif.challenge': '每周内容即将结束',
+  'notif.challenge': '轮换内容即将结束',
   'notif.event': '活动即将结束',
   'notif.pulls': '（约 {n} 抽）',
 
