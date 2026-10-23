@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "start": "node server/index.mjs"
+    "start": "node server/index.mjs",
+    "build:prod": "tsc -b && vite build --mode proxy"
   },
   "dependencies": {
     "react": "^19.3.1",
@@ -22,5 +23,8 @@
     "oxlint": "^1.88.0",
     "typescript": "~6.0.3",
     "vite": "^8.3.4"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

@@ -1,5 +1,5 @@
 // Servidor de WhenGacha: sirve la app compilada (dist/) y un proxy con caché para las fuentes de datos.
-// Sin dependencias: solo módulos de Node. Variables opcionales: PORT (3000), CACHE_MB (64), RATE_PER_MIN (600).
+// Sin dependencias: solo módulos de Node. Variables opcionales: PORT (3000), HOST (0.0.0.0), CACHE_MB (64), RATE_PER_MIN (600).
 import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import http from 'node:http'
@@ -10,7 +10,9 @@ import { gzip as gzipCb } from 'node:zlib'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
-const PORT = Number(process.env.PORT) || 3000
+// El puerto lo asigna el host (PORT); algunos paneles usan SERVER_PORT. En local, 3000.
+const PORT = Number(process.env.PORT || process.env.SERVER_PORT || process.env.APP_PORT) || 3000
+const HOST = process.env.HOST || '0.0.0.0'
 const MAX_BYTES = (Number(process.env.CACHE_MB) || 64) * 1024 * 1024
 const RATE_PER_MIN = Number(process.env.RATE_PER_MIN) || 600
 const UA = 'WhenGacha/1.0 (+https://github.com/AmadeusMaho/WhenGacha)'
@@ -154,7 +156,7 @@ async function handleStatic(req, res, pathname) {
   let file = path.join(ROOT, rel)
   let info = await stat(file).catch(() => null)
   if (!info?.isFile()) {
-    if (path.extname(rel)) return send(res, 404, {}, 'No encontrado') // un archivo que no existe no cae al index
+    if (path.extname(rel) && rel !== '/index.html') return send(res, 404, {}, 'No encontrado') // un archivo que no existe no cae al index
     rel = '/index.html'
     file = path.join(ROOT, rel)
     info = await stat(file).catch(() => null)
@@ -193,5 +195,11 @@ const server = http.createServer(async (req, res) => {
   }
 })
 
-server.listen(PORT, () => console.log(`WhenGacha escuchando en el puerto ${PORT} (caché máx. ${MAX_BYTES / 1024 / 1024} MB)`))
+server.on('error', err => { console.error(`[server] no se pudo abrir ${HOST}:${PORT}: ${err.message}`); process.exit(1) })
+process.on('unhandledRejection', err => console.error('[server] promesa sin capturar:', err))
+server.listen(PORT, HOST, async () => {
+  const built = await stat(path.join(ROOT, 'index.html')).then(() => true, () => false)
+  console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
+  if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
+})
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => server.close(() => process.exit(0)))

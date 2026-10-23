@@ -7,43 +7,39 @@ Juegos con datos automáticos: Genshin Impact, Honkai: Star Rail, Zenless Zone Z
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173 (consulta cada fuente directamente)
-npm run build      # genera dist/
+npm run dev          # http://localhost:5173 (consulta cada fuente directamente)
+npm run build:prod   # compila en modo "proxy" y genera dist/
+npm start            # sirve dist/ + proxy en http://localhost:3000
 ```
 
 ## Producción
 
-El servidor (`server/index.mjs`, solo módulos de Node, sin dependencias) hace dos cosas:
+El servidor (`server/index.mjs`, solo módulos de Node, **sin dependencias**) hace dos cosas:
 
 - sirve la app compilada (`dist/`), con las cabeceras de caché correctas para el service worker y los archivos con hash;
-- ofrece `/proxy?u=<url>`, un proxy **con caché** hacia las fuentes de datos. Todos los visitantes comparten la misma copia, así que las fuentes reciben unas pocas peticiones al mes en vez de una por visita. Si una fuente falla, sirve la última copia guardada (hasta 7 días).
+- ofrece `/proxy?u=<url>`, un proxy **con caché** hacia las fuentes de datos. Todos los visitantes comparten la misma copia, así que las fuentes reciben unas pocas peticiones por hora en vez de una por visita. Si una fuente falla, sirve la última copia guardada (hasta 7 días).
 
 El proxy solo acepta las fuentes de la tabla de abajo (no es un relé abierto) y limita las peticiones por IP.
 
-Sin Docker:
+**`dist/` está versionado a propósito**: así hosts que solo ejecutan `npm start` (sin compilar) funcionan tal cual. Cuando cambies el código, ejecuta `npm run build:prod` y sube también `dist/`.
 
-```bash
-npm ci
-VITE_USE_PROXY=1 npm run build
-npm start          # http://localhost:3000
-```
+Variables opcionales: `PORT` (3000; también se lee `SERVER_PORT` y `APP_PORT`), `HOST` (0.0.0.0), `CACHE_MB` (64), `RATE_PER_MIN` (600 por IP). Comprobación de salud: `GET /healthz`. Requiere Node 18 o superior.
 
-Con Docker:
+### Botkeep (o cualquier host de Node)
+
+1. Importa el repositorio, rama `main`, raíz del proyecto `/`.
+2. Comando de inicio: `npm start` (ejecuta `node server/index.mjs`). No hace falta compilar ni instalar nada.
+3. El host debe asignar el puerto en la variable `PORT` (el servidor la lee solo). Si usa otra variable o un puerto fijo, defínelo como `PORT`.
+4. Al arrancar, la consola debe mostrar `WhenGacha escuchando en 0.0.0.0:<puerto>`. Si aparece un aviso de que falta `dist/index.html`, el repositorio no está completo.
+
+### Docker (Coolify, Dokploy, etc.)
 
 ```bash
 docker build -t whengacha .
 docker run -d -p 3000:3000 --name whengacha whengacha
 ```
 
-Variables opcionales: `PORT` (3000), `CACHE_MB` (64), `RATE_PER_MIN` (600 por IP). Comprobación de salud: `GET /healthz`.
-
-### Coolify / Dokploy
-
-1. Recurso nuevo desde este repositorio, rama `main`.
-2. Método de build: **Dockerfile** (en la raíz). Puerto: **3000**.
-3. Asigna el dominio con **HTTPS** (necesario para instalar la app y recibir notificaciones).
-
-El proxy lee `X-Forwarded-For` para limitar por visitante, algo que los paneles con Traefik o Caddy ya envían.
+El `Dockerfile` compila la app dentro de la imagen. Puerto: **3000**. Asigna el dominio con **HTTPS** (necesario para instalar la app y recibir notificaciones). El proxy lee `X-Forwarded-For` para limitar por visitante.
 
 ## Fuentes de datos
 
