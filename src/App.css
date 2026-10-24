@@ -463,6 +463,7 @@ header { transition: background .3s, border-color .3s; }
 .site-foot a { color: var(--muted); text-decoration: none; }
 .site-foot a:hover { color: var(--text); }
 .site-foot a.btn.donate { color: var(--text); background: rgba(244, 114, 182, .16); border: 1px solid rgba(244, 114, 182, .5); }
+.site-foot .donate-note { order: 1; flex-basis: 100%; text-align: center; font-size: .8rem; opacity: .85; }
 
 /* consentimiento */
 .linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); cursor: pointer; }

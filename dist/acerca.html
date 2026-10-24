@@ -12,10 +12,10 @@ h1{font-size:1.7rem;margin:.2em 0 .1em}h2{font-size:1.15rem;margin:1.6em 0 .4em;
 .top a{text-decoration:none;font-weight:600}.muted{color:var(--muted);font-size:.9rem}
 .lang button{background:none;border:1px solid rgba(255,255,255,.2);color:var(--text);border-radius:999px;padding:4px 12px;cursor:pointer;font:inherit}
 .lang button.on{border-color:var(--acc);color:var(--acc)}
-body.l-es [lang=en],body.l-en [lang=es]{display:none}
+section[lang]{display:none}body.l-es section[lang=es],body.l-en section[lang=en],body.l-zh section[lang=zh-CN]{display:block}
 li{margin:.3em 0}
 </style></head><body class="l-es"><main>
-<div class="top"><a href="/">← WhenGacha</a><span class="lang"><button data-l="es">ES</button> <button data-l="en">EN</button></span></div>
+<div class="top"><a href="/">← WhenGacha</a><span class="lang"><button data-l="es">ES</button> <button data-l="en">EN</button> <button data-l="zh">中文</button></span></div>
 
 <section lang="es">
 <h1>Acerca de WhenGacha</h1>
@@ -40,7 +40,7 @@ li{margin:.3em 0}
 <p>WhenGacha es un proyecto independiente de fans y no está afiliado a ninguna de las compañías de los juegos mencionados. Los nombres, logos e imágenes pertenecen a sus respectivos dueños.</p>
 
 <h2>Apoyar el proyecto</h2>
-<p>WhenGacha es gratuito y lo mantiene una sola persona. Si te resulta útil, puedes apoyarlo con una donación desde el botón «Apoyar el proyecto» en el pie de la página. También puede mostrar anuncios para ayudar a cubrir el dominio y el servidor.</p>
+<p>WhenGacha es gratuito y lo mantiene una sola persona. Si te resulta útil, puedes apoyarlo con una donación desde el botón «Apoyar el proyecto» en el pie de la página. No tiene anuncios y no los tendrá: el dominio y el servidor los pago yo.</p>
 
 <h2>Contacto</h2>
 <p>¿Un dato incorrecto, una sugerencia o un juego que falte? Escribe a <a href="mailto:amadeusmaho45@gmail.com">amadeusmaho45@gmail.com</a>. Consulta también la <a href="/privacidad.html">política de privacidad</a>.</p>
@@ -69,11 +69,40 @@ li{margin:.3em 0}
 <p>WhenGacha is an independent fan project and is not affiliated with any of the companies behind the games mentioned. Names, logos and images belong to their respective owners.</p>
 
 <h2>Support the project</h2>
-<p>WhenGacha is free and maintained by one person. If you find it useful, you can support it with a donation using the "Support the project" button in the page footer. It may also show ads to help cover the domain and server.</p>
+<p>WhenGacha is free and maintained by one person. If you find it useful, you can support it with a donation using the "Support the project" button in the page footer. It has no ads, and it won't: I pay for the domain and the server myself.</p>
 
 <h2>Contact</h2>
 <p>An incorrect entry, a suggestion or a missing game? Write to <a href="mailto:amadeusmaho45@gmail.com">amadeusmaho45@gmail.com</a>. See also the <a href="/privacidad.html">privacy policy</a>.</p>
 </section>
-</main><script>(function(){var l="es";try{var s=localStorage.getItem("whengacha:lang");if(s==="en"||s==="es")l=s;else if(!s&&!/^es/i.test(navigator.language||""))l="en"}catch(e){}
-function set(x){document.body.className="l-"+x;document.documentElement.lang=x;document.querySelectorAll(".lang button").forEach(function(b){b.className=b.dataset.l===x?"on":""});try{localStorage.setItem("whengacha:lang",x)}catch(e){}}
+
+<section lang="zh-CN">
+<h1>关于 WhenGacha</h1>
+<p>如果你同时玩多款抽卡游戏，一定知道很容易错过某个卡池，或是明天就结束的活动。WhenGacha 把所有信息集中在一处：一条时间线，显示你所玩游戏的活动、卡池和版本更新，数据自动加载。</p>
+
+<h2>功能</h2>
+<ul>
+<li>显示进行中和即将开始的活动与卡池的时间线。</li>
+<li>“我的抽卡游戏”板块：只关注你在玩的游戏，并标记已完成的内容。</li>
+<li>各游戏的版本更新历史。</li>
+<li>活动即将结束时的可选提醒。</li>
+<li>支持离线使用，可安装为应用，提供西班牙语、英语和中文。</li>
+</ul>
+
+<h2>游戏</h2>
+<p>Genshin Impact、Honkai: Star Rail、Zenless Zone Zero、Arknights、Arknights: Endfield、Umamusume、Chaos Zero Nightmare、Wuthering Waves、Nikke 和 Neverness to Everness。</p>
+
+<h2>数据来源</h2>
+<p>信息来自社区站点和维基：ennead.cc、gachafocus、lootandwaifus，以及 Fandom 和 wiki.gg 的维基（其内容采用 CC BY-SA 许可）。这些是玩家整理的数据，可能延迟或有误；涉及重要日期时，请务必以游戏内为准。</p>
+
+<h2>声明</h2>
+<p>WhenGacha 是独立的玩家爱好者项目，与所提及游戏背后的任何公司均无关联。名称、标志和图片归其各自所有者所有。</p>
+
+<h2>支持本项目</h2>
+<p>WhenGacha 免费，由一个人维护。如果它对你有帮助，可以通过页面底部的“支持项目”按钮捐赠。网站没有广告，以后也不会有：域名和服务器的费用由我自己承担。</p>
+
+<h2>联系方式</h2>
+<p>发现错误数据、有建议或缺少某款游戏？请发邮件至 <a href="mailto:amadeusmaho45@gmail.com">amadeusmaho45@gmail.com</a>。另请查看<a href="/privacidad.html">隐私政策</a>。</p>
+</section>
+</main><script>(function(){var L=["es","en","zh"],n=(navigator.language||"").toLowerCase(),l=n.indexOf("es")==0?"es":n.indexOf("zh")==0?"zh":"en";try{var s=localStorage.getItem("whengacha:lang");if(L.indexOf(s)>-1)l=s}catch(e){}
+function set(x){document.body.className="l-"+x;document.documentElement.lang=x=="zh"?"zh-CN":x;document.querySelectorAll(".lang button").forEach(function(b){b.className=b.dataset.l===x?"on":""});try{localStorage.setItem("whengacha:lang",x)}catch(e){}}
 document.addEventListener("DOMContentLoaded",function(){set(l);document.querySelectorAll(".lang button").forEach(function(b){b.onclick=function(){set(b.dataset.l)}})})})()</script></body></html>

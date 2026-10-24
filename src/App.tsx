@@ -114,7 +114,8 @@ export default function App() {
         <a href="/acerca.html">{t('footer.about')}</a>
         <a href="/privacidad.html">{t('footer.privacy')}</a>
         {consentEnabled && <button className="linkbtn" onClick={reopenConsent}>{t('consent.settings')}</button>}
-        {DONATE_URL && <a className="btn sm donate" href={DONATE_URL} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
+        {DONATE_URL && <a className="btn sm donate" href={DONATE_URL} title={t('footer.donateTip')} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
+        {DONATE_URL && <span className="donate-note">{t('footer.donateNote')}</span>}
       </footer>
       <ConsentBanner />
       {current && <EventModal {...ctx} event={current} closing={closing} onClose={close} />}
