@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import ConsentBanner from './ConsentBanner'
+import { consentEnabled, reopenConsent } from './ads'
 import { flushSync } from 'react-dom'
 import './App.css'
 import { CATALOG } from './catalog'
@@ -12,6 +14,9 @@ import TimelineTab from './Timeline'
 import type { GameEvent } from './types'
 import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
+
+/** Enlace de donaciones de PayPal. Déjalo vacío para ocultar el botón. */
+const DONATE_URL = 'https://www.paypal.com/donate/?business=amadeusmaho45%40gmail.com&item_name=WhenGacha&currency_code=USD'
 
 type Tab = 'timeline' | 'mine' | 'patches'
 const TABS: [Tab, 'tab.timeline' | 'tab.mine' | 'tab.patches'][] = [['timeline', 'tab.timeline'], ['mine', 'tab.mine'], ['patches', 'tab.patches']]
@@ -104,6 +109,14 @@ export default function App() {
         {tab === 'mine' && <MyGachas ctx={ctx} sync={sync} syncing={status.busy} />}
         {tab === 'patches' && <Patches {...ctx} goMine={goMine} />}
       </main>
+      <footer className="site-foot">
+        <span>© WhenGacha</span>
+        <a href="/acerca.html">{t('footer.about')}</a>
+        <a href="/privacidad.html">{t('footer.privacy')}</a>
+        {consentEnabled && <button className="linkbtn" onClick={reopenConsent}>{t('consent.settings')}</button>}
+        {DONATE_URL && <a className="btn sm donate" href={DONATE_URL} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
+      </footer>
+      <ConsentBanner />
       {current && <EventModal {...ctx} event={current} closing={closing} onClose={close} />}
     </div>
   )

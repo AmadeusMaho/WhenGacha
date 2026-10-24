@@ -1,0 +1,3 @@
+# Cuando AdSense te apruebe, reemplaza esta línea con la tuya (AdSense > Sitios > ads.txt)
+# y borra estos comentarios. El formato es:
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
