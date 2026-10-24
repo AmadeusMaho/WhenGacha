@@ -457,3 +457,17 @@ header { transition: background .3s, border-color .3s; }
   /* En celular el botón de idioma queda a la izquierda: el menú se abre hacia la derecha para no salirse de la pantalla */
   .lang-menu { left: 0; right: auto; }
 }
+
+/* pie */
+.site-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 20px; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; }
+.site-foot a { color: var(--muted); text-decoration: none; }
+.site-foot a:hover { color: var(--text); }
+.site-foot a.btn.donate { color: var(--text); background: rgba(244, 114, 182, .16); border: 1px solid rgba(244, 114, 182, .5); }
+
+/* consentimiento */
+.linkbtn { background: none; border: 0; padding: 0; font: inherit; color: var(--muted); cursor: pointer; }
+.linkbtn:hover { color: var(--text); }
+.consent { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; width: min(720px, calc(100vw - 24px)); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 18px; border-radius: 16px; background: var(--panel2); border: 1px solid var(--line); backdrop-filter: blur(18px); box-shadow: 0 18px 50px rgba(0, 0, 0, .5); font-size: .86rem; }
+.consent p { flex: 1 1 320px; color: var(--text); }
+.consent a { color: var(--acc2); }
+.consent-actions { display: flex; gap: 8px; margin-left: auto; }
