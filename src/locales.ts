@@ -129,6 +129,7 @@ export const es = {
   'sources.label': 'Fuentes:',
   'sources.wikis': 'wikis de Fandom y wiki.gg',
   'sources.nikkeBanners': 'banners de Nikke',
+  'sources.fgoBa': 'wikis de FGO y Blue Archive',
   'sources.and': 'y',
   'sources.disclaimer': 'Datos de la comunidad: pueden tardar en actualizarse.',
   'card.unfollow': 'Dejar de seguir',
@@ -182,6 +183,7 @@ export const es = {
   'd.akServer': 'Servidor Global (UTC-7).',
   'd.efType': 'Tipo: {arg} · servidor AMEU.',
   'd.efBanner': 'Banner «{arg}»',
+  'd.rerun': 'Reedición de un evento anterior.',
 } as const
 
 export type Key = keyof typeof es
@@ -307,6 +309,7 @@ export const en: Record<Key, string> = {
   'sources.label': 'Sources:',
   'sources.wikis': 'Fandom and wiki.gg wikis',
   'sources.nikkeBanners': 'Nikke banners',
+  'sources.fgoBa': 'FGO and Blue Archive wikis',
   'sources.and': 'and',
   'sources.disclaimer': 'Community data: it may take a while to update.',
   'card.unfollow': 'Unfollow',
@@ -357,6 +360,7 @@ export const en: Record<Key, string> = {
   'd.akServer': 'Global server (UTC-7).',
   'd.efType': 'Type: {arg} · AMEU server.',
   'd.efBanner': 'Banner “{arg}”',
+  'd.rerun': 'Rerun of a previous event.',
 }
 
 export const zh: Record<Key, string> = {
@@ -480,6 +484,7 @@ export const zh: Record<Key, string> = {
   'sources.label': '数据来源：',
   'sources.wikis': 'Fandom 和 wiki.gg 维基',
   'sources.nikkeBanners': 'Nikke 卡池',
+  'sources.fgoBa': 'FGO 和碧蓝档案维基',
   'sources.and': '以及',
   'sources.disclaimer': '社区数据，更新可能有延迟。',
   'card.unfollow': '取消关注',
@@ -530,4 +535,5 @@ export const zh: Record<Key, string> = {
   'd.akServer': '国际服（UTC-7）。',
   'd.efType': '类型：{arg} · AMEU 服务器。',
   'd.efBanner': '卡池「{arg}」',
+  'd.rerun': '往期活动复刻。',
 }

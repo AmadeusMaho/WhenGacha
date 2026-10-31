@@ -3,11 +3,12 @@ import { t } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf, wallpaperOf } from './images'
 import { KIND_LABEL, countdown, eventStatus, packRows, verdict } from './logic'
 import { Chip, GameAvatar, Img, Tag, anyArt, cssVar, fmtDate, type Ctx } from './ui'
+import { locale } from './i18n'
 import type { AppState, Game, GameEvent, Kind } from './types'
 
 const DAY = 86_400_000
 const HOUR = 3_600_000
-const ROW_H = 40
+const ROW_H = 48
 const KIND_ORDER: Kind[] = ['banner', 'event', 'challenge']
 /** Títulos de las secciones (en plural), en el idioma actual. */
 const SECTION_LABEL = {
@@ -16,7 +17,7 @@ const SECTION_LABEL = {
   get challenge() { return t('kindN.challenge') },
 } as Record<Kind, string>
 const HEAD_H = 32
-const AXIS_H = 34
+const AXIS_H = 52
 /** La línea de tiempo no se extiende más allá de este horizonte (lo más lejano queda en la cuadrícula). */
 const HORIZON_DAYS = 75
 /** En la cuadrícula, cada sección muestra lo activo y lo que empieza en este plazo; el resto, bajo "Mostrar más". */
@@ -27,6 +28,18 @@ type View = 'timeline' | 'grid'
 
 const precLabel = (p: NonNullable<GameEvent['precision']>) => t(p === 'estimated' ? 'prec.estimated' : 'prec.approx')
 const precHint = (p: NonNullable<GameEvent['precision']>) => t(p === 'estimated' ? 'prec.estimatedHint' : 'prec.approxHint')
+
+/** Tiñe la aurora del fondo con el color del juego que se está viendo (--glow); al salir la deja como estaba. */
+function useGlow(game?: Game) {
+  const [c, c2] = [game?.color, game?.color2]
+  useEffect(() => {
+    if (!c) return
+    const root = document.documentElement.style
+    root.setProperty('--glow', c)
+    root.setProperty('--glow2', c2 ?? c)
+    return () => { root.removeProperty('--glow'); root.removeProperty('--glow2') }
+  }, [c, c2])
+}
 
 function useStored<T>(key: string, fallback: T) {
   const [value, setValue] = useState<T>(() => {
@@ -183,6 +196,8 @@ function FoldButton({ folded, onClick, name }: { folded: boolean; onClick: () =>
 
 function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & { filters: Filters; zoom: number; narrow: boolean; fold: Fold }) {
   const ppd = ZOOMS[zoom].ppd
+  const box = useRef<HTMLDivElement>(null)
+  const [laneId, setLaneId] = useState<string>()
   const labelW = narrow ? 64 : 176
   const t0 = new Date(now - 3 * DAY).setHours(0, 0, 0, 0)
   const horizon = now + HORIZON_DAYS * DAY
@@ -196,19 +211,34 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
   const x = (tm: number) => ((tm - t0) / DAY) * ppd
 
   const lanes = games.filter(g => state.tracked.includes(g.id))
+  useGlow(lanes.find(g => g.id === laneId) ?? lanes[0])
   const weeks: number[] = []
   const first = new Date(t0)
   first.setDate(first.getDate() + ((8 - first.getDay()) % 7 || 7))
   for (let tm = +first; tm < t0 + days * DAY; tm += 7 * DAY) weeks.push(tm)
+  const tEndAll = t0 + days * DAY
+  const months: { tm: number; label: string }[] = []
+  for (const m = new Date(t0); +m < tEndAll; m.setMonth(m.getMonth() + 1, 1), m.setHours(0, 0, 0, 0))
+    months.push({ tm: Math.max(+m, t0), label: m.toLocaleDateString(locale(), { month: 'long', year: +m.getFullYear() === new Date(now).getFullYear() ? undefined : 'numeric' }) })
 
   return (
     <>
-      <div className="tl" style={{ '--label-w': `${labelW}px` } as React.CSSProperties}>
+      <div className="tl" ref={box} onScroll={() => {
+        const el = box.current
+        if (!el) return
+        let cur: string | undefined
+        for (const g of lanes) { const l = document.getElementById(`g-${g.id}`); if (l && l.offsetTop <= el.scrollTop + AXIS_H + 60) cur = g.id }
+        setLaneId(cur)
+      }} style={{ '--label-w': `${labelW}px` } as React.CSSProperties}>
         <div className="tl-inner" style={{ width: labelW + width }}>
           <div className="tl-axis">
             <div className="tl-corner" />
             <div className="tl-track axis" style={{ width }}>
-              {weeks.map(w => <span key={w} className="tick" style={{ left: x(w) }}>{fmtDate(w)}</span>)}
+              {months.map((m, i) => {
+                const next = months[i + 1]?.tm ?? tEndAll
+                return <span key={m.tm} className="month" style={{ left: x(m.tm), width: x(next) - x(m.tm) }}><b>{m.label}</b></span>
+              })}
+              {weeks.filter(w => Math.abs(x(w) - x(now)) > 34).map(w => <span key={w} className="tick" style={{ left: x(w) }}>{fmtDate(w)}</span>)}
               <span className="today-flag" style={{ left: x(now) }}>{t('today')}</span>
             </div>
           </div>
@@ -237,6 +267,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
                 </div>
                 <div className="tl-track" style={{ width, height: folded ? 48 : Math.max(y, 26 + ROW_H) }}>
                   {weeks.map(w => <i key={w} className="grid-line" style={{ left: x(w) }} />)}
+                  {months.map(m => <i key={m.tm} className="grid-line month-line" style={{ left: x(m.tm) }} />)}
                   <i className="now-line" style={{ left: x(now) }} />
                   {folded && <span className="lane-empty">{t('lane.folded', { n: mine.length })}</span>}
                   {!folded && patches.map(p => (
@@ -270,6 +301,7 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const w = Math.max(14, Math.min(x(en), maxX) - left)
   const faces = e.featured.map(f => ({ f, src: faceOf(e.gameId, f) })).filter(v => v.src).slice(0, 3)
   const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
+  const pct = s < now && en > now ? ((now - s) / (en - s)) * 100 : 0
   const state = s > now ? t('bar.startsIn', { t: countdown(s - now) }) : en > now ? t('bar.endsIn', { t: countdown(en - now) }) : t('bar.ended')
   return (
     <button
@@ -278,13 +310,18 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
       onClick={() => open(e)}
       title={`${e.title}\n${fmtDate(s)} → ${fmtDate(en)} · ${state}${e.pulls ? `\n${t('pulls.about', { n: e.pulls })}` : ''}${e.precision ? `\n≈ ${precHint(e.precision)}` : ''}`}
     >
-      <span className="bar-clip">{img && <Img className="bar-bg" src={img} />}</span>
-      <span className="bar-in">
-        {faces.length ? faces.map(v => <Img key={v.f.name} className="face" src={v.src} />) : <Img className="thumb" src={img} />}
-        <b>{e.precision && '≈ '}{e.title}</b>
-        {e.pulls > 0 && w > 150 && <em>~{e.pulls}✦</em>}
-        {done && <em>✓</em>}
+      <span className="bar-clip">
+        {img && <Img className="bar-bg" src={img} />}
+        {pct > 0 && <i className="bar-prog" style={{ width: `${pct}%` }} />}
       </span>
+      {w >= 70 && <span className="bar-in">
+        {faces.length ? faces.map(v => <Img key={v.f.name} className="face" src={v.src} />) : <Img className="thumb" src={img} />}
+        <span className="bar-txt">
+          <b>{e.precision && '≈ '}{done && '✓ '}{e.title}</b>
+          {w > 130 && <small>{fmtDate(s)} → {fmtDate(en)} · {state}</small>}
+        </span>
+        {e.pulls > 0 && w > 260 && <em>~{e.pulls}✦</em>}
+      </span>}
     </button>
   )
 }
@@ -299,6 +336,7 @@ function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: F
   const tracked = useMemo(() => games.filter(g => state.tracked.includes(g.id)), [games, state.tracked])
   const [active, setActive] = useState<string | undefined>(tracked[0]?.id)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
+  useGlow(tracked.find(g => g.id === active) ?? tracked[0])
   const wall = useRef<HTMLDivElement>(null)
   const secs = useRef(new Map<string, HTMLElement>())
   const ids = tracked.map(g => g.id).join()
@@ -408,7 +446,7 @@ function Precision({ e }: { e: GameEvent }) {
 }
 
 function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: number; now: number; done: boolean; open: (e: GameEvent) => void }) {
-  const v = verdict(e, now)
+  const v = verdict(e, now, g)
   const st = eventStatus(e, now)
   const stagger = { '--i': Math.min(i, 12) } as React.CSSProperties
   const when = st === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) }) : t('card.endsIn', { t: countdown(+new Date(e.end) - now) })
@@ -449,7 +487,7 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
       <div className="ecard-img">
         {faces.length > 0 && !e.image ? <div className="ecard-faces">{faces.slice(0, 3).map(s => <Img key={s} src={s} />)}</div> : <Img src={img} />}
         <div className="fade" />
-        <Tag tone={v.tone}>{v.label}</Tag>
+        {v.label && <Tag tone={v.tone}>{v.label}</Tag>}
         {faces.length > 0 && e.image && <div className="mini-faces">{faces.slice(0, 3).map(s => <Img key={s} src={s} />)}</div>}
       </div>
       <div className="ecard-body">

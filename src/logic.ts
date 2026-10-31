@@ -1,5 +1,5 @@
 import { t } from './i18n'
-import type { GameEvent, Task } from './types'
+import type { Game, GameEvent, Task } from './types'
 
 const DAY = 86_400_000
 const HOUR = 3_600_000
@@ -25,9 +25,15 @@ export function eventStatus(e: GameEvent, now: number): Status {
 
 export type Tone = 'great' | 'good' | 'mid' | 'bad' | 'off'
 
-export function verdict(e: GameEvent, now: number): { label: string; tone: Tone } {
+/** Solo las fuentes de HoYoverse detallan las recompensas (y por tanto las tiradas); en las demás no se puede juzgar. */
+const PULL_APIS = new Set(['genshin', 'starrail', 'zenless'])
+export const detailsPulls = (g?: Game) => !g?.api || PULL_APIS.has(g.api)
+
+/** `label` queda vacío cuando el juego no detalla tiradas: no hay nada que valorar. */
+export function verdict(e: GameEvent, now: number, game?: Game): { label: string; tone: Tone } {
   if (eventStatus(e, now) === 'ended') return { label: t('v.ended'), tone: 'off' }
   if (e.kind === 'banner') return { label: t('v.banner'), tone: 'mid' }
+  if (!detailsPulls(game) && !e.pulls) return { label: '', tone: 'off' }
   const p = e.pulls
   if (e.hours) {
     const rate = p / Math.max(e.hours, 0.25)

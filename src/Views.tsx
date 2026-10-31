@@ -66,7 +66,7 @@ export function MyGachas({ ctx, sync, syncing }: { ctx: Ctx; sync: (force?: bool
         </div>
         {msg && <p className="muted">{msg}</p>}
         <p className="muted small">
-          {t('sources.label')} <code>api.ennead.cc</code> (Genshin, HSR, ZZZ), {t('sources.wikis')},
+          {t('sources.label')} <code>api.ennead.cc</code> (Genshin, HSR, ZZZ), {t('sources.wikis')}, <code>fategrandorder.fandom.com</code> / <code>grandorder.gamepress.gg</code> / <code>bluearchive.wiki</code> ({t('sources.fgoBa')}),
           {' '}<code>uma.moe</code> (Umamusume), <code>gachafocus.com.br</code> (CZN, WuWa, NTE)
           {' '}{t('sources.and')} <code>lootandwaifus.com</code> ({t('sources.nikkeBanners')}). {t('sources.disclaimer')}
         </p>

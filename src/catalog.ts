@@ -17,9 +17,8 @@ export const CATALOG: Game[] = [
   def('wuwa', 'Wuthering Waves', 'WW', 'Kuro Games', '#4dd0e1', '#0f4a52', 42, 'wutheringwaves.fandom.com', 'Wuthering Waves', 'wuwa'),
   def('nikke', 'Goddess of Victory: Nikke', 'NK', 'Shift Up', '#f06292', '#6b1f3a', 0, 'nikke-goddess-of-victory-international.fandom.com', 'Goddess of Victory: Nikke', 'nikke'),
   def('nte', 'Neverness to Everness', 'NTE', 'Hotta Studio', '#e879f9', '#5a1f66', 0, 'neverness-to-everness.fandom.com', 'Neverness to Everness', 'nte'),
-  // Sin fuente de datos abierta y estable todavía:
-  def('bluearchive', 'Blue Archive', 'BA', 'Nexon', '#64b5f6', '#1b3f78', 0, 'bluearchive.fandom.com', 'Blue Archive'),
-  def('fgo', 'Fate/Grand Order', 'FGO', 'Aniplex', '#ffd54f', '#6b5410', 0, 'fategrandorder.fandom.com', 'Fate/Grand Order'),
+  def('bluearchive', 'Blue Archive', 'BA', 'Nexon', '#64b5f6', '#1b3f78', 0, 'bluearchive.fandom.com', 'Blue Archive', 'bluearchive'),
+  def('fgo', 'Fate/Grand Order', 'FGO', 'Aniplex', '#ffd54f', '#6b5410', 0, 'fategrandorder.fandom.com', 'Fate/Grand Order', 'fgo'),
 ]
 
 export const initialState = (): AppState => ({

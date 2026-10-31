@@ -12,7 +12,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
   const { state, setState, now, gameOf } = ctx
   const g = gameOf(e.gameId)
   const st = eventStatus(e, now)
-  const v = verdict(e, now)
+  const v = verdict(e, now, g)
   const done = !!state.done[e.id]
   const box = useRef<HTMLDivElement>(null)
   const isBanner = e.kind === 'banner'
@@ -51,7 +51,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
         </div>
         <div className="modal-body">
           <div className="row wrap">
-            <Tag tone={v.tone}>{v.label}</Tag>
+            {v.label && <Tag tone={v.tone}>{v.label}</Tag>}
             {e.precision && <Tag tone="mid">≈ {t(e.precision === 'estimated' ? 'prec.estimated' : 'prec.approx')}</Tag>}
             <strong>{when}</strong>
             <span className="muted">{fmtDateY(e.start)} → {fmtDateY(e.end)}</span>

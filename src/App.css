@@ -472,3 +472,79 @@ header { transition: background .3s, border-color .3s; }
 .consent p { flex: 1 1 320px; color: var(--text); }
 .consent a { color: var(--acc2); }
 .consent-actions { display: flex; gap: 8px; margin-left: auto; }
+
+/* ====== línea de tiempo (rediseño): eje de meses y semanas, fines de semana, columna de hoy, barras con fechas ====== */
+.tl { background: #0f1426; }
+.tl-corner, .tl-label, .tl-axis { background: #0f1426; }
+.tl-label-in { top: 60px; }
+.tl-track.axis { height: 52px; }
+.tl-axis { border-bottom: 1px solid rgba(255, 255, 255, .16); box-shadow: 0 6px 16px rgba(0, 0, 0, .35); }
+.month { position: absolute; top: 0; height: 24px; display: flex; align-items: center; overflow: hidden; padding: 0 10px; border-left: 1px solid rgba(255, 255, 255, .22); background: linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .02)); }
+.month:nth-child(even) { background: linear-gradient(180deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .04)); }
+.month b { position: sticky; left: calc(var(--label-w) + 10px); font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #dfe3ff; white-space: nowrap; }
+.tick { top: 32px; font-size: .74rem; font-weight: 600; color: #9ea3c4; }
+.tick::before { content: ""; position: absolute; left: 50%; top: -9px; height: 6px; border-left: 1px solid rgba(255, 255, 255, .3); }
+.today-flag { top: 28px; padding: 2px 11px; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase; }
+.today-flag::after { content: ""; position: absolute; left: 50%; bottom: -5px; margin-left: -5px; border: 5px solid transparent; border-bottom: 0; border-top-color: var(--acc2); }
+.grid-line { background: rgba(255, 255, 255, .06); }
+.grid-line.month-line { width: 1px; background: rgba(255, 255, 255, .17); }
+.now-line { width: 2px; background: var(--acc2); box-shadow: 0 0 10px var(--acc2); opacity: .9; }
+.tl-lane { border-bottom: 2px solid rgba(255, 255, 255, .1); }
+.tl-label { border-left: 4px solid var(--c); background: linear-gradient(90deg, color-mix(in srgb, var(--c) 16%, #0f1426), #0f1426 85%); }
+.tl-label strong { font-size: 1rem; letter-spacing: .02em; }
+
+/* secciones: franja de color a la izquierda y título más legible */
+.sec-band { border-top: 1px solid rgba(255, 255, 255, .1); }
+.sec-band.banner { background: linear-gradient(180deg, rgba(251, 191, 36, .1), rgba(251, 191, 36, .015) 80%); box-shadow: inset 3px 0 0 rgba(251, 191, 36, .75); }
+.sec-band.event { background: linear-gradient(180deg, rgba(56, 189, 248, .09), rgba(56, 189, 248, .015) 80%); box-shadow: inset 3px 0 0 rgba(56, 189, 248, .75); }
+.sec-band.challenge { background: linear-gradient(180deg, rgba(244, 114, 182, .1), rgba(244, 114, 182, .015) 80%); box-shadow: inset 3px 0 0 rgba(244, 114, 182, .75); }
+.sec-title { padding: 7px 12px 0; font-size: .8rem; }
+
+/* barras: dos líneas (título y fechas), progreso de lo que está en curso */
+.bar { height: 40px; border-radius: 10px; border-width: 1px; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.bar-clip { border-radius: 9px; }
+.bar-prog { position: absolute; left: 0; top: 0; bottom: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--c) 10%, transparent), color-mix(in srgb, var(--c) 38%, transparent)); border-right: 2px solid color-mix(in srgb, var(--c) 90%, #fff); }
+.bar.live { box-shadow: 0 0 0 1.5px var(--c), 0 6px 20px color-mix(in srgb, var(--c) 40%, transparent); }
+.bar-in { gap: 8px; padding: 0 12px; }
+.bar-txt { display: grid; min-width: 0; line-height: 1.2; }
+.bar-txt b { font-size: .86rem; }
+.bar-txt small { color: rgba(255, 255, 255, .78); font-size: .7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 3px #000; }
+.bar .thumb { width: 30px; height: 30px; }
+.face { width: 30px; height: 30px; }
+.patch-mark { top: 2px; padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--c) 22%, #0f1426); border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); text-shadow: none; transform: translateX(-9px); }
+.patch-mark::after { left: 8px; top: 20px; }
+
+@media (max-width: 700px) {
+  .tl-label-in { top: 60px; }
+  .month b { left: calc(var(--label-w) + 6px); }
+}
+
+/* ====== letreros de la línea de tiempo más claros: sin contornos ni brillos, texto sobre fondo oscuro ====== */
+.bar, .bar.banner, .bar.challenge { border: 0; box-shadow: none; filter: none; }
+.bar { background: color-mix(in srgb, var(--c) 30%, #141827); }
+.bar.banner { background: linear-gradient(110deg, color-mix(in srgb, var(--c) 48%, #141827), color-mix(in srgb, var(--c) 22%, #141827)); }
+.bar.challenge { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--c) 22%, #141827) 0 8px, color-mix(in srgb, var(--c) 30%, #141827) 8px 16px); }
+.bar::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 10px 0 0 10px; background: var(--c); z-index: 1; }
+.bar.est { border: 0; }
+.bar.live, .bar:hover { box-shadow: none; filter: none; }
+.bar.live { background-color: color-mix(in srgb, var(--c) 40%, #141827); }
+.bar:hover { transform: translateY(-1px); filter: brightness(1.12); }
+.bar:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.bar-bg { --o: .22; }
+.bar:hover .bar-bg { --o: .34; transform: none; }
+.bar-clip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(10, 13, 26, .78), rgba(10, 13, 26, .45) 60%, rgba(10, 13, 26, .2)); }
+.bar-prog { background: color-mix(in srgb, var(--c) 28%, transparent); border-right: 0; }
+.bar-in { z-index: 2; }
+.bar-txt b { font-size: .88rem; font-weight: 700; color: #fff; text-shadow: none; }
+.bar-txt small { color: rgba(255, 255, 255, .82); text-shadow: none; }
+.bar .thumb, .face { border: 0; }
+.bar.past { opacity: .5; }
+
+/* ====== aurora que se tiñe con el color del juego en pantalla ====== */
+@property --glow { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --glow2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
+.aurora { transition: --glow 1s ease, --glow2 1s ease; }
+.aurora::after { content: ""; position: absolute; inset: 0;
+  background: radial-gradient(900px 560px at 8% -8%, color-mix(in srgb, var(--glow) 34%, transparent), transparent 62%),
+              radial-gradient(800px 560px at 100% 8%, color-mix(in srgb, var(--glow2) 55%, transparent), transparent 62%),
+              radial-gradient(700px 500px at 55% 112%, color-mix(in srgb, var(--glow) 22%, transparent), transparent 62%); }
