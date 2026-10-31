@@ -11,9 +11,8 @@ body { margin: 0; overflow-x: clip; background: var(--bg); color: var(--text); f
 #root { min-height: 100vh; }
 .app { position: relative; max-width: 1280px; margin: 0 auto; padding: 0 20px 64px; }
 .aurora { position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: radial-gradient(900px 500px at 10% -10%, rgba(244, 114, 182, .28), transparent 60%),
-              radial-gradient(800px 500px at 100% 0%, rgba(56, 189, 248, .22), transparent 60%),
-              radial-gradient(700px 600px at 50% 110%, rgba(167, 139, 250, .16), transparent 60%), var(--bg); }
+  background: radial-gradient(900px 500px at 10% -10%, rgba(244, 114, 182, .17), transparent 60%),
+              radial-gradient(800px 500px at 100% 0%, rgba(56, 189, 248, .13), transparent 60%), var(--bg); }
 h1, h2, h3, h4, p { margin: 0; }
 h3 { margin: 18px 0 8px; font-size: .78rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; display: flex; gap: 8px; align-items: center; }
 .muted { color: var(--muted); font-size: .88rem; }
@@ -545,6 +544,5 @@ header { transition: background .3s, border-color .3s; }
 @property --glow2 { syntax: '<color>'; inherits: true; initial-value: transparent; }
 .aurora { transition: --glow 1s ease, --glow2 1s ease; }
 .aurora::after { content: ""; position: absolute; inset: 0;
-  background: radial-gradient(900px 560px at 8% -8%, color-mix(in srgb, var(--glow) 34%, transparent), transparent 62%),
-              radial-gradient(800px 560px at 100% 8%, color-mix(in srgb, var(--glow2) 55%, transparent), transparent 62%),
-              radial-gradient(700px 500px at 55% 112%, color-mix(in srgb, var(--glow) 22%, transparent), transparent 62%); }
+  background: radial-gradient(900px 560px at 8% -8%, color-mix(in srgb, var(--glow) 20%, transparent), transparent 62%),
+              radial-gradient(800px 560px at 100% 8%, color-mix(in srgb, var(--glow2) 32%, transparent), transparent 62%); }
