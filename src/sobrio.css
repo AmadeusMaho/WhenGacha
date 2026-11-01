@@ -1,0 +1,77 @@
+/* Capa "sobria": franjas neutras, barras planas y fondo casi liso.
+   Para quitarla borra `import './sobrio.css'` de main.tsx. */
+
+/* 1) Franjas de sección: sin degradado de color, solo una línea fina a la izquierda */
+.sec-band.banner, .sec-band.event, .sec-band.challenge { background: rgba(255, 255, 255, .018); }
+.sec-band.banner { box-shadow: inset 2px 0 0 rgba(251, 191, 36, .5); }
+.sec-band.event { box-shadow: inset 2px 0 0 rgba(56, 189, 248, .5); }
+.sec-band.challenge { box-shadow: inset 2px 0 0 rgba(244, 114, 182, .5); }
+.sec-band.banner .sec-title, .sec-band.event .sec-title, .sec-band.challenge .sec-title { color: #c9cce4; }
+
+/* 2) Barras: color plano apagado, imagen de fondo casi invisible, borde izquierdo del juego */
+.bar, .bar.banner, .bar.challenge { background: color-mix(in srgb, var(--c) 15%, #141827); }
+.bar.live { background-color: color-mix(in srgb, var(--c) 22%, #141827); }
+.bar-bg { --o: .08; }
+.bar:hover .bar-bg { --o: .14; }
+.bar-prog { background: color-mix(in srgb, var(--c) 20%, transparent); }
+
+/* 5) Fondo: sin aurora de colores, solo un tinte muy débil del juego en pantalla */
+.aurora { background: var(--bg); }
+.aurora::after { opacity: .3; }
+
+/* Menos líneas blancas en la línea de tiempo */
+.month { border-left-color: rgba(255, 255, 255, .1); }
+.tick::before { border-left-color: rgba(255, 255, 255, .14); }
+.tl-axis { border-bottom-color: rgba(255, 255, 255, .08); box-shadow: none; }
+.tl-lane { border-bottom: 1px solid rgba(255, 255, 255, .07); }
+.tl-label { border-right-color: rgba(255, 255, 255, .05); }
+.sec-band { border-top-color: rgba(255, 255, 255, .04); }
+.patch-mark::after { opacity: .15; }
+
+/* 2) El color es solo del juego: el tipo (banner / evento / rotatorio) se distingue por icono, no por color */
+.sec-band.banner, .sec-band.event, .sec-band.challenge { box-shadow: inset 2px 0 0 rgba(255, 255, 255, .12); }
+.sec-ico { display: inline-grid; place-items: center; margin-right: 6px; color: var(--muted); vertical-align: -2px; }
+.sec-ico svg { width: 1.05em; height: 1.05em; }
+.kind-head .sec-ico { color: var(--muted); margin-right: 2px; }
+.ichip.banner, .ichip.event, .ichip.challenge { opacity: 1; }
+.ichip.banner.on, .ichip.event.on, .ichip.challenge.on { color: #fff; background: rgba(255, 255, 255, .13); border: 1px solid rgba(255, 255, 255, .3); }
+
+/* Días y meses claros sin rayas: los meses se distinguen por franjas alternas, y las fechas (semanas) quedan solo en el eje de arriba */
+.grid-line { display: none; }
+.month-band { position: absolute; top: 0; bottom: 0; background: rgba(255, 255, 255, .035); pointer-events: none; }
+.tick { color: #b4b8d4; }
+.tick::before { height: 8px; top: -11px; border-left-color: rgba(255, 255, 255, .35); }
+.month { border-left-color: rgba(255, 255, 255, .3); }
+
+/* ====== SOLO MÓVIL (≤ 700 px): cabecera compacta, controles en menos filas, tarjetas de banner más bajas ====== */
+.legend-m { display: none; }
+@media (max-width: 700px) {
+  /* cabecera: logo + acciones en la primera fila, pestañas en la segunda */
+  header { padding: 8px 12px; gap: 6px 8px; }
+  .brand { order: 1; gap: 8px; }
+  .brand .logo { width: 30px; height: 30px; border-radius: 10px; }
+  .brand h1 { font-size: 1.1rem; }
+  .head-actions { order: 2; margin-left: auto; gap: 6px; }
+  .head-actions .btn.sm { padding: 5px 9px; }
+  .sync-t { display: none; }
+  .spin svg { display: block; }
+  header nav { order: 3; width: 100%; padding: 3px; }
+  header nav button { flex: 1; padding: 6px 8px; font-size: .88rem; }
+  .gsec-head { top: 92px; }
+
+  /* controles: fila 1 = filtros + plegar; fila 2 = leyenda; fila 3 = zoom y vista */
+  .toolbar { gap: 8px 6px; margin-bottom: 10px; justify-content: flex-start; }
+  .toolbar .group { display: contents; }
+  .toolbar .ichip { width: 34px; height: 32px; }
+  .toolbar .sep { margin: 0 2px; }
+  .fold-all { order: 1; margin-left: auto; padding: 4px 10px; }
+  .legend-m { order: 2; display: flex; flex-wrap: wrap; gap: 2px 12px; flex-basis: 100%; margin: -2px 0 0; font-size: .72rem; color: var(--muted); }
+  .legend-m span { display: inline-flex; align-items: center; gap: 4px; }
+  .legend-m svg { width: 1em; height: 1em; }
+  .seg.zoom { order: 3; } .seg.view { order: 4; margin-left: auto; }
+  .seg button { padding: 5px 9px; font-size: .78rem; }
+
+  /* tarjetas de banner: casi cuadradas en vez de ocupar una pantalla entera */
+  .gsec .kind-group.tall .grid > .bcard, .gsec .kind-group.tall .grid > .ecard { aspect-ratio: 1 / 1.02; }
+  .bcard-info h3 { font-size: 1.15rem; }
+}

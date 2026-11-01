@@ -98,7 +98,7 @@ export default function App() {
         <div className="head-actions">
           <LangSwitch />
           <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
-            <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> {status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}
+            <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> <span className="sync-t">{status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}</span>
           </button>
           {installEv && <button className="btn sm primary" onClick={() => installEv.prompt()}>{t('install')}</button>}
         </div>
@@ -106,7 +106,7 @@ export default function App() {
       {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.join(', ') })}</div>}
       <main key={tab}>
         {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} />}
-        {tab === 'mine' && <MyGachas ctx={ctx} sync={sync} syncing={status.busy} />}
+        {tab === 'mine' && <MyGachas ctx={ctx} />}
         {tab === 'patches' && <Patches {...ctx} goMine={goMine} />}
       </main>
       <footer className="site-foot">

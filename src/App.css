@@ -546,3 +546,54 @@ header { transition: background .3s, border-color .3s; }
 .aurora::after { content: ""; position: absolute; inset: 0;
   background: radial-gradient(900px 560px at 8% -8%, color-mix(in srgb, var(--glow) 20%, transparent), transparent 62%),
               radial-gradient(800px 560px at 100% 8%, color-mix(in srgb, var(--glow2) 32%, transparent), transparent 62%); }
+
+/* ====== filtros de solo icono ====== */
+.ichip { display: inline-grid; place-items: center; width: 36px; height: 34px; padding: 0; cursor: pointer; border-radius: 12px; color: var(--muted); background: rgba(255, 255, 255, .04); border: 1px solid var(--line); transition: color .2s, background .25s var(--ease), border-color .2s, transform .2s var(--ease); }
+.ichip:hover { color: var(--text); border-color: rgba(255, 255, 255, .3); background: rgba(255, 255, 255, .08); }
+.ichip:active { transform: scale(.92); }
+.ichip:focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; }
+.ichip.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, rgba(244, 114, 182, .55), rgba(56, 189, 248, .5)); }
+.ichip.banner { --k: #fbbf24; } .ichip.event { --k: #38bdf8; } .ichip.challenge { --k: #f472b6; }
+.ichip.banner.on, .ichip.event.on, .ichip.challenge.on { color: var(--k); background: color-mix(in srgb, var(--k) 18%, transparent); border-color: color-mix(in srgb, var(--k) 65%, transparent); }
+.ichip.banner:not(.on), .ichip.event:not(.on), .ichip.challenge:not(.on) { opacity: .7; }
+.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+
+/* ====== botones más calmados: sin brillo ni sombras de color, estado activo suave y legible ====== */
+nav button.on, .seg button.on, .chip.on, .ichip.on, .lang-menu button.on {
+  color: #fff; background: rgba(244, 114, 182, .26); box-shadow: inset 0 0 0 1px rgba(244, 114, 182, .6); border-color: transparent; font-weight: 600;
+}
+.ichip.banner.on, .ichip.event.on, .ichip.challenge.on { box-shadow: none; }
+nav button:hover, .seg button:hover { background: rgba(255, 255, 255, .06); }
+nav button.on:hover, .seg button.on:hover { background: rgba(244, 114, 182, .32); }
+.btn { box-shadow: none; background: rgba(255, 255, 255, .06); border-color: var(--line); }
+.btn::after { display: none; }
+.btn:hover:not(:disabled) { transform: none; box-shadow: none; background: rgba(255, 255, 255, .11); border-color: rgba(255, 255, 255, .24); }
+.btn:active:not(:disabled) { transform: scale(.98); box-shadow: none; }
+.btn.primary { color: #fff; text-shadow: none; border-color: transparent; background: rgba(244, 114, 182, .85); box-shadow: none; }
+.btn.primary:hover:not(:disabled) { background: var(--acc); box-shadow: none; }
+.btn.ghost { background: transparent; } .btn.ghost:hover:not(:disabled) { background: rgba(255, 255, 255, .07); }
+.logo { box-shadow: none; }
+.today-flag { box-shadow: none; }
+
+/* ====== degradado de vuelta, pero apagado: sin brillo ni sombras de color ====== */
+nav button.on, .seg button.on, .chip.on, .lang-menu button.on {
+  color: #fff; border-color: transparent; font-weight: 600; box-shadow: none;
+  background: linear-gradient(135deg, #b8588f, #3d86ad);
+}
+nav button.on:hover, .seg button.on:hover { background: linear-gradient(135deg, #c2619a, #4592ba); }
+.btn.primary { background: linear-gradient(135deg, #b8588f, #3d86ad); color: #fff; box-shadow: none; text-shadow: none; }
+.btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, #c2619a, #4592ba); box-shadow: none; }
+.ichip.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, #b8588f, #3d86ad); box-shadow: none; }
+.ichip.banner.on, .ichip.event.on, .ichip.challenge.on { color: var(--k); background: color-mix(in srgb, var(--k) 18%, transparent); border: 1px solid color-mix(in srgb, var(--k) 65%, transparent); }
+
+/* ====== barras de desplazamiento sobrias (antes rosadas) ====== */
+html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .2) transparent; }
+.tl { scrollbar-color: rgba(255, 255, 255, .2) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .18); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .32); background-clip: content-box; }
+::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+
+/* ====== ajustes de Mis gachas ====== */
+.notify-row { gap: 12px; }
+.ichip.bell { width: 38px; height: 36px; }

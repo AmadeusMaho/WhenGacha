@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf, wallpaperOf } from './images'
 import { KIND_LABEL, countdown, eventStatus, packRows, verdict } from './logic'
-import { Chip, GameAvatar, Img, Tag, anyArt, cssVar, fmtDate, type Ctx } from './ui'
+import { FILTER_ICON, GameAvatar, IconChip, Img, Tag, anyArt, cssVar, fmtDate, type Ctx } from './ui'
 import { locale } from './i18n'
 import type { AppState, Game, GameEvent, Kind } from './types'
 
@@ -87,20 +87,6 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
   const toggle = useCallback((id: string) => setCollapsed(c => (c.includes(id) ? c.filter(x => x !== id) : [...c, id])), [])
   const allFolded = tracked.length > 0 && tracked.every(g => collapsed.includes(g.id))
 
-  /** Lleva a un juego: en la cuadrícula baja a su sección; en la línea de tiempo desplaza el carril dentro de su caja. */
-  const jump = (id: string) => {
-    setCollapsed(c => c.filter(x => x !== id))
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const el = document.getElementById(`g-${id}`)
-      if (!el) return
-      const tl = el.closest('.tl') as HTMLElement | null
-      if (tl) {
-        tl.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        tl.scrollTo({ top: Math.max(0, el.offsetTop - AXIS_H), behavior: 'smooth' })
-      } else el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }))
-  }
-
   if (!state.tracked.length)
     return (
       <div className="empty">
@@ -114,36 +100,30 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
       <EndingSoon state={state} games={games} now={now} open={open} showMinor={showMinor} />
 
       <div className="toolbar">
+        <p className="legend-m" aria-hidden>{(['banner', 'event', 'challenge'] as Kind[]).map(k => <span key={k}>{FILTER_ICON[k]}{SECTION_LABEL[k]}</span>)}</p>
         <div className="group">
           {(['event', 'banner', 'challenge'] as Kind[]).map(k => (
-            <Chip key={k} on={kinds[k]} onClick={() => setKinds(s => ({ ...s, [k]: !s[k] }))}>{SECTION_LABEL[k]}</Chip>
+            <IconChip key={k} tone={k} on={kinds[k]} label={SECTION_LABEL[k]} onClick={() => setKinds(s => ({ ...s, [k]: !s[k] }))}>{FILTER_ICON[k]}</IconChip>
           ))}
-          <Chip on={hideDone} onClick={() => setHideDone(a => !a)}>{t('f.hideDone')}</Chip>
-          {hasMinor && <Chip on={showMinor} onClick={() => setShowMinor(a => !a)}>{t('f.minor')}</Chip>}
+          <span className="sep" aria-hidden />
+          <IconChip on={hideDone} label={t('f.hideDone')} onClick={() => setHideDone(a => !a)}>{FILTER_ICON.hideDone}</IconChip>
+          {hasMinor && <IconChip on={showMinor} label={t('f.minor')} onClick={() => setShowMinor(a => !a)}>{FILTER_ICON.minor}</IconChip>}
         </div>
         <div className="group">
+          <button className="btn sm ghost fold-all" onClick={() => setCollapsed(allFolded ? [] : tracked.map(g => g.id))}>
+            {allFolded ? t('jump.unfold') : t('jump.fold')}
+          </button>
           {view === 'timeline' && (
-            <div className="seg" role="group" aria-label={t('zoom.aria')}>
+            <div className="seg zoom" role="group" aria-label={t('zoom.aria')}>
               {ZOOMS.map((z, i) => <button key={z.key} className={i === zoom ? 'on' : ''} onClick={() => setZoom(i)}>{t(z.key)}</button>)}
             </div>
           )}
-          <div className="seg" role="group" aria-label={t('view.aria')}>
+          <div className="seg view" role="group" aria-label={t('view.aria')}>
             <button className={view === 'timeline' ? 'on' : ''} onClick={() => transition(() => setView('timeline'))}>{t('view.line')}</button>
             <button className={view === 'grid' ? 'on' : ''} onClick={() => transition(() => setView('grid'))}>{t('view.grid')}</button>
           </div>
         </div>
       </div>
-
-      <nav className="jump" aria-label={t('jump.aria')}>
-        {tracked.map(g => (
-          <button key={g.id} className="jump-chip" style={cssVar(g)} onClick={() => jump(g.id)} title={t('jump.go', { name: g.name })}>
-            <i className="jump-dot" />{g.short}
-          </button>
-        ))}
-        <button className="jump-chip ghost" onClick={() => setCollapsed(allFolded ? [] : tracked.map(g => g.id))}>
-          {allFolded ? t('jump.unfold') : t('jump.fold')}
-        </button>
-      </nav>
 
       {view === 'timeline'
         ? <Gantt {...ctx} filters={filters} zoom={zoom} narrow={narrow} fold={{ collapsed, toggle }} />
@@ -268,6 +248,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
                 <div className="tl-track" style={{ width, height: folded ? 48 : Math.max(y, 26 + ROW_H) }}>
                   {weeks.map(w => <i key={w} className="grid-line" style={{ left: x(w) }} />)}
                   {months.map(m => <i key={m.tm} className="grid-line month-line" style={{ left: x(m.tm) }} />)}
+                  {months.map((m, i) => i % 2 ? <i key={`b${m.tm}`} className="month-band" style={{ left: x(m.tm), width: x(months[i + 1]?.tm ?? tEndAll) - x(m.tm) }} /> : null)}
                   <i className="now-line" style={{ left: x(now) }} />
                   {folded && <span className="lane-empty">{t('lane.folded', { n: mine.length })}</span>}
                   {!folded && patches.map(p => (
@@ -279,7 +260,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
                   {!folded && !sections.length && <span className="lane-empty">{t('lane.none')}</span>}
                   {sections.map(sec => (
                     <div key={sec.k} className={`sec-band ${sec.k}`} style={{ top: sec.top, height: sec.height }}>
-                      <span className="sec-title">{SECTION_LABEL[sec.k]} · {sec.packed.length}</span>
+                      <span className="sec-title"><span className="sec-ico">{FILTER_ICON[sec.k]}</span>{SECTION_LABEL[sec.k]} · {sec.packed.length}</span>
                     </div>
                   ))}
                   {sections.flatMap(sec => sec.packed.map(({ item: e, row }) =>
@@ -290,7 +271,6 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
           })}
         </div>
       </div>
-      <p className="hint">{t('tl.hint')}</p>
     </>
   )
 }
@@ -402,7 +382,7 @@ function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: F
                 const tall = k === 'banner' && items.some(e => splashOf(e.gameId, e.featured[0]))
                 return (
                   <div key={k} className={`kind-group ${k} ${tall ? 'tall' : ''}`}>
-                    <h3 className="kind-head"><span className={`kind-dot ${k}`} />{SECTION_LABEL[k]} <small>{items.length}</small></h3>
+                    <h3 className="kind-head"><span className="sec-ico">{FILTER_ICON[k]}</span>{SECTION_LABEL[k]} <small>{items.length}</small></h3>
                     <div className="grid">
                       {shown.map((e, i) => <EventCard key={e.id} e={e} g={g} i={i} now={now} done={!!state.done[e.id]} open={open} />)}
                     </div>

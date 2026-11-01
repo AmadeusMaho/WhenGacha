@@ -8,7 +8,7 @@ import type { Cadence, Game, Patch } from './types'
 const DAY = 86_400_000
 
 /* ---------- Mis gachas ---------- */
-export function MyGachas({ ctx, sync, syncing }: { ctx: Ctx; sync: (force?: boolean) => void; syncing: boolean }) {
+export function MyGachas({ ctx }: { ctx: Ctx }) {
   const { state, games, setState } = ctx
   const [msg, setMsg] = useState('')
   const toggle = (id: string) => setState(s => ({ ...s, tracked: s.tracked.includes(id) ? s.tracked.filter(x => x !== id) : [...s.tracked, id] }))
@@ -16,11 +16,6 @@ export function MyGachas({ ctx, sync, syncing }: { ctx: Ctx; sync: (force?: bool
   const auto = games.filter(g => g.api)
   const soon = games.filter(g => !g.api)
 
-  const exportJson = () => {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }))
-    const a = document.createElement('a')
-    a.href = url; a.download = 'whengacha-respaldo.json'; a.click(); URL.revokeObjectURL(url)
-  }
   const toggleNotify = async () => {
     if (!state.notify && !(await enableNotifications())) { setMsg(t('notify.blocked')); return }
     setMsg('')
@@ -52,24 +47,19 @@ export function MyGachas({ ctx, sync, syncing }: { ctx: Ctx; sync: (force?: bool
 
       <section>
         <h3>{t('mine.settings')}</h3>
-        <div className="toolbar">
-          <div className="group">
-            <button className="btn" onClick={() => sync(true)} disabled={syncing}><span className={syncing ? 'spin on' : 'spin'}>⟳</span> {syncing ? t('btn.syncing') : t('btn.syncNow')}</button>
-            <button className={`btn ${state.notify ? '' : 'primary'}`} onClick={toggleNotify}>{state.notify ? t('notify.off') : t('notify.on')}</button>
-            <label className="muted inline-label">{t('notify.lead')}
-              <select value={state.leadHours} onChange={e => setState(s => ({ ...s, leadHours: Number(e.target.value) }))}>
-                {[6, 12, 24, 48, 72].map(h => <option key={h} value={h}>{t('notify.before', { h })}</option>)}
-              </select>
-            </label>
-          </div>
-          <button className="btn ghost" onClick={exportJson}>{t('btn.backup')}</button>
+        <div className="group notify-row">
+          <button className={`ichip bell ${state.notify ? 'on' : ''}`} onClick={toggleNotify} aria-pressed={state.notify} aria-label={state.notify ? t('notify.off') : t('notify.on')} title={state.notify ? t('notify.off') : t('notify.on')}>
+            <svg viewBox="0 0 24 24" width="1.15em" height="1.15em" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />{!state.notify && <path d="M3 3l18 18" />}
+            </svg>
+          </button>
+          <label className="muted inline-label">{t('notify.lead')}
+            <select value={state.leadHours} onChange={e => setState(s => ({ ...s, leadHours: Number(e.target.value) }))}>
+              {[6, 12, 24, 48, 72].map(h => <option key={h} value={h}>{t('notify.before', { h })}</option>)}
+            </select>
+          </label>
         </div>
         {msg && <p className="muted">{msg}</p>}
-        <p className="muted small">
-          {t('sources.label')} <code>api.ennead.cc</code> (Genshin, HSR, ZZZ), {t('sources.wikis')}, <code>fategrandorder.fandom.com</code> / <code>grandorder.gamepress.gg</code> / <code>bluearchive.wiki</code> ({t('sources.fgoBa')}),
-          {' '}<code>uma.moe</code> (Umamusume), <code>gachafocus.com.br</code> (CZN, WuWa, NTE)
-          {' '}{t('sources.and')} <code>lootandwaifus.com</code> ({t('sources.nikkeBanners')}). {t('sources.disclaimer')}
-        </p>
       </section>
     </>
   )
