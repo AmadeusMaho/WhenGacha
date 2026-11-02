@@ -1,5 +1,5 @@
 /* Whengacha service worker: funciona sin conexión y avisa de eventos que terminan. */
-const SHELL = 'whengacha-shell-v1'
+const SHELL = 'whengacha-shell-v2'
 const IMGS = 'whengacha-img-v1'
 const API = 'whengacha-api-v1'
 const KEEP = [SHELL, IMGS, API, 'whengacha-prefs']
@@ -37,7 +37,15 @@ self.addEventListener('fetch', e => {
     )
     return
   }
-  // App: caché con actualización en segundo plano.
+  // Páginas (index.html): red primero, para que un deploy nuevo se vea en la primera carga; la caché solo sirve sin conexión.
+  if (url.origin === location.origin && (req.mode === 'navigate' || url.pathname === '/' || url.pathname === '/index.html')) {
+    e.respondWith(
+      fetch(req).then(res => { const copy = res.clone(); caches.open(SHELL).then(c => c.put(req, copy)); return res })
+        .catch(() => caches.match(req).then(hit => hit || caches.match('./'))),
+    )
+    return
+  }
+  // Resto de la app (assets con hash, iconos…): caché con actualización en segundo plano.
   if (url.origin === location.origin) {
     e.respondWith(
       caches.match(req).then(hit => {
