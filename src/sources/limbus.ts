@@ -9,6 +9,7 @@ import type { GameSync } from './ennead'
  * Las fechas son de calendario (hora de Corea) y el juego cambia a las 10:00 KST = 01:00 UTC.
  */
 const DATA = 'https://limbus-assets.eldritchtools.com/data'
+const WIKI = 'https://limbuscompany.wiki.gg/api.php'
 const ASSETS = 'https://limbus-assets.eldritchtools.com/assets/banners'
 const DAY = 86_400_000
 /** Días que se extiende la barra de un contenido sin fecha de fin, contados desde hoy. */
@@ -16,6 +17,7 @@ const OPEN_DAYS = 45
 
 interface Timer { name: string; src?: string; startDate?: string; endDate?: string; catenc?: string; bannerConds?: { ids?: string[]; sinnerId?: number } }
 interface Timers {
+  season?: { name: string; src?: string; endDate?: string }
   events?: { main?: Timer | null; others?: Timer[] }
   banners?: { main?: Timer | null; others?: Timer[] }
 }
@@ -33,11 +35,53 @@ async function getJson<T>(file: string): Promise<T> {
   return res.json()
 }
 
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
+
+/** "September 17, 2026" o "October 15th, 2026" -> "2026-09-17". */
+function isoDay(text: string): string | undefined {
+  const m = /([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?, (\d{4})/.exec(text)
+  const mi = m ? MONTHS.indexOf(m[1].toLowerCase()) : -1
+  return m && mi >= 0 ? `${m[3]}-${String(mi + 1).padStart(2, '0')}-${m[2].padStart(2, '0')}` : undefined
+}
+
+/** Texto plano de una página de la wiki de Limbus. */
+async function wikiText(page: string): Promise<string> {
+  const qs = new URLSearchParams({ action: 'parse', page, prop: 'text', format: 'json', origin: '*' })
+  const res = await fetch(viaProxy(`${WIKI}?${qs}`))
+  if (!res.ok) throw new Error(`limbus wiki ${page} → HTTP ${res.status}`)
+  const html: string | undefined = (await res.json())?.parse?.text?.['*']
+  if (!html) throw new Error(`limbus wiki ${page}: respuesta vacía`)
+  return new DOMParser().parseFromString(html, 'text/html').body.textContent?.replace(/\s+/g, ' ') ?? ''
+}
+
+/** La temporada y el Mirror Dungeon no traen fechas en timers.json: el inicio se lee de la wiki (el fin casi nunca se anuncia). */
+async function wikiTimers(timers: Timers): Promise<Timer[]> {
+  const out: Timer[] = []
+  const season = timers.season
+  const num = /(\d+)/.exec(season?.src ?? '')?.[1]
+  const [seasonText, mdText] = await Promise.allSettled([
+    season && num ? wikiText(`Season ${num}: ${season.name.toUpperCase()}`) : Promise.reject(new Error('sin temporada')),
+    wikiText('Mirror Dungeon'),
+  ])
+  if (seasonText.status === 'fulfilled') {
+    const m = /Start ([A-Za-z]+ \d{1,2}, \d{4}) End (TBA|[A-Za-z]+ \d{1,2}, \d{4})/.exec(seasonText.value)
+    const startDate = m && isoDay(m[1])
+    if (startDate) out.push({ name: `Season ${num}: ${season!.name}`, src: season!.src, startDate, endDate: isoDay(m[2]) ?? '????-??-??' })
+  }
+  if (mdText.status === 'fulfilled') {
+    const m = /Mirror of ([A-Za-z ]+?) ([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?, \d{4}) - Present/.exec(mdText.value)
+    const startDate = m && isoDay(m[2])
+    if (startDate) out.push({ name: `Mirror Dungeon: Mirror of ${m[1]}`, startDate, endDate: '????-??-??', catenc: 'wiki' })
+  }
+  return out
+}
+
 export async function syncLimbus(gameId: string): Promise<GameSync> {
   const [timers, identities] = await Promise.all([
     getJson<Timers>('timers'),
     getJson<Identities>('identities_mini').catch((): Identities => ({})),
   ])
+  const extra = await wikiTimers(timers).catch((): Timer[] => [])
   const events: GameEvent[] = []
   const from = Date.now() - 3 * DAY
 
@@ -64,13 +108,14 @@ export async function syncLimbus(gameId: string): Promise<GameSync> {
       items: [],
       featured,
       pulls: 0,
-      precision: open ? 'estimated' : undefined,
+      open: open || undefined,
       source: 'api',
     })
   }
 
   add(timers.events?.main, 'event')
   timers.events?.others?.forEach(t => add(t, 'event'))
+  extra.forEach(t => add(t, 'event'))
   add(timers.banners?.main, 'banner')
   timers.banners?.others?.forEach(t => add(t, 'banner'))
   return { events, patches: [], codes: [] }

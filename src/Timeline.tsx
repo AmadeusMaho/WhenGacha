@@ -137,7 +137,7 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
 /* ---------- Resumen: lo que termina en las próximas 72 horas ---------- */
 function EndingSoon({ state, games, now, open, showMinor }: Pick<Ctx, 'state' | 'games' | 'now' | 'open'> & { showMinor: boolean }) {
   const items = state.events
-    .filter(e => state.tracked.includes(e.gameId) && !state.done[e.id] && (showMinor || !e.minor)
+    .filter(e => state.tracked.includes(e.gameId) && !state.done[e.id] && !e.open && (showMinor || !e.minor)
       && +new Date(e.start) <= now && +new Date(e.end) > now && +new Date(e.end) - now <= 72 * HOUR)
     .sort((a, b) => +new Date(a.end) - +new Date(b.end))
     .slice(0, 14)
@@ -283,14 +283,15 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const w = Math.max(14, Math.min(x(en), maxX) - left)
   const faces = e.featured.map(f => ({ f, src: faceOf(e.gameId, f) })).filter(v => v.src).slice(0, 3)
   const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
-  const pct = s < now && en > now ? ((now - s) / (en - s)) * 100 : 0
+  const pct = s < now && en > now && !e.open ? ((now - s) / (en - s)) * 100 : 0
   const state = s > now ? t('bar.startsIn', { t: countdown(s - now) }) : en > now ? t('bar.endsIn', { t: countdown(en - now) }) : t('bar.ended')
+  const range = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtDate(s)} → ${fmtDate(en)} · ${state}`
   return (
     <button
-      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''}`}
+      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''}`}
       style={{ left, width: w, top }}
       onClick={() => open(e)}
-      title={`${e.title}\n${fmtDate(s)} → ${fmtDate(en)} · ${state}${e.pulls ? `\n${t('pulls.about', { n: e.pulls })}` : ''}${e.precision ? `\n≈ ${precHint(e.precision)}` : ''}`}
+      title={`${e.title}\n${range}${e.pulls ? `\n${t('pulls.about', { n: e.pulls })}` : ''}${e.precision ? `\n≈ ${precHint(e.precision)}` : ''}`}
     >
       <span className="bar-clip">
         {img && <Img className="bar-bg" src={img} />}
@@ -300,7 +301,7 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
         {faces.length ? faces.map(v => <Img key={v.f.name} className="face" src={v.src} />) : <Img className="thumb" src={img} />}
         <span className="bar-txt">
           <b>{e.precision && '≈ '}{done && '✓ '}{e.title}</b>
-          {w > 130 && <small>{fmtDate(s)} → {fmtDate(en)} · {state}</small>}
+          {w > 130 && <small>{range}</small>}
         </span>
         {e.pulls > 0 && w > 260 && <em>~{e.pulls}✦</em>}
       </span>}
@@ -409,6 +410,7 @@ function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: F
 
 /** Progreso del evento: cuánto de su duración ya pasó (vacío si aún no empieza). */
 function Progress({ e, now }: { e: GameEvent; now: number }) {
+  if (e.open) return null
   const s = +new Date(e.start), en = +new Date(e.end)
   const upcoming = now < s
   const pct = upcoming ? 0 : Math.min(100, Math.max(0, ((now - s) / (en - s)) * 100))
@@ -431,7 +433,7 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
   const v = verdict(e, now, g)
   const st = eventStatus(e, now)
   const stagger = { '--i': Math.min(i, 12) } as React.CSSProperties
-  const when = st === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) }) : t('card.endsIn', { t: countdown(+new Date(e.end) - now) })
+  const when = st === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) }) : e.open ? t('time.open') : t('card.endsIn', { t: countdown(+new Date(e.end) - now) })
   const f0 = e.featured[0]
   const splash = e.kind === 'banner' ? splashOf(e.gameId, f0) : undefined
 
@@ -449,7 +451,7 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
           <h3>{e.title}</h3>
           <div className="bcard-meta">
             <span>{when}</span>
-            <span className="muted">{fmtDate(e.start)} → {fmtDate(e.end)}</span>
+            <span className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtDate(e.end)}</span>
           </div>
           <Progress e={e} now={now} />
           {e.featured.length > 1 && (
@@ -475,7 +477,7 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
       <div className="ecard-body">
         <small>{g.short} · {KIND_LABEL[e.kind]} <Precision e={e} /></small>
         <h4>{done ? '✓ ' : ''}{e.title}</h4>
-        <p className="muted">{fmtDate(e.start)} → {fmtDate(e.end)}</p>
+        <p className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtDate(e.end)}</p>
         <p><strong>{when}</strong>{e.pulls > 0 && <span className="muted"> · {t('pulls.about', { n: e.pulls })}</span>}</p>
         <Progress e={e} now={now} />
       </div>

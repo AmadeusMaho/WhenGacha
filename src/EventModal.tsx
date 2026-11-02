@@ -31,7 +31,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
   }, [])
 
   const when = st === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) })
-    : st === 'active' ? t('card.endsIn', { t: countdown(+new Date(e.end) - now) }) : t('time.ended')
+    : st === 'active' ? (e.open ? t('time.open') : t('card.endsIn', { t: countdown(+new Date(e.end) - now) })) : t('time.ended')
 
   return (
     <div className={`backdrop ${closing ? 'closing' : ''}`} onClick={onClose}>
@@ -54,7 +54,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
             {v.label && <Tag tone={v.tone}>{v.label}</Tag>}
             {e.precision && <Tag tone="mid">≈ {t(e.precision === 'estimated' ? 'prec.estimated' : 'prec.approx')}</Tag>}
             <strong>{when}</strong>
-            <span className="muted">{fmtDateY(e.start)} → {fmtDateY(e.end)}</span>
+            <span className="muted">{fmtDateY(e.start)} → {e.open ? t('time.open') : fmtDateY(e.end)}</span>
           </div>
           {e.pulls > 0 && <p className="pulls">{t('modal.pulls', { n: e.pulls })}{e.hours ? t('modal.pullsHours', { h: e.hours }) : ''}</p>}
           {e.description && <p className="desc">{tx(e.description)}</p>}

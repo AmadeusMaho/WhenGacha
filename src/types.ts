@@ -56,6 +56,8 @@ export interface GameEvent {
   hours?: number
   /** Campaña menor (p. ej. recompensas de entrenamiento): se oculta por defecto. */
   minor?: boolean
+  /** Sin fecha de fin anunciada: `end` es solo un valor de apoyo para dibujar la barra y nunca se muestra. */
+  open?: boolean
   /** estimated = fecha aún no confirmada; approx = fechas reales pero con horas aproximadas. */
   precision?: 'estimated' | 'approx'
   source: 'api' | 'manual' | 'feed'

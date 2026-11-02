@@ -12,7 +12,7 @@ export function buildAlerts(state: AppState, now = Date.now()): Alert[] {
   const games = [...CATALOG, ...state.customGames]
   const out: Alert[] = []
   for (const e of state.events) {
-    if (!state.tracked.includes(e.gameId) || state.done[e.id]) continue
+    if (!state.tracked.includes(e.gameId) || state.done[e.id] || e.open) continue
     const end = +new Date(e.end)
     if (end < now) continue
     const g = games.find(x => x.id === e.gameId)

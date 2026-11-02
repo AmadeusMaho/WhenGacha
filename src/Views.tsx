@@ -92,7 +92,7 @@ function GameCard({ g, ctx, onRemove }: { g: Game; ctx: Ctx; onRemove: () => voi
   const { state, now, setState, open } = ctx
   const live = state.events
     .filter(e => e.gameId === g.id && e.kind !== 'banner' && eventStatus(e, now) !== 'ended')
-    .sort((a, b) => +new Date(a.end) - +new Date(b.end))
+    .sort((a, b) => Number(!!a.open) - Number(!!b.open) || +new Date(a.end) - +new Date(b.end))
   const banners = state.events.filter(e => e.gameId === g.id && e.kind === 'banner' && eventStatus(e, now) === 'active')
   const patches = state.patches.filter(p => p.gameId === g.id)
   const cur = patches.find(p => !p.estimated && +new Date(p.date) <= now && (!p.end || +new Date(p.end) > now))
@@ -145,7 +145,7 @@ function GameCard({ g, ctx, onRemove }: { g: Game; ctx: Ctx; onRemove: () => voi
             {live.slice(0, 5).map(e => (
               <li key={e.id} className="clickable" onClick={() => open(e)}>
                 <span>{state.done[e.id] ? '✓ ' : ''}{e.title}</span>
-                <Tag tone={verdict(e, now).tone}>{eventStatus(e, now) === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) }) : countdown(+new Date(e.end) - now)}</Tag>
+                <Tag tone={verdict(e, now).tone}>{eventStatus(e, now) === 'upcoming' ? t('card.startsIn', { t: countdown(+new Date(e.start) - now) }) : e.open ? t('time.open') : countdown(+new Date(e.end) - now)}</Tag>
               </li>
             ))}
           </ul>

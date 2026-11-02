@@ -116,6 +116,7 @@ export const es = {
   'mine.askLead': 'Elige tus juegos y todo se carga solo.',
   'mine.soon': 'Próximamente ({n}) · sin fuente de datos abierta todavía',
   'mine.yours': 'Tus gachas',
+  'time.open': 'Indefinido',
   'mine.add': 'Añadir juegos',
   'mine.search': 'Buscar juego…',
   'mine.noMatch': 'Ningún juego coincide con la búsqueda.',
@@ -187,8 +188,8 @@ export const es = {
   'd.efType': 'Tipo: {arg} · servidor AMEU.',
   'd.efBanner': 'Banner «{arg}»',
   'd.rerun': 'Reedición de un evento anterior.',
-  'd.noEnd': 'Sin fecha de fin anunciada: la barra es una estimación.',
-  'd.permanent': 'Contenido permanente: la barra es solo una referencia.',
+  'd.noEnd': 'Sin fecha de fin anunciada.',
+  'd.permanent': 'Contenido permanente, sin fecha de fin.',
 } as const
 
 export type Key = keyof typeof es
@@ -301,6 +302,7 @@ export const en: Record<Key, string> = {
   'mine.askLead': 'Pick your games and everything loads by itself.',
   'mine.soon': 'Coming soon ({n}) · no open data source yet',
   'mine.yours': 'Your gachas',
+  'time.open': 'Open-ended',
   'mine.add': 'Add games',
   'mine.search': 'Search games…',
   'mine.noMatch': 'No games match your search.',
@@ -369,8 +371,8 @@ export const en: Record<Key, string> = {
   'd.efType': 'Type: {arg} · AMEU server.',
   'd.efBanner': 'Banner “{arg}”',
   'd.rerun': 'Rerun of a previous event.',
-  'd.noEnd': 'No end date announced: the bar is an estimate.',
-  'd.permanent': 'Permanent content: the bar is only a reference.',
+  'd.noEnd': 'No end date announced.',
+  'd.permanent': 'Permanent content, no end date.',
 }
 
 export const zh: Record<Key, string> = {
@@ -481,6 +483,7 @@ export const zh: Record<Key, string> = {
   'mine.askLead': '选择你的游戏，内容会自动加载。',
   'mine.soon': '即将支持（{n}）· 暂无开放数据来源',
   'mine.yours': '你的游戏',
+  'time.open': '无期限',
   'mine.add': '添加游戏',
   'mine.search': '搜索游戏…',
   'mine.noMatch': '没有匹配的游戏。',
@@ -549,6 +552,6 @@ export const zh: Record<Key, string> = {
   'd.efType': '类型：{arg} · AMEU 服务器。',
   'd.efBanner': '卡池「{arg}」',
   'd.rerun': '往期活动复刻。',
-  'd.noEnd': '尚未公布结束日期：时间条为估算。',
-  'd.permanent': '常驻内容：时间条仅作参考。',
+  'd.noEnd': '尚未公布结束日期。',
+  'd.permanent': '常驻内容，无结束日期。',
 }
