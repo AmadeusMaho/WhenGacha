@@ -11,10 +11,16 @@ const DAY = 86_400_000
 export function MyGachas({ ctx }: { ctx: Ctx }) {
   const { state, games, setState } = ctx
   const [msg, setMsg] = useState('')
+  const [query, setQuery] = useState('')
+  const [addOpen, setAddOpen] = useState(false)
   const toggle = (id: string) => setState(s => ({ ...s, tracked: s.tracked.includes(id) ? s.tracked.filter(x => x !== id) : [...s.tracked, id] }))
   const mine = games.filter(g => state.tracked.includes(g.id))
-  const auto = games.filter(g => g.api)
-  const soon = games.filter(g => !g.api)
+  const q = query.trim().toLowerCase()
+  const match = (g: Game) => !q || `${g.name} ${g.short} ${g.publisher}`.toLowerCase().includes(q)
+  const auto = games.filter(g => g.api && match(g))
+  const soon = games.filter(g => !g.api && match(g))
+  // En celular el catálogo se pliega tras un botón (salvo que aún no sigas ninguno o estés buscando).
+  const showAdd = addOpen || !mine.length || !!q
 
   const toggleNotify = async () => {
     if (!state.notify && !(await enableNotifications())) { setMsg(t('notify.blocked')); return }
@@ -27,15 +33,20 @@ export function MyGachas({ ctx }: { ctx: Ctx }) {
       <section>
         <h3>{mine.length ? t('mine.addTitle') : t('mine.askTitle')}</h3>
         {!mine.length && <p className="muted lead">{t('mine.askLead')}</p>}
-        <div className="picks">
-          {auto.map(g => <Pick key={g.id} g={g} on={state.tracked.includes(g.id)} state={state} onClick={() => toggle(g.id)} />)}
-        </div>
+        <button className="btn add-toggle" onClick={() => setAddOpen(o => !o)} aria-expanded={showAdd}>{showAdd ? '− ' : '＋ '}{t('mine.add')}</button>
+        <div className={`add-body ${showAdd ? 'open' : ''}`}>
+          <input className="pick-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('mine.search')} aria-label={t('mine.search')} />
+          <div className="picks">
+            {auto.map(g => <Pick key={g.id} g={g} on={state.tracked.includes(g.id)} state={state} onClick={() => toggle(g.id)} />)}
+          </div>
+          {!auto.length && !soon.length && <p className="muted">{t('mine.noMatch')}</p>}
         {soon.length > 0 && (
           <details className="soon">
             <summary>{t('mine.soon', { n: soon.length })}</summary>
             <div className="picks">{soon.map(g => <Pick key={g.id} g={g} state={state} disabled />)}</div>
           </details>
         )}
+        </div>
       </section>
 
       {mine.length > 0 && (

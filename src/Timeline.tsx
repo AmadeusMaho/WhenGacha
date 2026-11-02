@@ -73,7 +73,10 @@ function filterEvents(state: AppState, f: Filters) {
 export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition: (fn: () => void) => void }) {
   const { state, games, now, open, goMine, transition } = ctx
   const narrow = useNarrow()
-  const [view, setView] = useStored<View>('whengacha:view', 'timeline')
+  // Solo se guarda la vista si la eliges tú; mientras tanto, cuadrícula en celular y línea en pantallas grandes.
+  const [picked, setPicked] = useStored<View | null>('whengacha:view', null)
+  const view: View = picked ?? (narrow ? 'grid' : 'timeline')
+  const setView = setPicked
   const [zoom, setZoom] = useStored<number>('whengacha:zoom', narrow ? 0 : 1)
   const [kinds, setKinds] = useState<Record<Kind, boolean>>({ event: true, banner: true, challenge: true })
   const [hideDone, setHideDone] = useState(false)
@@ -100,7 +103,6 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
       <EndingSoon state={state} games={games} now={now} open={open} showMinor={showMinor} />
 
       <div className="toolbar">
-        <p className="legend-m" aria-hidden>{(['banner', 'event', 'challenge'] as Kind[]).map(k => <span key={k}>{FILTER_ICON[k]}{SECTION_LABEL[k]}</span>)}</p>
         <div className="group">
           {(['event', 'banner', 'challenge'] as Kind[]).map(k => (
             <IconChip key={k} tone={k} on={kinds[k]} label={SECTION_LABEL[k]} onClick={() => setKinds(s => ({ ...s, [k]: !s[k] }))}>{FILTER_ICON[k]}</IconChip>

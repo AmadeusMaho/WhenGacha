@@ -1,5 +1,5 @@
 export type Cadence = 'daily' | 'weekly' | 'once'
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {
@@ -13,7 +13,11 @@ export interface Game {
   patchCycleDays: number
   /** Si existe, el juego se sincroniza automáticamente. */
   api?: ApiKey
-  /** Wiki usada para buscar imágenes automáticamente. */
+  /** URL del icono oficial de la app del juego; se usa como avatar en lugar de una imagen de la wiki. */
+  logo?: string
+  /** Archivo de la wiki con el arte oficial del juego, usado como fondo en vez de la búsqueda automática. */
+  wallpaper?: string
+  /** Wiki usada para buscar imágenes automáticamente (host vacío = sin wiki utilizable). */
   wiki: { host: string; q: string }
   /** Sin fuente de datos abierta todavía. */
   soon?: boolean

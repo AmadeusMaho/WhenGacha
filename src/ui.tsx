@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { locale } from './i18n'
-import { bannerArt, eventImage, faceOf, gameImage, wallpaperOf } from './images'
+import { bannerArt, eventImage, faceOf, gameImage, logoOf, wallpaperOf } from './images'
 import type { AppState, Game, GameEvent } from './types'
 
 export interface Ctx {
@@ -37,6 +37,14 @@ function FadeImg({ src, alt, className, style }: { src: string; alt: string; cla
 /** Avatar del juego: retrato del 5★ del banner activo, imagen del juego o monograma. */
 export function GameAvatar({ game, state, size = 40 }: { game: Game; state: AppState; size?: number }) {
   const now = Date.now()
+  const logo = logoOf(game.id)
+  if (logo) {
+    return (
+      <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${game.color}, ${game.color2})`, fontSize: size * 0.3 }}>
+        <Img className="logo" src={logo} alt={game.name} />
+      </span>
+    )
+  }
   const banner = state.events.find(e => e.gameId === game.id && e.kind === 'banner' && +new Date(e.end) > now && e.featured[0] && faceOf(game.id, e.featured[0]))
   return (
     <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${game.color}, ${game.color2})`, fontSize: size * 0.3 }}>

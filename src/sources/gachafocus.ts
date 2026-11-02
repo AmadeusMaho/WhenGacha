@@ -17,9 +17,14 @@ interface Config {
 }
 
 export const GACHAFOCUS: Record<string, Config> = {
+  arknights: { slug: 'arknights', challenge: /^contingency contract/i },
+  nikke: { slug: 'nikke' },
+  epic7: { slug: 'epic-seven' },
+  stellasora: { slug: 'stella-sora' },
   czn: { slug: 'chaos-zero-nightmare', challenge: /^overdrive/i },
   wuwa: { slug: 'wuthering-waves', challenge: /^(tower of adversity|whimpering wastes)/i },
   nte: { slug: 'neverness-to-everness' },
+  reverse1999: { slug: 'reverse-1999' },
 }
 
 /** Zona preferida cuando una tarjeta trae fechas por región. */

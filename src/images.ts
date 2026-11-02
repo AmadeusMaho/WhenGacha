@@ -58,7 +58,7 @@ function want(key: string, run: () => Promise<string>, v?: string) {
 
 /* ---------- consultas a MediaWiki ---------- */
 const api = (host: string, params: Record<string, string>) =>
-  fetch(viaProxy(`https://${host}/api.php?${new URLSearchParams({ format: 'json', origin: '*', ...params })}`)).then(r => {
+  !host ? Promise.reject(new Error('sin wiki')) : fetch(viaProxy(`https://${host}/api.php?${new URLSearchParams({ format: 'json', origin: '*', ...params })}`)).then(r => {
     if (!r.ok) throw new Error(`HTTP ${r.status}`)
     return r.json()
   })
@@ -117,6 +117,11 @@ export function gameImage(gameId: string): string | undefined {
   return mem[`g:${gameId}`]?.u || undefined
 }
 
+/** Icono oficial de la app del juego, si el catálogo indica uno. */
+export function logoOf(gameId: string): string | undefined {
+  return CATALOG.find(g => g.id === gameId)?.logo
+}
+
 /** Splash art de un personaje (si se encontró). */
 export function splashOf(gameId: string, f?: Featured): string | undefined {
   return f && SPLASH_GAMES.has(gameId) ? mem[`s:${gameId}:${f.name}`]?.u || undefined : undefined
@@ -148,7 +153,7 @@ export function useImages(state: AppState): number {
   const games = new Map<string, Game>(CATALOG.map(g => [g.id, g]))
 
   for (const g of CATALOG) {
-    want(`g:${g.id}`, async () => (g.id === 'endfield' && (await firstFile(g.wiki.host, ['Launch key visual.jpg'], 800))) || searchImage(g.wiki.host, g.wiki.q))
+    want(`g:${g.id}`, async () => (g.wallpaper && (await firstFile(g.wiki.host, [g.wallpaper], 800))) || (g.id === 'endfield' && (await firstFile(g.wiki.host, ['Launch key visual.jpg'], 800))) || searchImage(g.wiki.host, g.wiki.q))
   }
 
   for (const id of state.tracked) {
@@ -157,6 +162,10 @@ export function useImages(state: AppState): number {
     const cur = currentPatch(state, id)
     const ver = cur?.version
     want(`w:${id}`, async () => {
+      if (g.wallpaper) {
+        const u = await firstFile(g.wiki.host, [g.wallpaper], 1600).catch(() => '')
+        if (u) return u
+      }
       if (id === 'endfield') {
         // La wiki de Endfield guarda la imagen de cada versión como "<nombre de la versión> version.png".
         const u = await firstFile(g.wiki.host, [cur?.name ? `${cur.name} version.png` : '', 'Launch key visual.jpg'].filter(Boolean), 1600).catch(() => '')

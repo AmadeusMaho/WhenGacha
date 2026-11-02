@@ -3,7 +3,7 @@ Popular Gacha Tracker: línea de tiempo de eventos, banners y parches de tus gac
 
 Idiomas: español, inglés y chino. Se usa el del navegador y se cambia con el icono del globo de la cabecera.
 
-Juegos con datos automáticos: Genshin Impact, Honkai: Star Rail, Zenless Zone Zero, Arknights, Arknights: Endfield, Umamusume, Chaos Zero Nightmare, Wuthering Waves, Nikke y Neverness to Everness.
+Juegos con datos automáticos: Genshin Impact, Honkai: Star Rail, Zenless Zone Zero, Arknights, Arknights: Endfield, Umamusume, Chaos Zero Nightmare, Wuthering Waves, Nikke, Neverness to Everness, Limbus Company, Reverse: 1999, Epic Seven y Stella Sora.
 
 ## Desarrollo
 
