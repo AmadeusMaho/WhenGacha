@@ -75,12 +75,11 @@
 }
 
 /* ====== Mis gachas: buscador y catálogo compacto ====== */
-.add-toggle { display: none; }
+.add-toggle { display: inline-flex; margin-bottom: 10px; }
+.add-body:not(.open) { display: none; }
 .pick-search { width: 100%; max-width: 360px; margin: 0 0 12px; padding: 9px 14px; font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; }
 .pick-search:focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; }
 @media (max-width: 700px) {
-  .add-toggle { display: inline-flex; margin-bottom: 10px; }
-  .add-body:not(.open) { display: none; }
   .pick-search { max-width: none; }
   .picks { grid-template-columns: 1fr 1fr; gap: 8px; }
   .pick { gap: 8px; padding: 8px; border-radius: 14px; }

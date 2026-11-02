@@ -8,18 +8,27 @@ import type { Cadence, Game, Patch } from './types'
 const DAY = 86_400_000
 
 /* ---------- Mis gachas ---------- */
+/** El catálogo de juegos arranca desplegado la primera vez que entras a la página; después queda plegado (salvo que no sigas ninguno). */
+const FIRST_VISIT = (() => {
+  try {
+    const first = !localStorage.getItem('whengacha:seen')
+    localStorage.setItem('whengacha:seen', '1')
+    return first
+  } catch { return true }
+})()
+
 export function MyGachas({ ctx }: { ctx: Ctx }) {
   const { state, games, setState } = ctx
   const [msg, setMsg] = useState('')
   const [query, setQuery] = useState('')
-  const [addOpen, setAddOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(FIRST_VISIT)
   const toggle = (id: string) => setState(s => ({ ...s, tracked: s.tracked.includes(id) ? s.tracked.filter(x => x !== id) : [...s.tracked, id] }))
   const mine = games.filter(g => state.tracked.includes(g.id))
   const q = query.trim().toLowerCase()
   const match = (g: Game) => !q || `${g.name} ${g.short} ${g.publisher}`.toLowerCase().includes(q)
   const auto = games.filter(g => g.api && match(g))
   const soon = games.filter(g => !g.api && match(g))
-  // En celular el catálogo se pliega tras un botón (salvo que aún no sigas ninguno o estés buscando).
+  // El catálogo se pliega tras un botón (salvo en la primera visita, si aún no sigues ninguno o mientras buscas).
   const showAdd = addOpen || !mine.length || !!q
 
   const toggleNotify = async () => {

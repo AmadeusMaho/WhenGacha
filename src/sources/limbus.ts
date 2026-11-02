@@ -15,7 +15,7 @@ const DAY = 86_400_000
 /** Días que se extiende la barra de un contenido sin fecha de fin, contados desde hoy. */
 const OPEN_DAYS = 45
 
-interface Timer { name: string; src?: string; startDate?: string; endDate?: string; catenc?: string; bannerConds?: { ids?: string[]; sinnerId?: number } }
+interface Timer { name: string; src?: string; startDate?: string; endDate?: string; catenc?: string; image?: string; bannerConds?: { ids?: string[]; sinnerId?: number } }
 interface Timers {
   season?: { name: string; src?: string; endDate?: string }
   events?: { main?: Timer | null; others?: Timer[] }
@@ -54,6 +54,15 @@ async function wikiText(page: string): Promise<string> {
   return new DOMParser().parseFromString(html, 'text/html').body.textContent?.replace(/\s+/g, ' ') ?? ''
 }
 
+/** URL de una miniatura de un archivo de la wiki (si existe). */
+async function wikiFile(name: string): Promise<string | undefined> {
+  const qs = new URLSearchParams({ action: 'query', titles: `File:${name}`, prop: 'imageinfo', iiprop: 'url', iiurlwidth: '640', format: 'json', origin: '*' })
+  const res = await fetch(viaProxy(`${WIKI}?${qs}`))
+  const pages = Object.values((await res.json())?.query?.pages ?? {}) as { imageinfo?: { thumburl?: string; url: string }[] }[]
+  const info = pages[0]?.imageinfo?.[0]
+  return info?.thumburl ?? info?.url
+}
+
 /** La temporada y el Mirror Dungeon no traen fechas en timers.json: el inicio se lee de la wiki (el fin casi nunca se anuncia). */
 async function wikiTimers(timers: Timers): Promise<Timer[]> {
   const out: Timer[] = []
@@ -71,7 +80,9 @@ async function wikiTimers(timers: Timers): Promise<Timer[]> {
   if (mdText.status === 'fulfilled') {
     const m = /Mirror of ([A-Za-z ]+?) ([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?, \d{4}) - Present/.exec(mdText.value)
     const startDate = m && isoDay(m[2])
-    if (startDate) out.push({ name: `Mirror Dungeon: Mirror of ${m[1]}`, startDate, endDate: '????-??-??', catenc: 'wiki' })
+    // La wiki guarda la puerta de cada Mirror Dungeon como "Mirror of <nombre> Door.png".
+    const image = startDate ? await wikiFile(`Mirror of ${m![1]} Door.png`).catch(() => undefined) : undefined
+    if (startDate) out.push({ name: `Mirror Dungeon: Mirror of ${m![1]}`, startDate, endDate: '????-??-??', catenc: 'wiki', image })
   }
   return out
 }
@@ -102,7 +113,7 @@ export async function syncLimbus(gameId: string): Promise<GameSync> {
       kind: kind === 'event' && t.catenc ? 'challenge' : kind,
       title: t.name.replace(/\s*\n\s*/g, ' '),
       description: open ? (/permanent/i.test(t.endDate!) ? '⟦d.permanent⟧' : '⟦d.noEnd⟧') : undefined,
-      image: t.src ? `${ASSETS}/${t.src}.webp` : undefined,
+      image: t.image ?? (t.src ? `${ASSETS}/${t.src}.webp` : undefined),
       start: new Date(s).toISOString(),
       end: new Date(e).toISOString(),
       items: [],
