@@ -40,6 +40,9 @@ const SOURCES = [
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },
+  // Epic Seven: calendario de banners (bannerhistory.app, su robots.txt permite /en/) y avisos oficiales de STOVE (tablones Events=988 y Game Maintenance=986).
+  { name: 'bannerhistory', ttl: 6 * HOUR, test: u => u.hostname === 'bannerhistory.app' && u.pathname === '/en/e7-pickup-history' },
+  { name: 'stove', ttl: 2 * HOUR, test: u => u.hostname === 'api.onstove.com' && (/^\/cwms\/v3\.0\/article_group\/BOARD\/(988|986|139238|139240|142421)\/article\/list$/.test(u.pathname) || (u.pathname === '/cwms/v3.0/article' && /^\d+$/.test(u.searchParams.get('article_id') ?? ''))) },
   { name: 'wiki', ttl: 12 * HOUR, test: u => ((u.hostname.endsWith('.fandom.com') || u.hostname.endsWith('.wiki.gg')) && u.pathname === '/api.php') || (u.hostname === 'bluearchive.wiki' && u.pathname === '/w/api.php') },
 ]
 
@@ -106,7 +109,7 @@ export function setTransport(fn) { request = fn ?? httpsRequest }
 const pauseFor = fails => Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR)
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'game8.co': 5000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'game8.co': 5000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

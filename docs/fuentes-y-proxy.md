@@ -21,6 +21,65 @@ navegador ◄── GET /data/<juego>.json (copia normalizada, ~10 KB gz) ◄─
 - **Cliente** (`src/store.ts` + `fetchSnapshot` en `src/net.ts`): pide primero la copia; si falta, usa el camino directo.
 - Service worker (`public/sw.js`): `/data/` y `/proxy` van "red primero" y solo se guardan respuestas correctas.
 
+## Estado actual: gachafocus DESACTIVADO (6 nov 2026)
+
+La web de gachafocus muestra un aviso que **prohíbe la recolección automatizada** (scraping, navegadores automáticos, uso de sus rutas internas como API, IA) y dice que los datos
+solo estarán en su **API oficial de pago** (aún sin abrir; contacto: gachafocus.com.br/en/contact). Por eso:
+
+- `src/sources/index.ts` tiene un interruptor `GF_ON` (`GACHAFOCUS_ENABLED=1` en el servidor / `VITE_GACHAFOCUS_ENABLED=1` en la app sin servidor). **Por defecto está apagado**: nadie
+  consulta gachafocus (ni el recolector, ni el flujo de Actions, ni el PC). El código de `gachafocus.ts` y su entrada en el proxy se conservan para usarlos con la API de pago si se contrata.
+- **No lo reactives para scrapear.** Si hay API de pago, habrá que cambiar `gachafocus.ts` para usarla (clave en una variable del servidor).
+- **Epic Seven** ya no depende de él: `src/sources/epic7.ts` = banners de `bannerhistory.app/en/e7-pickup-history` (datos incrustados en el HTML; robots.txt permite `/en/`; términos: acceso moderado,
+  no presentar sus datos como registro oficial, crédito donde sea práctico; contacto waterbeetles.dev@gmail.com) + eventos de los avisos oficiales de STOVE (`api.onstove.com/cwms/v3.0/article_group/BOARD/988` Events y
+  `986` Game Maintenance; es la API que usa su propia web, sin documentar). El periodo sale del texto ("Schedule: 10/29 (Thu) after the maintenance – 12/10 (Thu) 02:59 UTC"); "tras el mantenimiento" se
+  resuelve con el aviso "Maintenance Notice (Completed)" (hora real) o, si no existe aún, 09:00 UTC marcado "≈"; si el resumen no trae el periodo se lee el aviso entero (máx. 8 por ciclo); los héroes nuevos
+  que bannerhistory aún no lista salen de los avisos "Update Content". Medido el 6 nov 2026: **recupera los 12 elementos que daba gachafocus** (con las mismas horas) y añade 4 eventos menores semanales.
+- **CZN** (`src/sources/czn.ts`, ayudantes comunes en `src/sources/stove.ts`): eventos desde su comunidad en STOVE (`page.onstove.com/chaoszeronightmare/en`, canal 11034; tablones Updates=142421,
+  Current Events=139240, Announcements=139238). Cada "Update Notice" trae una sección "■" por evento con su periodo en `MM/DD/YYYY after the maintenance – MM/DD/YYYY before the maintenance` y su imagen;
+  los sub-eventos (Visit Present, Attendance Check, Additional Aether Distribution...) salen como "<Evento>: <Sub>". "Después del mantenimiento" = hora real de su aviso "[Maintenance] ... (Completed)"
+  (≈07:00 UTC si aún no existe); "antes del mantenimiento" = 00:00 UTC (aviso oficial de jul 2026: el mantenimiento semanal empieza a las 00:00 UTC). Banners siguen viniendo de Prydwen.
+  Medido el 6 nov 2026: **recupera los 11 eventos de gachafocus con las mismas horas** (+ Overdrive: Simulation, VTS Nine y 2 concursos de comentarios menores). Imágenes: la de la sección del aviso; los
+  "Virtual Tactical Simulation: X" usan el arte del banner de X (`withBannerArt` en index.ts).
+- Las imágenes de STOVE (cloudfront, varios MB) se piden por `image.onstove.com/850x0//<host>/<ruta>/webp` (~60 KB): `sized()` en `stove.ts`.
+- **Stella Sora: SIN fuente automática (eventos perdidos).** Su web oficial (`stellasora.global`, API `/api/resource/news?type=latest|activity|notice`) trae todo lo necesario (avisos "Version X is Now Live!" con
+  `Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)` y avisos de mantenimiento con inicio/fin), pero **sus Términos de Uso (Yostar, stellasora.global/agreement) prohíben el scraping y el acceso con
+  "robots/spiders"** salvo buscadores. No se ha implementado. Opciones: pedir permiso a StellaSora.cs@yo-star.com, o un archivo de eventos escrito a mano. Los banners siguen viniendo de la wiki de Miraheze.
+- **STOVE (Epic Seven y CZN)**: usamos la API interna de su web (`api.onstove.com/cwms`); `page.onstove.com/robots.txt` permite todo, pero el de `api.onstove.com` respondió 503 y **no se revisaron sus términos de uso**.
+  Pendiente: contactar con Smilegate/STOVE para confirmar que está permitido a este ritmo (~10 peticiones por ciclo, caché de 2 h en el proxy).
+
+### Traspaso: qué falta y cómo seguir (6 nov 2026)
+
+**Objetivo del dueño:** dejar de depender de gachafocus **sin perder elementos**, usando fuentes oficiales o abiertas cuyos términos lo permitan, manteniendo imágenes propias de cada evento (como las de gachafocus; si un
+juego no tiene arte distinto por evento, vale compartir la imagen del aviso). El dueño quiere **otra fuente para lo que falta** (la lista de abajo). El código de gachafocus se conserva por si contrata su API de pago.
+
+| Juego | Estado | Qué se perdió al apagar gachafocus | Ideas |
+|---|---|---|---|
+| Epic Seven | **HECHO** (`epic7.ts`) | nada (12/12) | — |
+| CZN | **HECHO** (`czn.ts`) | nada (11/11 eventos) | — |
+| **Stella Sora** | **PENDIENTE** | todos los eventos (banners sí, desde la wiki Miraheze) | La web oficial (`stellasora.global`) y sus redes (X, Facebook, YouTube, TikTok, Discord) **no son opción**: Términos de Yostar y de cada red prohíben el scraping/bots. Opciones: otra fuente abierta con eventos fechados; pedir permiso a StellaSora.cs@yo-star.com; o archivo de eventos escrito a mano (`stellasora-events.json`, `source: 'manual'`) a partir de los avisos "Version X is Now Live!". Ya se vio el formato: `Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)`; el mantenimiento semanal acaba a las 21:00 (UTC-7) salvo versiones grandes (ver el aviso de mantenimiento). |
+| NIKKE | pendiente (complemento: eventos 3→12, banners) | eventos menores y horas exactas | Avisos oficiales de NIKKE (comprobar términos/robots antes), Prydwen ya da banners |
+| Arknights | pendiente (eventos 5→10) | eventos menores | anuncios oficiales de Arknights; la wiki wiki.gg ya da lo principal |
+| Blue Archive | pendiente (eventos 4→22) | eventos menores | Cargo/wiki ya da 4; comunidad oficial en STOVE no (es de Nexon); mirar su sitio de noticias |
+| Reverse: 1999 | pendiente (eventos 10→27) | eventos menores | avisos oficiales de Bluepoch (sitio/redes: comprobar términos) |
+| WuWa | pendiente (complemento de eventos) | desafíos recurrentes y horas | Reverie + Game8 ya cubren lo principal; avisos oficiales de Kuro |
+| NTE | pendiente (complemento de eventos) | horas exactas (Game8 solo da el día, "≈") | avisos oficiales de Hotta/Perfect World |
+
+**Cómo medir cada sustituto:** `docs/baseline-gachafocus-2026-11-06/<juego>.json` son las copias con gachafocus de antes de apagarlo (ver su README: de Arknights y WuWa ya no hay). Se ejecuta la fuente nueva
+(p. ej. el script de prueba: importar `server/proxy.mjs` y `server/bundle/collector.mjs`, `mod.setup(proxy.sourceFetch)`, `mod.collect('<juego>')`, tras `npm run build:server`) y se compara elemento a elemento
+(título, inicio, fin, imagen). Lo que no se pueda fechar con seguridad se descarta en vez de inventarlo (o se marca `precision: 'approx'`, "≈").
+
+**Antes de usar cualquier fuente nueva (obligatorio, es lo que nos bloqueó antes):** leer su `robots.txt` **y sus Términos de Uso** (en un navegador si se dibujan con JS; `page.evaluate`/`innerText`), no usar rutas internas
+si los términos lo prohíben, poca frecuencia (caché del proxy 2–6 h, pausa entre peticiones en `GAP`), identificarse con el User-Agent propio, y añadir la fuente a `SOURCES` en `server/proxy.mjs` con la ruta exacta
+(el proxy no es un relé abierto). Anotar aquí el resultado (permitido / prohibido / sin revisar).
+
+**Estado del trabajo (no commiteado):** cambios hechos en el equipo del dueño, sin commit ni push: `src/sources/{epic7,czn,stove}.ts` (nuevos), `src/sources/index.ts` (interruptor `GF_ON`, `withBannerArt`),
+`server/proxy.mjs` (fuentes `bannerhistory` y `stove`), `server/bundle/collector.mjs` y `dist/` recompilados (`npm run build:prod`), docs. **Falta**: revisar el diff, `git add -A` (incluye `dist/` y el bundle), commit y push; Botkeep
+no compila. Tras el push el flujo de Actions (cada 3 h) y el recolector ya no tocan gachafocus. Ojo: el guard del 70 % del snapshot conserva hasta 12 h una copia vieja si la nueva trae mucho menos; los juegos con complementos
+de gachafocus mostrarán los elementos antiguos hasta entonces y luego los perderán.
+
+**Contactos pendientes (los hace el dueño):** gachafocus (API de pago / permiso), STOVE-Smilegate (confirmar el uso de `api.onstove.com/cwms` para Epic Seven y CZN; no se revisaron sus términos y el `robots.txt` de la API dio 503),
+bannerhistory.app (waterbeetles.dev@gmail.com; pedir permiso y ofrecer crédito), Yostar (Stella Sora), Reverie y ennead (ver más abajo).
+
 ## El incidente: gachafocus nos bloqueó (403 en todas las páginas)
 
 **Qué pasó.** Tras ampliar el uso de gachafocus (de 6 a 11 juegos, 2 páginas por juego) el servidor de Botkeep empezó a recibir

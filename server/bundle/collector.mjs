@@ -20025,7 +20025,7 @@ var viaProxy = (url) => `/proxy?u=${encodeURIComponent(url)}`;
 * Las imágenes se cargan directo desde su sitio en el navegador (como al visitarlo); si fallan, se busca otra.
 */
 var SITE$2 = "https://gachafocus.com.br";
-var DAY$13 = 864e5;
+var DAY$15 = 864e5;
 var GACHAFOCUS = {
 	arknights: {
 		slug: "arknights",
@@ -20098,7 +20098,7 @@ function parseUnits(tile) {
 }
 function parseTiles(gameId, cfg, doc, section) {
 	const out = [];
-	const from = Date.now() - 3 * DAY$13;
+	const from = Date.now() - 3 * DAY$15;
 	doc.querySelectorAll("main article.tile").forEach((tile) => {
 		const dates = pickDates(tile);
 		const title = text$4(tile.querySelector(".tile-title"));
@@ -20291,6 +20291,461 @@ async function syncGame(gameId, api) {
 		],
 		patches: patchesFrom(gameId, cal.banners ?? []),
 		codes: codes.active ?? []
+	};
+}
+// src/sources/stove.ts
+/** Últimos `size` avisos de un tablón (el resumen trae unos 1000 caracteres del cuerpo). */
+async function articles(board, size) {
+	const url = `https://api.onstove.com/cwms/v3.0/article_group/BOARD/${board}/article/list?interaction_type_code=VIEW&content_yn=Y&summary_yn=Y&sort_type_code=LATEST&translation_yn=N&page=1&size=${size}`;
+	const res = await fetch(viaProxy(url));
+	if (!res.ok) throw new Error(`stove ${board} → HTTP ${res.status}`);
+	return (await res.json()).value?.list ?? [];
+}
+var clean$2 = (s) => s.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/[ \t]+/g, " ");
+/**
+* Cuerpo completo de un aviso, una línea de texto por entrada. Las imágenes quedan como líneas `@@IMG https://...` en su sitio,
+* para poder asociar cada sección con su imagen.
+*/
+async function bodyLines(id) {
+	const res = await fetch(viaProxy(`https://api.onstove.com/cwms/v3.0/article?article_id=${id}&translation_yn=N`));
+	if (!res.ok) throw new Error(`stove aviso ${id} → HTTP ${res.status}`);
+	return ((await res.json()).value?.content ?? "").replace(/<img\b[^>]*?\bsrc="([^"]+)"[^>]*>/gi, (_m, src) => `\n@@IMG ${sized(src.startsWith("//") ? `https:${src}` : src)}\n`).replace(/<br\s*\/?>|<\/(p|div|li|tr|h\d)>/gi, "\n").split("\n").map((l) => clean$2(l).trim()).filter(Boolean);
+}
+/** Cuerpo completo como un solo texto (sin las marcas de imagen). */
+async function bodyText(id) {
+	return (await bodyLines(id)).filter((l) => !l.startsWith("@@IMG ")).join("\n");
+}
+/** Las imágenes de STOVE pesan MB: su servicio de redimensionado las sirve a 850 px en WebP (~60 KB). */
+function sized(url) {
+	const m = url && /^https?:\/\/(d2x8kymwjom7h7\.cloudfront\.net\/.+)$/.exec(url);
+	return m ? `https://image.onstove.com/850x0//${m[1]}/webp` : url;
+}
+var thumb = (a) => sized(a.media_thumbnail_url ? a.media_thumbnail_url.startsWith("//") ? `https:${a.media_thumbnail_url}` : a.media_thumbnail_url : void 0);
+// src/sources/czn.ts
+/**
+* Chaos Zero Nightmare (servidor Global): eventos desde los avisos oficiales de su comunidad en STOVE (los banners vienen de Prydwen).
+*  - Avisos "Update Notice" (tablón Updates): una sección "■" por evento con su periodo ("10/21/2026 after the maintenance – 12/02/2026 before the maintenance")
+*    y su imagen. Un evento puede traer sub-eventos con periodo propio (p. ej. "Additional Aether Distribution") o heredado (Visit Present, Attendance Check).
+*  - Tablón Current Events: concursos de comentarios y regalos (periodo en el resumen).
+*  Horas: "después del mantenimiento" = la hora real de su aviso "[Maintenance] ... (Completed)" (≈ 07:00 UTC si aún no existe); "antes del
+*  mantenimiento" = 00:00 UTC (el mantenimiento semanal empieza a las 00:00 UTC desde el 29/07, según su aviso oficial).
+*  Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
+*/
+var DAY$14 = 864e5;
+var BOARDS = {
+	announcements: 139238,
+	events: 139240,
+	updates: 142421
+};
+var FALLBACK_START = "07:00";
+var RECENT_UPDATES = 3;
+var pad$1 = (n) => String(n).padStart(2, "0");
+var utc$1 = (y, m, d, hhmm) => /* @__PURE__ */ new Date(`${y}-${pad$1(m)}-${pad$1(d)}T${hhmm.padStart(5, "0")}:00Z`);
+/** "m/d" -> hora UTC (HH:MM) en que terminó el mantenimiento de actualización de ese día. */
+function maintenanceEnds$1(list) {
+	const out = /* @__PURE__ */ new Map();
+	for (const a of list) {
+		const m = /maintenance was completed on (\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*at\s*(\d{1,2}:\d{2})\s*UTC/i.exec(a.summary ?? "");
+		if (m) out.set(`${+m[1]}/${+m[2]}`, m[3]);
+	}
+	return out;
+}
+var RANGE$1 = /(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(after (?:the )?maintenance|\d{1,2}:\d{2}\s*\(UTC\))\s*[–—-]\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(before (?:the )?maintenance|\d{1,2}:\d{2}\s*\(UTC\))/i;
+function parseRange(text, ends) {
+	const m = RANGE$1.exec(text);
+	if (!m) return null;
+	const [, sm, sd, sy, sTime, em, ed, ey, eTime] = m;
+	let approx = false;
+	let start;
+	if (/^after/i.test(sTime)) {
+		const done = ends.get(`${+sm}/${+sd}`);
+		start = utc$1(+sy, +sm, +sd, done ?? FALLBACK_START);
+		approx = !done;
+	} else start = utc$1(+sy, +sm, +sd, sTime.replace(/\s*\(UTC\)/i, ""));
+	const end = /^before/i.test(eTime) ? utc$1(+ey, +em, +ed, "00:00") : utc$1(+ey, +em, +ed, eTime.replace(/\s*\(UTC\)/i, ""));
+	if (isNaN(+start) || isNaN(+end) || +end <= +start) return null;
+	return {
+		start,
+		end,
+		approx
+	};
+}
+/** Periodo escrito en la línea `i` o, si esa línea es solo la etiqueta ("◆ Period"), en la siguiente. */
+function rangeAt(lines, i, ends) {
+	return parseRange(lines[i], ends) ?? (/^[◆→▸ㄴ*\s-]*(Period|Schedule)\s*:?\s*$/i.test(lines[i]) ? parseRange(lines[i + 1] ?? "", ends) : null);
+}
+/** Secciones que no son eventos (banners, sistema, cambios...). */
+var NOT_EVENT = /Galactic Disaster|Changes|Rate-?Up|Memory|System|Content\b|Combat Training|Improvements|Bug|Package|Card Skin|Crystal|Fragment|Rescue/i;
+/** Sub-apartados de un evento que no son eventos por sí mismos. */
+var NOT_SUB = /^(Period|Schedule|Rate-?Up|Open Schedule|Unlock|Reward|How to|Information|Precaution|Exchange|Achievement|Limited-Time|Overview|Details|Event Period)/i;
+/** Sub-apartados que sí se muestran aparte y duran lo mismo que el evento. */
+var INHERIT = /^(Visit Present|Attendance Check)/i;
+function cleanTitle(head) {
+	let t = head.replace(/^■\s*/, "").trim();
+	t = t.replace(/(Event)\s*\[[^\]]*\]\s*$/i, "$1");
+	const prefixed = /^Event\s*[-–—]\s*/i.test(t);
+	t = t.replace(/^Event\s*[-–—]\s*/i, "");
+	const whole = /^\[([^\]]+)\]$/.exec(t);
+	if (whole) return whole[1].trim();
+	if (prefixed) t = t.replace(/\s*\[.*$/, "");
+	return t.trim();
+}
+function fromUpdate(gameId, lines, ends, fallbackImage) {
+	const out = [];
+	const mk = (title, p, image, minor = false) => ({
+		id: `${gameId}:event:${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}:${p.start.toISOString().slice(0, 10)}`,
+		gameId,
+		kind: "event",
+		title,
+		image: image ?? fallbackImage,
+		start: p.start.toISOString(),
+		end: p.end.toISOString(),
+		items: [],
+		featured: [],
+		pulls: 0,
+		minor: minor || void 0,
+		precision: p.approx ? "approx" : void 0,
+		source: "api"
+	});
+	const heads = lines.map((l, i) => l.startsWith("■") ? i : -1).filter((i) => i >= 0);
+	heads.forEach((h, n) => {
+		const head = lines[h];
+		if (NOT_EVENT.test(head)) return;
+		const sec = lines.slice(h + 1, heads[n + 1] ?? lines.length);
+		const image = sec.find((l) => l.startsWith("@@IMG "))?.slice(6);
+		const title = cleanTitle(head);
+		let main = null;
+		for (let i = 0; i < sec.length && !main; i++) if (/^[◆→▸ㄴ*\s-]*(Event Period|Period|Schedule|Open Schedule)\b/i.test(sec[i])) main = rangeAt(sec, i, ends);
+		if (main) out.push(mk(title, main, image));
+		sec.forEach((l, i) => {
+			if (!l.startsWith("◆")) return;
+			const label = l.slice(1).trim();
+			if (NOT_SUB.test(label)) return;
+			if (INHERIT.test(label)) {
+				if (main) out.push(mk(`${title}: ${label.replace(/:.*$/, "").trim()}`, main, image));
+				return;
+			}
+			const p = rangeAt(sec, i, ends) ?? parseRange(sec[i + 1] ?? "", ends) ?? parseRange(sec[i + 2] ?? "", ends);
+			if (p) out.push(mk(`${title}: ${label.split(":")[0].trim()}`, p, image));
+		});
+	});
+	return out;
+}
+var MONTHS$5 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+/** Avisos del tablón Current Events: concursos de comentarios ("Event Period - October 28th (Wed) – November 13th (Fri) 14:59 (UTC)") y regalos ("Claim Period - 10/23 (Fri) – ... 12/01(Wed) 23:59"). */
+function fromEventPost(gameId, a) {
+	const s = (a.summary ?? "").replace(/\s+/g, " ");
+	const posted = a.create_datetime;
+	const yearOf = (month, day) => {
+		const y = new Date(posted).getUTCFullYear();
+		return [
+			y - 1,
+			y,
+			y + 1
+		].reduce((b, c) => Math.abs(Date.UTC(c, month - 1, day) - posted) < Math.abs(Date.UTC(b, month - 1, day) - posted) ? c : b);
+	};
+	let start, end, approx = false, minor = false;
+	const w = /Event Period\s*[-:]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*[–—-]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*\(UTC\)/i.exec(s);
+	const c = /Claim Period\s*[-:]\s*(\d{1,2})\/(\d{1,2})[^■※]*?(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})/i.exec(s);
+	if (w) {
+		const sm = MONTHS$5.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$5.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
+		if (!sm || !em) return null;
+		start = utc$1(yearOf(sm, +w[2]), sm, +w[2], "00:00");
+		if (+start < posted && posted - +start < DAY$14) start = new Date(posted);
+		end = utc$1(yearOf(em, +w[4]) + (em < sm ? 1 : 0), em, +w[4], w[5]);
+		approx = true;
+		minor = true;
+	} else if (c) {
+		start = utc$1(yearOf(+c[1], +c[2]), +c[1], +c[2], "00:00");
+		end = utc$1(yearOf(+c[3], +c[4]), +c[3], +c[4], c[5]);
+	} else return null;
+	if (isNaN(+start) || isNaN(+end) || +end <= +start) return null;
+	const title = a.title.replace(/^\[Event\]\s*/i, "").replace(/\s*\((?:Edited|Added on|0)[^)]*\)?\s*$/i, "").trim();
+	return {
+		id: `${gameId}:event:${a.article_id}`,
+		gameId,
+		kind: "event",
+		title,
+		image: thumb(a),
+		start: start.toISOString(),
+		end: end.toISOString(),
+		items: [],
+		featured: [],
+		pulls: 0,
+		minor: minor || void 0,
+		precision: approx ? "approx" : void 0,
+		source: "api"
+	};
+}
+async function syncCznEvents(gameId) {
+	const [upd, evs, ann] = await Promise.allSettled([
+		articles(BOARDS.updates, 8),
+		articles(BOARDS.events, 30),
+		articles(BOARDS.announcements, 80)
+	]);
+	if (upd.status === "rejected" && evs.status === "rejected") throw upd.reason;
+	const ends = ann.status === "fulfilled" ? maintenanceEnds$1(ann.value) : /* @__PURE__ */ new Map();
+	const from = Date.now() - 3 * DAY$14;
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	const add = (e) => {
+		const key = `${e.title.toLowerCase()}|${e.start.slice(0, 10)}`;
+		if (+new Date(e.end) < from || seen.has(key)) return;
+		seen.add(key);
+		out.push(e);
+	};
+	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$14).slice(0, RECENT_UPDATES)) try {
+		for (const e of fromUpdate(gameId, await bodyLines(a.article_id), ends, thumb(a))) add(e);
+	} catch {}
+	if (evs.status === "fulfilled") for (const a of evs.value) {
+		const e = fromEventPost(gameId, a);
+		if (e) add(e);
+	}
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
+// src/sources/epic7.ts
+/**
+* Epic Seven (servidor Global) sin gachafocus:
+*  - Banners: calendario de "Drop Rate Up" de bannerhistory.app (inicio y fin exactos en UTC, héroe, artefacto, imagen). Los datos vienen
+*    incrustados en el HTML (flujo de Next.js), sin API. Se actualiza semanalmente; puede faltar algún banner especial muy reciente.
+*  - Eventos: avisos oficiales del tablón "Events" de STOVE (api.onstove.com, la API que usa su propia web). El periodo viene como texto en
+*    el resumen del aviso ("Schedule: 10/29 (Thu) after the maintenance – 12/10 (Thu) 02:59 UTC"). "Tras el mantenimiento" se resuelve con
+*    el aviso "Maintenance Notice (Completed)" del tablón de mantenimientos (hora exacta de fin); si aún no existe, se estima y se marca "≈".
+*    Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
+*/
+var DAY$13 = 864e5;
+var BANNERS$1 = "https://bannerhistory.app/en/e7-pickup-history";
+/** Hora (UTC) a la que se supone terminado un mantenimiento cuyo aviso de cierre aún no existe. */
+var FALLBACK_MAINTENANCE_END = "09:00";
+/** Une los fragmentos `self.__next_f.push([1,"..."])` del HTML: los datos de la página, sin el escapado del HTML. */
+function flightData(html) {
+	let out = "";
+	for (const m of html.matchAll(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/g)) try {
+		out += JSON.parse(m[1]);
+	} catch {}
+	return out;
+}
+/** El array JSON que empieza justo después de `key` (p. ej. `"banners":`), respetando cadenas. */
+function arrayAfter(s, key) {
+	const at = s.indexOf(key);
+	if (at < 0) return null;
+	const from = at + key.length;
+	if (s[from] !== "[") return null;
+	let depth = 0, inStr = false;
+	for (let i = from; i < s.length; i++) {
+		const c = s[i];
+		if (inStr) {
+			if (c === "\\") i++;
+			else if (c === "\"") inStr = false;
+			continue;
+		}
+		if (c === "\"") inStr = true;
+		else if (c === "[") depth++;
+		else if (c === "]" && --depth === 0) try {
+			return JSON.parse(s.slice(from, i + 1));
+		} catch {
+			return null;
+		}
+	}
+	return null;
+}
+async function syncBanners(gameId) {
+	const res = await fetch(viaProxy(BANNERS$1));
+	if (!res.ok) throw new Error(`bannerhistory → HTTP ${res.status}`);
+	const list = arrayAfter(flightData(await res.text()), "\"banners\":");
+	if (!list?.length) throw new Error("bannerhistory: no se encontraron banners");
+	const from = Date.now() - 3 * DAY$13;
+	const out = [];
+	for (const b of list) {
+		const s = +new Date(b.startUtc), e = +new Date(b.endUtc);
+		if (!b.id || isNaN(s) || isNaN(e) || e < from || e <= s) continue;
+		const names = [b.hero, b.artifact].filter((x) => !!x);
+		out.push({
+			id: `${gameId}:banner:${b.id}`,
+			gameId,
+			kind: "banner",
+			title: names.join(" / ") || b.title,
+			description: b.title,
+			image: sized(b.bannerSrc),
+			start: new Date(s).toISOString(),
+			end: new Date(e).toISOString(),
+			items: [],
+			featured: names.map((name) => ({ name })),
+			pulls: 0,
+			source: "api"
+		});
+	}
+	return out;
+}
+/** Fecha mes/día sin año: el año que la deja más cerca de `ref` (la fecha del aviso). */
+function nearYear(month, day, ref) {
+	const y = new Date(ref).getUTCFullYear();
+	return [
+		y - 1,
+		y,
+		y + 1
+	].reduce((best, c) => Math.abs(Date.UTC(c, month - 1, day) - ref) < Math.abs(Date.UTC(best, month - 1, day) - ref) ? c : best);
+}
+var pad = (n) => String(n).padStart(2, "0");
+var utc = (y, m, d, hhmm) => /* @__PURE__ */ new Date(`${y}-${pad(m)}-${pad(d)}T${hhmm.padStart(5, "0")}:00Z`);
+/** "Schedule: 10/29 (Thu) after the maintenance – 12/10 (Thu) 02:59 UTC" y variantes (con o sin "(UTC)", con "Event Schedule]", "Period:"...). */
+var SCHEDULE = /(?:Event Schedule\]|Schedule(?: Details)?\s*:?|Event Period:?|Period:?)\s*(?:Korea\/Asia\/Japan\s*)?(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(after (?:the )?maintenance|\d{1,2}:\d{2})?\s*[-–—~]\s*(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*\(?UTC\)?/i;
+/** "m/d" -> hora UTC (HH:MM) en que terminó el mantenimiento de ese día, según los avisos "Maintenance Notice (Completed)". */
+function maintenanceEnds(list) {
+	const out = /* @__PURE__ */ new Map();
+	for (const a of list) {
+		const m = /maintenance has ended on (\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*UTC/i.exec(a.summary ?? "");
+		if (m) out.set(`${+m[1]}/${+m[2]}`, m[3]);
+	}
+	return out;
+}
+/** El primer periodo que aparece en `text` (el aviso se publicó en `posted`); null si no hay o no se puede fechar con seguridad. */
+function period(text, posted, ends) {
+	const m = SCHEDULE.exec(text.replace(/\s+/g, " "));
+	if (!m) return null;
+	const [, sm, sd, sTime, em, ed, eTime] = m;
+	const sy = nearYear(+sm, +sd, posted);
+	let start;
+	let precision;
+	if (sTime && /^\d/.test(sTime)) start = utc(sy, +sm, +sd, sTime);
+	else if (sTime) {
+		const end = ends.get(`${+sm}/${+sd}`);
+		start = utc(sy, +sm, +sd, end ?? FALLBACK_MAINTENANCE_END);
+		if (!end) precision = "approx";
+	} else {
+		start = new Date(posted).toISOString().slice(0, 10) === `${sy}-${pad(+sm)}-${pad(+sd)}` ? new Date(posted) : utc(sy, +sm, +sd, "03:00");
+		precision = "approx";
+	}
+	const end = utc(+em < +sm || +em === +sm && +ed < +sd ? sy + 1 : sy, +em, +ed, eTime);
+	if (isNaN(+start) || isNaN(+end) || +end <= +start) return null;
+	return {
+		start,
+		end,
+		precision,
+		dayOnly: !sTime
+	};
+}
+var NOT_AN_EVENT = /\b(pack|sale|sales|bundle)\b/i;
+/** Máximo de avisos cuyo cuerpo completo se pide por no traer el periodo en el resumen (cada uno es una petición). */
+var MAX_DETAILS = 8;
+async function syncEvents(gameId, list, ends) {
+	const from = Date.now() - 3 * DAY$13;
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	let details = 0;
+	for (const a of list) {
+		if (NOT_AN_EVENT.test(a.title)) continue;
+		let p = period(a.summary ?? "", a.create_datetime, ends);
+		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$13) {
+			details++;
+			try {
+				p = period(await bodyText(a.article_id), a.create_datetime, ends);
+			} catch {}
+		}
+		if (!p || +p.end < from) continue;
+		const title = a.title.replace(/\s*\((?:Edited|Added on)[^)]*\)?\s*$/i, "").trim();
+		const key = `${title.toLowerCase()}|${p.start.toISOString().slice(0, 10)}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		out.push({
+			id: `${gameId}:event:${a.article_id}`,
+			gameId,
+			kind: "event",
+			title,
+			image: thumb(a),
+			start: p.start.toISOString(),
+			end: p.end.toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			minor: p.dayOnly || void 0,
+			precision: p.precision,
+			source: "api"
+		});
+	}
+	return out;
+}
+/**
+* Banners de héroes nuevos que bannerhistory aún no tiene (se actualiza cada semana): los avisos "Update Content" anuncian
+* "New 5★ Hero, <nombre>" seguido del periodo de su invocación.
+*/
+async function syncNewHeroes(gameId, list, ends, known) {
+	const from = Date.now() - 3 * DAY$13;
+	const out = [];
+	for (const a of list.filter((x) => /Update Content/i.test(x.title)).slice(0, 2)) {
+		let lines;
+		try {
+			lines = await bodyLines(a.article_id);
+		} catch {
+			continue;
+		}
+		lines.forEach((line, i) => {
+			const h = /New 5\s?★ Hero,\s*(.{3,80})$/.exec(line);
+			if (!h) return;
+			const name = h[1].trim();
+			const after = lines.slice(i + 1, i + 80);
+			const p = period(after.filter((l) => !l.startsWith("@@IMG ")).join("\n"), a.create_datetime, ends);
+			if (!p || +p.end < from) return;
+			const nk = name.toLowerCase();
+			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$13 && b.featured.some((f) => {
+				const fk = f.name.toLowerCase();
+				return fk.includes(nk) || nk.includes(fk);
+			}))) return;
+			out.push({
+				id: `${gameId}:banner:hero:${nk.replace(/[^a-z0-9]+/g, "-")}:${p.start.toISOString().slice(0, 10)}`,
+				gameId,
+				kind: "banner",
+				title: name,
+				description: a.title,
+				image: after.slice(0, 15).find((l) => l.startsWith("@@IMG "))?.slice(6) ?? thumb(a),
+				start: p.start.toISOString(),
+				end: p.end.toISOString(),
+				items: [],
+				featured: [{ name }],
+				pulls: 0,
+				precision: p.precision,
+				source: "api"
+			});
+		});
+	}
+	return out;
+}
+async function syncEpic7(gameId) {
+	const [banners, events, maint] = await Promise.allSettled([
+		syncBanners(gameId),
+		articles(988, 100),
+		articles(986, 100)
+	]);
+	if (banners.status === "rejected" && events.status === "rejected") throw banners.reason;
+	const ends = maint.status === "fulfilled" ? maintenanceEnds(maint.value) : /* @__PURE__ */ new Map();
+	const base = banners.status === "fulfilled" ? banners.value : [];
+	const parsed = events.status === "fulfilled" ? await syncEvents(gameId, events.value, ends) : [];
+	const heroes = maint.status === "fulfilled" ? await syncNewHeroes(gameId, maint.value, ends, base).catch(() => []) : [];
+	return {
+		events: [
+			...base,
+			...heroes,
+			...parsed
+		],
+		patches: [],
+		codes: []
 	};
 }
 // src/sources/fgo.ts
@@ -21669,6 +22124,11 @@ var DAY = 24 * HOUR;
 */
 var env = globalThis.process?.env;
 var EXTRAS_RAW = (env ? env.GACHAFOCUS_EXTRAS : void 0)?.trim();
+/**
+* Interruptor general de gachafocus. DESACTIVADO por defecto: su web prohíbe la recolección automatizada (aviso del 6 nov 2026; ofrecerá una API de pago).
+* El código se conserva para usarlo con esa API: con GACHAFOCUS_ENABLED=1 (servidor) / VITE_GACHAFOCUS_ENABLED=1 (app sin servidor) vuelve a consultarse.
+*/
+var GF_ON = (env ? env.GACHAFOCUS_ENABLED : void 0)?.trim() === "1";
 var DEFAULT_EXTRAS = {
 	arknights: "events",
 	bluearchive: "events",
@@ -21706,6 +22166,7 @@ function findMatch(base, e, used) {
 * de aproximado; los que solo tiene gachafocus se añaden. La fuente principal conserva el resto (imágenes, nombres).
 */
 async function withGachafocus(id, gfKey, main, eventsOnly = false) {
+	if (!GF_ON) return main;
 	if (!eventsOnly) {
 		const mode = extrasFor(id);
 		if (mode === "none") return main;
@@ -21759,6 +22220,21 @@ async function both(a, b) {
 		codes: ok.flatMap((s) => s.codes)
 	};
 }
+/** "Virtual Tactical Simulation: Rossweisse" usa el arte del banner de ese combatiente en vez de la imagen genérica del aviso. */
+function withBannerArt(s) {
+	const art = (name) => s.events.find((b) => b.kind === "banner" && b.image && b.featured.some((f) => f.name.toLowerCase() === name.toLowerCase()))?.image;
+	return {
+		...s,
+		events: s.events.map((e) => {
+			const who = e.kind === "event" ? /^Virtual Tactical Simulation:\s*(.+)$/.exec(e.title)?.[1] : void 0;
+			const image = who && art(who);
+			return image ? {
+				...e,
+				image
+			} : e;
+		})
+	};
+}
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
 async function syncSource(game) {
 	const id = game.id;
@@ -21772,11 +22248,11 @@ async function syncSource(game) {
 			};
 		}
 		case "uma": return withGachafocus(id, "uma", syncUma(id));
-		case "czn": return withGachafocus(id, game.api, syncPrydwen(id, game.api), true);
+		case "czn": return GF_ON ? withGachafocus(id, game.api, syncPrydwen(id, game.api), true) : both(syncPrydwen(id, game.api), syncCznEvents(id)).then(withBannerArt);
 		case "nte": return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), syncGame8(id, game.api)));
 		case "reverse1999": return withGachafocus(id, "reverse1999", syncReverse1999(id));
 		case "stellasora": return withGachafocus(id, "stellasora", syncStellaSora(id), true);
-		case "epic7": return syncGachafocus(id, game.api);
+		case "epic7": return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id);
 		case "nikke": return withGachafocus(id, "nikke", syncNikke(id));
 		case "fgo": return syncFgo(id);
 		case "bluearchive": return withGachafocus(id, "bluearchive", syncBlueArchive(id));

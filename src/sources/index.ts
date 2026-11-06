@@ -1,6 +1,8 @@
 import type { Game, GameEvent } from '../types'
 import { GACHAFOCUS, syncGachafocus } from './gachafocus'
 import { syncGame, type GameSync } from './ennead'
+import { syncCznEvents } from './czn'
+import { syncEpic7 } from './epic7'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncLimbus } from './limbus'
@@ -25,6 +27,11 @@ const DAY = 24 * HOUR
  */
 const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
 const EXTRAS_RAW: string | undefined = (env ? env.GACHAFOCUS_EXTRAS : import.meta.env.VITE_GACHAFOCUS_EXTRAS)?.trim()
+/**
+ * Interruptor general de gachafocus. DESACTIVADO por defecto: su web prohíbe la recolección automatizada (aviso del 6 nov 2026; ofrecerá una API de pago).
+ * El código se conserva para usarlo con esa API: con GACHAFOCUS_ENABLED=1 (servidor) / VITE_GACHAFOCUS_ENABLED=1 (app sin servidor) vuelve a consultarse.
+ */
+const GF_ON = (env ? env.GACHAFOCUS_ENABLED : import.meta.env.VITE_GACHAFOCUS_ENABLED)?.trim() === '1'
 const DEFAULT_EXTRAS: Record<string, 'events' | 'all'> = { arknights: 'events', bluearchive: 'events', reverse1999: 'events', nikke: 'all', wuwa: 'events', nte: 'events' }
 
 /** Qué pide a gachafocus un juego que ya tiene fuente propia: nada, solo eventos, o eventos y banners. */
@@ -60,6 +67,7 @@ function findMatch(base: GameEvent[], e: GameEvent, used: Set<number>): number {
  * de aproximado; los que solo tiene gachafocus se añaden. La fuente principal conserva el resto (imágenes, nombres).
  */
 async function withGachafocus(id: string, gfKey: keyof typeof GACHAFOCUS, main: Promise<GameSync>, eventsOnly = false): Promise<GameSync> {
+  if (!GF_ON) return main
   // Los juegos que no tienen otra fuente de eventos (`eventsOnly` forzado) lo usan siempre, pidiendo solo la página de eventos;
   // los demás, según extrasFor().
   if (!eventsOnly) {
@@ -93,6 +101,16 @@ async function both(a: Promise<GameSync>, b: Promise<GameSync>): Promise<GameSyn
   return { events: ok.flatMap(s => s.events), patches: ok.flatMap(s => s.patches), codes: ok.flatMap(s => s.codes) }
 }
 
+/** "Virtual Tactical Simulation: Rossweisse" usa el arte del banner de ese combatiente en vez de la imagen genérica del aviso. */
+function withBannerArt(s: GameSync): GameSync {
+  const art = (name: string) => s.events.find(b => b.kind === 'banner' && b.image && b.featured.some(f => f.name.toLowerCase() === name.toLowerCase()))?.image
+  return { ...s, events: s.events.map(e => {
+    const who = e.kind === 'event' ? /^Virtual Tactical Simulation:\s*(.+)$/.exec(e.title)?.[1] : undefined
+    const image = who && art(who)
+    return image ? { ...e, image } : e
+  }) }
+}
+
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
 export async function syncSource(game: Game): Promise<GameSync> {
   const id = game.id
@@ -104,13 +122,15 @@ export async function syncSource(game: Game): Promise<GameSync> {
     }
     case 'uma': return withGachafocus(id, 'uma', syncUma(id))
     // Banners desde Prydwen (hora exacta, fuente propia); los eventos, de gachafocus si responde.
-    case 'czn': return withGachafocus(id, game.api, syncPrydwen(id, game.api), true)
+    // Sin gachafocus (apagado): los eventos salen de los avisos oficiales de STOVE (czn.ts).
+    case 'czn': return GF_ON ? withGachafocus(id, game.api, syncPrydwen(id, game.api), true) : both(syncPrydwen(id, game.api), syncCznEvents(id)).then(withBannerArt)
     // WuWa y NTE: banners de Prydwen + eventos de Game8 (solo el día; "≈"); gachafocus los corrige si responde.
     case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), syncGame8(id, game.api)))
     case 'reverse1999': return withGachafocus(id, 'reverse1999', syncReverse1999(id))
     // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.
     case 'stellasora': return withGachafocus(id, 'stellasora', syncStellaSora(id), true)
-    case 'epic7': return syncGachafocus(id, game.api)
+    // Epic Seven: banners de bannerhistory.app + eventos de los avisos oficiales de STOVE. Gachafocus solo si se reactiva (GACHAFOCUS_ENABLED=1).
+    case 'epic7': return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id)
     case 'nikke': return withGachafocus(id, 'nikke', syncNikke(id))
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
