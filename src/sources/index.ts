@@ -5,8 +5,11 @@ import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
+import { syncGame8 } from './game8'
 import { syncPrydwen } from './prydwen'
+import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
+import { syncStellaSora } from './stellasora'
 import { syncUma } from './uma'
 import { buildPatches, fetchHistory, finalize } from './versions'
 import { syncArknights, syncEndfield } from './wiki'
@@ -22,7 +25,7 @@ const DAY = 24 * HOUR
  */
 const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
 const EXTRAS_RAW: string | undefined = (env ? env.GACHAFOCUS_EXTRAS : import.meta.env.VITE_GACHAFOCUS_EXTRAS)?.trim()
-const DEFAULT_EXTRAS: Record<string, 'events' | 'all'> = { arknights: 'events', bluearchive: 'events', reverse1999: 'events', nikke: 'all' }
+const DEFAULT_EXTRAS: Record<string, 'events' | 'all'> = { arknights: 'events', bluearchive: 'events', reverse1999: 'events', nikke: 'all', wuwa: 'events', nte: 'events' }
 
 /** Qué pide a gachafocus un juego que ya tiene fuente propia: nada, solo eventos, o eventos y banners. */
 function extrasFor(id: string): 'none' | 'events' | 'all' {
@@ -82,6 +85,14 @@ async function withGachafocus(id: string, gfKey: keyof typeof GACHAFOCUS, main: 
   return { ...base, events: [...events, ...extra] }
 }
 
+/** Une dos fuentes complementarias de un mismo juego; con que responda una, basta. */
+async function both(a: Promise<GameSync>, b: Promise<GameSync>): Promise<GameSync> {
+  const [x, y] = await Promise.allSettled([a, b])
+  if (x.status === 'rejected' && y.status === 'rejected') throw x.reason
+  const ok = [x, y].flatMap(r => (r.status === 'fulfilled' ? [r.value] : []))
+  return { events: ok.flatMap(s => s.events), patches: ok.flatMap(s => s.patches), codes: ok.flatMap(s => s.codes) }
+}
+
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
 export async function syncSource(game: Game): Promise<GameSync> {
   const id = game.id
@@ -93,17 +104,19 @@ export async function syncSource(game: Game): Promise<GameSync> {
     }
     case 'uma': return withGachafocus(id, 'uma', syncUma(id))
     // Banners desde Prydwen (hora exacta, fuente propia); los eventos, de gachafocus si responde.
-    case 'czn':
-    case 'nte': return withGachafocus(id, game.api, syncPrydwen(id, game.api), true)
+    case 'czn': return withGachafocus(id, game.api, syncPrydwen(id, game.api), true)
+    // WuWa y NTE: banners de Prydwen + eventos de Game8 (solo el día; "≈"); gachafocus los corrige si responde.
+    case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), syncGame8(id, game.api)))
     case 'reverse1999': return withGachafocus(id, 'reverse1999', syncReverse1999(id))
-    case 'epic7':
-    case 'stellasora': return syncGachafocus(id, game.api)
+    // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.
+    case 'stellasora': return withGachafocus(id, 'stellasora', syncStellaSora(id), true)
+    case 'epic7': return syncGachafocus(id, game.api)
     case 'nikke': return withGachafocus(id, 'nikke', syncNikke(id))
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
     case 'wuwa': {
-      const [s, history] = await Promise.all([withGachafocus(id, 'wuwa', syncPrydwen(id, 'wuwa'), true), fetchHistory('wuwa').catch(() => [])])
+      const [s, history] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), syncReverie(id, 'wuwa'))), fetchHistory('wuwa').catch(() => [])])
       return { ...s, patches: buildPatches(id, [], history, game.patchCycleDays) }
     }
     case 'genshin':

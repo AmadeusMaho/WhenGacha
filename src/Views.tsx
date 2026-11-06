@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { t } from './i18n'
+import { bannerArt } from './images'
 import { countdown, eventStatus, isTaskDone, trackedGames, uid, verdict } from './logic'
 import { enableNotifications } from './notify'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, type Ctx } from './ui'
@@ -108,6 +109,13 @@ function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: (
     .filter(e => e.gameId === g.id && e.kind !== 'banner' && eventStatus(e, now) !== 'ended')
     .sort((a, b) => Number(!!a.open) - Number(!!b.open) || +new Date(a.end) - +new Date(b.end))
   const banners = state.events.filter(e => e.gameId === g.id && e.kind === 'banner' && eventStatus(e, now) === 'active')
+  // Un icono por personaje destacado; los banners que no traen iconos (p. ej. los de Prydwen) usan la imagen del propio banner.
+  const faces = banners.flatMap(b => {
+    const icons = b.featured.filter(f => f.icon).map(f => ({ key: `${b.id}:${f.name}`, name: f.name, src: f.icon! }))
+    if (icons.length) return icons
+    const src = bannerArt(b)
+    return src ? [{ key: b.id, name: b.title, src }] : []
+  }).slice(0, 6)
   const patches = state.patches.filter(p => p.gameId === g.id)
   const cur = patches.find(p => !p.estimated && +new Date(p.date) <= now && (!p.end || +new Date(p.end) > now))
   const next = patches.filter(p => +new Date(p.date) > now).sort((a, b) => +new Date(a.date) - +new Date(b.date))[0]
@@ -132,7 +140,7 @@ function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: (
       <div className="gcard-body">
         {banners.length > 0 && (
           <div className="faces">
-            {banners.flatMap(b => b.featured).filter(f => f.icon).slice(0, 6).map(f => <span key={f.name} className="face-lg" title={f.name}><Img src={f.icon} /></span>)}
+            {faces.map(f => <span key={f.key} className="face-lg" title={f.name}><Img src={f.src} /></span>)}
             <small className="muted">{t('card.bannersActive', { t: countdown(Math.min(...banners.map(b => +new Date(b.end))) - now) })}</small>
           </div>
         )}

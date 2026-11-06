@@ -13,6 +13,11 @@ const RATE_PER_MIN = Number(process.env.RATE_PER_MIN) || 600
 const UA = 'WhenGacha/1.0 (+https://github.com/AmadeusMaho/WhenGacha)'
 /** gachafocus (Cloudflare) rechaza el UA identificado en algunos hosts: se prueba primero con un UA de navegador y, si falla, con el de siempre. */
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
+/**
+ * GACHAFOCUS_UA: User-Agent exacto para gachafocus (p. ej. uno que ellos hayan autorizado). Si está definido se usa siempre, sin alternar;
+ * si no, se prueba el de navegador y, tras un fallo, el identificado.
+ */
+const GACHAFOCUS_UA = (process.env.GACHAFOCUS_UA ?? '').trim()
 const MAX_BODY = 8 * 1024 * 1024
 const STALE_MAX = 7 * 24 * 3_600_000
 
@@ -28,6 +33,9 @@ const SOURCES = [
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
   { name: 'gachafocus', ttl: HOUR, test: u => u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
+  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073)$/.test(u.pathname) },
+  { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
+  { name: 'reverie', ttl: 3 * HOUR, test: u => u.hostname === 'gachalife-production.up.railway.app' && /^\/events\/wuwa$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },
@@ -62,7 +70,7 @@ function httpsRequest(url, ua) {
     const req = https.request(url, {
       method: 'GET',
       headers: { 'user-agent': ua, accept: 'application/json, text/html;q=0.9, */*;q=0.5', 'accept-encoding': 'identity' },
-      timeout: 20_000,
+      timeout: 45_000, // algunas páginas (p. ej. Game8, ~600 KB) tardan
     }, res => {
       const chunks = []
       let size = 0
@@ -97,7 +105,7 @@ export function setTransport(fn) { request = fn ?? httpsRequest }
 const pauseFor = fails => Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR)
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'gachafocus.com.br': 2000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'game8.co': 5000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]
@@ -114,13 +122,16 @@ async function fetchUpstream(url, ttl) {
   await throttle(host)
   const st = hostState.get(host) ?? { until: 0, flip: false, fails: 0 }
   if (Date.now() < st.until) throw new Error(`upstream en pausa (bloqueo reciente)`)
-  const twoUas = host === 'gachafocus.com.br'
-  const res = await request(url, twoUas && !st.flip ? BROWSER_UA : UA)
+  const isGf = host === 'gachafocus.com.br'
+  const twoUas = isGf && !GACHAFOCUS_UA
+  const ua = isGf && GACHAFOCUS_UA ? GACHAFOCUS_UA : twoUas && !st.flip ? BROWSER_UA : UA
+  const uaName = ua === BROWSER_UA ? 'UA de navegador' : ua === UA ? 'UA propio' : 'UA de GACHAFOCUS_UA'
+  const res = await request(url, ua)
   if (res.status !== 200) {
     if (res.status === 403 || res.status === 429) {
       const fails = st.fails + 1
       hostState.set(host, { until: Date.now() + pauseFor(fails), flip: twoUas ? !st.flip : false, fails })
-      console.error(`[proxy] ${host} respondió ${res.status}: sin nuevas peticiones durante ${pauseFor(fails) / MIN} min`)
+      console.error(`[proxy] ${host} respondió ${res.status} (${uaName}): sin nuevas peticiones durante ${pauseFor(fails) / MIN} min`)
     }
     throw new Error(`upstream ${res.status}`)
   }

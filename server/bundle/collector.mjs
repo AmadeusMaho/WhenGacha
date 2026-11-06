@@ -20024,8 +20024,8 @@ var viaProxy = (url) => `/proxy?u=${encodeURIComponent(url)}`;
 * Se lee solo /en/<juego>/events y /en/<juego>/banners, que su robots.txt permite, a través del proxy con caché.
 * Las imágenes se cargan directo desde su sitio en el navegador (como al visitarlo); si fallan, se busca otra.
 */
-var SITE$1 = "https://gachafocus.com.br";
-var DAY$10 = 864e5;
+var SITE$2 = "https://gachafocus.com.br";
+var DAY$13 = 864e5;
 var GACHAFOCUS = {
 	arknights: {
 		slug: "arknights",
@@ -20058,10 +20058,10 @@ var REGIONS = [
 	"europe",
 	"asia"
 ];
-var abs = (src) => !src ? void 0 : src.startsWith("http") ? src : `${SITE$1}${src}`;
-var text$2 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var abs = (src) => !src ? void 0 : src.startsWith("http") ? src : `${SITE$2}${src}`;
+var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 async function loadPage(slug, section) {
-	const res = await fetch(viaProxy(`${SITE$1}/en/${slug}/${section}`));
+	const res = await fetch(viaProxy(`${SITE$2}/en/${slug}/${section}`));
 	if (!res.ok) throw new Error(`gachafocus ${slug}/${section} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
 }
@@ -20085,10 +20085,10 @@ function pickDates(tile) {
 }
 function parseUnits(tile) {
 	return [...tile.querySelectorAll(".strip-list .unit")].map((u) => {
-		const meta = text$2(u.querySelector(".unit-text small"));
+		const meta = text$4(u.querySelector(".unit-text small"));
 		const rank = Number(/(\d)/.exec(meta)?.[1] ?? /rarity-(\d)/.exec(u.className)?.[1] ?? 0);
 		return {
-			name: text$2(u.querySelector(".unit-text strong")),
+			name: text$4(u.querySelector(".unit-text strong")),
 			icon: abs(u.querySelector("img")?.getAttribute("src")),
 			rarity: rank || void 0,
 			tag: meta.split("·")[1]?.trim(),
@@ -20098,13 +20098,13 @@ function parseUnits(tile) {
 }
 function parseTiles(gameId, cfg, doc, section) {
 	const out = [];
-	const from = Date.now() - 3 * DAY$10;
+	const from = Date.now() - 3 * DAY$13;
 	doc.querySelectorAll("main article.tile").forEach((tile) => {
 		const dates = pickDates(tile);
-		const title = text$2(tile.querySelector(".tile-title"));
+		const title = text$4(tile.querySelector(".tile-title"));
 		if (!dates || !title || +new Date(dates.end) < from || +new Date(dates.end) <= +new Date(dates.start)) return;
 		const id = tile.getAttribute("data-card-id") ?? `${title}${dates.start}`;
-		const desc = text$2(tile.querySelector(".tile-desc")) || void 0;
+		const desc = text$4(tile.querySelector(".tile-desc")) || void 0;
 		const image = abs(tile.querySelector(".tile-art img")?.getAttribute("src"));
 		if (section === "banners") {
 			const units = parseUnits(tile);
@@ -20300,7 +20300,7 @@ async function syncGame(gameId, api) {
 * 21:00 PDT / 20:00 PST, y eso ya viene en el dato.
 */
 var BASE$1 = "https://api.atlasacademy.io/export/NA";
-var DAY$9 = 864e5;
+var DAY$12 = 864e5;
 async function getJson$1(file) {
 	const res = await fetch(viaProxy(`${BASE$1}/${file}.json`));
 	if (!res.ok) throw new Error(`atlasacademy ${file} → HTTP ${res.status}`);
@@ -20318,7 +20318,7 @@ async function syncFgo(gameId) {
 		getJson$1("nice_gacha"),
 		getJson$1("basic_servant").catch(() => [])
 	]);
-	const from = Date.now() / 1e3 - 3 * DAY$9 / 1e3, to = Date.now() / 1e3 + 120 * DAY$9 / 1e3;
+	const from = Date.now() / 1e3 - 3 * DAY$12 / 1e3, to = Date.now() / 1e3 + 120 * DAY$12 / 1e3;
 	const inWindow = (s, e) => e > s && e < LIMIT && e > from && s < to;
 	const svt = new Map(servants.map((s) => [s.id, s]));
 	const seen = /* @__PURE__ */ new Set();
@@ -20383,7 +20383,7 @@ async function syncFgo(gameId) {
 * Blue Archive (Global). Las páginas las edita la comunidad, así que el
 * formato puede cambiar y las fechas pueden retrasarse respecto al juego.
 */
-var DAY$8 = 864e5;
+var DAY$11 = 864e5;
 async function parsePage(base, page) {
 	const qs = new URLSearchParams({
 		action: "parse",
@@ -20401,7 +20401,7 @@ async function parsePage(base, page) {
 	if (!html) throw new Error(`${new URL(base).hostname}: ${json?.error?.info ?? "respuesta vacía"}`);
 	return new DOMParser().parseFromString(html, "text/html");
 }
-var inWindow = (s, e) => e > s && e > Date.now() - 3 * DAY$8 && s < Date.now() + 120 * DAY$8;
+var inWindow = (s, e) => e > s && e > Date.now() - 3 * DAY$11 && s < Date.now() + 120 * DAY$11;
 var wikiImg = (src, from, to) => src ? `https:${src.replace(from, to)}` : void 0;
 /** Banners de reclutamiento del servidor Global: los de un mismo periodo se agrupan en una sola barra. */
 async function blueArchiveBanners(gameId) {
@@ -20409,7 +20409,7 @@ async function blueArchiveBanners(gameId) {
 	const groups = /* @__PURE__ */ new Map();
 	for (const row of doc.querySelectorAll("tr[data-server=\"gl\"]")) {
 		const dates = [...row.querySelectorAll(".datetime")].map((d) => +new Date(d.getAttribute("data-datetime") ?? ""));
-		if (dates.length < 2 || dates.some(isNaN) || !inWindow(dates[0], dates[1]) || dates[1] - dates[0] > 120 * DAY$8) continue;
+		if (dates.length < 2 || dates.some(isNaN) || !inWindow(dates[0], dates[1]) || dates[1] - dates[0] > 120 * DAY$11) continue;
 		const name = row.querySelector("td:nth-child(2) a")?.textContent?.trim();
 		if (!name) continue;
 		const key = `${dates[0]}-${dates[1]}`;
@@ -20489,7 +20489,7 @@ async function syncBlueArchive(gameId) {
 var DATA = "https://limbus-assets.eldritchtools.com/data";
 var WIKI$2 = "https://limbuscompany.wiki.gg/api.php";
 var ASSETS = "https://limbus-assets.eldritchtools.com/assets/banners";
-var DAY$7 = 864e5;
+var DAY$10 = 864e5;
 /** Días que se extiende la barra de un contenido sin fecha de fin, contados desde hoy. */
 var OPEN_DAYS = 45;
 /** "2026-10-29" -> 01:00 UTC de ese día; las fechas sin definir ("????-??-??", "Permanent") se descartan. */
@@ -20502,7 +20502,7 @@ async function getJson(file) {
 	if (!res.ok) throw new Error(`limbus ${file} → HTTP ${res.status}`);
 	return res.json();
 }
-var MONTHS$3 = [
+var MONTHS$4 = [
 	"january",
 	"february",
 	"march",
@@ -20519,7 +20519,7 @@ var MONTHS$3 = [
 /** "September 17, 2026" o "October 15th, 2026" -> "2026-09-17". */
 function isoDay(text) {
 	const m = /([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?, (\d{4})/.exec(text);
-	const mi = m ? MONTHS$3.indexOf(m[1].toLowerCase()) : -1;
+	const mi = m ? MONTHS$4.indexOf(m[1].toLowerCase()) : -1;
 	return m && mi >= 0 ? `${m[3]}-${String(mi + 1).padStart(2, "0")}-${m[2].padStart(2, "0")}` : void 0;
 }
 /** Texto plano de una página de la wiki de Limbus. */
@@ -20586,14 +20586,14 @@ async function syncLimbus(gameId) {
 	const [timers, identities] = await Promise.all([getJson("timers"), getJson("identities_mini").catch(() => ({}))]);
 	const extra = await wikiTimers(timers).catch(() => []);
 	const events = [];
-	const from = Date.now() - 3 * DAY$7;
+	const from = Date.now() - 3 * DAY$10;
 	const add = (t, kind) => {
 		if (!t?.name) return;
 		const s = day(t.startDate);
 		let e = day(t.endDate);
 		const open = isNaN(e) && !isNaN(s) && !!t.endDate;
-		if (open) e = Math.max(s + 30 * DAY$7, Date.now() + OPEN_DAYS * DAY$7);
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || open && s > Date.now() + 120 * DAY$7) return;
+		if (open) e = Math.max(s + 30 * DAY$10, Date.now() + OPEN_DAYS * DAY$10);
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || open && s > Date.now() + 120 * DAY$10) return;
 		const featured = (t.bannerConds?.ids ?? []).map((id) => identities[id]).filter(Boolean).slice(0, 3).map((i) => ({
 			name: i.name,
 			rarity: i.rank
@@ -20633,13 +20633,13 @@ async function syncLimbus(gameId) {
 * Su robots.txt permite estas páginas con Crawl-delay de 10 s: el proxy las pide de una en una y las cachea 2 h.
 * Los eventos (que no son banners) no están en esta fuente.
 */
-var SITE = "https://www.prydwen.gg";
-var DAY$6 = 864e5;
-var HOUR$1 = 36e5;
+var SITE$1 = "https://www.prydwen.gg";
+var DAY$9 = 864e5;
+var HOUR$2 = 36e5;
 /** NIKKE: los banners cierran a las 04:59:59 hora de Corea (UTC+9) del día de fin; Prydwen solo da un mediodía aproximado. */
 var nikkeEnd = (iso) => {
-	const kst = /* @__PURE__ */ new Date(+new Date(iso) + 9 * HOUR$1);
-	return (/* @__PURE__ */ new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 4, 59, 59) - 9 * HOUR$1)).toISOString();
+	const kst = /* @__PURE__ */ new Date(+new Date(iso) + 9 * HOUR$2);
+	return (/* @__PURE__ */ new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 4, 59, 59) - 9 * HOUR$2)).toISOString();
 };
 var PRYDWEN = {
 	wuwa: {
@@ -20668,20 +20668,20 @@ var PRYDWEN = {
 		fixEnd: nikkeEnd
 	}
 };
-var text$1 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$3 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 /** Rareza máxima de la tarjeta ("5-star", "SSR", "S-Class"...) como número de estrellas. */
 var stars = (s) => /5|SSR|S-?class|S$/i.test(s) ? 5 : /4|SR|A-?class/i.test(s) ? 4 : void 0;
 async function syncPrydwen(gameId, key) {
 	const cfg = PRYDWEN[key];
-	const res = await fetch(viaProxy(`${SITE}/${cfg.slug}/banners`));
+	const res = await fetch(viaProxy(`${SITE$1}/${cfg.slug}/banners`));
 	if (!res.ok) throw new Error(`prydwen ${cfg.slug} → HTTP ${res.status}`);
 	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-	const from = Date.now() - 3 * DAY$6;
+	const from = Date.now() - 3 * DAY$9;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	doc.querySelectorAll("article[data-banner-card]").forEach((card) => {
 		const timer = card.querySelector("[data-banner-timer]");
-		const name = text$1(card.querySelector(".banner-name"));
+		const name = text$3(card.querySelector(".banner-name"));
 		if (!timer || !name) return;
 		const region = cfg.regions.find((r) => timer.dataset[`start${cap(r)}`] && timer.dataset[`end${cap(r)}`]);
 		if (!region) return;
@@ -20689,8 +20689,8 @@ async function syncPrydwen(gameId, key) {
 		const end = cfg.fixEnd ? cfg.fixEnd(timer.dataset[`end${cap(region)}`]) : new Date(timer.dataset[`end${cap(region)}`]).toISOString();
 		if (+new Date(end) < from || +new Date(end) <= +new Date(start)) return;
 		const weapon = card.getAttribute("data-category") === "weapon";
-		const phase = text$1(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
-		const rank = stars(text$1(card.querySelector(".rarity")));
+		const phase = text$3(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
+		const rank = stars(text$3(card.querySelector(".rarity")));
 		const featured = weapon ? [] : [{
 			name,
 			rarity: rank
@@ -20731,8 +20731,8 @@ var cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 */
 var LOOT = "https://lootandwaifus.com";
 var WIKI$1 = "nikke-goddess-of-victory-international.fandom.com";
-var DAY$5 = 864e5;
-var MONTHS$2 = [
+var DAY$8 = 864e5;
+var MONTHS$3 = [
 	"jan",
 	"feb",
 	"mar",
@@ -20746,14 +20746,14 @@ var MONTHS$2 = [
 	"nov",
 	"dec"
 ];
-var text = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$2 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 /** Texto de una celda: los <br> cuentan como espacio ("28 October 2026<br>23:59:59"). */
 function cellText(cell) {
 	const c = cell.cloneNode(true);
 	c.querySelectorAll("br").forEach((b) => b.replaceWith(" "));
-	return text(c);
+	return text$2(c);
 }
-var monthOf = (s) => MONTHS$2.indexOf(s.slice(0, 3).toLowerCase());
+var monthOf = (s) => MONTHS$3.indexOf(s.slice(0, 3).toLowerCase());
 /** Los banners globales empiezan y terminan a estas horas UTC (las que muestra el propio sitio). */
 var BANNER_START_H = 6;
 var BANNER_END = {
@@ -20765,11 +20765,11 @@ async function loadBanners(gameId) {
 	const res = await fetch(viaProxy(`${LOOT}/nikke-banner-history/`));
 	if (!res.ok) throw new Error(`lootandwaifus → HTTP ${res.status}`);
 	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-	const from = Date.now() - 3 * DAY$5, to = Date.now() + 120 * DAY$5;
+	const from = Date.now() - 3 * DAY$8, to = Date.now() + 120 * DAY$8;
 	const out = [];
 	doc.querySelectorAll(".bh-list[data-server=\"GLOBAL\"] .bh-row").forEach((row) => {
-		const name = text(row.querySelector("h3"));
-		const m = /([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})\s*-\s*([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})/.exec(text(row.querySelector(".bh-dates")));
+		const name = text$2(row.querySelector("h3"));
+		const m = /([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})\s*-\s*([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})/.exec(text$2(row.querySelector(".bh-dates")));
 		if (!name || !m || monthOf(m[1]) < 0 || monthOf(m[4]) < 0) return;
 		const start = Date.UTC(+m[3], monthOf(m[1]), +m[2], BANNER_START_H);
 		const end = Date.UTC(+m[6], monthOf(m[4]), +m[5], BANNER_END.h, BANNER_END.m, BANNER_END.s);
@@ -20826,10 +20826,10 @@ async function loadEvents(gameId) {
 	if (!html) throw new Error("la wiki no devolvió la lista de eventos");
 	const table = [...new DOMParser().parseFromString(html, "text/html").querySelectorAll("table")].find((t) => {
 		const head = t.querySelector("tr");
-		return !!head && /Start/.test(text(head)) && /End/.test(text(head));
+		return !!head && /Start/.test(text$2(head)) && /End/.test(text$2(head));
 	});
 	if (!table) throw new Error("no se encontró la tabla de eventos");
-	const from = Date.now() - 3 * DAY$5, to = Date.now() + 120 * DAY$5;
+	const from = Date.now() - 3 * DAY$8, to = Date.now() + 120 * DAY$8;
 	const out = [];
 	let last = null;
 	for (const row of [...table.querySelectorAll("tr")].slice(1)) {
@@ -20888,6 +20888,180 @@ async function syncNikke(gameId) {
 		codes: []
 	};
 }
+// src/sources/game8.ts
+/**
+* Eventos desde las páginas "List of Events and Schedule" de Game8 (game8.co). Solo traen el día (sin hora) y es una guía
+* editada a mano: puede equivocarse en fechas sueltas (se comprobó que los banners sí coinciden con Prydwen y gachafocus).
+* Por eso las horas se completan con las que usa cada juego y se marcan como aproximadas; si gachafocus responde, manda él.
+*/
+var SITE = "https://game8.co/games";
+var DAY$7 = 864e5;
+var MONTHS$2 = [
+	"january",
+	"february",
+	"march",
+	"april",
+	"may",
+	"june",
+	"july",
+	"august",
+	"september",
+	"october",
+	"november",
+	"december"
+];
+/** Horas habituales de cada juego, sacadas de sus banners: WuWa 10:00 → 11:59 (UTC+8); NTE 11:00 → 05:59 (UTC+8). */
+var GAME8 = {
+	wuwa: {
+		path: "Wuthering-Waves/archives/453473",
+		utc: 8,
+		start: [10, 0],
+		end: [
+			11,
+			59,
+			0
+		]
+	},
+	nte: {
+		path: "Neverness-to-Everness/archives/592073",
+		utc: 8,
+		start: [11, 0],
+		end: [
+			5,
+			59,
+			0
+		]
+	}
+};
+var text$1 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var DATE = /([A-Z][a-z]+)\.? (\d{1,2})(?:[,.]? (\d{4}))?/g;
+var LABEL$1 = /^(start date|end date|event duration|event|date|duration|name)$/i;
+/** "October 15, 2026 - November 1, 2026" o "October 8 - November 11, 2026" -> [inicio, fin] como {año, mes, día}; null si no hay fin (permanente, TBA). */
+function range(s) {
+	if (/permanent|indefinite|tba|until/i.test(s)) return null;
+	const found = [...s.matchAll(DATE)].map((m) => ({
+		m: MONTHS$2.indexOf(m[1].toLowerCase()),
+		d: +m[2],
+		y: m[3] ? +m[3] : NaN
+	})).filter((x) => x.m >= 0);
+	if (found.length < 2) return null;
+	const [a, b] = found;
+	if (isNaN(b.y)) return null;
+	return [{
+		y: isNaN(a.y) ? a.m > b.m ? b.y - 1 : b.y : a.y,
+		m: a.m,
+		d: a.d
+	}, {
+		y: b.y,
+		m: b.m,
+		d: b.d
+	}];
+}
+async function syncGame8(gameId, key) {
+	const cfg = GAME8[key];
+	const res = await fetch(viaProxy(`${SITE}/${cfg.path}`));
+	if (!res.ok) throw new Error(`game8 ${cfg.path} → HTTP ${res.status}`);
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const from = Date.now() - 3 * DAY$7, to = Date.now() + 120 * DAY$7;
+	const toMs = (d, h, mi) => Date.UTC(d.y, d.m, d.d, h - cfg.utc, mi);
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	doc.querySelectorAll("table tr").forEach((tr) => {
+		const cells = [...tr.children].filter((c) => /^T[DH]$/i.test(c.tagName)).map(text$1);
+		if (cells.length < 2 || LABEL$1.test(cells[0])) return;
+		const name = cells[0];
+		const r = cells.slice(1).map(range).find(Boolean);
+		if (!name || !r) return;
+		const start = toMs(r[0], cfg.start[0], cfg.start[1]);
+		const end = toMs({
+			...r[1],
+			d: r[1].d + cfg.end[2]
+		}, cfg.end[0], cfg.end[1]) + (cfg.end[1] === 59 ? 59e3 : 0);
+		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$7) return;
+		const id = `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`;
+		if (seen.has(id)) return;
+		seen.add(id);
+		out.push({
+			id,
+			gameId,
+			kind: "event",
+			title: name,
+			start: new Date(start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "approx"
+		});
+	});
+	if (!out.length) throw new Error(`game8 ${cfg.path}: no se encontraron eventos`);
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
+// src/sources/reverie.ts
+/**
+* Eventos de WuWa desde la API de Reverie (reveriegacha.gg), que los cura a mano con hora al minuto.
+*  - `*_time_type: "server"`: la hora es la local de cada servidor; se toma la del servidor de América (UTC-5), la misma que
+*    muestra gachafocus para América (se comprobó con Echo Erase, Chord Cleansing y Beyond the Waves).
+*  - `*_time_type: "fixed"`: el mismo instante para todos los servidores; el valor viene en UTC (p. ej. 03:00 = el lanzamiento de la
+*    versión 3.7, 11:00 UTC+8).
+* Los cierres vienen redondeados al minuto de reinicio (04:00 en vez de 03:59:59).
+*/
+var API = "https://gachalife-production.up.railway.app/events";
+var DAY$6 = 864e5;
+var HOUR$1 = 36e5;
+var REVERIE = { wuwa: {
+	path: "wuwa",
+	server: -5
+} };
+function at(naive, kind, serverOffset) {
+	const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(naive);
+	if (!m) return NaN;
+	const utc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], m[6] ? +m[6] : 0);
+	return kind === "server" ? utc - serverOffset * HOUR$1 : utc;
+}
+async function syncReverie(gameId, key) {
+	const cfg = REVERIE[key];
+	const res = await fetch(viaProxy(`${API}/${cfg.path}`));
+	if (!res.ok) throw new Error(`reverie ${cfg.path} → HTTP ${res.status}`);
+	const rows = (await res.json()).events;
+	if (!Array.isArray(rows)) throw new Error("reverie: respuesta inesperada");
+	const from = Date.now() - 3 * DAY$6, to = Date.now() + 120 * DAY$6;
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	for (const r of rows) {
+		if (r.type !== "event" || !r.title) continue;
+		const start = at(r.start, r.start_time_type, cfg.server), end = at(r.end, r.end_time_type, cfg.server);
+		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$6) continue;
+		const id = `${gameId}:event:rv:${r.id}`;
+		if (seen.has(id)) continue;
+		seen.add(id);
+		out.push({
+			id,
+			gameId,
+			kind: "event",
+			title: r.title.trim(),
+			description: r.description || void 0,
+			image: r.image_url || void 0,
+			start: new Date(start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api"
+		});
+	}
+	if (!out.length) throw new Error("reverie: sin eventos vigentes");
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
 // src/sources/reverse1999.ts
 /**
 * Reverse: 1999 (servidor Global) desde las páginas "Events" y "Summons" de su wiki de Fandom (API de MediaWiki).
@@ -20895,7 +21069,7 @@ async function syncNikke(gameId) {
 * así que las horas son exactas; está editada por la comunidad y puede ir con algo de retraso.
 */
 var WIKI = "reverse1999.fandom.com";
-var DAY$4 = 864e5;
+var DAY$5 = 864e5;
 var MONTHS$1 = [
 	"january",
 	"february",
@@ -20955,11 +21129,11 @@ async function page(title) {
 async function syncReverse1999(gameId) {
 	const [events, summons] = await Promise.allSettled([page("Events"), page("Summons")]);
 	if (events.status === "rejected" && summons.status === "rejected") throw events.reason;
-	const from = Date.now() - 3 * DAY$4, to = Date.now() + 120 * DAY$4;
+	const from = Date.now() - 3 * DAY$5, to = Date.now() + 120 * DAY$5;
 	const seen = /* @__PURE__ */ new Set();
 	const out = [];
 	const add = (kind, r) => {
-		if (r.end <= r.start || r.end < from || r.start > to || r.end - r.start > 120 * DAY$4) return;
+		if (r.end <= r.start || r.end < from || r.start > to || r.end - r.start > 120 * DAY$5) return;
 		const id = `${gameId}:${kind}:${r.name}:${new Date(r.start).toISOString()}`;
 		if (seen.has(id)) return;
 		seen.add(id);
@@ -20979,6 +21153,54 @@ async function syncReverse1999(gameId) {
 	};
 	if (events.status === "fulfilled") rows(events.value).forEach((r) => add("event", r));
 	if (summons.status === "fulfilled") rows(summons.value).forEach((r) => add("banner", r));
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
+// src/sources/stellasora.ts
+/**
+* Stella Sora (servidor Global): banners ("Current banners") de la portada de su wiki comunitaria (stellasora.miraheze.org).
+* Cada banner trae su inicio y fin como instantes ISO con zona (UTC-7), es decir, hora exacta. La portada de Miraheze se
+* pide por `/wiki/` (el robots.txt de Miraheze solo bloquea `/w/`, donde vive su API). Los eventos no están aquí.
+*/
+var PAGE = "https://stellasora.miraheze.org/wiki/Stella_Sora_Wiki";
+var DAY$4 = 864e5;
+var text = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+async function syncStellaSora(gameId) {
+	const res = await fetch(viaProxy(PAGE));
+	if (!res.ok) throw new Error(`stellasora wiki → HTTP ${res.status}`);
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const from = Date.now() - 3 * DAY$4;
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	doc.querySelectorAll(".stellasora-home-banner").forEach((card) => {
+		const name = text(card.querySelector(".stellasora-home-banner__name"));
+		const timer = card.querySelector(".stellasora-countdown");
+		const s = timer?.getAttribute("data-start-time"), e = timer?.getAttribute("data-end-time");
+		if (!name || !s || !e || isNaN(+new Date(s)) || isNaN(+new Date(e))) return;
+		const start = new Date(s).toISOString(), end = new Date(e).toISOString();
+		if (+new Date(end) < from || +new Date(end) <= +new Date(start)) return;
+		const id = `${gameId}:banner:${name}:${start}`;
+		if (seen.has(id)) return;
+		seen.add(id);
+		const src = card.querySelector("img")?.getAttribute("src");
+		out.push({
+			id,
+			gameId,
+			kind: "banner",
+			title: name,
+			image: src ? src.startsWith("//") ? `https:${src}` : src : void 0,
+			start,
+			end,
+			items: [],
+			featured: [{ name }],
+			pulls: 0,
+			source: "api"
+		});
+	});
+	if (!out.length) throw new Error("stellasora wiki: no se encontraron banners");
 	return {
 		events: out,
 		patches: [],
@@ -21451,7 +21673,9 @@ var DEFAULT_EXTRAS = {
 	arknights: "events",
 	bluearchive: "events",
 	reverse1999: "events",
-	nikke: "all"
+	nikke: "all",
+	wuwa: "events",
+	nte: "events"
 };
 /** Qué pide a gachafocus un juego que ya tiene fuente propia: nada, solo eventos, o eventos y banners. */
 function extrasFor(id) {
@@ -21524,6 +21748,17 @@ async function withGachafocus(id, gfKey, main, eventsOnly = false) {
 		events: [...events, ...extra]
 	};
 }
+/** Une dos fuentes complementarias de un mismo juego; con que responda una, basta. */
+async function both(a, b) {
+	const [x, y] = await Promise.allSettled([a, b]);
+	if (x.status === "rejected" && y.status === "rejected") throw x.reason;
+	const ok = [x, y].flatMap((r) => r.status === "fulfilled" ? [r.value] : []);
+	return {
+		events: ok.flatMap((s) => s.events),
+		patches: ok.flatMap((s) => s.patches),
+		codes: ok.flatMap((s) => s.codes)
+	};
+}
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
 async function syncSource(game) {
 	const id = game.id;
@@ -21537,17 +21772,17 @@ async function syncSource(game) {
 			};
 		}
 		case "uma": return withGachafocus(id, "uma", syncUma(id));
-		case "czn":
-		case "nte": return withGachafocus(id, game.api, syncPrydwen(id, game.api), true);
+		case "czn": return withGachafocus(id, game.api, syncPrydwen(id, game.api), true);
+		case "nte": return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), syncGame8(id, game.api)));
 		case "reverse1999": return withGachafocus(id, "reverse1999", syncReverse1999(id));
-		case "epic7":
-		case "stellasora": return syncGachafocus(id, game.api);
+		case "stellasora": return withGachafocus(id, "stellasora", syncStellaSora(id), true);
+		case "epic7": return syncGachafocus(id, game.api);
 		case "nikke": return withGachafocus(id, "nikke", syncNikke(id));
 		case "fgo": return syncFgo(id);
 		case "bluearchive": return withGachafocus(id, "bluearchive", syncBlueArchive(id));
 		case "limbus": return syncLimbus(id);
 		case "wuwa": {
-			const [s, history] = await Promise.all([withGachafocus(id, "wuwa", syncPrydwen(id, "wuwa"), true), fetchHistory("wuwa").catch(() => [])]);
+			const [s, history] = await Promise.all([withGachafocus(id, "wuwa", both(syncPrydwen(id, "wuwa"), syncReverie(id, "wuwa"))), fetchHistory("wuwa").catch(() => [])]);
 			return {
 				...s,
 				patches: buildPatches(id, [], history, game.patchCycleDays)
