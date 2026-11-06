@@ -12,7 +12,7 @@ export const viaProxy = (url: string): string => (USE_PROXY ? `/proxy?u=${encode
 /** Copia ya normalizada de un juego que genera el recolector del servidor (solo existe cuando la app se sirve desde su servidor). */
 export interface GameSnapshot { id: string; updated: number; events: GameEvent[]; patches: Patch[]; codes: PromoCode[] }
 
-const SNAPSHOT_MAX_AGE = 24 * 3_600_000
+const SNAPSHOT_MAX_AGE = 48 * 3_600_000
 
 /** La copia del servidor, o `null` si no hay (desarrollo, servidor sin recolector, aún sin generar o demasiado vieja). */
 export async function fetchSnapshot(id: string): Promise<GameSnapshot | null> {

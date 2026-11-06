@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "start": "node server/index.mjs",
     "build:prod": "tsc -b && vite build && vite build -c vite.collector.config.ts",
-    "build:server": "vite build -c vite.collector.config.ts"
+    "build:server": "vite build -c vite.collector.config.ts",
+    "snapshot": "node scripts/snapshot.mjs",
+    "snapshot:publish": "node scripts/snapshot.mjs --publish"
   },
   "dependencies": {
     "react": "^19.3.1",

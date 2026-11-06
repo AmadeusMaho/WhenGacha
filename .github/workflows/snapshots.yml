@@ -1,0 +1,31 @@
+# Genera las copias de eventos de todos los juegos desde los servidores de GitHub y las publica en la rama `data` (scripts/snapshot.mjs).
+# Es un respaldo automático por si la IP del servidor de producción está bloqueada por alguna fuente: el servidor lee esa rama. No necesita
+# claves propias (usa el token que GitHub da a cada ejecución) ni instala dependencias (el recolector va empaquetado en server/bundle).
+# Si una fuente también bloquea a GitHub, el script conserva la copia anterior más completa en vez de sustituirla por una recortada.
+name: Copias de eventos
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshots
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Generar y publicar las copias
+        run: node scripts/snapshot.mjs --publish
+        env:
+          SNAPSHOT_REMOTE: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git

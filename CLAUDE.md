@@ -35,6 +35,7 @@ Reglas que no se rompen:
 - La app (`src/store.ts`) pide primero esa copia (`fetchSnapshot` en `src/net.ts`, solo si hay servidor) y, si no existe o tiene más de 24 h, consulta las fuentes ella misma a través de `/proxy`.
 - Gachafocus se consulta donde no hay otra fuente (Epic Seven: eventos y banners; Stella Sora y CZN: solo eventos) y, como complemento, donde más aporta: Arknights, Blue Archive, Reverse: 1999, WuWa y NTE (eventos) y NIKKE (eventos y banners), unas 11 páginas por ciclo (WuWa y NTE ya tienen eventos propios de Game8; gachafocus solo los corrige). `GACHAFOCUS_EXTRAS` lo ajusta en el servidor: `0` = solo donde es imprescindible, `1` = también para todos los demás juegos, o una lista de ids (`nikke,arknights`).
 - Tras un 403/429 de una fuente, el proxy espera 10 min y duplica la espera en cada fallo seguido (máx. 2 h).
+- **Copias desde otra IP**: `npm run snapshot:publish` ejecuta el recolector en este equipo y publica las copias en la rama `data`; el servidor las lee de GitHub cada 20 min (sin claves ni despliegue). Hay un flujo de GitHub Actions (`.github/workflows/snapshots.yml`) que lo hace cada 3 h. Ver `docs/fuentes-y-proxy.md`.
 - Las fuentes se escriben para el navegador (`DOMParser`), pero también deben funcionar en Node con `linkedom`: no uses `table.rows`/`row.cells` ni APIs de layout.
 
 

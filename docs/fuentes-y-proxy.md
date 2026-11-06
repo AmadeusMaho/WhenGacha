@@ -144,10 +144,14 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 
 ## Pendiente / ideas (no hechas)
 
-- **Refresco desde el PC del dueño** (idea pensada, no implementada, por si gachafocus sigue bloqueando a Botkeep por IP): un comando `npm run snapshot` que
-  ejecute el recolector en local (donde gachafocus sí responde) y guarde las copias en `server/seed/`; el servidor las cargaría al arrancar si no tiene otras más
-  recientes. Cuidar que el recolector no sustituya una copia rica por una pobre (p. ej. NIKKE 3 elementos en vez de 12) cuando gachafocus falla: solo reemplazar si
-  la nueva trae al menos tanto como la anterior. El cliente (`fetchSnapshot`) hoy rechaza copias de más de 24 h: habría que subir ese límite.
+- **Copias publicadas desde otra IP (implementado)**: gachafocus bloquea la IP de Botkeep (403 también con UA de navegador) pero no la de otros equipos. `scripts/snapshot.mjs`
+  (`npm run snapshot` / `npm run snapshot:publish`) ejecuta el mismo recolector en ese equipo y publica las copias en la rama **`data`** del repositorio (un solo commit forzado,
+  sin historial). El servidor las lee cada 20 min de `raw.githubusercontent.com/AmadeusMaho/WhenGacha/data/snapshots/<juego>.json` (`pullRemote` en `server/collector.mjs`; sin
+  claves ni despliegues) y adopta la copia si es más reciente o más completa que la suya; el recolector propio, a su vez, no sustituye una copia reciente por otra con menos del 70 %
+  de elementos. Quién la ejecuta: (1) el flujo **GitHub Actions** `.github/workflows/snapshots.yml` (cada 3 h; usa el token de la ejecución, sin claves propias; sus IP de datacenter
+  podrían estar bloqueadas por gachafocus, y en ese caso el script conserva la copia anterior más completa) y (2) cualquier equipo que ejecute `npm run snapshot:publish`
+  (p. ej. el PC del dueño; una tarea programada de Windows con `scripts/run-snapshot.ps1`, que **hay que crear a mano**: un agente no debe crear tareas persistentes sin permiso).
+  Las copias remotas solo se adoptan si tienen menos de 48 h (el cliente también rechaza copias de más de 48 h).
 - Que el refresco en segundo plano del proxy solo renueve URLs de **datos** (`action=parse|cargoquery`) y no las búsquedas de
   imágenes de las wikis (hoy se renuevan todas las vistas en los últimos 7 días).
 - Bajar el ritmo de renovación: gachafocus 1 h → 3 h, Prydwen 2 h → 3 h, ennead 10 → 30 min (el recolector solo los usa cada 3–6 h).

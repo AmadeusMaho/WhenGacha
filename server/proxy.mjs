@@ -36,6 +36,7 @@ const SOURCES = [
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073)$/.test(u.pathname) },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
   { name: 'reverie', ttl: 3 * HOUR, test: u => u.hostname === 'gachalife-production.up.railway.app' && /^\/events\/wuwa$/.test(u.pathname) },
+  { name: 'snapshots', ttl: 15 * MIN, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/AmadeusMaho\/WhenGacha\/data\/snapshots\/[a-z0-9]+\.json$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },

@@ -48,7 +48,11 @@ async function collectOne(g) {
   try {
     const snap = await mod.collect(g.id)
     // Una copia sin nada (p. ej. todas las fuentes caídas) no pisa una buena anterior.
-    if (!snap.events.length && snapshots.get(g.id)?.events.length) throw new Error('sin datos nuevos')
+    const cur = snapshots.get(g.id)
+    if (!snap.events.length && cur?.events.length) throw new Error('sin datos nuevos')
+    // Tampoco una mucho más pobre que otra reciente (p. ej. gachafocus bloqueado aquí pero la copia publicada desde otro equipo lo traía).
+    if (cur && Date.now() - cur.updated < 12 * 3_600_000 && snap.events.length < cur.events.length * 0.7)
+      throw new Error(`solo ${snap.events.length} elementos frente a los ${cur.events.length} de la copia reciente`)
     snapshots.set(g.id, snap)
     failures.delete(g.id)
     await save(snap)
@@ -74,6 +78,33 @@ async function tick() {
   } finally { running = false }
 }
 
+/* ---------- copias publicadas desde otro equipo ---------- */
+// scripts/snapshot.mjs genera las copias en un equipo cuya IP no esté bloqueada por alguna fuente y las publica en la rama `data` del repositorio.
+// El servidor las lee de ahí (sin claves ni despliegues) y las adopta si son más completas o más recientes que las suyas.
+const REPO = process.env.SNAPSHOT_REPO || 'AmadeusMaho/WhenGacha'
+const BRANCH = process.env.SNAPSHOT_BRANCH || 'data'
+const REMOTE_MAX_AGE = 48 * 3_600_000
+
+async function pullRemote() {
+  if (!mod) return
+  for (const g of games) {
+    try {
+      const res = await sourceFetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/snapshots/${g.id}.json`)
+      if (!res.ok) continue
+      const snap = await res.json()
+      if (snap?.id !== g.id || !Array.isArray(snap.events) || typeof snap.updated !== 'number' || snap.updated > Date.now() + 5 * MIN) continue
+      if (Date.now() - snap.updated > REMOTE_MAX_AGE) continue
+      const cur = snapshots.get(g.id)
+      const newer = !cur || snap.updated > cur.updated
+      const richer = !!cur && snap.events.length > cur.events.length
+      if (!(newer && (!cur || snap.events.length >= cur.events.length * 0.7)) && !richer) continue
+      snapshots.set(g.id, snap)
+      await save(snap)
+      console.log(`[collector] ${g.id}: copia adoptada de ${REPO}@${BRANCH} (${snap.events.length} elementos, de hace ${Math.round((Date.now() - snap.updated) / 60_000)} min)`)
+    } catch { /* sin copia remota o ilegible: se sigue con la propia */ }
+  }
+}
+
 export async function startCollector() {
   try {
     mod = await import('./bundle/collector.mjs')
@@ -85,6 +116,8 @@ export async function startCollector() {
   games = mod.games()
   await loadFromDisk()
   console.log(`[collector] ${games.length} juegos, ${snapshots.size} copias guardadas`)
+  setTimeout(pullRemote, 5_000).unref() // primero lo ya publicado: así hay datos desde el arranque aunque una fuente bloquee a este servidor
+  setInterval(pullRemote, 20 * MIN).unref()
   setTimeout(tick, 20_000).unref()
   setInterval(tick, 10 * MIN).unref()
 }
