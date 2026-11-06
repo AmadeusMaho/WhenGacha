@@ -22,7 +22,7 @@ const HOUR = 60 * MIN
 const SOURCES = [
   { name: 'ennead', ttl: 10 * MIN, test: u => u.hostname === 'api.ennead.cc' && u.pathname.startsWith('/mihoyo/') },
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
-  { name: 'gachafocus', ttl: 30 * MIN, test: u => u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
+  { name: 'gachafocus', ttl: HOUR, test: u => u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },
@@ -58,11 +58,24 @@ const request = (url, ua) => fetch(url, {
  * durante PAUSE; pasado ese tiempo se hace una sola prueba. Así un bloqueo no se agrava con cada visita.
  * gachafocus se prueba con el UA de navegador y, tras un fallo, la siguiente prueba usa el UA identificado (y así).
  */
-const PAUSE = 15 * MIN
+const PAUSE = HOUR
+
+/** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
+const GAP = { 'gachafocus.com.br': 2000 }
+const gates = new Map() // host -> promesa de la última petición en cola
+function throttle(host) {
+  const gap = GAP[host]
+  if (!gap) return Promise.resolve()
+  const prev = gates.get(host) ?? Promise.resolve()
+  const mine = prev.then(() => new Promise(r => setTimeout(r, gap)))
+  gates.set(host, mine)
+  return prev
+}
 const hostState = new Map() // host -> { until, flip }
 
 async function fetchUpstream(url, ttl) {
   const host = new URL(url).hostname
+  await throttle(host)
   const st = hostState.get(host) ?? { until: 0, flip: false }
   if (Date.now() < st.until) throw new Error(`upstream en pausa (bloqueo reciente)`)
   const twoUas = host === 'gachafocus.com.br'
