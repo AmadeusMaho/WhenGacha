@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { locale, t } from './i18n'
-import { bannerArt, eventImage, faceOf, gameImage, logoOf, wallpaperOf } from './images'
+import { bannerArt, eventImage, faceOf, gameImage, logoOf, officialArt, wallpaperOf } from './images'
 import { moveTracked, placeTracked, trackedGames } from './logic'
 import type { AppState, Game, GameEvent } from './types'
 
@@ -128,9 +128,9 @@ export function anyArt(state: AppState, gameId: string): string | undefined {
   return pick ? (pick.kind === 'banner' ? bannerArt(pick) : eventImage(pick)) : undefined
 }
 
-/** Mejor imagen de portada para un juego: su fondo, o la mejor que haya. */
+/** Mejor imagen de portada para un juego: el arte de su parche, su arte oficial, o la mejor que haya. */
 export function heroOf(state: AppState, gameId: string): string | undefined {
-  return wallpaperOf(gameId) || anyArt(state, gameId) || gameImage(gameId)
+  return wallpaperOf(gameId) || officialArt(gameId) || anyArt(state, gameId) || gameImage(gameId)
 }
 
 export function Tag({ tone, children }: { tone: string; children: React.ReactNode }) {

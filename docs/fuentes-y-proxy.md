@@ -26,6 +26,9 @@ navegador ◄── GET /data/<juego>.json (copia normalizada, ~10 KB gz) ◄─
 La web de gachafocus muestra un aviso que **prohíbe la recolección automatizada** (scraping, navegadores automáticos, uso de sus rutas internas como API, IA) y dice que los datos
 solo estarán en su **API oficial de pago** (aún sin abrir; contacto: gachafocus.com.br/en/contact). Por eso:
 
+- **El proxy tampoco lo admite** si no hay `GACHAFOCUS_ENABLED=1` (la entrada `gachafocus` de `SOURCES` depende de esa variable). Motivo (6 nov 2026, prueba local): el refresco en segundo plano
+  vuelve a pedir durante 7 días cada URL que recuerda la caché en disco (`.cache/proxy-cache.json`), y la de este PC aún tenía las páginas de gachafocus → 403 de gachafocus con la app apagada.
+  Ahora `loadSnapshot` y `refreshDue` descartan las URLs que ya no son de una fuente permitida (`allowed`). En Botkeep no pasaba (cada deploy borra `.cache/`), pero sí en equipos que ejecutan `snapshot:publish`.
 - `src/sources/index.ts` tiene un interruptor `GF_ON` (`GACHAFOCUS_ENABLED=1` en el servidor / `VITE_GACHAFOCUS_ENABLED=1` en la app sin servidor). **Por defecto está apagado**: nadie
   consulta gachafocus (ni el recolector, ni el flujo de Actions, ni el PC). El código de `gachafocus.ts` y su entrada en el proxy se conservan para usarlos con la API de pago si se contrata.
 - **No lo reactives para scrapear.** Si hay API de pago, habrá que cambiar `gachafocus.ts` para usarla (clave en una variable del servidor).
@@ -57,12 +60,12 @@ juego no tiene arte distinto por evento, vale compartir la imagen del aviso). El
 | Epic Seven | **HECHO** (`epic7.ts`) | nada (12/12) | — |
 | CZN | **HECHO** (`czn.ts`) | nada (11/11 eventos) | — |
 | **Stella Sora** | **PENDIENTE** | todos los eventos (banners sí, desde la wiki Miraheze) | La web oficial (`stellasora.global`) y sus redes (X, Facebook, YouTube, TikTok, Discord) **no son opción**: Términos de Yostar y de cada red prohíben el scraping/bots. Opciones: otra fuente abierta con eventos fechados; pedir permiso a StellaSora.cs@yo-star.com; o archivo de eventos escrito a mano (`stellasora-events.json`, `source: 'manual'`) a partir de los avisos "Version X is Now Live!". Ya se vio el formato: `Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)`; el mantenimiento semanal acaba a las 21:00 (UTC-7) salvo versiones grandes (ver el aviso de mantenimiento). |
-| NIKKE | pendiente (complemento: eventos 3→12, banners) | eventos menores y horas exactas | Avisos oficiales de NIKKE (comprobar términos/robots antes), Prydwen ya da banners |
-| Arknights | pendiente (eventos 5→10) | eventos menores | anuncios oficiales de Arknights; la wiki wiki.gg ya da lo principal |
-| Blue Archive | pendiente (eventos 4→22) | eventos menores | Cargo/wiki ya da 4; comunidad oficial en STOVE no (es de Nexon); mirar su sitio de noticias |
-| Reverse: 1999 | pendiente (eventos 10→27) | eventos menores | avisos oficiales de Bluepoch (sitio/redes: comprobar términos) |
-| WuWa | pendiente (complemento de eventos) | desafíos recurrentes y horas | Reverie + Game8 ya cubren lo principal; avisos oficiales de Kuro |
-| NTE | pendiente (complemento de eventos) | horas exactas (Game8 solo da el día, "≈") | avisos oficiales de Hotta/Perfect World |
+| NIKKE | **HECHO** (`nikkegg.ts`: notas de parche oficiales copiadas en nikke.gg; eventos, banners, raids y tiradas) | nada (9/9, mismas horas) | — |
+| Arknights | **HECHO** (`akdata.ts`: datos del cliente EN, horas exactas + logins; wiki para lo futuro) | nada de lo que daba gachafocus el 6 nov (login + horas de inicio) | Eventos futuros con "≈" hasta que entren en el cliente |
+| Blue Archive | **PARCIAL** (Bucket de la wiki: eventos y raids) | 10 campañas x2/x3 de Global, login de aniversario, 2.º periodo de Tiphareth | Sin fuente permitida: los avisos están en el foro de Nexon (`forum.nexon.com/bluearchive-en`, tablón Events 3218, API `/api/v1/board/3218/threads`), pero los **Términos de Nexon prohíben robots/spiders**; la hoja de ruta (`jarvis-api.nexon.com`) exige token; BlueArchive.gg (DotGG) solo publica spam; la wiki solo registra campañas de JP. Salidas: permiso de Nexon o archivo manual |
+| Reverse: 1999 | **HECHO** (`bluepoch.ts`: avisos oficiales de Bluepoch; eventos y banners con imagen propia y tiradas) | nada (12/12; inicio = fin del mantenimiento, gachafocus usaba su inicio) | — |
+| WuWa | **HECHO** (`kuro.ts`: notas de parche oficiales de Kuro, horas exactas; imágenes y eventos extra de Reverie; desafíos por ciclo fijo) | Endstate Matrix (Kuro no publica el calendario de sus fases; no se inventa) | Los desafíos Tower of Adversity y Whimpering Wastes se calculan con `wuwaChallenges` (ciclo de 28 días, lunes 04:00 hora del servidor; anclas de gachafocus; solo hasta `validUntil`, revisar cada versión). Sin imagen |
+| NTE | **HECHO** (`nevernessgg.ts`: avisos oficiales copiados en neverness.gg, horas exactas; Game8 para imágenes y lo aún no anunciado, "≈") | nada (horas iguales a gachafocus) | — |
 
 **Cómo medir cada sustituto:** `docs/baseline-gachafocus-2026-11-06/<juego>.json` son las copias con gachafocus de antes de apagarlo (ver su README: de Arknights y WuWa ya no hay). Se ejecuta la fuente nueva
 (p. ej. el script de prueba: importar `server/proxy.mjs` y `server/bundle/collector.mjs`, `mod.setup(proxy.sourceFetch)`, `mod.collect('<juego>')`, tras `npm run build:server`) y se compara elemento a elemento
@@ -76,6 +79,110 @@ si los términos lo prohíben, poca frecuencia (caché del proxy 2–6 h, pausa 
 `server/proxy.mjs` (fuentes `bannerhistory` y `stove`), `server/bundle/collector.mjs` y `dist/` recompilados (`npm run build:prod`), docs. **Falta**: revisar el diff, `git add -A` (incluye `dist/` y el bundle), commit y push; Botkeep
 no compila. Tras el push el flujo de Actions (cada 3 h) y el recolector ya no tocan gachafocus. Ojo: el guard del 70 % del snapshot conserva hasta 12 h una copia vieja si la nueva trae mucho menos; los juegos con complementos
 de gachafocus mostrarán los elementos antiguos hasta entonces y luego los perderán.
+
+### Fuentes candidatas evaluadas el 6 nov 2026 (tarde; nada implementado aún)
+
+- **Blue Archive → `bluearchive.wiki`, extensión Bucket (IMPLEMENTADO en `src/sources/mediawiki.ts`, `blueArchiveBucket`: 3 peticiones = `events` + `raids` + un `imageinfo` para las miniaturas; reestreno = `id` 10000+`original_id`; los Joint Firepower Exercise van como `minor`)** (`/w/api.php?action=bucket&query=bucket('<tabla>').select(...).where('server','GL').run()`; tablas en el espacio `Bucket:` (ns 9592):
+  `events` (campos `category`, `name_en`, `start_date`, `end_date`, `promo`, `banner`), `raids` (`type`, `name`, `season`, `start_date`, `end_date`, `image`), `world_raids`, `banners`). Fechas ISO con zona.
+  `raids` GL da Grand Assault / Final Restriction (Limit Break) / Total Assault **con las mismas horas que gachafocus** (Hod 03→09 nov 19:00Z, Tiphareth 14 oct→9 nov) y banner propio. `events` GL: 4 eventos vigentes (incl. mini-evento SCHALE y Joint Firepower Exercise).
+  **No cubre** las campañas x2/x3 de Global (en `Events/Reward campaigns` solo hay entradas `Server = JP`) ni el login de cuenta atrás del aniversario. Misma wiki que ya usamos; ojo, su robots.txt veta `/w/` salvo `action=mobileview` (el uso actual ya hace `action=parse`; decidir/consultar).
+- **Stella Sora → `stellasora.miraheze.org`**: cada evento grande tiene página con `{{EventData|image=…|start|end}}` y `{{Countdown|start-time=2026-10-19T13:00-07:00|end-time=…}}`; se listan con
+  `generator=embeddedin&geititle=Template:EventData&prop=revisions&rvprop=content` (28 páginas, 1 petición). Cubre los eventos de historia y algunos minijuegos, **no** los 9 eventos que daba gachafocus el 6 nov (aniversario,
+  Urgent Bounty, Menace Arena, Cataclysm Survivor…) y sus horas (13:00 UTC-7) **no cuadran** con gachafocus (21:00 UTC-7 = 04:00Z): sin verificar cuál es la buena. Útil como base + archivo manual para el resto.
+- **NIKKE oficial (`nikke-en.com`)**: sin `robots.txt` (404); sus Términos (iframe `nikke-en.com/termsofservice/children/en.html`) dicen que "Services" incluye las webs, pero **no tienen cláusula contra bots/scraping**.
+  La lista de noticias de la home es HTML (`newsdetail.html?content_id=…`), mayormente avisos técnicos; las notas de parche con eventos parecen estar en blablalink (sin revisar). Las wikis (Fandom) no listan los eventos menores (VOLT TRIP, Trail Marker…).
+- **Reverse: 1999**: la wiki Fandom no tiene los eventos menores (Ephaistonos Open, Ducks in the Suitcase…). `re1999.bluepoch.com` no respondió desde aquí; términos sin revisar.
+- **Arknights Global** es de Yostar (mismos términos que Stella Sora: prohíben robots) → la web oficial no es opción.
+  La wiki (Cargo `EventServerDetails`, `server='global'`) da bien el **fin** (10:59:59 UTC) pero el **inicio** es un valor fijo (17:00 UTC) que no es real: los datos del cliente dan 15:00 para The Masses' Travels Rerun y 11:00 para el login.
+  Gachafocus (copia en la caché local del 6 nov) solo añadía el login "To Look Back on Terra" (8 oct 11:00 → 16 nov 10:59:59 UTC) y esas horas de inicio.
+  Datos del cliente EN: `Kengxxiao/ArknightsGameData_YoStar` está **archivado** (nov 2025); `ArknightsAssets/ArknightsGamedata` (Actions con arkprts, actualizado el 5 nov 2026, sin licencia) tiene `en/gamedata/excel/activity_table.json`
+  (`basicInfo`: nombre, tipo, `startTime`/`endTime` en epoch exacto, incluye logins) pero pesa **18 MB**, solo trae lo que ya está en el cliente (no eventos futuros) y son datos extraídos del juego (zona gris con los Términos de Yostar). **El dueño decidió usarlo (6 nov 2026) → IMPLEMENTADO en `src/sources/akdata.ts`** (`withClientData`, llamado desde `syncArknights`):
+  el proxy (fuente `akgamedata`, caché 6 h) admite hasta 48 MB para esa ruta y guarda solo el calendario (`shrink`: `basicInfo` de activity_table y periodos de `gacha_table`), unos KB; recolector y navegadores reciben eso.
+  Los eventos de la wiki que coinciden (nombre + inicio a ≤3 días) toman las horas exactas y `official: true`; los que la wiki no tiene (logins) se añaden; los banners de la wiki se corrigen con el reclutamiento no estándar del mismo periodo.
+  Los eventos futuros (aún no en el cliente) siguen con "≈" e inicio 17:00 de la wiki.
+  **Banners Standard y Kernel** (la wiki dejó de registrarlos para Global en 2020): de `gacha_table` (`DOUBLE` y `CLASSIC_DOUBLE`), con los operadores del Kernel (`dynMeta`) traducidos con
+  `character_table.json` (~20 MB, que el proxy recorta a "id → nombre", ~13 KB). Imágenes: si la tabla no trae, se prueban `EN <evento> [Rerun] banner.png` y `CN <evento> banner.png`.
+- **WuWa (Kuro) → IMPLEMENTADO (`src/sources/kuro.ts`)**. Términos (`sdk-global.kurogames.com/pro/agreement/common/language_en/terms_of_service`, leídos en navegador): cubren las webs, **sin cláusula contra bots/scraping**;
+  `wutheringwaves.kurogames.com/robots.txt` = `User-agent: *` sin `Disallow`; el CDN no tiene robots.txt. La web lee JSON estáticos: `hw-media-cdn-mingchao.kurogame.com/akiwebsite/website2.0/json/G152/en/ArticleMenu.json` (lista, ~26 KB)
+  y `.../article/<id>.json`. 2 peticiones por ciclo (lista + la "Patch Notes for Wuthering Waves Version X.Y" más reciente; caché 3 h, pausa 3 s). Cada evento: `[Nombre] Tipo` + `✦Duration: … (server time)`; server time = América (UTC-5);
+  "Version X.Y Update" = fin del mantenimiento del mismo aviso (UTC+8). Los eventos web (UTC+8) van como `minor`. Los avisos "Upcoming Events…" y "Event Preview" son solo imágenes. Medido el 6 nov: 7 eventos oficiales, todos
+  emparejados con su imagen de Reverie, + Chord Cleansing (solo Reverie). Discrepancia: Cubie Wars cierra el 11 nov 11:59 hora del servidor (16:59Z) según Kuro; Reverie decía 05:00Z y gachafocus 12 nov 08:59Z.
+- **NTE (Perfect World) → la web oficial NO es opción**: sus Términos prohíben "any robot, spider, crawler or other automatic device … that … scrapes" los Productos o Servicios. Sin robots.txt. Solo con permiso escrito.
+- Descartados: **SchaleDB** (repositorio archivado desde mar 2025, `schale.gg` en mantenimiento); Game8 no tiene listas de eventos de Stella Sora, NIKKE, BA, R:1999 ni Arknights en inglés.
+
+### Fechas de las versiones (parches) — corregido el 6 nov 2026
+
+La wiki da solo el día de cada versión (00:00 UTC), que en América cae la víspera: la marca de la v3.8 de WuWa salía el 10/11 nov (GMT-3), antes de que acabaran
+los banners de la 3.7. `alignPatches` (`src/sources/versions.ts`, aplicado en `syncSource`):
+1. Si un banner empieza entre 1 día antes y 2 después de la fecha de la wiki, la versión toma su hora (WuWa 3.8 → 12 nov 03:00 UTC) y deja de ser estimada.
+2. Si no, un día sin hora pasa a la hora habitual de lanzamiento (`LAUNCH_UTC_HOUR` en index.ts: 03:00 UTC = 11:00 UTC+8; Endfield 04:00).
+3. Una versión estimada no empieza antes de que acaben los banners ya empezados (Endfield 1.7: 24 → 26 nov) ni antes del 80 % del ciclo típico
+   (Genshin 7.3 salía el 24 nov, fin de la 1.ª fase de banners; ahora 15 dic).
+4. Cada versión termina cuando empieza la siguiente.
+
+### Juegos añadidos el 6 nov 2026 y comparación de cobertura
+
+- **Punishing: Gray Raven** (`syncPgr` en `kuro.ts`): mismo sistema que WuWa en otro CDN (`media-cdn-zspms.kurogame.net/pnswebsite/website2.0/json/G167/`), sin robots.txt, Términos de Kuro.
+  Lee el último "VERSION "…" UPDATE NOTE": banners (Omniframe, arma, CUB, "[Expedition Supply] Research"), eventos y tiradas (250 Black Card o 250 R&D Tickets por
+  investigación, según sus notas). Se omiten los paquetes de revestimientos. Imágenes: la wiki de Fandom aún no tiene las de esta versión.
+- **Honkai Impact 3rd** (`honkai3.ts`): eventos desde `honkaiimpact3.fandom.com` (robots.txt permite /api.php): `Category:Events` por fecha + `{{Event Entry|start|end|version}}`.
+  Hora del servidor sin zona → UTC+8 y "≈". ennead solo tiene sus códigos; la wiki dejó de registrar los gachapones (Supply) en 2019 → banners solo vía Discord.
+- **Azur Lane**: solo vía Discord (su web es de Yostar y su wiki azurlane.koumakan.jp pone una barrera anti-bots Anubis: no se usa). Sin canal configurado, vacío.
+- **Comparación con gacha-event-tracker** (agregador público, JSON en GitHub Pages; solo para comparar): sin huecos en NTE, R:1999, Arknights, Blue Archive, Stella Sora.
+  **Genshin, HSR y ZZZ → RESUELTO** (`hoyowiki.ts`): la plantilla `{{Event List|hidepast=1}}` de sus wikis de Fandom, renderizada con `action=parse`, da cada evento con su periodo exacto
+  (`data-sort-value`, hora del servidor de Asia, UTC+8), imagen y tipos; `officialFirst(wiki, ennead)`: **la wiki manda en las horas** (decisión del dueño, 6 nov 2026: ennead daba el inicio a las 07:00 UTC+8, en pleno mantenimiento, y cierres redondos; la wiki da 11:00 UTC+8 tras la actualización y el cierre real 03:59 UTC+8) y ennead aporta recompensas, tiradas, banners, desafíos y lo que la wiki no tenga. Además, ennead lista algunos eventos sin fechas (0 → 0), que antes se descartaban. Tras el cambio:
+  Genshin 7 → 20 elementos, HSR 20 → 22, ZZZ 11 → 19, y 0 huecos frente a gacha-event-tracker (salvo 2 indefinidos de HSR). `officialFirst` también empareja por mismo periodo y
+  nombre casi igual (≥70 % de palabras; "Unjust Judgement" / "Judgment").
+  Huecos que quedaban antes: **HI3** (banners y ventas, de arustats), **PGR** (desafíos recurrentes: War Zone, Phantom Pain Cage,
+  Norman Revival Plan…), **ZZZ** (5 menores de Game8), **WuWa** (Moonlit Path y eventos permanentes), **Uma** (4 scouts garantizados), **FGO** (4 campañas). No tenemos Infinity Nikki,
+  P5X ni GFL2.
+
+### Recompensas e iconos (6 nov 2026, noche)
+
+- **Recompensas de los eventos de la wiki (Genshin, HSR, ZZZ)**: `eventRewards` en `hoyowiki.ts` lee `{{Event Rewards |Primogem = 60}}` de la página de cada evento (todas en una consulta)
+  y calcula las tiradas con las equivalencias de HoYoverse (`pulls.ts`: 160 de la moneda premium = 1, billetes = 1). Ej.: Encounter: Interlude of the Long Journey 60 Primogems.
+- Un evento sin recompensas listadas ya no dice "Sin tiradas" (`verdict` en `logic.ts`): queda sin veredicto.
+- NIKKE: "Selective Recruitment (Exclusive) Vouchers" cuentan como tirada (aniversario: 10 → 20).
+- ennead puede repetir una recompensa (dos fases): `itemsOf` las suma en una línea.
+- **Iconos de las recompensas** (`withItemIcons` en `collector.ts`, solo servidor): el archivo del objeto en la wiki del juego probando "Item X.png", "X.png", "X Icon.png", "Icon X.png",
+  también en singular y sin "Exclusive" (NIKKE). Medido: Genshin 39/39, ZZZ 13/13, HSR 23/24, WuWa, R:1999, NIKKE y PGR completos.
+- WuWa: las recompensas de la mayoría de eventos solo están en la infografía de Kuro ("Upcoming Events…", imagen; p. ej. Echo Erase 400 Astrite). El dueño decidió no usar OCR.
+
+### Avisos oficiales en otros sitios y tiradas (6 nov 2026, noche)
+
+- **Reverse: 1999 → `src/sources/bluepoch.ts`** (fuente `bluepoch` del proxy). La portada `re1999.bluepoch.com/en/home` carga los avisos con
+  `POST /activity/official/websites/information/query` `{gameId: 60001, current, pageSize}` (la lista ya trae el HTML). El proxy admite `post: true` en una fuente: la URL con parámetros
+  es la clave de caché y se envía como POST con esos parámetros en JSON. Se leen los "Ver. X.Y … Preview" (un bloque por evento: imagen, nombre, subtítulo, `[Duration]: … (UTC-5)`)
+  y los "Version Update Maintenance Notice" (hora real de "After the version update"). Banners con sus personajes (RATE UP). Se omiten trajes y paquetes de pago. Se combina con la wiki
+  (`officialFirst`: manda la oficial; la wiki añade lo que falte).
+- **NIKKE → `src/sources/nikkegg.ts`**: nikke.gg (DotGG) copia íntegro el aviso oficial ("Major Updates:") en su API de WordPress (`/wp-json/wp/v2/posts?categories=1`). Secciones numeradas
+  ("5.7 Trail Marker Event") + `* Event duration: From … to … (UTC+9)`. "Special Recruit" → banner; "Pilgrim Selective Recruitment" → un banner con los tres; Union/Solo Raid y Coordinated Operation → desafíos.
+  La web oficial (nikke-en.com) solo publica avisos técnicos y blablalink/playerinfinite usa una API firmada (v2): no se replica la firma.
+- **NTE → `src/sources/nevernessgg.ts`**: neverness.gg (DotGG) copia los avisos de Perfect World ("Source: Perfect World"). Última "Patch Notes" + avisos de mantenimiento posteriores
+  (actualizaciones a mitad de versión, p. ej. Gold Clash). `● "Nombre" Tipo` + `Duration: … (UTC+8 | server time)`; server time = América (UTC-5). Los banners siguen de Prydwen.
+  Ojo: Perfect World prohíbe el scraping de *sus* servicios; neverness.gg es un tercero cuyos robots.txt y Términos (DotGG) lo permiten. Si se prefiere no depender de una copia, quedaría Game8 ("≈").
+- DotGG (nikke.gg, neverness.gg): robots.txt `User-agent: *` sin `Disallow` salvo su buscador `?s=` (no se usa: se filtra por categoría); Términos (`/terms`) sin cláusula contra el acceso automatizado.
+  Proxy: fuente `nikkegg` (solo `/wp-json/wp/v2/posts[/id]` con `categories`, `per_page`, `_fields`), pausa 5 s, caché 3 h.
+- **WuWa, Pioneer Podcast**: del fin del mantenimiento de la versión al inicio del de la siguiente (su "Update Maintenance Notice"; si aún no existe, el día del "Version Preview … Scheduled for
+  Release on …" a las 04:00 UTC+8, "≈").
+- `officialFirst` también empareja por mismo nombre + mismo fin (±1 día) aunque la comunidad dé otro inicio (Game8 ponía Blackbird's Invitation el 8 oct).
+- **Tiradas (`src/sources/pulls.ts`)**: `pullsIn(juego, líneas)` suma las recompensas del bloque de cada evento en los avisos oficiales ("Radiant Tide x5", "Clear Drop x400", "10 Advanced Recruit
+  Vouchers"): WuWa 160 Astrite = 1 y Radiant/Forging/Lustrous Tide = 1; R:1999 180 Clear Drop = 1 y Unilog = 1; NIKKE 300 Gems = 1 y Advanced Recruit Voucher = 1. Se ignoran compensaciones y precios.
+  `segments` reparte el texto: de su título al siguiente; las cabeceras sin evento (p. ej. "Sign-in Event" con partes I y II) se suman al evento siguiente. Si el aviso no da recompensas, queda 0
+  (sin veredicto; `detailsPulls` sigue limitado a HoYoverse). Medido: Gifts of Singing Drizzle 10, login de R:1999 14, A Glimpse of the Legend 2,2, 4th Anniversary (NIKKE) 10.
+
+### Qué usa gachafocus para lo que nos falta (analizado el 6 nov 2026 con su HTML ya guardado en la caché local, sin pedirle nada)
+
+Su web dice "Source: Collected automatically, checked hourly" y enlaza la fuente de cada elemento:
+- **Blue Archive**: los hilos del foro de Nexon Global (`forum.nexon.com/bluearchive/board_view?board=3218&thread=3572532` "November Rewards Campaign", `thread=3572008` login de aniversario). Los Términos
+  de Nexon prohíben robots/spiders, así que no lo replicamos.
+- **Stella Sora, Limbus, R:1999, códigos…**: enlaces a **su propio servidor de Discord** (`discord.com/channels/1459254954232647680/…`). Usan la función "Seguir" de los canales de anuncios de Discord: cada
+  servidor oficial publica en su canal de anuncios y Discord copia el mensaje en el canal de gachafocus, donde un bot lo lee.
+- **Vía equivalente para nosotros: IMPLEMENTADA, a la espera de configurarla** (`src/sources/discord.ts`; guía en **`docs/discord-bot.md`**). Lo que sigue es el plan original: crear un servidor de Discord propio, "Seguir" los canales de anuncios oficiales de Stella Sora y Blue Archive Global, crear un bot
+  (aplicación de Discord) con el permiso de leer mensajes en ese servidor y guardar su token en una variable del servidor (`DISCORD_TOKEN`, nunca en el repositorio). El recolector leería
+  `GET https://discord.com/api/v10/channels/<id>/messages` con `Authorization: Bot <token>` (solo en el servidor; el proxy tendría que añadir la cabecera y no exponer el token). Antes: confirmar
+  que los canales oficiales permiten "Seguir" y revisar los Términos para desarrolladores de Discord (un bot en tu propio servidor leyendo tus canales está permitido). Los mensajes tienen formato de
+  aviso oficial ("Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)"), así que el parser sería como los de Kuro/Bluepoch.
 
 **Contactos pendientes (los hace el dueño):** gachafocus (API de pago / permiso), STOVE-Smilegate (confirmar el uso de `api.onstove.com/cwms` para Epic Seven y CZN; no se revisaron sus términos y el `robots.txt` de la API dio 503),
 bannerhistory.app (waterbeetles.dev@gmail.com; pedir permiso y ofrecer crédito), Yostar (Stella Sora), Reverie y ennead (ver más abajo).
@@ -120,16 +227,16 @@ asumió cuál; el sistema está hecho para ser inofensivo en ambos casos.
 | Genshin, Star Rail, ZZZ | ennead (epoch exacto) + wikis para versiones | no |
 | FGO | Atlas Academy (API abierta, epoch exacto) | no |
 | Limbus | Eldritch Tools (solo fechas, **hora supuesta** → "≈") | no |
-| Wuthering Waves | **Prydwen** (banners, ISO exacto) + **Reverie** (eventos con hora al minuto; API sin documentar, ver abajo) | complemento: eventos (añade desafíos y corrige); si Prydwen falla, también sus banners |
-| NTE | **Prydwen** (banners, ISO exacto) + **Game8** (eventos, solo el día; horas habituales del juego, "≈") | complemento: eventos (las hora exactas solo vienen de aquí); si Prydwen falla, también sus banners |
+| Wuthering Waves | **Prydwen** (banners, ISO exacto) + **notas de parche oficiales de Kuro** (`kuro.ts`, eventos con hora exacta; manda en horas) + **Reverie** (imágenes de esos eventos y los que Kuro no lista; `officialFirst` en index.ts) | complemento: eventos (añade desafíos y corrige); si Prydwen falla, también sus banners |
+| NTE | **Prydwen** (banners, ISO exacto) + **Game8** (eventos, solo el día; horas habituales del juego, "≈"; imagen de cada evento desde `data-src`) | complemento: eventos (las hora exactas solo vienen de aquí); si Prydwen falla, también sus banners |
 | CZN | **Prydwen** (banners, ISO exacto) | **solo eventos** (imprescindible; la página de Game8 de CZN tiene otro formato y no se ha implementado) |
 | NIKKE | Prydwen (inicio exacto; fin = 04:59:59 KST, "≈") + wiki Fandom (eventos) | complemento: eventos y banners |
 | Arknights | wiki.gg Cargo: eventos (`EventServerDetails`) y banners (`Banners`), **horas en UTC** | complemento: eventos |
 | Arknights: Endfield | wiki.gg Cargo (`Ameu*` ya viene en **UTC**, no UTC‑5) | opcional (`GACHAFOCUS_EXTRAS`) |
 | Umamusume | uma.moe (`is_confirmed` decide "≈") | opcional |
-| Blue Archive | bluearchive.wiki | complemento: eventos |
+| Blue Archive | bluearchive.wiki: banners (`action=parse`) + **Bucket** `events` y `raids` (eventos, ejercicios conjuntos, Total/Grand Assault, Final Restriction; hora exacta). Si Bucket falla, tabla HTML de `Events` | complemento: eventos (apagado) |
 | Reverse: 1999 | wiki Fandom (`Events`, `Summons`, horas con "(UTC-5)") | complemento: eventos |
-| Stella Sora | wiki comunitaria `stellasora.miraheze.org` (portada: banners con ISO exacto, UTC-7; la wiki no fecha los eventos) | **solo eventos** (imprescindible); si la wiki falla, también sus banners |
+| Stella Sora | **PENDIENTE** | 8 eventos del aniversario (banners sí, wiki) | Sin fuente permitida: web de Yostar (Términos prohíben robots); la wiki solo tiene los eventos grandes (`EventData`, sin los del aniversario) y sus páginas de versión llegan a la 1.6; no hay sitio DotGG. Salidas: permiso de Yostar o archivo manual |
 | **Epic Seven** | **solo gachafocus** (probado epic7db.com y se quitó: ver abajo) | obligatorio (eventos y banners) |
 
 `GACHAFOCUS_EXTRAS` (variable del servidor): `0` = solo donde es imprescindible; `1` = también para todos los demás; lista de ids
@@ -157,8 +264,8 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 
 ### Reverie (eventos de WuWa) y otras fuentes con hora exacta evaluadas
 
-- **Decisión del dueño del proyecto: para las horas se confía en gachafocus.** Cuando responde, sus horas mandan sobre las de cualquier otra fuente
-  (`withGachafocus` en `src/sources/index.ts`); las demás fuentes solo aportan lo que gachafocus no tiene o lo que sirve si está bloqueado.
+- **Decisión del dueño del proyecto (actualizada el 6 nov 2026): las fuentes oficiales mandan sobre gachafocus.** Los eventos de avisos oficiales llevan `official: true`
+  (Kuro, STOVE: `kuro.ts`, `epic7.ts`, `czn.ts`) y `withGachafocus` no les cambia la hora salvo que vengan marcados "≈". Para wikis y agregadores, gachafocus (si se reactiva con su API) sigue corrigiendo horas.
 - **Reverie** (`reveriegacha.gg`; API `gachalife-production.up.railway.app/events/wuwa`): eventos curados a mano con hora al minuto. Es una API
   **sin documentar** de un sitio de terceros: pedir permiso/dar crédito (el dueño del proyecto va a contactarles). `src/sources/reverie.ts`.
   Tipos de hora: `server` = hora local de cada servidor (se usa América, UTC-5; coincide con gachafocus en Echo Erase, Chord Cleansing y Beyond the
@@ -214,6 +321,9 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 - Que el refresco en segundo plano del proxy solo renueve URLs de **datos** (`action=parse|cargoquery`) y no las búsquedas de
   imágenes de las wikis (hoy se renuevan todas las vistas en los últimos 7 días).
 - Bajar el ritmo de renovación: gachafocus 1 h → 3 h, Prydwen 2 h → 3 h, ennead 10 → 30 min (el recolector solo los usa cada 3–6 h).
-- Mover las búsquedas de imágenes al recolector (hoy las hace el navegador de cada visitante vía `/proxy`).
+- **Imágenes en el recolector (HECHO, 6 nov 2026)**: `withWikiImages` en `src/collector.ts` ilustra lo que la fuente no ilustra (eventos y desafíos; banners solo si no tienen personajes):
+  1) archivo `<título>.png` o imagen del artículo con ese título exacto (una consulta), 2) búsqueda en la wiki del juego, aceptada solo si el artículo comparte alguna palabra (≥4 letras) con el título
+  (antes la búsqueda del navegador ponía cruces como "Hedone/Gallery" o la página genérica "Events"). Máx. 15 títulos por juego y ciclo, en serie; el proxy los guarda 12 h. La búsqueda del navegador (`images.ts`) sigue
+  para el camino sin servidor. Medido el 6 nov: Arknights, WuWa, Blue Archive y NTE sin huecos; R:1999 6 y Endfield 2 sin imagen en su wiki (la app pone el fondo del juego).
 - Contactar con gachafocus (`/en/contact`) y Prydwen para pedir autorización/uso formal; es la solución de fondo.
 - Epic Seven y Stella Sora no tienen otra fuente abierta; eventos menores de NIKKE/Arknights/Blue Archive/R99 solo vienen de gachafocus.

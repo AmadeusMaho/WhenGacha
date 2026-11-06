@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { t, tx } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf } from './images'
-import { KIND_LABEL, countdown, eventStatus, pullsBefore, verdict } from './logic'
+import { KIND_LABEL, countdown, eventStatus, partialPulls, pullsBefore, verdict } from './logic'
 import { GameAvatar, Img, Tag, fmtDateTime, fmtEnd, type Ctx } from './ui'
 import type { GameEvent } from './types'
 
@@ -15,6 +15,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
   const v = verdict(e, now, g)
   const done = !!state.done[e.id]
   const box = useRef<HTMLDivElement>(null)
+  const [pop, setPop] = useState(false) // chispa ✦ al marcar como completado
   const isBanner = e.kind === 'banner'
   const art = isBanner ? bannerArt(e) : eventImage(e)
   const plan = pullsBefore(e, state, g, now)
@@ -75,7 +76,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
                   ))}
                 </ul>
               ) : <p className="muted">{t('pull.none')}</p>}
-              <small className="muted">{t('pull.note')}</small>
+              <small className="muted">{t(partialPulls(g) ? 'pull.notePartial' : 'pull.note')}</small>
             </>
           )}
           {e.featured.length > 0 && (
@@ -103,8 +104,11 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
             </>
           )}
           <div className="row actions">
-            <button className={`btn ${done ? '' : 'primary'}`} onClick={() => setState(s => ({ ...s, done: { ...s.done, [e.id]: !done } }))}>
-              {done ? t('modal.undo') : t('modal.markDone')}
+            <button className={`btn mark ${done ? '' : 'primary'} ${pop ? 'pop' : ''}`} onClick={() => {
+              if (!done) { setPop(true); setTimeout(() => setPop(false), 700) }
+              setState(s => ({ ...s, done: { ...s.done, [e.id]: !done } }))
+            }}>
+              {!done && <span className="spark" aria-hidden>✦</span>}{done ? t('modal.undo') : t('modal.markDone')}
             </button>
             <small className="muted">{t('modal.synced')}</small>
           </div>

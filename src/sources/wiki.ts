@@ -1,5 +1,6 @@
 import type { Featured, GameEvent, Kind, Patch } from '../types'
 import { viaProxy } from '../net'
+import { withClientData } from './akdata'
 import type { GameSync } from './ennead'
 
 /**
@@ -100,7 +101,41 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
       precision: 'approx',
     })
   }))
-  return { events: [...events, ...banners], patches: [], codes: [] }
+  const base: GameSync = { events: [...events, ...banners], patches: [], codes: [] }
+  const refined0 = await withClientData(gameId, base).catch(err => { console.warn('[arknights] datos del cliente:', err?.message ?? err); return base })
+  const refined = await withRotationArt(refined0).catch(() => refined0)
+  // Sin imagen en la tabla: la wiki suele tener el banner del evento como "EN <evento> banner.png" (o el de China, que sale antes).
+  const missing = refined.events.filter(e => !e.image && e.kind !== 'banner')
+  const names = (e: GameEvent) => { const n = e.title.replace(/\s*\(Rerun\)$/i, ''); return [`EN ${n} Rerun banner.png`, `EN ${n} banner.png`, `CN ${n} banner.png`] }
+  const guessed = missing.length ? await fileMap('arknights.wiki.gg', missing.flatMap(names)) : new Map<string, string>()
+  return { ...refined, events: refined.events.map(e => {
+    if (e.image || e.kind === 'banner') return e
+    const cands = names(e).filter(n => /\(Rerun\)$/i.test(e.title) || !/ Rerun banner/.test(n))
+    const image = cands.map(n => guessed.get(norm(n))).find(Boolean)
+    return image ? { ...e, image } : e
+  }) }
+}
+
+/**
+ * Imagen de los reclutamientos rotativos (Standard / Kernel, que vienen de los datos del cliente): la wiki sube una por rotación ("EN Standard Pool 179 banner.png",
+ * "EN Kernel 64 banner.png") el día antes de que empiece, así que se toma la última subida entre 10 días antes y 1 día después del inicio. 2 consultas pequeñas.
+ */
+async function withRotationArt(s: GameSync): Promise<GameSync> {
+  const need = s.events.filter(e => e.kind === 'banner' && !e.image && /^(Standard|Kernel) Headhunting/.test(e.title))
+  if (!need.length) return s
+  const list = async (prefix: string) => {
+    const qs = new URLSearchParams({ action: 'query', list: 'allimages', aiprefix: prefix, ailimit: '500', aiprop: 'timestamp', format: 'json', origin: '*' })
+    const res = await fetch(viaProxy(`https://arknights.wiki.gg/api.php?${qs}`))
+    const rows = ((await res.json())?.query?.allimages ?? []) as { name: string; timestamp: string }[]
+    return rows.map(r => ({ name: norm(r.name), at: +new Date(r.timestamp) }))
+  }
+  const [std, ker] = await Promise.all([list('EN Standard Pool'), list('EN Kernel ')])
+  const kernel = ker.filter(f => !/Locating/i.test(f.name))
+  const pick = (files: { name: string; at: number }[], start: number) =>
+    files.filter(f => f.at >= start - 10 * DAY && f.at <= start + DAY).sort((a, b) => b.at - a.at)[0]?.name
+  const chosen = new Map(need.map(e => [e.id, pick(/^Kernel/.test(e.title) ? kernel : std, +new Date(e.start))]))
+  const files = await fileMap('arknights.wiki.gg', [...chosen.values()])
+  return { ...s, events: s.events.map(e => { const f = chosen.get(e.id); const image = f && files.get(f); return image ? { ...e, image } : e }) }
 }
 
 /* ---------- Arknights: Endfield (servidor AMEU) ---------- */

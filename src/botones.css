@@ -1,0 +1,120 @@
+/* ====== Botones y barra de navegación más pulidos (prueba, 6 nov 2026) ======
+   Capa independiente: para volver al estilo anterior, borra la línea `import './botones.css'` de src/main.tsx.
+   Criterio: más acabado (relieve sutil, degradado suave en lo activo) sin perder legibilidad ni el tono sobrio. */
+
+/* --- Barra de navegación y selectores segmentados (Línea / Cuadrícula) --- */
+header nav, .seg {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .025));
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 6px 18px rgba(0, 0, 0, .25);
+  backdrop-filter: blur(8px);
+}
+header nav button, .seg button {
+  color: rgba(255, 255, 255, .72);
+  border-radius: 12px;
+  transition: color .2s, background .25s var(--ease), box-shadow .25s var(--ease);
+}
+header nav button:hover, .seg button:hover { color: #fff; background: rgba(255, 255, 255, .07); }
+header nav button.on, .seg button.on {
+  color: #fff;
+  font-weight: 650;
+  background: linear-gradient(135deg, rgba(244, 114, 182, .55), rgba(56, 189, 248, .45));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), 0 4px 14px rgba(244, 114, 182, .22);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+header nav button.on:hover, .seg button.on:hover { background: linear-gradient(135deg, rgba(244, 114, 182, .65), rgba(56, 189, 248, .55)); }
+
+/* --- Botones generales --- */
+.btn {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .04));
+  border: 1px solid rgba(255, 255, 255, .13);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 2px 8px rgba(0, 0, 0, .25);
+  transition: transform .2s var(--ease), background .25s var(--ease), border-color .2s, box-shadow .25s var(--ease);
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06));
+  border-color: rgba(255, 255, 255, .26);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 6px 16px rgba(0, 0, 0, .3);
+}
+.btn:active:not(:disabled) { transform: translateY(0) scale(.98); }
+.btn.primary {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, #ec4899, #8b5cf6 55%, #38bdf8);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 6px 18px rgba(236, 72, 153, .28);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .3);
+}
+.btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, #f472b6, #a78bfa 55%, #7dd3fc); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 8px 22px rgba(236, 72, 153, .34); }
+.btn.ghost { background: transparent; box-shadow: none; }
+.btn.ghost:hover:not(:disabled) { background: rgba(255, 255, 255, .07); box-shadow: none; }
+
+/* --- Chips e iconos de filtro, idioma, recargar --- */
+.chip, .ichip, .lang-btn, .sync {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .08), rgba(255, 255, 255, .03));
+  border-color: rgba(255, 255, 255, .12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
+}
+.chip:hover, .ichip:hover { border-color: rgba(255, 255, 255, .28); }
+
+/* --- Accesibilidad: foco visible y sin movimiento si se pide --- */
+.btn:focus-visible, header nav button:focus-visible, .seg button:focus-visible, .chip:focus-visible, .ichip:focus-visible { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .btn, .btn:hover:not(:disabled) { transform: none; transition: none; } }
+
+/* ====== Versión sobria con detalle (6 nov 2026, 3.ª vuelta) ======
+   Sin destellos ni bordes de degradado: la base de arriba más un solo acento, el color del juego que estás viendo (--glow), en poca cantidad.
+   Lo activo (navbar, Línea/Cuadrícula, chips) comparte el mismo aspecto: fondo claro translúcido + una línea fina de acento abajo. */
+
+/* --- Navbar: el indicador se desliza entre pestañas --- */
+header nav { position: relative; isolation: isolate; }
+header nav .nav-ind {
+  position: absolute; z-index: -1; top: 4px; bottom: 4px; left: 0;
+  width: var(--ind-w, 0); transform: translateX(var(--ind-x, 0)); border-radius: 12px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, .22), rgba(99, 102, 241, .14) 60%, rgba(244, 114, 182, .12));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 0 0 1px rgba(125, 211, 252, .22);
+  transition: transform .45s cubic-bezier(.3, 1.2, .5, 1), width .45s cubic-bezier(.3, 1.2, .5, 1), box-shadow .8s ease;
+}
+header nav button, header nav button.on, header nav button:hover { background: transparent !important; box-shadow: none !important; }
+header nav button.on { text-shadow: none; }
+
+/* --- Mismo aspecto para lo activo en selectores y chips --- */
+.seg button.on, .chip.on {
+  background: linear-gradient(135deg, rgba(56, 189, 248, .22), rgba(99, 102, 241, .14) 60%, rgba(244, 114, 182, .12));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
+  border-color: rgba(125, 211, 252, .28); color: #fff; text-shadow: none;
+  transition: box-shadow .8s ease, background .2s;
+}
+.seg button.on:hover, .chip.on:hover { background: linear-gradient(135deg, rgba(56, 189, 248, .28), rgba(99, 102, 241, .18) 60%, rgba(244, 114, 182, .16)); }
+
+/* --- Botones: sin borde de color; al pasar el ratón, una iluminación suave --- */
+.btn:hover:not(:disabled), .chip:not(.on):hover, .ichip:hover, .btn.ghost:hover:not(:disabled) {
+  border-color: rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 14px rgba(255, 255, 255, .07);
+}
+
+/* Principal: el mismo celeste con un toque rosado, algo más intenso que lo activo. */
+.btn.primary, .btn.primary:hover:not(:disabled) { text-shadow: none; border: 1px solid rgba(125, 211, 252, .35); }
+.btn.primary {
+  background: linear-gradient(135deg, rgba(56, 189, 248, .38), rgba(99, 102, 241, .26) 60%, rgba(244, 114, 182, .24));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .16), 0 2px 8px rgba(0, 0, 0, .25);
+}
+.btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(56, 189, 248, .46), rgba(99, 102, 241, .32) 60%, rgba(244, 114, 182, .3));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 0 16px rgba(56, 189, 248, .18);
+}
+
+/* --- Motivo ✦ (el de las tiradas) en "Marcar como completado": gira al pasar el ratón y al marcar --- */
+.btn.mark { display: inline-flex; align-items: center; gap: 8px; }
+.btn.mark .spark { display: inline-block; font-size: .95em; color: #bae6fd; transition: transform .4s var(--ease); }
+.btn.mark:hover .spark { transform: rotate(72deg); }
+.btn.mark.pop { animation: wg-pop .5s cubic-bezier(.34, 1.4, .64, 1); }
+.btn.mark.pop .spark { animation: wg-spark .6s ease-out; }
+@keyframes wg-pop { 40% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes wg-spark { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(1.4); } 100% { transform: rotate(360deg) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  header nav .nav-ind, .btn.mark .spark { transition: none; }
+  .btn.mark.pop, .btn.mark.pop .spark { animation: none; }
+}

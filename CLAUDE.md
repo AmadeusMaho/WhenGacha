@@ -40,6 +40,11 @@ Reglas que no se rompen:
 - Las fuentes se escriben para el navegador (`DOMParser`), pero también deben funcionar en Node con `linkedom`: no uses `table.rows`/`row.cells` ni APIs de layout.
 
 
+## Discord (Stella Sora y Blue Archive Global)
+
+- `src/sources/discord.ts` lee los canales de un servidor propio que "sigue" los anuncios oficiales. Solo con `DISCORD_TOKEN` y `DISCORD_CHANNELS` en el servidor
+  (guía en `docs/discord-bot.md`). El token nunca va al repositorio ni al navegador: la fuente `discord` del proxy es interna.
+
 ## Otros detalles útiles
 
 - Los finales de línea dan avisos "LF will be replaced by CRLF": es ruido de Windows, no hay cambios de contenido.

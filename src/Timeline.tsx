@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from './i18n'
-import { bannerArt, eventImage, faceOf, splashOf, wallpaperOf } from './images'
+import { bannerArt, eventImage, faceOf, officialArt, splashOf, wallpaperOf } from './images'
 import { KIND_LABEL, countdown, eventStatus, packRows, pullsBefore, trackedGames, verdict } from './logic'
 import { FILTER_ICON, GameAvatar, Img, Tag, anyArt, cssVar, fmtDate, fmtEnd, fmtDateTime, ReorderList, ZoneTag, type Ctx } from './ui'
 import { locale } from './i18n'
@@ -237,7 +237,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
                 return <span key={m.tm} className="month" style={{ left: x(m.tm), width: x(next) - x(m.tm) }}><b>{m.label}</b></span>
               })}
               {weeks.filter(w => Math.abs(x(w) - x(now)) > 34).map(w => <span key={w} className="tick" style={{ left: x(w) }}>{fmtDate(w)}</span>)}
-              <span className="today-flag" style={{ left: x(now) }}>{t('today')}</span>
+              <span className="today-flag" style={{ left: x(now) }}>{t('today')}<span className="today-date"> · {fmtDate(now)}</span></span>
             </div>
           </div>
 
@@ -293,6 +293,9 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
   )
 }
 
+/** "3 nov 20:00" en la zona del navegador, sin abreviatura de zona (la barra tiene poco sitio; la zona está en el selector de la cabecera). */
+const fmtShort = (ms: number) => new Date(ms).toLocaleString(locale(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+
 function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; x: (tm: number) => number; maxX: number; now: number; done: boolean; open: (e: GameEvent) => void }) {
   const s = +new Date(e.start), en = +new Date(e.end)
   const left = Math.max(0, x(s))
@@ -301,10 +304,14 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
   const pct = s < now && en > now && !e.open ? ((now - s) / (en - s)) * 100 : 0
   const state = s > now ? t('bar.startsIn', { t: countdown(s - now) }) : en > now ? t('bar.endsIn', { t: countdown(en - now) }) : t('bar.ended')
+  // Tooltip: fechas completas con zona. Barra: fechas cortas (la zona ya está en el selector de arriba) y el estado coloreado por urgencia.
   const range = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtDateTime(s)} → ${fmtEnd(e)} · ${state}`
+  const short = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtShort(s)} → ${e.precision ? '≈ ' : ''}${fmtShort(en)}`
+  const left_ = en - now
+  const urgency = s > now ? 'upcoming' : en <= now ? 'ended' : e.open ? '' : left_ < DAY ? 'urgent' : left_ < 3 * DAY ? 'soon' : ''
   return (
     <button
-      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''}`}
+      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''} ${urgency === 'urgent' || urgency === 'soon' ? urgency : ''}`}
       style={{ left, width: w, top }}
       onClick={() => open(e)}
       title={`${e.title}\n${range}${e.pulls ? `\n${t('pulls.about', { n: e.pulls })}` : ''}${e.precision ? `\n≈ ${precHint(e.precision)}` : ''}`}
@@ -317,7 +324,8 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
         {faces.length ? faces.map(v => <Img key={v.f.name} className="face" src={v.src} />) : <Img className="thumb" src={img} />}
         <span className="bar-txt">
           <b>{e.precision && '≈ '}{done && '✓ '}{e.title}</b>
-          {w > 130 && <small>{range}</small>}
+          {/* Primero el estado (lo que más importa): si falta sitio se recortan las fechas, no el "quedan…". */}
+          {w > 90 && <small>{!e.open && <><span className={`when ${urgency}`}>{state}</span>{w > 130 && ' · '}</>}{(w > 130 || e.open) && short}</small>}
         </span>
         {e.pulls > 0 && w > 260 && <em>~{e.pulls}✦</em>}
       </span>}
@@ -366,7 +374,7 @@ function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: F
     <>
       <div className="wall" ref={wall} aria-hidden>
         {tracked.map(g => {
-          const src = wallpaperOf(g.id) || anyArt(state, g.id)
+          const src = wallpaperOf(g.id) || officialArt(g.id) || anyArt(state, g.id)
           return (
             <div key={g.id} className={`wall-layer ${g.id === active ? 'on' : ''}`} style={cssVar(g)}>
               <Img src={src} />

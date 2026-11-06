@@ -28,12 +28,17 @@ export type Tone = 'great' | 'good' | 'mid' | 'bad' | 'off'
 /** Solo las fuentes de HoYoverse detallan las recompensas (y por tanto las tiradas); en las demás no se puede juzgar. */
 const PULL_APIS = new Set(['genshin', 'starrail', 'zenless'])
 export const detailsPulls = (g?: Game) => !g?.api || PULL_APIS.has(g.api)
+/** Juegos cuyos avisos oficiales detallan algunas recompensas (src/sources/pulls.ts): el planificador da un mínimo. */
+const PARTIAL_PULL_APIS = new Set(['wuwa', 'reverse1999', 'nikke', 'pgr'])
+export const partialPulls = (g?: Game) => !!g?.api && PARTIAL_PULL_APIS.has(g.api)
 
 /** `label` queda vacío cuando el juego no detalla tiradas: no hay nada que valorar. */
 export function verdict(e: GameEvent, now: number, game?: Game): { label: string; tone: Tone } {
   if (eventStatus(e, now) === 'ended') return { label: t('v.ended'), tone: 'off' }
   if (e.kind === 'banner') return { label: t('v.banner'), tone: 'mid' }
   if (!detailsPulls(game) && !e.pulls) return { label: '', tone: 'off' }
+  // Sin recompensas listadas no se sabe si da tiradas (p. ej. eventos de Genshin que vienen de la wiki): mejor sin veredicto que un "Sin tiradas" falso.
+  if (!e.pulls && !e.items.length && e.kind === 'event') return { label: '', tone: 'off' }
   const p = e.pulls
   if (e.hours) {
     const rate = p / Math.max(e.hours, 0.25)
@@ -110,10 +115,10 @@ export interface PullPlan { total: number; items: GameEvent[] }
 
 /**
  * Tiradas que aún puedes sumar antes de que termine `banner`: eventos del mismo juego sin completar,
- * sin terminar y que empiezan antes del fin del banner. Solo con juegos que detallan sus recompensas.
+ * sin terminar y que empiezan antes del fin del banner. Juegos que detallan sus recompensas (HoYoverse) o parte de ellas (`partialPulls`: un mínimo).
  */
 export function pullsBefore(banner: GameEvent, state: { events: GameEvent[]; done: Record<string, boolean> }, game: Game | undefined, now: number): PullPlan | null {
-  if (banner.kind !== 'banner' || !game?.api || !detailsPulls(game) || eventStatus(banner, now) === 'ended') return null
+  if (banner.kind !== 'banner' || !game?.api || !(detailsPulls(game) || partialPulls(game)) || eventStatus(banner, now) === 'ended') return null
   const end = +new Date(banner.end)
   const items = state.events
     .filter(e => e.gameId === banner.gameId && e.kind !== 'banner' && e.pulls > 0 && !state.done[e.id] && eventStatus(e, now) !== 'ended' && +new Date(e.start) < end)

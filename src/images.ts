@@ -22,6 +22,15 @@ function load(): Record<string, Entry> {
 }
 
 const mem = load()
+// v2 → criterio nuevo de imágenes de evento (6 nov 2026): se olvidan las `e:` guardadas con la búsqueda antigua, que podía dar cruces.
+const EV_RULES = 'whengacha:imgs:ev-rules'
+try {
+  if (localStorage.getItem(EV_RULES) !== '2') {
+    for (const k of Object.keys(mem)) if (k.startsWith('e:')) delete mem[k]
+    localStorage.setItem(KEY, JSON.stringify(mem))
+    localStorage.setItem(EV_RULES, '2')
+  }
+} catch { /* sin localStorage */ }
 const listeners = new Set<() => void>()
 let version = 0
 const queue: { key: string; v?: string; run: () => Promise<string> }[] = []
@@ -72,6 +81,25 @@ async function searchImage(host: string, q: string, size = 480): Promise<string>
   return pages.sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).find(p => p.thumbnail)?.thumbnail?.source ?? ''
 }
 
+const words = (s: string) => new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4))
+
+/**
+ * Imagen de un evento (mismo criterio que el recolector, `withWikiImages` en collector.ts): archivo "<título>.png" o artículo con ese
+ * título exacto; si no, la búsqueda, pero solo si el artículo encontrado comparte alguna palabra con el título (evita cruces
+ * como la galería de un personaje o la página genérica "Events").
+ */
+async function eventSearchImage(host: string, q: string): Promise<string> {
+  const exact = await api(host, { action: 'query', titles: `File:${q}.png|${q}`, redirects: '1', prop: 'pageimages|imageinfo', piprop: 'thumbnail', pithumbsize: '480', iiprop: 'url', iiurlwidth: '480' })
+  const ex = Object.values(exact?.query?.pages ?? {}) as (Thumb & { imageinfo?: { thumburl?: string; url: string }[] })[]
+  const file = ex.find(p => p.imageinfo?.[0])?.imageinfo?.[0]
+  const hit = file?.thumburl ?? file?.url ?? ex.find(p => p.thumbnail)?.thumbnail?.source
+  if (hit) return hit
+  const want = words(q)
+  const json = await api(host, { action: 'query', generator: 'search', gsrsearch: q, gsrlimit: '4', prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '480' })
+  const pages = Object.values(json?.query?.pages ?? {}) as Thumb[]
+  return pages.sort((a, b) => (a.index ?? 0) - (b.index ?? 0)).find(p => p.thumbnail && [...words(p.title)].some(w => want.has(w)))?.thumbnail?.source ?? ''
+}
+
 /** Imagen principal de un artículo concreto (siguiendo redirecciones). */
 async function pageImage(host: string, title: string, size: number): Promise<string> {
   const json = await api(host, { action: 'query', titles: title, redirects: '1', prop: 'pageimages', piprop: 'thumbnail', pithumbsize: String(size) })
@@ -109,12 +137,21 @@ const cleanTitle = (s: string) => s.replace(/\(.*?\)|\/Rerun|\bRerun\b|[“”"]
 /* ---------- lectura (síncrona, desde caché) ---------- */
 /** Imagen de un evento: la propia, la buscada en la wiki, o un icono de recompensa/personaje. */
 export function eventImage(e: GameEvent): string | undefined {
-  return e.image || mem[`e:${e.id}`]?.u || e.items[0]?.icon || e.featured[0]?.icon || wallpaperOf(e.gameId) || gameImage(e.gameId) || undefined
+  return e.image || mem[`e:${e.id}`]?.u || e.items[0]?.icon || e.featured[0]?.icon || wallpaperOf(e.gameId) || officialArt(e.gameId) || gameImage(e.gameId) || undefined
+}
+
+/** Un logo o icono de la wiki no sirve de portada ni de fondo ("Site-logo.png" de NIKKE, "RE1999_icon.png"…). */
+const LOGO = /logo|[_\s-]icon[_.\s]|wordmark/i
+const realArt = (u?: string) => (u && !LOGO.test(decodeURIComponent(u)) ? u : undefined)
+
+/** Arte oficial del juego (captura promocional de la App Store, en el catálogo). */
+export function officialArt(gameId: string): string | undefined {
+  return CATALOG.find(g => g.id === gameId)?.art
 }
 
 /** Imagen representativa de un juego (artículo del juego en su wiki). */
 export function gameImage(gameId: string): string | undefined {
-  return mem[`g:${gameId}`]?.u || undefined
+  return realArt(mem[`g:${gameId}`]?.u)
 }
 
 /** Icono oficial de la app del juego, si el catálogo indica uno. */
@@ -134,12 +171,13 @@ export function faceOf(gameId: string, f: Featured): string | undefined {
 
 /** Arte principal de un banner: splash del personaje destacado, o la imagen del propio banner. */
 export function bannerArt(e: GameEvent): string | undefined {
-  return splashOf(e.gameId, e.featured[0]) || e.image || mem[`e:${e.id}`]?.u || e.featured[0]?.icon || undefined
+  // Sin arte propio (p. ej. los banners de PGR, que sus notas no ilustran): el arte de la versión actual del juego o, si no, su arte oficial.
+  return splashOf(e.gameId, e.featured[0]) || e.image || mem[`e:${e.id}`]?.u || e.featured[0]?.icon || wallpaperOf(e.gameId) || officialArt(e.gameId) || undefined
 }
 
 /** Fondo del juego. */
 export function wallpaperOf(gameId: string): string | undefined {
-  return mem[`w:${gameId}`]?.u || undefined
+  return realArt(mem[`w:${gameId}`]?.u)
 }
 
 /* ---------- pedidos ---------- */
@@ -153,7 +191,7 @@ export function useImages(state: AppState): number {
   const games = new Map<string, Game>(CATALOG.map(g => [g.id, g]))
 
   for (const g of CATALOG) {
-    want(`g:${g.id}`, async () => (g.wallpaper && (await firstFile(g.wiki.host, [g.wallpaper], 800))) || (g.id === 'endfield' && (await firstFile(g.wiki.host, ['Launch key visual.jpg'], 800))) || searchImage(g.wiki.host, g.wiki.q))
+    want(`g:${g.id}`, async () => (g.wallpaper && (await firstFile(g.wiki.host, [g.wallpaper], 800))) || (g.id === 'endfield' && (await firstFile(g.wiki.host, ['Launch key visual.jpg'], 800))) || searchImage(g.wiki.host, g.wiki.q), g.wallpaper)
   }
 
   for (const id of state.tracked) {
@@ -176,18 +214,18 @@ export function useImages(state: AppState): number {
         if (u) return u
       }
       return searchImage(g.wiki.host, g.wiki.q, 1600)
-    }, `${ver ?? ''}|${cur?.name ?? ''}`)
+    }, `${ver ?? ''}|${cur?.name ?? ''}|${g.wallpaper ?? ''}`) // si cambia el fondo del catálogo, se vuelve a buscar
   }
 
   for (const e of state.events) {
     const g = games.get(e.gameId)
     if (!g || !state.tracked.includes(e.gameId)) continue
-    if (!e.image && e.kind !== 'banner') want(`e:${e.id}`, () => searchImage(g.wiki.host, cleanTitle(e.title)))
+    if (!e.image && e.kind !== 'banner') want(`e:${e.id}`, () => eventSearchImage(g.wiki.host, cleanTitle(e.title)))
     if (e.kind === 'banner') {
       for (const f of SPLASH_GAMES.has(e.gameId) ? e.featured.slice(0, 3) : []) {
         want(`s:${e.gameId}:${f.name}`, async () => (await firstFile(g.wiki.host, splashCandidates(e.gameId, f), 900)) || searchImage(g.wiki.host, f.name, 700))
       }
-      if (!e.image && !e.featured.length) want(`e:${e.id}`, () => searchImage(g.wiki.host, cleanTitle(e.title)))
+      if (!e.image && !e.featured.length) want(`e:${e.id}`, () => eventSearchImage(g.wiki.host, cleanTitle(e.title)))
     }
   }
 

@@ -1,5 +1,5 @@
 export type Cadence = 'daily' | 'weekly' | 'once'
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {
@@ -15,6 +15,8 @@ export interface Game {
   api?: ApiKey
   /** URL del icono oficial de la app del juego; se usa como avatar en lugar de una imagen de la wiki. */
   logo?: string
+  /** Arte oficial del juego (captura promocional de su ficha en la App Store): portada cuando la wiki no da un arte de verdad. */
+  art?: string
   /** Archivo de la wiki con el arte oficial del juego, usado como fondo en vez de la búsqueda automática. */
   wallpaper?: string
   /** Wiki usada para buscar imágenes automáticamente (host vacío = sin wiki utilizable). */
@@ -60,6 +62,8 @@ export interface GameEvent {
   open?: boolean
   /** estimated = fecha aún no confirmada; approx = fechas reales pero con horas aproximadas. */
   precision?: 'estimated' | 'approx'
+  /** Sale de un aviso oficial del juego (Kuro, STOVE…): sus horas mandan sobre las de cualquier agregador (gachafocus incluido). */
+  official?: boolean
   source: 'api' | 'manual' | 'feed'
 }
 

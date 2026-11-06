@@ -46,7 +46,14 @@ function pullsOf(r: Raw): number {
 
 function itemsOf(r: Raw): RewardItem[] {
   const all = [...(r.special_reward ? [r.special_reward] : []), ...(r.rewards ?? [])]
-  return all.filter(x => x.amount > 0).map(x => ({ name: x.name.replace(/<[^>]+>/g, ''), icon: x.icon, amount: x.amount }))
+  // La misma recompensa puede venir dos veces (p. ej. "Stellar Jade ×500" en dos fases): se suman en una sola línea.
+  const byName = new Map<string, RewardItem>()
+  for (const x of all.filter(x => x.amount > 0)) {
+    const name = x.name.replace(/<[^>]+>/g, '')
+    const prev = byName.get(name)
+    byName.set(name, prev ? { ...prev, amount: prev.amount + x.amount } : { name, icon: x.icon, amount: x.amount })
+  }
+  return [...byName.values()]
 }
 
 const star = (c: RawChar) => (typeof c.rarity === 'string' ? (c.rarity === 'S' ? 5 : c.rarity === 'A' ? 4 : Number(c.rarity)) : c.rarity)
@@ -141,4 +148,10 @@ export async function syncGame(gameId: string, api: ApiKey): Promise<GameSync> {
     patches: patchesFrom(gameId, cal.banners ?? []),
     codes: codes.active ?? [],
   }
+}
+
+/** Códigos activos de otros juegos de HoYoverse que ennead cubre sin calendario (Honkai Impact 3rd: `/mihoyo/honkai/codes`). */
+export async function syncHoyoCodes(key: 'honkai'): Promise<PromoCode[]> {
+  const codes = await getJson<{ active?: PromoCode[] }>(`${BASE}/${key}/codes`)
+  return codes.active ?? []
 }

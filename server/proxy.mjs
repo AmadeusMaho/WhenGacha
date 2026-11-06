@@ -18,6 +18,12 @@ const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36
  * si no, se prueba el de navegador y, tras un fallo, el identificado.
  */
 const GACHAFOCUS_UA = (process.env.GACHAFOCUS_UA ?? '').trim()
+// Gachafocus está apagado salvo GACHAFOCUS_ENABLED=1 (prohíbe la recolección automatizada): sin eso, el proxy ni siquiera lo admite como fuente.
+const GACHAFOCUS_ENABLED = (process.env.GACHAFOCUS_ENABLED ?? '').trim() === '1'
+// Discord (ver docs/discord-bot.md): token del bot propio y canales permitidos ("stellasora:123,bluearchive:456"). Sin token, la fuente no existe.
+const DISCORD_TOKEN = (process.env.DISCORD_TOKEN ?? '').trim()
+const DISCORD_CHANNEL_IDS = new Set((process.env.DISCORD_CHANNELS ?? '').split(',').map(x => x.split(':')[1]?.trim()).filter(Boolean))
+const DISCORD_UA = 'DiscordBot (https://github.com/AmadeusMaho/WhenGacha, 1.0)'
 const MAX_BODY = 8 * 1024 * 1024
 const STALE_MAX = 7 * 24 * 3_600_000
 
@@ -31,10 +37,36 @@ const HOUR = 60 * MIN
 const SOURCES = [
   { name: 'ennead', ttl: 10 * MIN, test: u => u.hostname === 'api.ennead.cc' && u.pathname.startsWith('/mihoyo/') },
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
-  { name: 'gachafocus', ttl: HOUR, test: u => u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
+  { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073)$/.test(u.pathname) },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
+  // WuWa: noticias oficiales de Kuro (JSON estáticos de su CDN; términos y robots.txt no lo prohíben). Lista + la nota de parche en curso.
+  { name: 'kuro', ttl: 3 * HOUR, test: u => (u.hostname === 'hw-media-cdn-mingchao.kurogame.com' && /^\/akiwebsite\/website2\.0\/json\/G152\/en\/(ArticleMenu|article\/\d+)\.json$/.test(u.pathname))
+    // Punishing: Gray Raven (pgr.kurogame.net): mismo sistema de Kuro, otro CDN.
+    || (u.hostname === 'media-cdn-zspms.kurogame.net' && /^\/pnswebsite\/website2\.0\/json\/G167\/(ArticleMenu|article\/\d+)\.json$/.test(u.pathname)) },
+  // PGR: arte oficial reproducido por la wiki GRAY RAVENS (Miraheze, CC BY-SA). robots.txt permite /wiki/ pero no /w/, ?action= ni Special:.
+  // Solo páginas de artículo (versión y personaje), sin parámetros ni espacios de nombres especiales.
+  { name: 'grayravens', ttl: 12 * HOUR, test: u => u.hostname === 'grayravens.com' && /^\/wiki\/[^/]+$/.test(u.pathname) && !u.search
+    && !/^\/wiki\/(Special|File|Talk|User|Category|Template|MediaWiki|Help|Module)(_talk)?:/i.test(u.pathname) },
+  // Arknights: datos del cliente EN (repo público actualizado por GitHub Actions con arkprts; sin licencia: decisión del dueño, 6 nov 2026).
+  // activity_table pesa ~18 MB: se descarga cada 6 h y el proxy guarda solo el calendario (`shrink`, unos KB), que es lo que reciben recolector y navegadores.
+  { name: 'akgamedata', ttl: 6 * HOUR, maxBody: 48 * 1024 * 1024, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/ArknightsAssets\/ArknightsGamedata\/master\/en\/gamedata\/excel\/(activity|gacha|character)_table\.json$/.test(u.pathname),
+    shrink: j => j.basicInfo
+      ? { basicInfo: Object.fromEntries(Object.entries(j.basicInfo).map(([k, v]) => [k, { id: v.id, type: v.type, name: v.name, startTime: v.startTime, endTime: v.endTime, isReplicate: v.isReplicate }])) }
+      : j.gachaPoolClient
+        ? { gachaPoolClient: j.gachaPoolClient.map(p => ({ gachaPoolId: p.gachaPoolId, gachaRuleType: p.gachaRuleType, gachaPoolName: p.gachaPoolName, openTime: p.openTime, endTime: p.endTime,
+            dynMeta: p.dynMeta && { main6RarityCharId: p.dynMeta.main6RarityCharId, sub6RarityCharId: p.dynMeta.sub6RarityCharId, rare5CharList: p.dynMeta.rare5CharList } })) }
+        // character_table (~20 MB) → solo "id → nombre" de los operadores.
+        : Object.fromEntries(Object.entries(j).filter(([k, v]) => k.startsWith('char_') && v?.name).map(([k, v]) => [k, v.name])) },
+  // Reverse: 1999: avisos oficiales de Bluepoch (la API que usa re1999.bluepoch.com/en/home; POST con JSON). Términos sin cláusula contra bots; sin robots.txt.
+  { name: 'bluepoch', ttl: 3 * HOUR, post: true, test: u => u.hostname === 're1999.bluepoch.com' && u.pathname === '/activity/official/websites/information/query' && u.searchParams.get('gameId') === '60001' && [...u.searchParams.keys()].every(k => ['gameId', 'informationType', 'current', 'pageSize'].includes(k)) && Number(u.searchParams.get('pageSize')) <= 20 },
+  // NIKKE y NTE: avisos oficiales reproducidos por nikke.gg y neverness.gg (red DotGG) (API pública de WordPress; robots.txt y Términos lo permiten). Solo posts.
+  { name: 'nikkegg', ttl: 3 * HOUR, test: u => (u.hostname === 'nikke.gg' || u.hostname === 'neverness.gg') && /^\/wp-json\/wp\/v2\/posts(\/\d+)?$/.test(u.pathname) && [...u.searchParams.keys()].every(k => ['categories', 'per_page', '_fields'].includes(k)) },
+  // Discord: mensajes de los canales de NUESTRO servidor que siguen los anuncios oficiales (Stella Sora, Blue Archive Global). Solo para el recolector
+  // (`internal`: /proxy la rechaza) y solo con DISCORD_TOKEN; el token va en una cabecera que añade el servidor y nunca sale de él.
+  { name: 'discord', ttl: 30 * MIN, internal: true, ua: DISCORD_UA, headers: () => ({ authorization: `Bot ${DISCORD_TOKEN}` }),
+    test: u => !!DISCORD_TOKEN && u.hostname === 'discord.com' && DISCORD_CHANNEL_IDS.has(/^\/api\/v10\/channels\/(\d+)\/messages$/.exec(u.pathname)?.[1] ?? '') && [...u.searchParams.keys()].every(k => k === 'limit') },
   { name: 'reverie', ttl: 3 * HOUR, test: u => u.hostname === 'gachalife-production.up.railway.app' && /^\/events\/wuwa$/.test(u.pathname) },
   { name: 'snapshots', ttl: 15 * MIN, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/AmadeusMaho\/WhenGacha\/data\/snapshots\/[a-z0-9]+\.json$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
@@ -69,18 +101,18 @@ function store(key, entry) {
  * fuentes (p. ej. Prydwen) rechazan las cabeceras extra que añade el `fetch` de Node pero aceptan este cliente
  * con el mismo User-Agent identificado. Devuelve una respuesta con la forma mínima de `Response`.
  */
-function httpsRequest(url, ua) {
+function httpsRequest(url, ua, maxBody = MAX_BODY, body = null, extra = {}) {
   return new Promise((resolve, reject) => {
     const req = https.request(url, {
-      method: 'GET',
-      headers: { 'user-agent': ua, accept: 'application/json, text/html;q=0.9, */*;q=0.5', 'accept-encoding': 'identity' },
+      method: body ? 'POST' : 'GET',
+      headers: { 'user-agent': ua, accept: 'application/json, text/html;q=0.9, */*;q=0.5', 'accept-encoding': 'identity', ...extra, ...(body ? { 'content-type': 'application/json; charset=utf-8', 'content-length': Buffer.byteLength(body) } : {}) },
       timeout: 45_000, // algunas páginas (p. ej. Game8, ~600 KB) tardan
     }, res => {
       const chunks = []
       let size = 0
       res.on('data', c => {
         size += c.length
-        if (size > MAX_BODY) { req.destroy(new Error('respuesta demasiado grande')); return }
+        if (size > maxBody) { req.destroy(new Error('respuesta demasiado grande')); return }
         chunks.push(c)
       })
       res.on('end', () => resolve({
@@ -92,7 +124,7 @@ function httpsRequest(url, ua) {
     })
     req.on('timeout', () => req.destroy(new Error('tiempo de espera agotado')))
     req.on('error', reject)
-    req.end()
+    req.end(body ?? undefined)
   })
 }
 
@@ -109,7 +141,7 @@ export function setTransport(fn) { request = fn ?? httpsRequest }
 const pauseFor = fails => Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR)
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'game8.co': 5000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]
@@ -130,7 +162,12 @@ async function fetchUpstream(url, ttl) {
   const twoUas = isGf && !GACHAFOCUS_UA
   const ua = isGf && GACHAFOCUS_UA ? GACHAFOCUS_UA : twoUas && !st.flip ? BROWSER_UA : UA
   const uaName = ua === BROWSER_UA ? 'UA de navegador' : ua === UA ? 'UA propio' : 'UA de GACHAFOCUS_UA'
-  const res = await request(url, ua)
+  // Algunas fuentes (ver `maxBody`/`shrink` en SOURCES) admiten respuestas mayores porque se recortan antes de guardarlas.
+  const src = SOURCES.find(s => s.test(new URL(url)))
+  const limit = src?.maxBody ?? MAX_BODY
+  // Fuentes con `post`: la URL (con sus parámetros) es la clave de caché; se pide como POST con esos parámetros en JSON.
+  const post = src?.post ? (() => { const u = new URL(url); const body = JSON.stringify(Object.fromEntries(u.searchParams)); u.search = ''; return { url: u.toString(), body } })() : null
+  const res = await request(post ? post.url : url, src?.ua ?? ua, limit, post?.body ?? null, src?.headers?.() ?? {})
   if (res.status !== 200) {
     if (res.status === 403 || res.status === 429) {
       const fails = st.fails + 1
@@ -140,8 +177,10 @@ async function fetchUpstream(url, ttl) {
     throw new Error(`upstream ${res.status}`)
   }
   hostState.set(host, { until: 0, flip: st.flip, fails: 0 }) // se recuerda qué UA funcionó
-  if (Number(res.headers.get('content-length')) > MAX_BODY) throw new Error('respuesta demasiado grande')
-  const body = Buffer.from(await res.arrayBuffer())
+  if (Number(res.headers.get('content-length')) > limit) throw new Error('respuesta demasiado grande')
+  let body = Buffer.from(await res.arrayBuffer())
+  if (body.length > limit) throw new Error('respuesta demasiado grande')
+  if (src?.shrink) body = Buffer.from(JSON.stringify(src.shrink(JSON.parse(body.toString('utf8')))))
   if (body.length > MAX_BODY) throw new Error('respuesta demasiado grande')
   const entry = { body, gz: null, type: res.headers.get('content-type') ?? 'application/json', at: Date.now(), ttl }
   store(url, entry)
@@ -187,7 +226,8 @@ async function refreshDue() {
   try {
     const now = Date.now()
     for (const [url, info] of [...seen]) {
-      if (now - info.last > FORGET) { seen.delete(url); continue }
+      // Una URL que ya no es fuente permitida (p. ej. gachafocus apagado) se olvida en vez de renovarse.
+      if (now - info.last > FORGET || !allowed(url)) { seen.delete(url); cache.delete(url); continue }
       const hit = cache.get(url)
       if (hit && now - hit.at < info.ttl) continue
       if (now < (retryAt.get(url) ?? 0)) continue
@@ -217,12 +257,17 @@ async function saveSnapshot() {
   } catch (err) { console.error(`[proxy] no se pudo guardar la caché: ${err.message}`) }
 }
 
+/** ¿La URL sigue siendo de una fuente permitida? (la caché en disco puede traer URLs de fuentes ya retiradas) */
+function allowed(url) {
+  try { const u = new URL(url); return u.protocol === 'https:' && SOURCES.some(s => s.test(u)) } catch { return false }
+}
+
 async function loadSnapshot() {
   try {
     const entries = JSON.parse(await readFile(SNAPSHOT, 'utf8'))
     let n = 0
     for (const [url, e] of Object.entries(entries)) {
-      if (Date.now() - e.at > STALE_MAX) continue
+      if (Date.now() - e.at > STALE_MAX || !allowed(url)) continue
       store(url, { body: Buffer.from(e.body, 'utf8'), gz: null, type: e.type, at: e.at, ttl: e.ttl })
       if (e.seen) seen.set(url, e.seen)
       n++
@@ -281,7 +326,8 @@ export async function handleProxy(req, res, url) {
   let target
   try { target = new URL(url.searchParams.get('u') ?? '') } catch { return send(res, 400, {}, 'URL inválida') }
   const source = target.protocol === 'https:' && !target.username && SOURCES.find(s => s.test(target))
-  if (!source) return send(res, 403, {}, 'Fuente no permitida')
+  // Las fuentes internas (Discord, con el token del servidor) solo las usa el recolector.
+  if (!source || source.internal) return send(res, 403, {}, 'Fuente no permitida')
 
   try {
     const { entry, state } = await getCached(target.toString(), source.ttl)

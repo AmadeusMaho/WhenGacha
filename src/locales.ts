@@ -131,6 +131,7 @@ export const es = {
   'pull.done': 'Hecho',
   'pull.none': 'No tienes eventos pendientes con tiradas.',
   'pull.note': 'Cuenta los eventos sin completar; no incluye lo diario.',
+  'pull.notePartial': 'Mínimo: solo suma las recompensas que detallan los avisos oficiales; puede haber más. No incluye lo diario.',
   'pull.left': '+{n}✦ por conseguir antes del fin',
 
   // mis gachas
@@ -341,6 +342,7 @@ export const en: Record<Key, string> = {
   'pull.done': 'Done',
   'pull.none': 'No pending events with pulls.',
   'pull.note': 'Counts events you have not completed; dailies are not included.',
+  'pull.notePartial': 'Minimum: only counts rewards listed in official notices; there may be more. Dailies are not included.',
   'pull.left': '+{n}✦ to earn before it ends',
 
   'mine.addTitle': 'Add or remove gachas',
@@ -545,6 +547,7 @@ export const zh: Record<Key, string> = {
   'pull.done': '已完成',
   'pull.none': '没有带抽数的未完成活动。',
   'pull.note': '仅统计未完成的活动，不含日常。',
+  'pull.notePartial': '最少值：只统计官方公告中列出的奖励，实际可能更多。不含日常。',
   'pull.left': '截止前还可获得 +{n}✦',
 
   'mine.addTitle': '添加或移除游戏',

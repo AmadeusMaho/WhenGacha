@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import './sobrio.css' // capa sobria: para volver a la versión anterior, borra esta línea
+import './botones.css' // botones y navegación más pulidos (prueba): para quitarlo, borra esta línea
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

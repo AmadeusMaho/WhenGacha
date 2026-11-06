@@ -62,8 +62,11 @@ export async function syncGame8(gameId: string, key: keyof typeof GAME8): Promis
     const id = `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`
     if (seen.has(id)) return
     seen.add(id)
+    // Arte del evento: Game8 carga sus imágenes en diferido (`data-src`); `src` es un GIF vacío.
+    const img = tr.querySelector('img')
+    const image = img?.getAttribute('data-src') || (img?.getAttribute('src')?.startsWith('http') ? img.getAttribute('src')! : undefined)
     out.push({
-      id, gameId, kind: 'event', title: name,
+      id, gameId, kind: 'event', title: name, image,
       start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [], pulls: 0, source: 'api',
       precision: 'approx',
     })

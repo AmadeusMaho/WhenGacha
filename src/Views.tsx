@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { t } from './i18n'
-import { bannerArt } from './images'
+import { bannerArt, officialArt, wallpaperOf } from './images'
 import { countdown, eventStatus, isTaskDone, trackedGames, uid, verdict } from './logic'
 import { enableNotifications } from './notify'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, type Ctx } from './ui'
-import type { Cadence, Game, Patch } from './types'
+import type { Cadence, Game, GameEvent, Patch } from './types'
 
 const DAY = 86_400_000
 
@@ -94,6 +94,8 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
 function Pick({ g, on, state, onClick, disabled }: { g: Game; on?: boolean; state: Ctx['state']; onClick?: () => void; disabled?: boolean }) {
   return (
     <button className={`pick ${on ? 'on' : ''}`} style={cssVar(g)} onClick={onClick} disabled={disabled} aria-pressed={on}>
+      {/* Arte del juego de fondo (el de su parche o el oficial), bajo un velo que mantiene el texto legible. */}
+      <span className="pick-art" aria-hidden><Img src={wallpaperOf(g.id) || officialArt(g.id)} /></span>
       <GameAvatar game={g} state={state} size={52} />
       <span className="pick-txt"><strong>{g.name}</strong><small>{g.publisher}</small></span>
       {disabled ? <Tag tone="off">{t('tag.soon')}</Tag> : <span className="check">{on ? '✓' : '＋'}</span>}
@@ -105,9 +107,11 @@ const CAD_LABEL = { daily: 'cad.dailyL', weekly: 'cad.weeklyL', once: 'cad.onceL
 
 function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: () => void; onOpen: () => void }) {
   const { state, now, setState, open } = ctx
-  const live = state.events
-    .filter(e => e.gameId === g.id && e.kind !== 'banner' && eventStatus(e, now) !== 'ended')
-    .sort((a, b) => Number(!!a.open) - Number(!!b.open) || +new Date(a.end) - +new Date(b.end))
+  const byEnd = (a: GameEvent, b: GameEvent) => Number(!!a.open) - Number(!!b.open) || +new Date(a.end) - +new Date(b.end)
+  const notEnded = state.events.filter(e => e.gameId === g.id && eventStatus(e, now) !== 'ended')
+  // "Terminan pronto": los eventos; si el juego no tiene ninguno (p. ej. Stella Sora, solo banners), sus banners, para no dejarlo vacío.
+  const events = notEnded.filter(e => e.kind !== 'banner').sort(byEnd)
+  const live = events.length ? events : notEnded.sort(byEnd)
   const banners = state.events.filter(e => e.gameId === g.id && e.kind === 'banner' && eventStatus(e, now) === 'active')
   // Un icono por personaje destacado; los banners que no traen iconos (p. ej. los de Prydwen) usan la imagen del propio banner.
   const faces = banners.flatMap(b => {

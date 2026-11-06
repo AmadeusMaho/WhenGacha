@@ -57,11 +57,114 @@ async function blueArchiveBanners(gameId: string): Promise<GameEvent[]> {
   }))
 }
 
+/* ---------- Blue Archive: datos estructurados de la wiki (extensión Bucket) ---------- */
+const BA_API = 'https://bluearchive.wiki/w/api.php'
+
+type BucketRow = Record<string, string | number | undefined>
+
+/** Consulta una tabla Bucket (`Bucket:<tabla>` en la wiki). `query` es el código Lua del API (`bucket('x').select(...)...run()`). */
+async function bucket(query: string): Promise<BucketRow[]> {
+  const qs = new URLSearchParams({ action: 'bucket', query, format: 'json', origin: '*' })
+  const res = await fetch(viaProxy(`${BA_API}?${qs}`))
+  if (!res.ok) throw new Error(`bluearchive.wiki bucket → HTTP ${res.status}`)
+  const json = await res.json()
+  if (!Array.isArray(json?.bucket)) throw new Error(`bluearchive.wiki bucket: ${json?.error ?? 'respuesta vacía'}`)
+  return json.bucket
+}
+
+/** URLs de miniatura de varios archivos (`File:…`) en una sola petición. */
+async function fileThumbs(files: string[], width: number): Promise<Map<string, string>> {
+  const out = new Map<string, string>()
+  const uniq = [...new Set(files)].slice(0, 50)
+  if (!uniq.length) return out
+  const qs = new URLSearchParams({ action: 'query', titles: uniq.join('|'), prop: 'imageinfo', iiprop: 'url', iiurlwidth: String(width), format: 'json', formatversion: '2', origin: '*' })
+  const res = await fetch(viaProxy(`${BA_API}?${qs}`))
+  if (!res.ok) return out
+  const json = await res.json()
+  // La API normaliza los títulos ("File:A_b" → "File:A b"); se guardan ambos nombres.
+  const alias = new Map<string, string>()
+  for (const n of json?.query?.normalized ?? []) alias.set(n.to, n.from)
+  for (const p of json?.query?.pages ?? []) {
+    const url = p?.imageinfo?.[0]?.thumburl ?? p?.imageinfo?.[0]?.url
+    if (!url) continue
+    out.set(p.title, url)
+    const from = alias.get(p.title)
+    if (from) out.set(from, url)
+  }
+  return out
+}
+
+const RAID_LABEL: Record<string, string> = { Raid: 'Total Assault', Elimination: 'Grand Assault', 'Limit Break': 'Final Restriction Release' }
+/** "Decagrammaton: Hod (Grand Assault)" → "Hod". */
+const raidBoss = (name: string) => name.replace(/\s*\([^)]*\)\s*$/, '').split(': ').pop()!.trim()
+
+/** Fecha (AAAA-MM-DD) de hace 3 días: filtro de las consultas; cambia una vez al día para que la caché del proxy sirva. */
+const sinceDay = () => new Date(Date.now() - 3 * DAY).toISOString().slice(0, 10)
+
+/**
+ * Eventos, ejercicios conjuntos y raids (Total Assault, Grand Assault, Final Restriction Release) del servidor Global
+ * desde las tablas Bucket `events` y `raids` de bluearchive.wiki (horas exactas con zona). 3 peticiones.
+ */
+async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
+  const since = sinceDay()
+  const [evs, raids] = await Promise.all([
+    bucket(`bucket('events').select('id','original_id','category','name_en','start_date','end_date','promo','banner').where('server','GL').where('end_date','>','${since}').limit(200).run()`),
+    bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [] as BucketRow[]),
+  ])
+  const skip = new Set(['PermanentEvent', 'Guide mission'])
+  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean }[] = []
+  for (const r of evs) {
+    const s = +new Date(String(r.start_date ?? '')), e = +new Date(String(r.end_date ?? ''))
+    const title = String(r.name_en ?? '').trim()
+    if (!title || isNaN(s) || isNaN(e) || skip.has(String(r.category)) || !inWindow(s, e) || e - s > 120 * DAY) continue
+    const id = Number(r.id), orig = Number(r.original_id)
+    rows.push({
+      id: `${gameId}:event:${r.id ?? title}:${s}`,
+      title, s, e,
+      file: (r.promo ?? r.banner) as string | undefined,
+      // Los reestrenos tienen id = 10000 + id original (p. ej. 10846 → 846).
+      rerun: id > 10000 && orig > 0 && id !== orig && id % 10000 === orig % 10000,
+      minor: r.category === 'Joint Firepower Exercise',
+    })
+  }
+  for (const r of raids) {
+    const s = +new Date(String(r.start_date ?? '')), e = +new Date(String(r.end_date ?? ''))
+    const label = RAID_LABEL[String(r.type)]
+    const name = String(r.name ?? '')
+    if (!name || isNaN(s) || isNaN(e) || !inWindow(s, e)) continue
+    rows.push({
+      id: `${gameId}:raid:${r.type}:${r.season ?? name}:${s}`,
+      title: label ? `${label}: ${raidBoss(name)}` : name,
+      s, e,
+      file: r.image as string | undefined,
+    })
+  }
+  const thumbs = await fileThumbs(rows.map(r => r.file).filter((f): f is string => !!f), 320).catch(() => new Map<string, string>())
+  return rows.map(r => ({
+    id: r.id,
+    gameId,
+    kind: 'event' as const,
+    title: r.title,
+    description: r.rerun ? '⟦d.rerun⟧' : undefined,
+    image: r.file ? thumbs.get(r.file) : undefined,
+    start: new Date(r.s).toISOString(),
+    end: new Date(r.e).toISOString(),
+    items: [],
+    featured: [],
+    pulls: 0,
+    minor: r.minor || undefined,
+    source: 'api' as const,
+  }))
+}
+
 export async function syncBlueArchive(gameId: string): Promise<GameSync> {
-  const [doc, banners] = await Promise.all([
-    parsePage('https://bluearchive.wiki/w/api.php', 'Events'),
+  const [fromBucket, banners] = await Promise.all([
+    blueArchiveBucket(gameId).catch(err => { console.warn('[bluearchive] bucket:', err?.message ?? err); return null }),
     blueArchiveBanners(gameId).catch(() => []),
   ])
+  if (fromBucket) return { events: [...banners, ...fromBucket], patches: [], codes: [] }
+  // Respaldo: tabla HTML de la página "Events" (solo eventos de historia).
+  const doc = await parsePage(BA_API, 'Events')
   const events: GameEvent[] = [...banners]
   for (const row of doc.querySelectorAll('#eventtable tr[data-event-id]')) {
     // Solo cuentan los eventos con periodo (inicio y fin) ya anunciado para el servidor Global.

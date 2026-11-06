@@ -147,7 +147,7 @@ async function syncEvents(gameId: string, list: Article[], ends: Map<string, str
       image: thumb(a),
       start: p.start.toISOString(), end: p.end.toISOString(), items: [], featured: [], pulls: 0,
       minor: p.dayOnly || undefined, // los eventos semanales de comentarios no traen hora: campañas menores
-      precision: p.precision, source: 'api',
+      precision: p.precision, official: true, source: 'api',
     })
   }
   return out
@@ -178,7 +178,7 @@ async function syncNewHeroes(gameId: string, list: Article[], ends: Map<string, 
         id: `${gameId}:banner:hero:${nk.replace(/[^a-z0-9]+/g, '-')}:${p.start.toISOString().slice(0, 10)}`, gameId, kind: 'banner', title: name,
         description: a.title, image: after.slice(0, 15).find(l => l.startsWith('@@IMG '))?.slice(6) ?? thumb(a),
         start: p.start.toISOString(), end: p.end.toISOString(), items: [], featured: [{ name }], pulls: 0,
-        precision: p.precision, source: 'api',
+        precision: p.precision, official: true, source: 'api',
       })
     })
   }

@@ -1,4 +1,4 @@
-import type { ApiKey, Patch } from '../types'
+import type { ApiKey, GameEvent, Patch } from '../types'
 import { viaProxy } from '../net'
 
 const DAY = 86_400_000
@@ -102,4 +102,51 @@ export function finalize(patches: Patch[], cycleDays: number): Patch[] {
     if (!p.end && cycleDays) return { ...p, end: new Date(+new Date(p.date) + cycleDays * DAY).toISOString() }
     return p
   })
+}
+
+/**
+ * Hora exacta de cada versión. El historial de la wiki solo trae el día (00:00 UTC), que en América cae la víspera: la marca de la v3.8 de WuWa salía
+ * el 10 nov por la noche (GMT-3), antes de que acabaran los banners de la 3.7. Los banners de una versión empiezan justo cuando se lanza, así que si
+ * uno empieza entre 1 día antes y 2 días después de la fecha de la wiki, la versión toma su hora (la más temprana) y deja de ser estimada.
+ * Sin banner cercano, un día sin hora (00:00 UTC) se lleva a la hora habitual de lanzamiento del juego (`launchUtcHour`: fin del mantenimiento, 11:00 UTC+8 = 03:00 UTC).
+ * Después, cada versión termina cuando empieza la siguiente; la última conserva su duración.
+ */
+export function alignPatches(patches: Patch[], events: GameEvent[], launchUtcHour?: number, cycleDays?: number): Patch[] {
+  if (!patches.length) return patches
+  const starts = events.filter(e => e.kind === 'banner' && !e.precision).map(e => +new Date(e.start)).filter(n => !isNaN(n))
+  const aligned = patches.map(p => {
+    const d = +new Date(p.date)
+    const near = starts.filter(s => s >= d - DAY && s <= d + 2 * DAY)
+    // Sin banner con el que alinear: un día sin hora (00:00 UTC) pasa a la hora habitual de lanzamiento del juego.
+    if (!near.length) {
+      if (launchUtcHour === undefined || d % DAY !== 0) return p
+      const h = launchUtcHour * 3_600_000
+      return { ...p, date: new Date(d + h).toISOString(), end: p.end && +new Date(p.end) % DAY === 0 ? new Date(+new Date(p.end) + h).toISOString() : p.end }
+    }
+    const s = Math.min(...near)
+    const shift = s - d
+    return { ...p, date: new Date(s).toISOString(), end: p.end ? new Date(+new Date(p.end) + shift).toISOString() : p.end, estimated: undefined }
+  })
+  // Una versión estimada no empieza antes de que acaben los banners ya empezados de la anterior (Endfield: v1.7 estimada el 24 nov, banners hasta el 26).
+  const banners = events.filter(e => e.kind === 'banner')
+  const fixed = aligned.map(p => {
+    if (!p.estimated) return p
+    const d = +new Date(p.date)
+    const lastEnd = Math.max(0, ...banners.filter(e => +new Date(e.start) < d && +new Date(e.end) - +new Date(e.start) < 60 * DAY).map(e => +new Date(e.end)))
+    if (lastEnd <= d) return p
+    const s = Math.ceil(lastEnd / 1000) * 1000
+    return { ...p, date: new Date(s).toISOString(), end: p.end ? new Date(+new Date(p.end) + (s - d)).toISOString() : p.end }
+  })
+  const sorted = fixed.sort((a, b) => +new Date(a.date) - +new Date(b.date))
+  // Una versión estimada tampoco empieza antes del 80 % del ciclo típico tras la anterior: el fin de la primera fase de banners no es el de la versión
+  // (Genshin: la 7.3 salía estimada el 24 nov, 3 semanas después de la 7.2).
+  if (cycleDays) for (let i = 1; i < sorted.length; i++) {
+    const p = sorted[i], prev = sorted[i - 1]
+    if (!p.estimated) continue
+    const min = +new Date(prev.date) + 0.8 * cycleDays * DAY
+    if (+new Date(p.date) >= min) continue
+    const s = +new Date(prev.date) + cycleDays * DAY
+    sorted[i] = { ...p, date: new Date(s).toISOString(), end: new Date(s + cycleDays * DAY).toISOString() }
+  }
+  return sorted.map((p, i) => (sorted[i + 1] ? { ...p, end: sorted[i + 1].date } : p))
 }

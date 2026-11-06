@@ -1,7 +1,7 @@
 import { DOMParser } from 'linkedom'
 import { CATALOG } from './catalog'
 import { staleMs, syncSource } from './sources'
-import type { GameEvent, Patch, PromoCode } from './types'
+import type { Game, GameEvent, Patch, PromoCode } from './types'
 
 /**
  * Punto de entrada del recolector del servidor (se empaqueta con `npm run build:server` en server/bundle/collector.mjs).
@@ -40,5 +40,91 @@ export async function collect(id: string): Promise<Snapshot> {
   const game = CATALOG.find(g => g.id === id && g.api)
   if (!game) throw new Error(`juego desconocido: ${id}`)
   const s = await syncSource(game)
-  return { id, updated: Date.now(), events: s.events, patches: s.patches, codes: s.codes }
+  const withArt = await withWikiImages(game, s.events).catch(() => s.events)
+  const events = await withItemIcons(game, withArt).catch(() => withArt)
+  return { id, updated: Date.now(), events, patches: s.patches, codes: s.codes }
+}
+
+/**
+ * Imagen para los eventos que su fuente no ilustra: la del artículo de la wiki del juego que mejor coincide con el título
+ * (la misma búsqueda que hacía cada navegador en `images.ts`; hecha aquí, la copia ya sale con imagen y los visitantes no repiten
+ * consultas). Como mucho MAX_LOOKUPS por juego y ciclo, de una en una, empezando por lo vigente; el proxy las guarda 12 h.
+ */
+const MAX_LOOKUPS = 15
+const cleanTitle = (s: string) => s.replace(/\(.*?\)|\/Rerun|\bRerun\b|[“”"]/gi, ' ').replace(/\s+/g, ' ').trim()
+
+type WikiPage = { title: string; index?: number; thumbnail?: { source: string }; imageinfo?: { thumburl?: string; url: string }[] }
+
+async function wikiQuery(host: string, params: Record<string, string>): Promise<WikiPage[]> {
+  const qs = new URLSearchParams({ action: 'query', format: 'json', origin: '*', ...params })
+  try {
+    const res = await fetch(`https://${host}/${host === 'bluearchive.wiki' ? 'w/' : ''}api.php?${qs}`)
+    return Object.values(res.ok ? (await res.json())?.query?.pages ?? {} : {}) as WikiPage[]
+  } catch { return [] }
+}
+
+const words = (s: string) => new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length >= 4))
+
+/** Archivo con el nombre del evento (p. ej. "Tower of Adversity.png") o imagen principal de su artículo. */
+async function exactThumb(host: string, q: string): Promise<string> {
+  const pages = await wikiQuery(host, { titles: `File:${q}.png|${q}`, redirects: '1', prop: 'pageimages|imageinfo', piprop: 'thumbnail', pithumbsize: '480', iiprop: 'url', iiurlwidth: '480' })
+  const file = pages.find(p => p.imageinfo?.[0])?.imageinfo?.[0]
+  return file?.thumburl ?? file?.url ?? pages.find(p => p.thumbnail)?.thumbnail?.source ?? ''
+}
+
+/** Imagen del primer resultado con imagen; con `mustMatch`, solo si el título del artículo comparte alguna palabra con él. */
+async function pageThumb(host: string, params: Record<string, string>, mustMatch?: string): Promise<string> {
+  const want = mustMatch ? words(mustMatch) : null
+  const pages = await wikiQuery(host, { prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '480', ...params })
+  return pages
+    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+    .find(p => p.thumbnail && (!want || [...words(p.title)].some(w => want.has(w))))?.thumbnail?.source ?? ''
+}
+
+async function withWikiImages(game: Game, events: GameEvent[]): Promise<GameEvent[]> {
+  const host = game.wiki?.host
+  if (!host) return events
+  const now = Date.now()
+  const todo = events
+    .filter(e => !e.image && (e.kind !== 'banner' || !e.featured.length) && +new Date(e.end) > now)
+    .sort((a, b) => Math.max(+new Date(a.start), now) - Math.max(+new Date(b.start), now))
+  const found = new Map<string, string>() // título limpio -> imagen ('' = sin resultado)
+  for (const e of todo) {
+    const q = cleanTitle(e.title)
+    if (!q || found.has(q)) continue
+    if (found.size >= MAX_LOOKUPS) break
+    // 1) archivo "<título>.png" o artículo con ese título exacto (una sola consulta); 2) la búsqueda, si comparte alguna palabra con el título.
+    found.set(q, (await exactThumb(host, q)) || (await pageThumb(host, { generator: 'search', gsrsearch: q, gsrlimit: '4' }, q)))
+  }
+  return events.map(e => (e.image ? e : { ...e, image: found.get(cleanTitle(e.title)) || undefined }))
+}
+
+/**
+ * Iconos de las recompensas que no los traen (todas salvo las de ennead): el archivo del objeto en la wiki del juego, probando sus convenciones
+ * ("Item Primogem.png" en HoYoverse y WuWa, "Unilog.png" en R:1999, "Black Card.png" en PGR…). En lotes de 45 archivos por consulta;
+ * el proxy las guarda 12 h. Si un objeto no tiene icono en la wiki, se queda sin él (la ficha muestra solo el nombre).
+ */
+async function withItemIcons(game: Game, events: GameEvent[]): Promise<GameEvent[]> {
+  const host = game.wiki?.host
+  if (!host) return events
+  const names = [...new Set(events.flatMap(e => e.items.filter(i => !i.icon).map(i => i.name)))].slice(0, 60)
+  if (!names.length) return events
+  // También en singular ("Vouchers" → "Voucher") y sin "Exclusive" (NIKKE: "Item Selective Recruitment Voucher.png").
+  const bases = (n: string) => { const one = n.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''); return [...new Set([n, one, one.replace(/\bExclusive\s+/i, '')])] }
+  const variants = (n: string) => bases(n).flatMap(b => [`Item ${b}.png`, `${b}.png`, `${b} Icon.png`, `Icon ${b}.png`])
+  const found = new Map<string, string>() // nombre de archivo (normalizado) → URL
+  const files = names.flatMap(variants)
+  for (let i = 0; i < files.length; i += 45) {
+    const qs = new URLSearchParams({ action: 'query', titles: files.slice(i, i + 45).map(f => `File:${f}`).join('|'), prop: 'imageinfo', iiprop: 'url', iiurlwidth: '64', format: 'json', formatversion: '2', origin: '*' })
+    try {
+      const res = await fetch(`https://${host}/${host === 'bluearchive.wiki' ? 'w/' : ''}api.php?${qs}`)
+      const pages = (res.ok ? (await res.json())?.query?.pages ?? [] : []) as { title: string; imageinfo?: { thumburl?: string; url: string }[] }[]
+      for (const p of pages) {
+        const info = p.imageinfo?.[0]
+        if (info) found.set(p.title.replace(/^File:/, '').replace(/_/g, ' ').toLowerCase(), info.thumburl ?? info.url)
+      }
+    } catch { /* sin iconos de este lote */ }
+  }
+  const icon = (n: string) => variants(n).map(v => found.get(v.toLowerCase())).find(Boolean)
+  return events.map(e => (e.items.some(i => !i.icon) ? { ...e, items: e.items.map(i => (i.icon ? i : { ...i, icon: icon(i.name) })) } : e))
 }

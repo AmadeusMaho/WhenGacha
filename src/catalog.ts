@@ -2,9 +2,35 @@ import type { AppState, Game } from './types'
 
 type Def = Omit<Game, 'wiki'> & { host: string; q: string }
 
+/**
+ * Arte oficial de cada juego: la primera captura promocional de su ficha en la App Store (API pública de iTunes, 6 nov 2026; el mismo CDN de Apple que los iconos).
+ * Es la portada de "Mis gachas" y el fondo cuando la wiki no da un arte de verdad (en NIKKE daba su logo, "Site-logo.png"). El arte del parche, si lo hay, manda.
+ */
+const ART: Record<string, string> = {
+  genshin: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/8e/55/72/8e557205-b1b4-5862-07a8-ee6c2108d4db/EN-1.jpg/1280x1280bb.jpg',
+  hsr: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/61/61/96/616196cd-2cf5-19bd-120b-2bbeec236934/EN-2688_U00d71242-0-4.6KV.jpg/1280x1280bb.jpg',
+  zzz: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/3d/92/dc/3d92dca8-5c01-b088-0f22-b7d9c1611aa0/EN-2688-KV.jpg/1280x1280bb.jpg',
+  arknights: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/1e/a7/c3/1ea7c3d9-ec9d-5340-cf82-45d5db6c4913/2208-x-1242-1.jpg/1280x1280bb.jpg',
+  endfield: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/5b/60/7a/5b607af4-ce8e-a6d6-c696-5a1798ab6171/1-EN.jpg/1280x1280bb.jpg',
+  uma: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/3c/07/d9/3c07d9d8-db6c-0ce4-58a0-3f7dc140cdbf/img_55_1.jpg/1280x1280bb.jpg',
+  czn: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ef/ec/2f/efec2ff5-3995-3140-2934-6d597d5f41ff/1_Uc8fc_Ub144__Ud3ec_Uc2a4_Ud130_2556x1179_EN.jpg/1280x1280bb.jpg',
+  wuwa: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/39/f8/7a/39f87a03-3782-8f7a-c16a-ad46934d7834/_U82f1_U6587.jpg/1280x1280bb.jpg',
+  nikke: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/80/ac/cd/80accdc5-3346-fad7-e931-7acffef7bb68/EN-1206_U22602622.jpg/1280x1280bb.jpg',
+  nte: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/74/97/47/7497470d-9893-7c94-1dcd-30ddaf642f16/2208x1242-01.jpg/1280x1280bb.jpg',
+  bluearchive: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/ea/92/af/ea92af08-00d5-9c6b-7200-57e010220126/BA__Ub9c8_Ucf13_Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.png/1280x1280bb.jpg',
+  fgo: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/b6/dc/aa/b6dcaac0-2c9c-3a9c-c9b5-7f83d30d25a0/Title_iPhone5.5in_nonlabel.png.png/1280x1280bb.jpg',
+  limbus: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7a/8f/f6/7a8ff643-1823-98be-4acd-ff05550ce773/bf4a04d3-aa23-48da-8f74-a1bdce18ab41_EN_2208x1242_px_01.png/1280x1280bb.jpg',
+  epic7: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/5f/97/6c/5f976c96-8a73-aa99-b1fa-d7b6ccd4aa05/iOS_EP_2208x1242_EN2.jpg/1280x1280bb.jpg',
+  stellasora: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/87/09/6a/87096a4c-18d7-2c82-fc90-3697ef16bf09/_U7248_U672cKV.jpg/1280x1280bb.jpg',
+  reverse1999: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d5/1e/fd/d51efdc0-0d48-66b8-b7df-142c008c2238/1.2868x1320.jpg/1280x1280bb.jpg',
+  pgr: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d0/08/45/d00845a7-d0b0-f0b4-0052-bb8eef86b995/KV1.jpg/1280x1280bb.jpg',
+  honkai3: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/a3/a4/90/a3a4909d-781f-dfb9-573b-7cf3d11601ba/EN-2208x1242-1.jpg/1280x1280bb.jpg',
+  azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
+}
+
 const def = (id: string, name: string, short: string, publisher: string, color: string, color2: string, patchCycleDays: number,
   host: string, q: string, api?: Game['api'], logo?: string, wallpaper?: string): Game =>
-  ({ id, name, short, publisher, color, color2, patchCycleDays, api, logo, wallpaper, soon: !api, wiki: { host, q } } satisfies Omit<Def, 'host' | 'q'> & { wiki: Game['wiki'] })
+  ({ id, name, short, publisher, color, color2, patchCycleDays, api, logo, wallpaper, art: ART[id], soon: !api, wiki: { host, q } } satisfies Omit<Def, 'host' | 'q'> & { wiki: Game['wiki'] })
 
 export const CATALOG: Game[] = [
   def('genshin', 'Genshin Impact', 'GI', 'HoYoverse', '#4fc3f7', '#1a3a6b', 42, 'genshin-impact.fandom.com', 'Genshin Impact', 'genshin', 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/15/9e/b1/159eb1a7-fc58-2b43-b330-c5e619a77e2d/AppIcon-0-0-1x_U007epad-0-1-85-220.png/256x256bb.jpg'),
@@ -20,13 +46,22 @@ export const CATALOG: Game[] = [
   def('bluearchive', 'Blue Archive', 'BA', 'Nexon', '#64b5f6', '#1b3f78', 0, 'bluearchive.fandom.com', 'Blue Archive', 'bluearchive', 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/41/94/4a/41944af3-4f15-7599-0cdf-12ae5a303af1/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   def('fgo', 'Fate/Grand Order', 'FGO', 'Aniplex', '#ffd54f', '#6b5410', 0, 'fategrandorder.fandom.com', 'Fate/Grand Order', 'fgo', 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/ea/6d/d5/ea6dd513-7d32-a13e-a82d-b626c326cb9d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   def('limbus', 'Limbus Company', 'LC', 'Project Moon', '#ef5350', '#6b1a1a', 0, 'limbuscompany.wiki.gg', 'Limbus Company', 'limbus',
-    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a2/da/69/a2da69d5-b519-3e85-9d42-748d267afa87/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/a2/da/69/a2da69d5-b519-3e85-9d42-748d267afa87/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg',
+    // Sus capturas de la App Store son todas de interfaz: de fondo, el banner oficial del 3.er aniversario (wiki.gg).
+    'Limbus Company 3rd Anniversary Banner.png'),
   def('epic7', 'Epic Seven', 'E7', 'Smilegate', '#ffb74d', '#5c3a0e', 0, 'epic-seven.fandom.com', 'Epic Seven', 'epic7',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/d5/a1/dd/d5a1dde1-7ebd-cb28-a1ae-1e6e5badd323/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   def('stellasora', 'Stella Sora', 'SS', 'Yostar', '#7986cb', '#252a5c', 0, '', 'Stella Sora', 'stellasora',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/43/cc/98/43cc9858-4e32-dc8a-3190-f1f5d03f4431/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   def('reverse1999', 'Reverse: 1999', 'R99', 'Bluepoch', '#80cbc4', '#1f4743', 0, 'reverse1999.fandom.com', 'Reverse: 1999', 'reverse1999',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1c/61/94/1c619430-4d7c-80cd-c7b4-feaec9d113ff/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
+  def('pgr', 'Punishing: Gray Raven', 'PGR', 'Kuro Games', '#e57373', '#5c1f24', 42, 'punishing-gray-raven.fandom.com', 'Punishing: Gray Raven', 'pgr',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f2/db/86/f2db8629-a697-d3a8-345c-16e1cc9c6f89/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
+  def('honkai3', 'Honkai Impact 3rd', 'HI3', 'HoYoverse', '#f48fb1', '#5e2340', 0, 'honkaiimpact3.fandom.com', 'Honkai Impact 3rd', 'honkai3',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/20/4b/e7/204be75d-5108-d55b-eac2-3dac080e7f3e/AppIcon-1x_U007emarketing-0-10-0-85-220-0.png/256x256bb.jpg'),
+  // Azur Lane: solo vía Discord (su web es de Yostar y su wiki pone una barrera anti-bots). Sin canal configurado no muestra nada.
+  def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
 ]
 
 export const initialState = (): AppState => ({

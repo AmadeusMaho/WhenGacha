@@ -1,19 +1,27 @@
 import type { Game, GameEvent } from '../types'
 import { GACHAFOCUS, syncGachafocus } from './gachafocus'
-import { syncGame, type GameSync } from './ennead'
+import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
+import { hasWikiCodes, syncWikiCodes } from './codes'
+import { syncBluepoch } from './bluepoch'
 import { syncCznEvents } from './czn'
+import { discordChannel, syncDiscord } from './discord'
 import { syncEpic7 } from './epic7'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
+import { syncKuro, syncPgr, wuwaChallenges } from './kuro'
+import { syncHonkai3 } from './honkai3'
+import { syncHoyoWiki } from './hoyowiki'
 import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
+import { syncNikkeGg } from './nikkegg'
+import { syncNevernessGg } from './nevernessgg'
 import { syncGame8 } from './game8'
 import { syncPrydwen } from './prydwen'
 import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
 import { syncStellaSora } from './stellasora'
 import { syncUma } from './uma'
-import { buildPatches, fetchHistory, finalize } from './versions'
+import { alignPatches, buildPatches, fetchHistory, finalize } from './versions'
 import { syncArknights, syncEndfield } from './wiki'
 
 const HOUR = 3_600_000
@@ -44,6 +52,15 @@ function extrasFor(id: string): 'none' | 'events' | 'all' {
 
 const key = (s: string) => s.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, '')
 
+const wordsOf = (s: string) => s.toLowerCase().split(/[^a-z0-9]+/).filter(w => w.length > 2)
+/** Nombres casi iguales: comparten al menos el 70 % de las palabras (o la misma raíz de 6 letras). */
+function similar(a: string, b: string): boolean {
+  const A = wordsOf(a), B = wordsOf(b)
+  if (!A.length || !B.length) return false
+  const hit = A.filter(w => B.some(x => x === w || (w.length >= 6 && x.slice(0, 6) === w.slice(0, 6)))).length
+  return hit / Math.max(A.length, B.length) >= 0.7
+}
+
 /** Índice del elemento de `base` que es el mismo que `e` (de gachafocus), con otro nombre o formato; -1 si no hay. */
 function findMatch(base: GameEvent[], e: GameEvent, used: Set<number>): number {
   const k = key(e.title)
@@ -63,8 +80,9 @@ function findMatch(base: GameEvent[], e: GameEvent, used: Set<number>): number {
 
 /**
  * Completa una fuente principal con gachafocus. Gachafocus trae inicio y fin con hora exacta (ISO con zona),
- * así que manda en las horas: los eventos que ambas fuentes tienen se corrigen con su hora y pierden la marca
+ * así que corrige las horas de wikis y agregadores: los eventos que ambas fuentes tienen toman su hora y pierden la marca
  * de aproximado; los que solo tiene gachafocus se añaden. La fuente principal conserva el resto (imágenes, nombres).
+ * Excepción: los eventos `official` (avisos del propio juego) con hora exacta no se tocan; las fuentes oficiales mandan.
  */
 async function withGachafocus(id: string, gfKey: keyof typeof GACHAFOCUS, main: Promise<GameSync>, eventsOnly = false): Promise<GameSync> {
   if (!GF_ON) return main
@@ -88,6 +106,8 @@ async function withGachafocus(id: string, gfKey: keyof typeof GACHAFOCUS, main: 
     const i = findMatch(events, g, used)
     if (i < 0) { extra.push(g); continue }
     used.add(i)
+    // Las fuentes oficiales mandan: gachafocus solo corrige sus horas si el aviso no las daba (marcadas "≈").
+    if (events[i].official && !events[i].precision) continue
     events[i] = { ...events[i], start: g.start, end: g.end, precision: undefined }
   }
   return { ...base, events: [...events, ...extra] }
@@ -101,6 +121,38 @@ async function both(a: Promise<GameSync>, b: Promise<GameSync>): Promise<GameSyn
   return { events: ok.flatMap(s => s.events), patches: ok.flatMap(s => s.patches), codes: ok.flatMap(s => s.codes) }
 }
 
+/**
+ * Une una fuente oficial de eventos (manda en nombres y horas) con una de la comunidad (Reverie): de los eventos que tienen ambas,
+ * la oficial conserva su imagen (salvo `communityArt`: cuando la oficial solo tiene la cabecera genérica del aviso, como Kuro) y toma de la otra
+ * la descripción, los personajes y las recompensas que le falten; los que solo tiene la comunidad se añaden. Si una falla, queda la otra.
+ */
+async function officialFirst(official: Promise<GameSync>, community: Promise<GameSync>, communityArt = false): Promise<GameSync> {
+  const [o, c] = await Promise.allSettled([official, community])
+  if (o.status === 'rejected') {
+    console.warn('[sources] fuente oficial:', (o.reason as Error)?.message ?? o.reason)
+    if (c.status === 'rejected') throw o.reason
+    return c.value
+  }
+  if (c.status === 'rejected') return o.value
+  const events = o.value.events.map(e => ({ ...e }))
+  const used = new Set<number>()
+  const extra: GameEvent[] = []
+  for (const r of c.value.events) {
+    let i = findMatch(events, r, used)
+    // Mismo nombre y mismo fin aunque la comunidad dé otro inicio (p. ej. Game8 con un día equivocado).
+    if (i < 0) i = events.findIndex((e, j) => !used.has(j) && e.kind === r.kind && key(e.title) === key(r.title) && Math.abs(+new Date(e.end) - +new Date(r.end)) <= DAY)
+    // Mismo periodo (±1 día) y nombre casi igual ("Unjust Judgement" / "Judgment"): al menos el 70 % de las palabras en común.
+    if (i < 0) i = events.findIndex((e, j) => !used.has(j) && e.kind === r.kind && Math.abs(+new Date(e.start) - +new Date(r.start)) <= DAY
+      && Math.abs(+new Date(e.end) - +new Date(r.end)) <= DAY && similar(e.title, r.title))
+    if (i < 0) { extra.push(r); continue }
+    used.add(i)
+    events[i] = { ...events[i], image: communityArt ? r.image ?? events[i].image : events[i].image ?? r.image, description: events[i].description ?? r.description,
+      featured: events[i].featured.length ? events[i].featured : r.featured, items: events[i].items.length ? events[i].items : r.items,
+      pulls: events[i].pulls || r.pulls, hours: events[i].hours ?? r.hours }
+  }
+  return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes: [...o.value.codes, ...c.value.codes] }
+}
+
 /** "Virtual Tactical Simulation: Rossweisse" usa el arte del banner de ese combatiente en vez de la imagen genérica del aviso. */
 function withBannerArt(s: GameSync): GameSync {
   const art = (name: string) => s.events.find(b => b.kind === 'banner' && b.image && b.featured.some(f => f.name.toLowerCase() === name.toLowerCase()))?.image
@@ -112,7 +164,22 @@ function withBannerArt(s: GameSync): GameSync {
 }
 
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
+/** Hora (UTC) a la que suelen salir las versiones: tras el mantenimiento, 11:00 UTC+8 (Endfield, 12:00 UTC+8). Para fechas de la wiki sin hora. */
+const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail: 3, zenless: 3, endfield: 4 }
+
 export async function syncSource(game: Game): Promise<GameSync> {
+  // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
+  const s = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
+  const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
+  // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
+  if (aligned.codes.length || !game.api) return aligned
+  const codes = game.api === 'honkai3' ? await syncHoyoCodes('honkai').catch(() => [])
+    : hasWikiCodes(game.api) ? await syncWikiCodes(game.api).catch(() => [])
+    : []
+  return codes.length ? { ...aligned, codes } : aligned
+}
+
+async function syncSourceRaw(game: Game): Promise<GameSync> {
   const id = game.id
   switch (game.api) {
     case 'arknights': return withGachafocus(id, 'arknights', syncArknights(id))
@@ -125,26 +192,39 @@ export async function syncSource(game: Game): Promise<GameSync> {
     // Sin gachafocus (apagado): los eventos salen de los avisos oficiales de STOVE (czn.ts).
     case 'czn': return GF_ON ? withGachafocus(id, game.api, syncPrydwen(id, game.api), true) : both(syncPrydwen(id, game.api), syncCznEvents(id)).then(withBannerArt)
     // WuWa y NTE: banners de Prydwen + eventos de Game8 (solo el día; "≈"); gachafocus los corrige si responde.
-    case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), syncGame8(id, game.api)))
-    case 'reverse1999': return withGachafocus(id, 'reverse1999', syncReverse1999(id))
+    // NTE: banners de Prydwen + avisos oficiales (vía neverness.gg, horas exactas) completados con Game8 (imágenes y eventos aún sin aviso, "≈").
+    case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), officialFirst(syncNevernessGg(id), syncGame8(id, game.api))))
+    // Avisos oficiales de Bluepoch (eventos y banners con hora exacta e imagen) + la wiki para lo que no traen.
+    case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id)))
     // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.
     case 'stellasora': return withGachafocus(id, 'stellasora', syncStellaSora(id), true)
     // Epic Seven: banners de bannerhistory.app + eventos de los avisos oficiales de STOVE. Gachafocus solo si se reactiva (GACHAFOCUS_ENABLED=1).
     case 'epic7': return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id)
-    case 'nikke': return withGachafocus(id, 'nikke', syncNikke(id))
+    // Notas de parche oficiales (vía nikke.gg) con hora exacta + Prydwen/wiki para banners y lo que no traen.
+    case 'nikke': return withGachafocus(id, 'nikke', officialFirst(syncNikkeGg(id), syncNikke(id)))
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
     case 'wuwa': {
-      const [s, history] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), syncReverie(id, 'wuwa'))), fetchHistory('wuwa').catch(() => [])])
+      // Banners de Prydwen + eventos de las notas de parche oficiales de Kuro (horas exactas), con las imágenes y los eventos extra de Reverie.
+      const events = officialFirst(syncKuro(id), syncReverie(id, 'wuwa'), true).then(s => ({ ...s, events: [...s.events, ...wuwaChallenges(id)] }))
+      const [s, history] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), events)), fetchHistory('wuwa').catch(() => [])])
       return { ...s, patches: buildPatches(id, [], history, game.patchCycleDays) }
     }
     case 'genshin':
     case 'starrail':
     case 'zenless': {
-      const [s, history] = await Promise.all([syncGame(id, game.api), fetchHistory(game.api).catch(() => [])])
+      // La wiki de Fandom (Event List) manda en las horas: inicio tras la actualización (11:00 UTC+8) y cierre real del servidor (03:59 UTC+8), mientras que
+      // ennead da 07:00 UTC+8 (en pleno mantenimiento) y cierres redondos. ennead aporta las recompensas y tiradas, sus banners y desafíos, y lo que la wiki no tenga.
+      const [s, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])])
       return { ...s, patches: buildPatches(id, s.patches, history, game.patchCycleDays) }
     }
+    // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa).
+    case 'pgr': return syncPgr(id)
+    // Honkai Impact 3rd: eventos de su wiki (Fandom); banners solo vía Discord.
+    case 'honkai3': return syncHonkai3(id)
+    // Azur Lane: solo anuncios oficiales vía Discord (syncSource los añade si hay canal); sin fuente web permitida.
+    case 'azurlane': return { events: [], patches: [], codes: [] }
     default: throw new Error(`Sin fuente para ${game.name}`)
   }
 }

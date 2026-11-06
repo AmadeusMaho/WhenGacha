@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import ConsentBanner from './ConsentBanner'
 import { consentEnabled, reopenConsent } from './ads'
 import { flushSync } from 'react-dom'
@@ -35,6 +35,22 @@ export default function App() {
   const { status, sync } = useAutoSync(state, setState)
   useImages(state)
   const [tab, setTab] = useState<Tab>(() => (state.tracked.length ? 'timeline' : 'mine'))
+  const navRef = useRef<HTMLElement>(null)
+  // Coloca el indicador bajo la pestaña activa; se recalcula al cambiar de pestaña, de idioma (otro ancho) o de tamaño de ventana.
+  useLayoutEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    const place = () => {
+      const b = nav.querySelector<HTMLElement>('button.on')
+      if (!b) return
+      nav.style.setProperty('--ind-x', `${b.offsetLeft}px`)
+      nav.style.setProperty('--ind-w', `${b.offsetWidth}px`)
+    }
+    place()
+    const ro = new ResizeObserver(place)
+    ro.observe(nav)
+    return () => ro.disconnect()
+  })
   const [now, setNow] = useState(Date.now())
   const [selected, setSelected] = useState<GameEvent | null>(null)
   const [closing, setClosing] = useState(false)
@@ -95,7 +111,9 @@ export default function App() {
       <div className="aurora" aria-hidden />
       <header>
         <div className="brand"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /><h1>WhenGacha</h1></div>
-        <nav>
+        <nav ref={navRef}>
+          {/* Indicador que se desliza bajo la pestaña activa (posición medida en useLayoutEffect). */}
+          <span className="nav-ind" aria-hidden />
           {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{t(label)}</button>)}
         </nav>
         <div className="head-actions">

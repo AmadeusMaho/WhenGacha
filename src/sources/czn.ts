@@ -77,7 +77,7 @@ function fromUpdate(gameId: string, lines: string[], ends: Map<string, string>, 
   const mk = (title: string, p: Period, image: string | undefined, minor = false): GameEvent => ({
     id: `${gameId}:event:${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}:${p.start.toISOString().slice(0, 10)}`, gameId, kind: 'event', title,
     image: image ?? fallbackImage, start: p.start.toISOString(), end: p.end.toISOString(), items: [], featured: [], pulls: 0,
-    minor: minor || undefined, precision: p.approx ? 'approx' : undefined, source: 'api',
+    minor: minor || undefined, precision: p.approx ? 'approx' : undefined, official: true, source: 'api',
   })
   // Secciones: cada línea "■" abre una.
   const heads = lines.map((l, i) => (l.startsWith('■') ? i : -1)).filter(i => i >= 0)
@@ -136,7 +136,7 @@ function fromEventPost(gameId: string, a: Article): GameEvent | null {
   return {
     id: `${gameId}:event:${a.article_id}`, gameId, kind: 'event', title, image: thumb(a),
     start: start.toISOString(), end: end.toISOString(), items: [], featured: [], pulls: 0,
-    minor: minor || undefined, precision: approx ? 'approx' : undefined, source: 'api',
+    minor: minor || undefined, precision: approx ? 'approx' : undefined, official: true, source: 'api',
   }
 }
 

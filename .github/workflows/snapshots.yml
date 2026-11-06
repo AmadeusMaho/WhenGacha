@@ -29,3 +29,7 @@ jobs:
         run: node scripts/snapshot.mjs --publish
         env:
           SNAPSHOT_REMOTE: https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          # Anuncios oficiales vía Discord (docs/discord-bot.md). Sin estos secretos, la fuente se desactiva sola; con ellos, las copias publicadas
+          # no pierden lo de Discord (si no, taparían cada 3 h lo que el servidor sí encuentra).
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          DISCORD_CHANNELS: ${{ secrets.DISCORD_CHANNELS }}
