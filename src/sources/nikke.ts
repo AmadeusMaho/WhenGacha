@@ -1,6 +1,7 @@
 import { viaProxy } from '../net'
 import type { Featured, GameEvent } from '../types'
 import type { GameSync } from './ennead'
+import { syncPrydwen } from './prydwen'
 
 /**
  * NIKKE (servidor Global).
@@ -70,14 +71,14 @@ async function loadEvents(gameId: string): Promise<GameEvent[]> {
   const html = (await res.json())?.parse?.text?.['*'] as string | undefined
   if (!html) throw new Error('la wiki no devolvió la lista de eventos')
   const doc = new DOMParser().parseFromString(html, 'text/html')
-  const table = [...doc.querySelectorAll('table')].find(t => /Start/.test(text(t.rows[0])) && /End/.test(text(t.rows[0])))
+  const table = [...doc.querySelectorAll('table')].find(t => { const head = t.querySelector('tr'); return !!head && /Start/.test(text(head)) && /End/.test(text(head)) })
   if (!table) throw new Error('no se encontró la tabla de eventos')
 
   const from = Date.now() - 3 * DAY, to = Date.now() + 120 * DAY
   const out: GameEvent[] = []
   let last: { start: number; end: number } | null = null
-  for (const row of [...table.rows].slice(1)) {
-    const cells = [...row.cells]
+  for (const row of [...table.querySelectorAll('tr')].slice(1)) {
+    const cells = [...row.children].filter(c => /^T[DH]$/i.test(c.tagName))
     let range = last
     if (cells.length >= 3) {
       const start = parseWikiDate(cellText(cells[1]), [5, 0, 0]), end = parseWikiDate(cellText(cells[2]), [4, 59, 59])
@@ -102,8 +103,11 @@ async function loadEvents(gameId: string): Promise<GameEvent[]> {
   return out
 }
 
+/** Banners: Prydwen (inicio exacto, fin según la convención de NIKKE) y, si falla, el historial de lootandwaifus. */
+const bannersOf = (gameId: string) => syncPrydwen(gameId, 'nikke').then(s => s.events).catch(() => loadBanners(gameId))
+
 export async function syncNikke(gameId: string): Promise<GameSync> {
-  const [banners, events] = await Promise.allSettled([loadBanners(gameId), loadEvents(gameId)])
+  const [banners, events] = await Promise.allSettled([bannersOf(gameId), loadEvents(gameId)])
   if (banners.status === 'rejected' && events.status === 'rejected') throw banners.reason
   return {
     events: [...(events.status === 'fulfilled' ? events.value : []), ...(banners.status === 'fulfilled' ? banners.value : [])],

@@ -1,7 +1,7 @@
 /* Whengacha service worker: funciona sin conexión y avisa de eventos que terminan. */
-const SHELL = 'whengacha-shell-v2'
+const SHELL = 'whengacha-shell-v3'
 const IMGS = 'whengacha-img-v1'
-const API = 'whengacha-api-v1'
+const API = 'whengacha-api-v2'
 const KEEP = [SHELL, IMGS, API, 'whengacha-prefs']
 
 self.addEventListener('install', e => {
@@ -19,10 +19,10 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return
   const url = new URL(req.url)
 
-  // Datos: red primero, caché si no hay conexión.
-  if (url.hostname === 'api.ennead.cc' || url.pathname === '/proxy') {
+  // Datos (fuentes y copias del servidor en /data/): red primero, caché si no hay conexión. Solo se guardan respuestas correctas.
+  if (url.hostname === 'api.ennead.cc' || url.pathname === '/proxy' || url.pathname.startsWith('/data/')) {
     e.respondWith(
-      fetch(req).then(res => { const copy = res.clone(); caches.open(API).then(c => c.put(req, copy)); return res })
+      fetch(req).then(res => { if (res.ok) { const copy = res.clone(); caches.open(API).then(c => c.put(req, copy)) } return res })
         .catch(() => caches.match(req)),
     )
     return

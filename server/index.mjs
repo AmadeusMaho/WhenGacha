@@ -7,7 +7,8 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 import { gzip as gzipCb } from 'node:zlib'
-import { MAX_BYTES, handleProxy } from './proxy.mjs'
+import { getSnapshot, startCollector } from './collector.mjs'
+import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
@@ -80,6 +81,15 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost')
     if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain' }, 'ok')
     if (url.pathname === '/proxy') return await handleProxy(req, res, url)
+    const data = /^\/data\/([a-z0-9]+)\.json$/.exec(url.pathname)
+    if (data) { // copia de un juego generada por el recolector (ya normalizada)
+      const snap = getSnapshot(data[1])
+      if (!snap) return send(res, 404, { 'cache-control': 'no-store' }, 'Sin copia todavía')
+      const body = JSON.stringify(snap)
+      const headers = { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=300', vary: 'accept-encoding' }
+      if (acceptsGzip(req)) { headers['content-encoding'] = 'gzip'; return send(res, 200, headers, req.method === 'HEAD' ? undefined : await gzip(body)) }
+      return send(res, 200, headers, req.method === 'HEAD' ? undefined : body)
+    }
     return await handleStatic(req, res, url.pathname)
   } catch (err) {
     console.error('[server]', err)
@@ -93,6 +103,7 @@ process.on('unhandledRejection', err => console.error('[server] promesa sin capt
 server.listen(PORT, HOST, async () => {
   const built = await stat(path.join(ROOT, 'index.html')).then(() => true, () => false)
   console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
+  startCollector().catch(err => console.error('[collector]', err))
   if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
 })
-for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => server.close(() => process.exit(0)))
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => flushCache().finally(() => server.close(() => process.exit(0))))

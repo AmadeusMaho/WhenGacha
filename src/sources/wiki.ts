@@ -63,7 +63,8 @@ function make(gameId: string, kind: Kind, id: string, title: string, start: stri
 
 const compact = (xs: (GameEvent | null)[]) => xs.filter((x): x is GameEvent => !!x)
 
-/* ---------- Arknights (servidor Global, UTC-7) ---------- */
+/* ---------- Arknights (servidor Global) ---------- */
+/** Los campos startTime/endTime de la wiki vienen en UTC (p. ej. fin "10:59:59" = 03:59:59 UTC-7). La hora de inicio de la wiki no siempre coincide con la de gachafocus: se marca como aproximada hasta que gachafocus la confirme. */
 export async function syncArknights(gameId: string): Promise<GameSync> {
   const rows = await cargo('arknights.wiki.gg', {
     tables: 'EventServerDetails',
@@ -71,17 +72,35 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
     where: `server='global' AND endTime>'${sinceDate()}'`,
     order_by: 'startTime',
   })
-  const files = await fileMap('arknights.wiki.gg', rows.map(r => r.image))
+  // Banners de reclutamiento (tabla Banners de la wiki): el servidor Global tiene sus propias columnas con hora UTC.
+  const bannerRows = await cargo('arknights.wiki.gg', {
+    tables: 'Banners',
+    fields: 'name,bannerType,operators,startTimeGlobal,endTimeGlobal,image',
+    where: `endTimeGlobal>'${sinceDate()}'`,
+    order_by: 'startTimeGlobal',
+  }).catch(() => [] as Row[])
+  const files = await fileMap('arknights.wiki.gg', [...rows.map(r => r.image), ...bannerRows.map(r => r.image)])
+  const banners = compact(bannerRows.map(r => {
+    const ops = (r.operators ?? '').split(',').map(x => x.trim()).filter(Boolean)
+    const title = r.name || ops.slice(0, 3).join(' / ')
+    if (!title) return null
+    return make(gameId, 'banner', title + r.startTimeGlobal, title, toIso(r.startTimeGlobal, 0), toIso(r.endTimeGlobal, 0), {
+      image: r.image ? files.get(norm(r.image)) : undefined,
+      featured: ops.slice(0, 3).map(name => ({ name, rarity: 6 })),
+      description: ['⟦d.charBanner⟧', r.bannerType].filter(Boolean).join(' · '),
+      precision: 'approx',
+    })
+  }))
   const events = compact(rows.map(r => {
     const rerun = /\/Rerun$/i.test(r.event)
     const title = rerun ? `${r.event.replace(/\/Rerun$/i, '')} (Rerun)` : r.event
-    return make(gameId, 'event', r.event + r.startTime, title, toIso(r.startTime, -7), toIso(r.endTime, -7), {
+    return make(gameId, 'event', r.event + r.startTime, title, toIso(r.startTime, 0), toIso(r.endTime, 0), {
       image: r.image ? files.get(norm(r.image)) : undefined,
       description: '⟦d.akServer⟧',
       precision: 'approx',
     })
   }))
-  return { events, patches: [], codes: [] }
+  return { events: [...events, ...banners], patches: [], codes: [] }
 }
 
 /* ---------- Arknights: Endfield (servidor AMEU) ---------- */

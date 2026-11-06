@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { CATALOG, initialState } from './catalog'
+import { fetchSnapshot } from './net'
 import { staleMs, syncSource } from './sources'
 import type { AppState } from './types'
 
@@ -52,7 +53,8 @@ export function useAutoSync(state: AppState, setState: React.Dispatch<React.SetS
     const targets = CATALOG.filter(g => g.api && trackedRef.current.includes(g.id) && (force || Date.now() - (syncedRef.current[g.id] ?? 0) > staleMs(g)))
     if (!targets.length) return
     setStatus(s => ({ ...s, busy: true, failed: undefined }))
-    const results = await Promise.allSettled(targets.map(g => syncSource(g)))
+    // Primero la copia que guarda el servidor (una sola descarga pequeña); si no hay, el navegador consulta las fuentes.
+    const results = await Promise.allSettled(targets.map(async g => (await fetchSnapshot(g.id)) ?? (await syncSource(g))))
     const failed: string[] = []
     setState(s => {
       let next = s

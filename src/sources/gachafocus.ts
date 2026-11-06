@@ -93,10 +93,11 @@ function parseTiles(gameId: string, cfg: Config, doc: Document, section: 'events
   return out
 }
 
-export async function syncGachafocus(gameId: string, key: keyof typeof GACHAFOCUS): Promise<GameSync> {
+/** `eventsOnly`: no pide la página de banners (cuando los banners ya vienen de otra fuente), para hacer menos peticiones. */
+export async function syncGachafocus(gameId: string, key: keyof typeof GACHAFOCUS, eventsOnly = false): Promise<GameSync> {
   const cfg = GACHAFOCUS[key]
-  const [events, banners] = await Promise.allSettled([loadPage(cfg.slug, 'events'), loadPage(cfg.slug, 'banners')])
-  if (events.status === 'rejected' && banners.status === 'rejected') throw events.reason
+  const [events, banners] = await Promise.allSettled([loadPage(cfg.slug, 'events'), eventsOnly ? Promise.reject(new Error('omitida')) : loadPage(cfg.slug, 'banners')])
+  if (events.status === 'rejected' && (eventsOnly || banners.status === 'rejected')) throw events.reason
   return {
     events: [
       ...(events.status === 'fulfilled' ? parseTiles(gameId, cfg, events.value, 'events') : []),
