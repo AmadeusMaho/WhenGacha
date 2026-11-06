@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { t } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf, wallpaperOf } from './images'
-import { KIND_LABEL, countdown, eventStatus, packRows, verdict } from './logic'
-import { FILTER_ICON, GameAvatar, IconChip, Img, Tag, anyArt, cssVar, fmtDate, type Ctx } from './ui'
+import { KIND_LABEL, countdown, eventStatus, packRows, pullsBefore, trackedGames, verdict } from './logic'
+import { FILTER_ICON, GameAvatar, Img, Tag, anyArt, cssVar, fmtDate, fmtEnd, fmtDateTime, ReorderList, ZoneTag, type Ctx } from './ui'
 import { locale } from './i18n'
 import type { AppState, Game, GameEvent, Kind } from './types'
 
@@ -70,8 +70,8 @@ function filterEvents(state: AppState, f: Filters) {
   return state.events.filter(e => state.tracked.includes(e.gameId) && f.kinds[e.kind] && !(f.hideDone && state.done[e.id]) && (f.showMinor || !e.minor))
 }
 
-export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition: (fn: () => void) => void }) {
-  const { state, games, now, open, goMine, transition } = ctx
+export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition: (fn: () => void) => void; focusGame?: string; onFocused: () => void }) {
+  const { state, games, now, open, goMine, transition, focusGame, onFocused } = ctx
   const narrow = useNarrow()
   // Solo se guarda la vista si la eliges tú; mientras tanto, cuadrícula en celular y línea en pantallas grandes.
   const [picked, setPicked] = useStored<View | null>('whengacha:view', null)
@@ -83,9 +83,23 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
   const [showMinor, setShowMinor] = useStored<boolean>('whengacha:minor', false)
   // Los juegos aparecen siempre abiertos al entrar; se pueden cerrar mientras usas la app.
   const [collapsed, setCollapsed] = useState<string[]>([])
-  const tracked = useMemo(() => games.filter(g => state.tracked.includes(g.id)), [games, state.tracked])
+  const [ordering, setOrdering] = useState(false)
+  const [sheet, setSheet] = useState(false)
+  const tracked = useMemo(() => trackedGames(games, state.tracked), [games, state.tracked])
   const hasMinor = state.events.some(e => e.minor && state.tracked.includes(e.gameId))
   const filters: Filters = { kinds, hideDone, showMinor }
+  const activeFilters = KIND_ORDER.filter(k => !kinds[k]).length + (hideDone ? 1 : 0) + (showMinor ? 1 : 0)
+
+  // Llegar desde "Mis gachas": se despliega ese juego y se baja hasta su fila / sección.
+  useEffect(() => {
+    if (!focusGame) return
+    setCollapsed(c => c.filter(x => x !== focusGame))
+    const timer = setTimeout(() => {
+      document.getElementById(`g-${focusGame}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      onFocused()
+    }, 120)
+    return () => clearTimeout(timer)
+  }, [focusGame, onFocused])
 
   const toggle = useCallback((id: string) => setCollapsed(c => (c.includes(id) ? c.filter(x => x !== id) : [...c, id])), [])
   const allFolded = tracked.length > 0 && tracked.every(g => collapsed.includes(g.id))
@@ -102,32 +116,26 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
     <>
       <EndingSoon state={state} games={games} now={now} open={open} showMinor={showMinor} />
 
-      <div className="toolbar">
-        <div className="group">
-          {(['event', 'banner', 'challenge'] as Kind[]).map(k => (
-            <IconChip key={k} tone={k} on={kinds[k]} label={SECTION_LABEL[k]} onClick={() => setKinds(s => ({ ...s, [k]: !s[k] }))}>{FILTER_ICON[k]}</IconChip>
-          ))}
-          <span className="sep" aria-hidden />
-          <IconChip on={hideDone} label={t('f.hideDone')} onClick={() => setHideDone(a => !a)}>{FILTER_ICON.hideDone}</IconChip>
-          {hasMinor && <IconChip on={showMinor} label={t('f.minor')} onClick={() => setShowMinor(a => !a)}>{FILTER_ICON.minor}</IconChip>}
+      <div className="mbar">
+        <div className="seg view" role="group" aria-label={t('view.aria')}>
+          <button className={view === 'timeline' ? 'on' : ''} onClick={() => transition(() => setView('timeline'))}>{t('view.line')}</button>
+          <button className={view === 'grid' ? 'on' : ''} onClick={() => transition(() => setView('grid'))}>{t('view.grid')}</button>
         </div>
-        <div className="group">
-          <button className="btn sm ghost fold-all" onClick={() => setCollapsed(allFolded ? [] : tracked.map(g => g.id))}>
-            {allFolded ? t('jump.unfold') : t('jump.fold')}
-          </button>
-          {view === 'timeline' && (
-            <div className="seg zoom" role="group" aria-label={t('zoom.aria')}>
-              {ZOOMS.map((z, i) => <button key={z.key} className={i === zoom ? 'on' : ''} onClick={() => setZoom(i)}>{t(z.key)}</button>)}
-            </div>
-          )}
-          <div className="seg view" role="group" aria-label={t('view.aria')}>
-            <button className={view === 'timeline' ? 'on' : ''} onClick={() => transition(() => setView('timeline'))}>{t('view.line')}</button>
-            <button className={view === 'grid' ? 'on' : ''} onClick={() => transition(() => setView('grid'))}>{t('view.grid')}</button>
-          </div>
-        </div>
+        <ZoneTag now={now} />
+        <button className={`btn sm ghost fbtn ${activeFilters ? 'on' : ''}`} onClick={() => setSheet(true)} aria-haspopup="dialog">
+          ☰ {t('filters.btn')}{activeFilters > 0 && <b className="badge">{activeFilters}</b>}
+        </button>
       </div>
+      {sheet && (
+        <FilterSheet onClose={() => setSheet(false)} kinds={kinds} setKinds={setKinds} hideDone={hideDone} setHideDone={setHideDone}
+          hasMinor={hasMinor} showMinor={showMinor} setShowMinor={setShowMinor} timeline={view === 'timeline'} zoom={zoom} setZoom={setZoom}
+          allFolded={allFolded} onFold={() => setCollapsed(allFolded ? [] : tracked.map(g => g.id))}
+          canOrder={tracked.length > 1} onOrder={() => { setSheet(false); setOrdering(true) }} />
+      )}
 
-      {view === 'timeline'
+      {ordering
+        ? <ReorderList games={games} state={state} setState={ctx.setState} onDone={() => setOrdering(false)} />
+        : view === 'timeline'
         ? <Gantt {...ctx} filters={filters} zoom={zoom} narrow={narrow} fold={{ collapsed, toggle }} />
         : <GridView {...ctx} filters={filters} fold={{ collapsed, toggle }} />}
     </>
@@ -142,13 +150,21 @@ function EndingSoon({ state, games, now, open, showMinor }: Pick<Ctx, 'state' | 
     .sort((a, b) => +new Date(a.end) - +new Date(b.end))
     .slice(0, 14)
   const gameOf = (id: string) => games.find(g => g.id === id)
+  const [expanded, setExpanded] = useState(false)
   return (
     <section className="soon-strip" aria-label={t('soon.title')}>
-      <h3>{t('soon.title')} {items.length > 0 && <small>{items.length}</small>}</h3>
+      <h3>
+        {t('soon.title')} {items.length > 0 && <small>{items.length}</small>}
+        {items.length > 1 && (
+          <button className="soon-toggle" onClick={() => setExpanded(x => !x)} aria-expanded={expanded}>
+            {expanded ? t('soon.collapse') : t('soon.expand')} <span aria-hidden>{expanded ? '▴' : '▾'}</span>
+          </button>
+        )}
+      </h3>
       {items.length === 0
         ? <p className="muted">{t('soon.none')}</p>
         : (
-          <div className="soon-list">
+          <div className={`soon-list ${expanded ? 'open' : ''}`}>
             {items.map(e => {
               const g = gameOf(e.gameId)
               const left = +new Date(e.end) - now
@@ -192,7 +208,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
   const width = days * ppd
   const x = (tm: number) => ((tm - t0) / DAY) * ppd
 
-  const lanes = games.filter(g => state.tracked.includes(g.id))
+  const lanes = trackedGames(games, state.tracked)
   useGlow(lanes.find(g => g.id === laneId) ?? lanes[0])
   const weeks: number[] = []
   const first = new Date(t0)
@@ -285,7 +301,7 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
   const pct = s < now && en > now && !e.open ? ((now - s) / (en - s)) * 100 : 0
   const state = s > now ? t('bar.startsIn', { t: countdown(s - now) }) : en > now ? t('bar.endsIn', { t: countdown(en - now) }) : t('bar.ended')
-  const range = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtDate(s)} → ${fmtDate(en)} · ${state}`
+  const range = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtDateTime(s)} → ${fmtEnd(e)} · ${state}`
   return (
     <button
       className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''}`}
@@ -316,7 +332,7 @@ const byWhen = (now: number) => (a: GameEvent, b: GameEvent) => {
 }
 
 function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: Filters; fold: Fold }) {
-  const tracked = useMemo(() => games.filter(g => state.tracked.includes(g.id)), [games, state.tracked])
+  const tracked = useMemo(() => trackedGames(games, state.tracked), [games, state.tracked])
   const [active, setActive] = useState<string | undefined>(tracked[0]?.id)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   useGlow(tracked.find(g => g.id === active) ?? tracked[0])
@@ -387,7 +403,7 @@ function GridView({ state, games, now, open, filters, fold }: Ctx & { filters: F
                   <div key={k} className={`kind-group ${k} ${tall ? 'tall' : ''}`}>
                     <h3 className="kind-head"><span className="sec-ico">{FILTER_ICON[k]}</span>{SECTION_LABEL[k]} <small>{items.length}</small></h3>
                     <div className="grid">
-                      {shown.map((e, i) => <EventCard key={e.id} e={e} g={g} i={i} now={now} done={!!state.done[e.id]} open={open} />)}
+                      {shown.map((e, i) => <EventCard key={e.id} e={e} g={g} i={i} now={now} done={!!state.done[e.id]} open={open} left={pullsBefore(e, state, g, now)?.total} />)}
                     </div>
                     {(hidden > 0 || (expanded[key] && items.length > COLLAPSE_OVER)) && (
                       <div className="more-row">
@@ -425,11 +441,64 @@ function Progress({ e, now }: { e: GameEvent; now: number }) {
   )
 }
 
+interface SheetProps {
+  onClose: () => void
+  kinds: Record<Kind, boolean>; setKinds: React.Dispatch<React.SetStateAction<Record<Kind, boolean>>>
+  hideDone: boolean; setHideDone: (v: boolean) => void
+  hasMinor: boolean; showMinor: boolean; setShowMinor: (v: boolean) => void
+  timeline: boolean; zoom: number; setZoom: (z: number) => void
+  allFolded: boolean; onFold: () => void
+  canOrder: boolean; onOrder: () => void
+}
+
+function SheetOpt({ on, onClick, children }: { on: boolean; onClick: () => void; children: React.ReactNode }) {
+  return <button className={`fopt ${on ? 'on' : ''}`} onClick={onClick} aria-pressed={on}>{children}</button>
+}
+
+/** Filtros y ajustes de la lista en una hoja que sube desde abajo (celular), en vez de apilarlos arriba. */
+function FilterSheet(p: SheetProps) {
+  const { onClose } = p
+  useEffect(() => {
+    const onKey = (k: KeyboardEvent) => k.key === 'Escape' && onClose()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onClose])
+  return (
+    <div className="sheet-backdrop" onClick={onClose}>
+      <div className="sheet" role="dialog" aria-modal="true" aria-label={t('filters.btn')} onClick={e => e.stopPropagation()}>
+        <div className="sheet-grip" aria-hidden />
+        <h3>{t('filters.show')}</h3>
+        <div className="fopts">
+          {KIND_ORDER.map(k => <SheetOpt key={k} on={p.kinds[k]} onClick={() => p.setKinds(s => ({ ...s, [k]: !s[k] }))}>{FILTER_ICON[k]}<span>{SECTION_LABEL[k]}</span></SheetOpt>)}
+        </div>
+        <h3>{t('filters.more')}</h3>
+        <div className="fopts">
+          <SheetOpt on={p.hideDone} onClick={() => p.setHideDone(!p.hideDone)}>{FILTER_ICON.hideDone}<span>{t('f.hideDone')}</span></SheetOpt>
+          {p.hasMinor && <SheetOpt on={p.showMinor} onClick={() => p.setShowMinor(!p.showMinor)}>{FILTER_ICON.minor}<span>{t('f.minor')}</span></SheetOpt>}
+        </div>
+        {p.timeline && (
+          <>
+            <h3>{t('filters.zoom')}</h3>
+            <div className="seg zoom" role="group" aria-label={t('zoom.aria')}>
+              {ZOOMS.map((z, i) => <button key={z.key} className={i === p.zoom ? 'on' : ''} onClick={() => p.setZoom(i)}>{t(z.key)}</button>)}
+            </div>
+          </>
+        )}
+        <div className="sheet-actions">
+          <button className="btn sm ghost" onClick={p.onFold}>{p.allFolded ? t('jump.unfold') : t('jump.fold')}</button>
+          {p.canOrder && <button className="btn sm ghost" onClick={p.onOrder}>⇅ {t('order.btn')}</button>}
+          <button className="btn sm soft" onClick={onClose}>{t('order.done')}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function Precision({ e }: { e: GameEvent }) {
   return e.precision ? <span className="prec" title={precHint(e.precision)}>≈ {precLabel(e.precision)}</span> : null
 }
 
-function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: number; now: number; done: boolean; open: (e: GameEvent) => void }) {
+function EventCard({ e, g, i, now, done, open, left }: { e: GameEvent; g: Game; i: number; now: number; done: boolean; open: (e: GameEvent) => void; left?: number }) {
   const v = verdict(e, now, g)
   const st = eventStatus(e, now)
   const stagger = { '--i': Math.min(i, 12) } as React.CSSProperties
@@ -451,8 +520,9 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
           <h3>{e.title}</h3>
           <div className="bcard-meta">
             <span>{when}</span>
-            <span className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtDate(e.end)}</span>
+            <span className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtEnd(e)}</span>
           </div>
+          {left !== undefined && <div className="pull-left">{t('pull.left', { n: left })}</div>}
           <Progress e={e} now={now} />
           {e.featured.length > 1 && (
             <div className="bcard-others">
@@ -477,8 +547,9 @@ function EventCard({ e, g, i, now, done, open }: { e: GameEvent; g: Game; i: num
       <div className="ecard-body">
         <small>{g.short} · {KIND_LABEL[e.kind]} <Precision e={e} /></small>
         <h4>{done ? '✓ ' : ''}{e.title}</h4>
-        <p className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtDate(e.end)}</p>
+        <p className="muted">{fmtDate(e.start)} → {e.open ? t('time.open') : fmtEnd(e)}</p>
         <p><strong>{when}</strong>{e.pulls > 0 && <span className="muted"> · {t('pulls.about', { n: e.pulls })}</span>}</p>
+        {left !== undefined && <p className="pull-left">{t('pull.left', { n: left })}</p>}
         <Progress e={e} now={now} />
       </div>
     </article>

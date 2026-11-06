@@ -7,6 +7,8 @@ const gzip = promisify(gzipCb)
 export const MAX_BYTES = (Number(process.env.CACHE_MB) || 64) * 1024 * 1024
 const RATE_PER_MIN = Number(process.env.RATE_PER_MIN) || 600
 const UA = 'WhenGacha/1.0 (+https://github.com/AmadeusMaho/WhenGacha)'
+/** gachafocus (Cloudflare) rechaza el UA identificado en algunos hosts: se prueba primero con un UA de navegador y, si falla, con el de siempre. */
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
 const MAX_BODY = 8 * 1024 * 1024
 const STALE_MAX = 7 * 24 * 3_600_000
 
@@ -22,8 +24,8 @@ const SOURCES = [
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
   { name: 'gachafocus', ttl: 30 * MIN, test: u => u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
+  { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },
-  { name: 'gamepress', ttl: 6 * HOUR, test: u => u.hostname === 'grandorder.gamepress.gg' && u.pathname === '/summon-banner-list' },
   { name: 'wiki', ttl: 12 * HOUR, test: u => ((u.hostname.endsWith('.fandom.com') || u.hostname.endsWith('.wiki.gg')) && u.pathname === '/api.php') || (u.hostname === 'bluearchive.wiki' && u.pathname === '/w/api.php') },
 ]
 
@@ -45,12 +47,16 @@ function store(key, entry) {
   }
 }
 
+const request = (url, ua) => fetch(url, {
+  headers: { 'user-agent': ua, accept: 'application/json, text/html;q=0.9, */*;q=0.5' },
+  redirect: 'manual',
+  signal: AbortSignal.timeout(20_000),
+})
+
 async function fetchUpstream(url, ttl) {
-  const res = await fetch(url, {
-    headers: { 'user-agent': UA, accept: 'application/json, text/html;q=0.9, */*;q=0.5' },
-    redirect: 'manual',
-    signal: AbortSignal.timeout(20_000),
-  })
+  const browserFirst = new URL(url).hostname === 'gachafocus.com.br'
+  let res = await request(url, browserFirst ? BROWSER_UA : UA)
+  if (res.status !== 200 && browserFirst) res = await request(url, UA)
   if (res.status !== 200) throw new Error(`upstream ${res.status}`)
   if (Number(res.headers.get('content-length')) > MAX_BODY) throw new Error('respuesta demasiado grande')
   const body = Buffer.from(await res.arrayBuffer())

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { t } from './i18n'
-import { countdown, eventStatus, isTaskDone, uid, verdict } from './logic'
+import { countdown, eventStatus, isTaskDone, trackedGames, uid, verdict } from './logic'
 import { enableNotifications } from './notify'
-import { GameAvatar, Img, Tag, cssVar, fmtDate, fmtDateY, heroOf, type Ctx } from './ui'
+import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, type Ctx } from './ui'
 import type { Cadence, Game, Patch } from './types'
 
 const DAY = 86_400_000
@@ -17,13 +17,14 @@ const FIRST_VISIT = (() => {
   } catch { return true }
 })()
 
-export function MyGachas({ ctx }: { ctx: Ctx }) {
+export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => void }) {
   const { state, games, setState } = ctx
   const [msg, setMsg] = useState('')
   const [query, setQuery] = useState('')
   const [addOpen, setAddOpen] = useState(FIRST_VISIT)
+  const [ordering, setOrdering] = useState(false)
   const toggle = (id: string) => setState(s => ({ ...s, tracked: s.tracked.includes(id) ? s.tracked.filter(x => x !== id) : [...s.tracked, id] }))
-  const mine = games.filter(g => state.tracked.includes(g.id))
+  const mine = trackedGames(games, state.tracked)
   const q = query.trim().toLowerCase()
   const match = (g: Game) => !q || `${g.name} ${g.short} ${g.publisher}`.toLowerCase().includes(q)
   const auto = games.filter(g => g.api && match(g))
@@ -60,8 +61,12 @@ export function MyGachas({ ctx }: { ctx: Ctx }) {
 
       {mine.length > 0 && (
         <section>
-          <h3>{t('mine.yours')}</h3>
-          <div className="grid wide">{mine.map(g => <GameCard key={g.id} g={g} ctx={ctx} onRemove={() => toggle(g.id)} />)}</div>
+          <div className="row between">
+            <h3>{t('mine.yours')}</h3>
+            {mine.length > 1 && <button className={`btn sm ghost ${ordering ? 'on' : ''}`} onClick={() => setOrdering(o => !o)} aria-pressed={ordering}>⇅ {t('order.btn')}</button>}
+          </div>
+          {ordering && <ReorderList games={games} state={state} setState={setState} onDone={() => setOrdering(false)} />}
+          <div className="grid wide">{mine.map(g => <GameCard key={g.id} g={g} ctx={ctx} onRemove={() => toggle(g.id)} onOpen={() => goGame(g.id)} />)}</div>
         </section>
       )}
 
@@ -97,7 +102,7 @@ function Pick({ g, on, state, onClick, disabled }: { g: Game; on?: boolean; stat
 
 const CAD_LABEL = { daily: 'cad.dailyL', weekly: 'cad.weeklyL', once: 'cad.onceL' } as const
 
-function GameCard({ g, ctx, onRemove }: { g: Game; ctx: Ctx; onRemove: () => void }) {
+function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: () => void; onOpen: () => void }) {
   const { state, now, setState, open } = ctx
   const live = state.events
     .filter(e => e.gameId === g.id && e.kind !== 'banner' && eventStatus(e, now) !== 'ended')
@@ -111,10 +116,10 @@ function GameCard({ g, ctx, onRemove }: { g: Game; ctx: Ctx; onRemove: () => voi
   const pending = tasks.filter(task => !isTaskDone(task, now)).length
   return (
     <article className="gcard" style={cssVar(g)}>
-      <div className="gcard-hero">
+      <div className="gcard-hero go" role="link" tabIndex={0} title={t('card.goTimeline')} onClick={onOpen} onKeyDown={k => { if (k.key === 'Enter' && k.target === k.currentTarget) onOpen() }}>
         <Img src={heroOf(state, g.id)} />
         <div className="fade" />
-        <button className="x corner" onClick={onRemove} title={t('card.unfollow')} aria-label={t('card.unfollowAria', { name: g.name })}>×</button>
+        <button className="x corner" onClick={ev => { ev.stopPropagation(); onRemove() }} title={t('card.unfollow')} aria-label={t('card.unfollowAria', { name: g.name })}>×</button>
         <div className="gcard-head">
           <GameAvatar game={g} state={state} size={52} />
           <div>
@@ -195,7 +200,7 @@ function TaskForm({ onAdd }: { onAdd: (title: string, c: Cadence) => void }) {
 /* ---------- Parches ---------- */
 export function Patches(ctx: Ctx & { goMine: () => void }) {
   const { state, games, goMine } = ctx
-  const mine = games.filter(g => state.tracked.includes(g.id))
+  const mine = trackedGames(games, state.tracked)
   if (!mine.length)
     return <div className="empty"><p>{t('patch.empty')}</p><button className="btn primary" onClick={goMine}>{t('btn.choose')}</button></div>
   const withData = mine.filter(g => state.patches.some(p => p.gameId === g.id))

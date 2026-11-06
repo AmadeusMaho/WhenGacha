@@ -39,6 +39,8 @@ export default function App() {
   const [selected, setSelected] = useState<GameEvent | null>(null)
   const [closing, setClosing] = useState(false)
   const [installEv, setInstallEv] = useState<InstallEvent | null>(null)
+  // Juego al que ir al abrir la línea de tiempo (desde "Mis gachas").
+  const [focusGame, setFocusGame] = useState<string>()
 
   // El fondo no se desplaza mientras hay un modal abierto.
   useEffect(() => {
@@ -86,6 +88,7 @@ export default function App() {
   // El modal debe reflejar el estado más reciente (p. ej. "completado").
   const current = selected ? state.events.find(e => e.id === selected.id) ?? selected : null
   const goMine = () => transition(() => setTab('mine'))
+  const goGame = (id: string) => transition(() => { setFocusGame(id); setTab('timeline') })
 
   return (
     <div className="app">
@@ -105,8 +108,8 @@ export default function App() {
       </header>
       {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.join(', ') })}</div>}
       <main key={tab}>
-        {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} />}
-        {tab === 'mine' && <MyGachas ctx={ctx} />}
+        {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} focusGame={focusGame} onFocused={() => setFocusGame(undefined)} />}
+        {tab === 'mine' && <MyGachas ctx={ctx} goGame={goGame} />}
         {tab === 'patches' && <Patches {...ctx} goMine={goMine} />}
       </main>
       <footer className="site-foot">

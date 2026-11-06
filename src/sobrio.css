@@ -58,15 +58,6 @@
   header nav button { flex: 1; padding: 6px 8px; font-size: .88rem; }
   .gsec-head { top: 92px; }
 
-  /* controles: fila 1 = filtros + vista; fila 2 = plegar; fila 3 (solo en línea de tiempo) = zoom */
-  .toolbar { gap: 8px 6px; margin-bottom: 10px; justify-content: flex-start; align-items: center; }
-  .toolbar .group { display: contents; }
-  .toolbar .ichip { width: 36px; height: 36px; }
-  .toolbar .sep { margin: 0 2px; }
-  .seg.view { order: 1; margin-left: auto; }
-  .fold-all { order: 3; flex: none; margin-left: auto; padding: 5px 10px; }
-  .seg.zoom { order: 4; flex-basis: 100%; justify-content: space-between; }
-  .seg.zoom button { flex: 1; }
   .seg button { padding: 6px 9px; font-size: .78rem; }
 
   /* tarjetas de banner: casi cuadradas en vez de ocupar una pantalla entera */

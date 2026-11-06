@@ -24,6 +24,9 @@ export const GACHAFOCUS: Record<string, Config> = {
   czn: { slug: 'chaos-zero-nightmare', challenge: /^overdrive/i },
   wuwa: { slug: 'wuthering-waves', challenge: /^(tower of adversity|whimpering wastes)/i },
   nte: { slug: 'neverness-to-everness' },
+  endfield: { slug: 'arknights-endfield' },
+  uma: { slug: 'umamusume', challenge: /^(champions meeting|legend race|league of heroes|master'?s challenge|racing carnival|trainer skills test)/i },
+  bluearchive: { slug: 'blue-archive' },
   reverse1999: { slug: 'reverse-1999' },
 }
 

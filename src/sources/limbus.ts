@@ -121,6 +121,7 @@ export async function syncLimbus(gameId: string): Promise<GameSync> {
       pulls: 0,
       open: open || undefined,
       source: 'api',
+      precision: open ? undefined : 'approx',
     })
   }
 

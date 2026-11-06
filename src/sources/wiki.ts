@@ -84,9 +84,10 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
   return { events, patches: [], codes: [] }
 }
 
-/* ---------- Arknights: Endfield (servidor AMEU, UTC-5) ---------- */
+/* ---------- Arknights: Endfield (servidor AMEU) ---------- */
 const EF = 'endfield.wiki.gg'
-const AMEU = -5
+/** Los campos Ameu* de la wiki ya vienen en UTC: coinciden con las horas ISO de gachafocus (p. ej. 17:00Z). */
+const AMEU = 0
 
 export async function syncEndfield(gameId: string): Promise<GameSync> {
   const since = sinceDate()

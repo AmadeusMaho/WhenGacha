@@ -82,3 +82,41 @@ export const KIND_LABEL = {
   get banner() { return t('kind1.banner') },
   get challenge() { return t('kind1.challenge') },
 } as Record<GameEvent['kind'], string>
+
+/** Los juegos seguidos, en el orden que eligió el usuario (el de `tracked`). */
+export function trackedGames(games: Game[], tracked: string[]): Game[] {
+  return tracked.map(id => games.find(g => g.id === id)).filter((g): g is Game => !!g)
+}
+
+/** Mueve `id` una posición dentro de `tracked` (sin salirse de los extremos). */
+export function moveTracked(tracked: string[], id: string, dir: -1 | 1): string[] {
+  const i = tracked.indexOf(id), j = i + dir
+  if (i < 0 || j < 0 || j >= tracked.length) return tracked
+  const out = [...tracked]
+  ;[out[i], out[j]] = [out[j], out[i]]
+  return out
+}
+
+/** Pone `id` en la posición que ocupa `overId` (arrastrar y soltar); los demás se corren. */
+export function placeTracked(tracked: string[], id: string, overId: string): string[] {
+  const from = tracked.indexOf(id), to = tracked.indexOf(overId)
+  if (from < 0 || to < 0 || from === to) return tracked
+  const out = [...tracked]
+  out.splice(to, 0, out.splice(from, 1)[0])
+  return out
+}
+
+export interface PullPlan { total: number; items: GameEvent[] }
+
+/**
+ * Tiradas que aún puedes sumar antes de que termine `banner`: eventos del mismo juego sin completar,
+ * sin terminar y que empiezan antes del fin del banner. Solo con juegos que detallan sus recompensas.
+ */
+export function pullsBefore(banner: GameEvent, state: { events: GameEvent[]; done: Record<string, boolean> }, game: Game | undefined, now: number): PullPlan | null {
+  if (banner.kind !== 'banner' || !game?.api || !detailsPulls(game) || eventStatus(banner, now) === 'ended') return null
+  const end = +new Date(banner.end)
+  const items = state.events
+    .filter(e => e.gameId === banner.gameId && e.kind !== 'banner' && e.pulls > 0 && !state.done[e.id] && eventStatus(e, now) !== 'ended' && +new Date(e.start) < end)
+    .sort((a, b) => +new Date(a.end) - +new Date(b.end))
+  return { total: Math.round(items.reduce((n, e) => n + e.pulls, 0) * 10) / 10, items }
+}

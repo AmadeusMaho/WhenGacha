@@ -1,8 +1,8 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { t, tx } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf } from './images'
-import { KIND_LABEL, countdown, eventStatus, verdict } from './logic'
-import { GameAvatar, Img, Tag, fmtDateY, type Ctx } from './ui'
+import { KIND_LABEL, countdown, eventStatus, pullsBefore, verdict } from './logic'
+import { GameAvatar, Img, Tag, fmtDateTime, fmtEnd, type Ctx } from './ui'
 import type { GameEvent } from './types'
 
 /** Último punto donde el usuario hizo clic: el modal "crece" desde ahí. */
@@ -17,6 +17,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
   const box = useRef<HTMLDivElement>(null)
   const isBanner = e.kind === 'banner'
   const art = isBanner ? bannerArt(e) : eventImage(e)
+  const plan = pullsBefore(e, state, g, now)
   const f0Splash = isBanner ? splashOf(e.gameId, e.featured[0]) : undefined
 
   useEffect(() => {
@@ -54,11 +55,29 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
             {v.label && <Tag tone={v.tone}>{v.label}</Tag>}
             {e.precision && <Tag tone="mid">≈ {t(e.precision === 'estimated' ? 'prec.estimated' : 'prec.approx')}</Tag>}
             <strong>{when}</strong>
-            <span className="muted">{fmtDateY(e.start)} → {e.open ? t('time.open') : fmtDateY(e.end)}</span>
+            <span className="muted">{fmtDateTime(e.start, true)} → {e.open ? t('time.open') : fmtEnd(e, true)}</span>
           </div>
           {e.pulls > 0 && <p className="pulls">{t('modal.pulls', { n: e.pulls })}{e.hours ? t('modal.pullsHours', { h: e.hours }) : ''}</p>}
           {e.description && <p className="desc">{tx(e.description)}</p>}
           {e.precision && <p className="desc muted">{t(e.precision === 'estimated' ? 'prec.estimatedHint' : 'prec.approxHint')}</p>}
+          {plan && (
+            <>
+              <h3>{t('pull.title')}</h3>
+              <p className="pulls"><b>~{plan.total}</b> {t('pull.unit')}</p>
+              {plan.items.length > 0 ? (
+                <ul className="pull-list">
+                  {plan.items.map(p => (
+                    <li key={p.id}>
+                      <span>{p.title}</span>
+                      <em>~{p.pulls}✦</em>
+                      <button className="btn sm ghost" onClick={() => setState(s => ({ ...s, done: { ...s.done, [p.id]: true } }))}>{t('pull.done')}</button>
+                    </li>
+                  ))}
+                </ul>
+              ) : <p className="muted">{t('pull.none')}</p>}
+              <small className="muted">{t('pull.note')}</small>
+            </>
+          )}
           {e.featured.length > 0 && (
             <>
               <h3>{t('modal.featured')}</h3>

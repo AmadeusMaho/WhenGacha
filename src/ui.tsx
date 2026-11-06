@@ -1,6 +1,7 @@
-import { useState } from 'react'
-import { locale } from './i18n'
+import { useRef, useState } from 'react'
+import { locale, t } from './i18n'
 import { bannerArt, eventImage, faceOf, gameImage, logoOf, wallpaperOf } from './images'
+import { moveTracked, placeTracked, trackedGames } from './logic'
 import type { AppState, Game, GameEvent } from './types'
 
 export interface Ctx {
@@ -16,6 +17,71 @@ export const fmtDate = (iso: string | number) =>
   new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 export const fmtDateY = (iso: string | number) =>
   new Date(iso).toLocaleDateString(locale(), { day: 'numeric', month: 'short', year: 'numeric' })
+
+/** Fecha y hora en la zona horaria del navegador (con su abreviatura, p. ej. "GMT-5"). */
+export const fmtDateTime = (iso: string | number, year = false) =>
+  new Date(iso).toLocaleString(locale(), { day: 'numeric', month: 'short', ...(year ? { year: 'numeric' } : {}), hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })
+
+/** Fin de un elemento con hora exacta; con "≈" cuando la hora no está confirmada. Sin fin anunciado: nada. */
+export const fmtEnd = (e: { end: string; precision?: string }, year = false) => `${e.precision ? '≈ ' : ''}${fmtDateTime(e.end, year)}`
+
+/** Lista para cambiar el orden de los juegos seguidos: filas grandes con subir / bajar (cómodas en móvil). */
+export function ReorderList({ games, state, setState, onDone }: { games: Game[]; state: AppState; setState: Ctx['setState']; onDone: () => void }) {
+  const list = trackedGames(games, state.tracked)
+  const move = (id: string, dir: -1 | 1) => setState(s => ({ ...s, tracked: moveTracked(s.tracked, id, dir) }))
+
+  // Arrastrar desde el asa: la fila se reubica en vivo según la fila sobre la que está el puntero.
+  const [drag, setDrag] = useState<string | null>(null)
+  const rows = useRef<HTMLOListElement>(null)
+  const onMove = (ev: React.PointerEvent) => {
+    if (!drag || !rows.current) return
+    const over = [...rows.current.children].findIndex(r => {
+      const b = r.getBoundingClientRect()
+      return ev.clientY >= b.top && ev.clientY <= b.bottom
+    })
+    if (over >= 0 && list[over] && list[over].id !== drag) setState(s => ({ ...s, tracked: placeTracked(s.tracked, drag, list[over].id) }))
+    if (ev.clientY < 70) window.scrollBy(0, -14)
+    else if (ev.clientY > window.innerHeight - 70) window.scrollBy(0, 14)
+  }
+  const stop = () => setDrag(null)
+  return (
+    <section className="reorder" aria-label={t('order.title')}>
+      <div className="reorder-head">
+        <strong>{t('order.title')}</strong>
+        <button className="btn sm soft" onClick={onDone}>{t('order.done')}</button>
+      </div>
+      <ol ref={rows}>
+        {list.map((g, i) => (
+          <li key={g.id} style={cssVar(g)} className={drag === g.id ? 'dragging' : ''}>
+            <span className="reorder-grip" role="presentation" title={t('order.drag')}
+              onPointerDown={ev => { ev.currentTarget.setPointerCapture(ev.pointerId); setDrag(g.id) }}
+              onPointerMove={onMove} onPointerUp={stop} onPointerCancel={stop} onLostPointerCapture={stop}>⠿</span>
+            <span className="reorder-n">{i + 1}</span>
+            <GameAvatar game={g} state={state} size={40} />
+            <strong>{g.name}</strong>
+            <span className="reorder-btns">
+              <button disabled={i === 0} onClick={() => move(g.id, -1)} aria-label={t('move.up', { name: g.name })} title={t('move.upT')}>▲</button>
+              <button disabled={i === list.length - 1} onClick={() => move(g.id, 1)} aria-label={t('move.down', { name: g.name })} title={t('move.downT')}>▼</button>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  )
+}
+
+/** Zona horaria del navegador: abreviatura corta (p. ej. "GMT-3") y nombre completo (p. ej. "America/Argentina/Buenos_Aires"). */
+export function userZone(at: number | Date = Date.now()): { short: string; name: string } {
+  const fmt = new Intl.DateTimeFormat(locale(), { timeZoneName: 'short' })
+  return { short: fmt.formatToParts(at).find(p => p.type === 'timeZoneName')?.value ?? '', name: fmt.resolvedOptions().timeZone }
+}
+
+/** Letrero pequeño con la zona horaria en la que se muestran todas las horas. */
+export function ZoneTag({ now }: { now: number }) {
+  const z = userZone(now)
+  if (!z.short) return null
+  return <span className="ztag" title={t('tz.hint', { tz: z.name })}>🕒 {z.short}</span>
+}
 
 export const cssVar = (g?: Game) => ({ '--c': g?.color ?? '#888', '--c2': g?.color2 ?? '#333' }) as React.CSSProperties
 
@@ -41,7 +107,7 @@ export function GameAvatar({ game, state, size = 40 }: { game: Game; state: AppS
   if (logo) {
     return (
       <span className="avatar" style={{ width: size, height: size, background: `linear-gradient(135deg, ${game.color}, ${game.color2})`, fontSize: size * 0.3 }}>
-        <Img className="logo" src={logo} alt={game.name} />
+        <Img className="applogo" src={logo} alt={game.name} />
       </span>
     )
   }
@@ -88,6 +154,3 @@ export const FILTER_ICON = {
 } as const
 
 /** Filtro de solo icono: se explica con un tooltip y funciona como interruptor. */
-export function IconChip({ on, onClick, label, tone, children }: { on: boolean; onClick: () => void; label: string; tone?: string; children: React.ReactNode }) {
-  return <button className={`ichip ${tone ?? ''} ${on ? 'on' : ''}`} onClick={onClick} aria-pressed={on} aria-label={label} title={label}>{children}</button>
-}

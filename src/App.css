@@ -62,7 +62,6 @@ input[type=checkbox] { accent-color: var(--acc); width: 16px; height: 16px; padd
 @keyframes rot { to { transform: rotate(360deg); } }
 .x { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.15rem; line-height: 1; padding: 3px 8px; border-radius: 8px; transition: all .15s; }
 .x:hover { color: #fff; background: rgba(248, 113, 113, .45); transform: scale(1.1); }
-.toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center; margin: 4px 0 14px; }
 .group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .chip { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font: inherit; font-size: .85rem; font-weight: 500; color: var(--muted); background: rgba(255, 255, 255, .04); border: 1px solid var(--line); border-radius: 999px; padding: 5px 14px; transition: all .2s var(--ease); }
 .chip:hover { color: var(--text); border-color: rgba(255, 255, 255, .3); transform: translateY(-1px); background: rgba(255, 255, 255, .08); }
@@ -556,7 +555,6 @@ header { transition: background .3s, border-color .3s; }
 .ichip.banner { --k: #fbbf24; } .ichip.event { --k: #38bdf8; } .ichip.challenge { --k: #f472b6; }
 .ichip.banner.on, .ichip.event.on, .ichip.challenge.on { color: var(--k); background: color-mix(in srgb, var(--k) 18%, transparent); border-color: color-mix(in srgb, var(--k) 65%, transparent); }
 .ichip.banner:not(.on), .ichip.event:not(.on), .ichip.challenge:not(.on) { opacity: .7; }
-.sep { width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
 
 /* ====== botones más calmados: sin brillo ni sombras de color, estado activo suave y legible ====== */
 nav button.on, .seg button.on, .chip.on, .ichip.on, .lang-menu button.on {
@@ -597,3 +595,81 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 /* ====== ajustes de Mis gachas ====== */
 .notify-row { gap: 12px; }
 .ichip.bell { width: 38px; height: 36px; }
+
+/* Reordenar juegos seguidos */
+.btn.on { background: rgba(255, 255, 255, .14); color: var(--text); }
+.row.between { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.reorder { margin: 0 0 16px; padding: 14px; border-radius: 18px; background: rgba(255, 255, 255, .04); border: 1px solid var(--line); }
+.reorder-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.reorder ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.reorder li { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 14px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); border-left: 3px solid var(--c); min-width: 0; }
+.reorder li strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reorder-n { flex: none; width: 22px; text-align: center; color: var(--muted); font-weight: 700; font-variant-numeric: tabular-nums; }
+.reorder-btns { flex: none; display: inline-flex; gap: 8px; }
+.reorder-btns button { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 12px; background: rgba(255, 255, 255, .08); border: 1px solid var(--line); color: var(--text); cursor: pointer; font-size: .9rem; touch-action: manipulation; transition: background .2s, color .2s, transform .15s; }
+.reorder-btns button:hover:not(:disabled) { background: var(--c); color: #000; }
+.reorder-btns button:active:not(:disabled) { transform: scale(.92); }
+.reorder-btns button:disabled { opacity: .3; cursor: default; }
+@media (max-width: 720px) { .reorder { padding: 12px 10px; } .reorder-head { flex-direction: column; align-items: stretch; gap: 8px; } .reorder-head .btn { align-self: stretch; } .reorder li { gap: 8px; } }
+
+/* Tiradas por conseguir antes del fin de un banner */
+.pull-list { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.pull-list li { display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
+.pull-list li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pull-list li em { flex: none; font-style: normal; color: var(--warn); font-weight: 700; }
+.pull-left { margin-top: 6px; font-size: .82rem; font-weight: 700; color: var(--warn); }
+
+/* Celular: una sola fila (vista + Filtros); el resto va en la hoja inferior */
+.mbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 4px 0 12px; }
+.mbar .seg.view { order: 0; margin-left: 0; }
+.mbar .fbtn { order: 1; margin-left: auto; }
+.fbtn { position: relative; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); }
+.fbtn .badge { min-width: 18px; height: 18px; padding: 0 5px; display: inline-grid; place-items: center; border-radius: 999px; font-size: .72rem; background: var(--acc2); color: #000; }
+.sheet-backdrop { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; background: rgba(5, 5, 12, .6); backdrop-filter: blur(4px); animation: fade .2s; }
+.sheet { width: 100%; max-height: 85vh; overflow-y: auto; padding: 8px 16px calc(18px + env(safe-area-inset-bottom)); border-radius: 22px 22px 0 0; background: #151a30; border-top: 1px solid var(--line); box-shadow: 0 -12px 40px rgba(0, 0, 0, .5); animation: sheet-up .28s var(--ease); }
+.sheet h3 { margin: 14px 0 8px; font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.sheet-grip { width: 40px; height: 4px; margin: 4px auto 6px; border-radius: 4px; background: rgba(255, 255, 255, .25); }
+.fopts { display: flex; flex-wrap: wrap; gap: 8px; }
+.fopt { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 14px; border-radius: 14px; cursor: pointer; font: inherit; font-size: .9rem; color: var(--muted); background: rgba(255, 255, 255, .04); border: 1px solid var(--line); touch-action: manipulation; }
+.fopt.on { color: #fff; background: rgba(255, 255, 255, .13); border-color: rgba(255, 255, 255, .35); }
+.fopt svg { flex: none; }
+.sheet .seg.zoom { display: flex; width: 100%; }
+.sheet .seg.zoom button { flex: 1; padding: 10px 8px; }
+.sheet-actions { display: flex; gap: 8px; margin-top: 18px; }
+.sheet-actions .btn { flex: 1; min-height: 44px; justify-content: center; }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+
+/* Pantallas grandes: la hoja de filtros se centra como un cuadro de diálogo */
+@media (min-width: 701px) {
+  .sheet-backdrop { align-items: center; justify-content: center; padding: 16px; }
+  .sheet { max-width: 460px; border-radius: 22px; border: 1px solid var(--line); padding-bottom: 18px; animation: fade .2s; }
+  .sheet-grip { display: none; }
+}
+
+/* Botón neutro que se colorea solo al pasar el ratón */
+.btn.soft { color: var(--text); background: rgba(255, 255, 255, .06); border-color: var(--line); }
+.btn.soft:hover:not(:disabled), .btn.soft:focus-visible { color: #fff; border-color: transparent; background: linear-gradient(135deg, #c2619a, #4592ba); }
+
+/* Arrastrar para ordenar */
+.reorder-grip { flex: none; width: 28px; height: 44px; display: grid; place-items: center; border-radius: 10px; color: var(--muted); font-size: 1.25rem; line-height: 1; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+.reorder-grip:hover { color: var(--text); background: rgba(255, 255, 255, .07); }
+.reorder li.dragging { background: rgba(255, 255, 255, .12); border-color: color-mix(in srgb, var(--c) 70%, transparent); box-shadow: 0 8px 22px rgba(0, 0, 0, .4); position: relative; z-index: 1; }
+.reorder li.dragging .reorder-grip { cursor: grabbing; color: var(--text); }
+
+/* Zona horaria del usuario */
+.ztag { flex: none; margin-left: auto; padding: 4px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; white-space: nowrap; color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); cursor: help; }
+.mbar .ztag + .fbtn { margin-left: 0; }
+
+/* Tarjeta de "Mis gachas": la cabecera lleva a la línea de tiempo del juego */
+.gcard-hero.go { cursor: pointer; }
+.gcard-hero.go:focus-visible { outline: 2px solid var(--acc2); outline-offset: -2px; }
+.gcard-hero.go .gcard-head h2::after { content: " →"; opacity: 0; transition: opacity .2s, transform .2s; display: inline-block; }
+.gcard-hero.go:hover .gcard-head h2::after, .gcard-hero.go:focus-visible .gcard-head h2::after { opacity: .85; transform: translateX(3px); }
+[id^="g-"] { scroll-margin-top: 110px; }
+
+/* Lista de lo que termina en 72 h: se puede desplegar para verla completa */
+.soon-strip h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.soon-toggle { margin-left: auto; padding: 3px 10px; border-radius: 999px; font: inherit; font-size: .75rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); cursor: pointer; transition: color .2s, background .2s; }
+.soon-toggle:hover { color: var(--text); background: rgba(255, 255, 255, .1); }
+.soon-list.open { flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
+.soon-list.open .soon-card { flex: 1 1 260px; max-width: none; }
