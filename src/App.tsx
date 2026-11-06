@@ -26,7 +26,7 @@ interface InstallEvent extends Event { prompt(): Promise<void> }
 const ago = (ts?: number) => {
   if (!ts) return t('ago.never')
   const m = Math.round((Date.now() - ts) / 60000)
-  return m < 1 ? t('ago.now') : m < 60 ? t('ago.min', { n: m }) : t('ago.hour', { n: Math.round(m / 60) })
+  return m < 1 ? t('ago.now') : m < 60 ? t('ago.min', { n: m }) : m < 48 * 60 ? t('ago.hour', { n: Math.round(m / 60) }) : t('ago.day', { n: Math.round(m / 1440) })
 }
 
 export default function App() {
@@ -106,7 +106,7 @@ export default function App() {
           {installEv && <button className="btn sm primary" onClick={() => installEv.prompt()}>{t('install')}</button>}
         </div>
       </header>
-      {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.join(', ') })}</div>}
+      {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.map(name => { const g = games.find(x => x.name === name); const ts = g && state.synced[g.id]; return ts ? `${name} (${ago(ts)})` : name }).join(', ') })}</div>}
       <main key={tab}>
         {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} focusGame={focusGame} onFocused={() => setFocusGame(undefined)} />}
         {tab === 'mine' && <MyGachas ctx={ctx} goGame={goGame} />}

@@ -53,11 +53,28 @@ const request = (url, ua) => fetch(url, {
   signal: AbortSignal.timeout(20_000),
 })
 
+/**
+ * Corta-circuito por sitio: si una fuente responde con error (p. ej. 403 de Cloudflare), no se le vuelve a pedir nada
+ * durante PAUSE; pasado ese tiempo se hace una sola prueba. Así un bloqueo no se agrava con cada visita.
+ * gachafocus se prueba con el UA de navegador y, tras un fallo, la siguiente prueba usa el UA identificado (y así).
+ */
+const PAUSE = 15 * MIN
+const hostState = new Map() // host -> { until, flip }
+
 async function fetchUpstream(url, ttl) {
-  const browserFirst = new URL(url).hostname === 'gachafocus.com.br'
-  let res = await request(url, browserFirst ? BROWSER_UA : UA)
-  if (res.status !== 200 && browserFirst) res = await request(url, UA)
-  if (res.status !== 200) throw new Error(`upstream ${res.status}`)
+  const host = new URL(url).hostname
+  const st = hostState.get(host) ?? { until: 0, flip: false }
+  if (Date.now() < st.until) throw new Error(`upstream en pausa (bloqueo reciente)`)
+  const twoUas = host === 'gachafocus.com.br'
+  const res = await request(url, twoUas && !st.flip ? BROWSER_UA : UA)
+  if (res.status !== 200) {
+    if (res.status === 403 || res.status === 429) {
+      hostState.set(host, { until: Date.now() + PAUSE, flip: twoUas ? !st.flip : false })
+      console.error(`[proxy] ${host} respondió ${res.status}: sin nuevas peticiones durante ${PAUSE / MIN} min`)
+    }
+    throw new Error(`upstream ${res.status}`)
+  }
+  hostState.set(host, { until: 0, flip: st.flip }) // se recuerda qué UA funcionó
   if (Number(res.headers.get('content-length')) > MAX_BODY) throw new Error('respuesta demasiado grande')
   const body = Buffer.from(await res.arrayBuffer())
   if (body.length > MAX_BODY) throw new Error('respuesta demasiado grande')
@@ -131,7 +148,7 @@ export async function handleProxy(req, res, url) {
     }
     send(res, 200, headers, req.method === 'HEAD' ? undefined : body)
   } catch (err) {
-    console.error(`[proxy] ${source.name} ${target.pathname}: ${err.message}`)
+    if (!/en pausa/.test(err.message)) console.error(`[proxy] ${source.name} ${target.pathname}: ${err.message}`)
     send(res, 502, { 'cache-control': 'no-store' }, 'La fuente no responde')
   }
 }
