@@ -74,3 +74,46 @@ export async function syncGame8(gameId: string, key: keyof typeof GAME8): Promis
   if (!out.length) throw new Error(`game8 ${cfg.path}: no se encontraron eventos`)
   return { events: out, patches: [], codes: [] }
 }
+
+/**
+ * Modos recurrentes (rotatorios) desde la lista de eventos de Game8 en formato de secciones: bajo "List of Current Events", cada `<h3>` es un evento
+ * con una tabla "Start Date October 21, 2026 End Date December 23, 2026 Rewards Crystals and Cores" y su imagen. Se usa para CZN, cuya sección
+ * "Permanent Events" agrupa sus modos recurrentes (Full-Scale Offensive, Virtual Tactical Simulation, Spiral Tower of Screams).
+ * Solo se añaden los que cumplen `recurring` y no están ya en `existing` (los avisos oficiales mandan). Game8 da el día: las horas son las del
+ * mantenimiento semanal de CZN (inicio ≈07:00 UTC, fin 00:00 UTC) y se marcan "≈". Las recompensas, sin cantidades, van en la descripción.
+ */
+export async function game8Recurring(gameId: string, path: string, recurring: RegExp, existing: GameEvent[]): Promise<GameEvent[]> {
+  const res = await fetch(viaProxy(`${SITE}/${path}`))
+  if (!res.ok) throw new Error(`game8 ${path} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const words = (s: string) => s.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2).slice(0, 3).join(' ')
+  const have = new Set(existing.map(e => words(e.title)))
+  const now = Date.now(), from = now - 3 * DAY
+  const day = (s: string) => {
+    const m = /([A-Z][a-z]+)\.? (\d{1,2}),? (\d{4})/.exec(s)
+    const mo = m ? MONTHS.indexOf(m[1].toLowerCase()) : -1
+    return m && mo >= 0 ? Date.UTC(+m[3], mo, +m[2]) : NaN
+  }
+  const out: GameEvent[] = []
+  const head = [...doc.querySelectorAll('h2')].find(h => /List of Current Events/i.test(text(h)))
+  for (let n = head?.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
+    if (n.tagName !== 'H3') continue
+    const name = text(n)
+    if (!recurring.test(name) || have.has(words(name))) continue
+    let info = '', image: string | undefined
+    for (let k = n.nextElementSibling; k && !/^H[23]$/.test(k.tagName); k = k.nextElementSibling) {
+      if (!image) { const img = k.querySelector('img'); image = img?.getAttribute('data-src') || undefined }
+      if (k.tagName === 'TABLE' && !info) info = text(k)
+    }
+    const s = day(/Start Date\s+(.+?)\s+End Date/i.exec(info)?.[1] ?? ''), e = day(/End Date\s+(.+?)(?:\s+Rewards|$)/i.exec(info)?.[1] ?? '')
+    if (isNaN(s) || isNaN(e) || e <= s || e < from) continue
+    const rewards = /Rewards\s+(.+)$/i.exec(info)?.[1]?.trim()
+    out.push({
+      id: `${gameId}:challenge:g8:${name}:${new Date(s).toISOString().slice(0, 10)}`, gameId, kind: 'challenge', title: name,
+      description: rewards ? `⟦d.rewardsList|${rewards}⟧` : undefined, image,
+      start: new Date(s + 7 * 3_600_000).toISOString(), end: new Date(e - 1000).toISOString(),
+      items: [], featured: [], pulls: 0, source: 'api', precision: 'approx',
+    })
+  }
+  return out
+}

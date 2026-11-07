@@ -30,6 +30,9 @@ Desde ahí todo es automático: el recolector lee los últimos 100 mensajes de c
 
 ## Más juegos
 
+Canales configurados (7 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane e **infinitynikki** (`1568519866464600217`: #game-news y #redeem-codes).
+Los mensajes con códigos de canje también se leen (`codesFrom` en `discord.ts`).
+
 Sirve para **cualquier juego**: sigue su canal de anuncios oficial hacia un canal nuevo de tu servidor y añade `<id del juego>:<id del canal>` a `DISCORD_CHANNELS`
 (sin tocar código; `syncSource` lo aplica a todo juego con canal). Ids: `genshin`, `hsr`, `zzz`, `arknights`, `endfield`, `uma`, `czn`, `wuwa`, `nikke`, `nte`,
 `bluearchive`, `fgo`, `limbus`, `epic7`, `stellasora`, `reverse1999`. Donde más aporta (6 nov 2026):

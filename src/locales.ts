@@ -206,6 +206,8 @@ export const es = {
 
   // textos que escriben las fuentes de datos (se resuelven al mostrarlos)
   'd.charBanner': 'Banner de personaje',
+  'd.inResonance': 'Resonance (banner de conjunto)',
+  'd.rewardsList': 'Recompensas: {arg}.',
   'd.hi3Arena': 'Semanal (martes a lunes). Crystals y materiales según tu grupo y ranking.',
   'd.r99Limbo': 'Se reinicia los días 1 y 16. Clear Drops y materiales por cada fase superada.',
   'd.nteCrucible': 'Endgame de combate: recompensas según tu mejor puntuación en cada fase.',
@@ -427,6 +429,8 @@ export const en: Record<Key, string> = {
   'notif.pulls': ' (~{n} pulls)',
 
   'd.charBanner': 'Character banner',
+  'd.inResonance': 'Resonance (outfit banner)',
+  'd.rewardsList': 'Rewards: {arg}.',
   'd.hi3Arena': 'Weekly (Tuesday to Monday). Crystals and materials based on your bracket and rank.',
   'd.r99Limbo': 'Resets on the 1st and 16th. Clear Drops and materials for each stage cleared.',
   'd.nteCrucible': 'Endgame combat: rewards based on your best score per stage.',
@@ -646,6 +650,8 @@ export const zh: Record<Key, string> = {
   'notif.pulls': '（约 {n} 抽）',
 
   'd.charBanner': '角色卡池',
+  'd.inResonance': '共鸣（套装卡池）',
+  'd.rewardsList': '奖励：{arg}。',
   'd.hi3Arena': '每周（周二至周一）。按段位与排名获得水晶和材料。',
   'd.r99Limbo': '每月1日和16日重置。每通关一层可获得纯雨滴和材料。',
   'd.nteCrucible': '终局战斗：按各关卡最高分获得奖励。',

@@ -39,7 +39,7 @@ const SOURCES = [
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
-  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073)$/.test(u.pathname) },
+  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/559899)$/.test(u.pathname) },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
   // WuWa: noticias oficiales de Kuro (JSON estáticos de su CDN; términos y robots.txt no lo prohíben). Lista + la nota de parche en curso.
   { name: 'kuro', ttl: 3 * HOUR, test: u => (u.hostname === 'hw-media-cdn-mingchao.kurogame.com' && /^\/akiwebsite\/website2\.0\/json\/G152\/en\/(ArticleMenu|article\/\d+)\.json$/.test(u.pathname))

@@ -1,5 +1,5 @@
 import { viaProxy } from '../net'
-import type { GameEvent, Kind } from '../types'
+import type { GameEvent, Kind, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 
 /**
@@ -124,7 +124,7 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
         else approx = true
       }
       if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY) continue
-      const kind: Kind = /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|limited.*(trekker|student)/i.test(name) ? 'banner' : 'event'
+      const kind: Kind = /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? 'banner' : 'event'
       const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
       if (seen.has(id)) continue
       seen.add(id)
@@ -136,5 +136,35 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       })
     }
   }
-  return { events: out, patches: [], codes: [] }
+  return { events: out, patches: [], codes: codesFrom(messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp) }))) }
+}
+
+/** Palabras en mayúsculas que no son códigos aunque vayan solas en una línea. */
+const NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|UNTIL|NOTICE|IMPORTANT|EVENT|UPDATE|GLOBAL|SERVER|DIAMONDS?)$/
+/**
+ * Códigos de canje en los anuncios (p. ej. el #redeem-codes oficial): "Redemption Code: ABC123", "Code - ABC123" o el código solo en una línea
+ * dentro de un mensaje que habla de códigos. Recompensas: los "Nombre x100" del mismo mensaje; caducidad: "valid until / expires … <fecha>".
+ * Solo mensajes de los últimos 45 días y que no digan que el código caducó.
+ */
+export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
+  const out: PromoCode[] = []
+  for (const { text, at } of msgs) {
+    if (Date.now() - at > 45 * DAY || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue
+    const found = new Set<string>()
+    for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1])
+    for (const line of text.split('\n')) {
+      const c = line.replace(/[*_`>|]+/g, '').trim()
+      if (/^[A-Z0-9]{6,24}$/.test(c) && /[A-Z]/.test(c) && !NOT_CODE.test(c)) found.add(c)
+    }
+    if (!found.size) continue
+    // "Diamond x100, Bling x20,000" → ["Diamond ×100", "Bling ×20,000"]; sin verbos delante ("Redeem for …") ni puntuación pegada a la cifra.
+    const rewards = [...text.matchAll(/([A-Z][A-Za-z' ]{2,40}?)\s*[x×]\s?(\d(?:[\d,.]*\d)?\s*[kK]?)/g)]
+      .map(m => `${clean(m[1]).replace(/^.*\b(?:for|get|obtain|receive|claim|rewards?:?)\s+/i, '')} ×${m[2].trim()}`)
+    const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1]
+    for (const code of found) {
+      if (out.some(c => c.code.toUpperCase() === code.toUpperCase()) || /^(?:code|codes)$/i.test(code)) continue
+      out.push({ code, rewards: [...rewards.slice(0, 6), ...(until ? [`Until ${until}`] : [])] })
+    }
+  }
+  return out
 }

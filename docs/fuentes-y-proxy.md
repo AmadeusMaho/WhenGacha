@@ -356,11 +356,12 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 | Blue Archive | Total/Grand Assault, Final Restriction Release, Joint Firing Drill | bucket `raids`/`events` de bluearchive.wiki | según rango: descripción |
 | HI3 | Memorial Arena | ciclo fijo documentado (martes 04:00 – lunes 02:00, UTC+8) en `cycles.ts` | según grupo: descripción |
 | R:1999 | Limbo | ciclo fijo documentado (días 1 y 16, 05:00 UTC+8) en `cycles.ts` | descripción |
+| CZN | Full-Scale Offensive, Virtual Tactical Simulation (+ Spiral Tower si aparece) | avisos de STOVE (VTS) + lista de Game8 (`game8Recurring`, sección "List of Current Events"; su "Permanent Events" agrupa los modos recurrentes) | lista de recompensas de Game8, sin cifras |
 | NTE | Hunter's Crucible | eventos (Game8/neverness), reclasificado | descripción |
 | Endfield, Uma, Limbus, BD2 | propios de cada fuente | — | — |
 
 **Sin rotatorios por falta de fuente fiable:** PGR (la página "War Zone" de la wiki es de 2023), HI3 Abyss (horario no documentado),
-Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Arena), CZN y Stella Sora (sin información). FGO no tiene.
+Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Arena; Game8 no tiene lista de eventos de E7) y Stella Sora (sin información). PGR y HI3 no están en Game8. FGO no tiene.
 
 ## AFK Journey (añadido el 7 nov 2026) y candidatos descartados
 
@@ -371,3 +372,13 @@ Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Aren
   está marcada para rehacer y su lista de activos es de 2024. 3 consultas por ciclo.
 - **Descartados (7 nov 2026)**: Solo Leveling: Arise (su Fandom dejó de registrar eventos en primavera de 2026), Duet Night Abyss, Ananta, Honkai: Nexus Anima y
   Snowbreak (wikis sin actividad desde jul–sep), Etheria Restart y Silver and Blood (sin wiki en Fandom); Prydwen solo tiene página de banners de WuWa, NTE, CZN y NIKKE.
+
+## Infinity Nikki (añadido el 7 nov 2026)
+
+- **Wiki** (`src/sources/infinitynikki.ts`, `infinity-nikki.fandom.com`): eventos de "Category:Events" (`{{Event Infobox}}` con hora y zona, UTC-7) con recompensas
+  de sus `Card List`; banners de "Category:Resonances by Date Descending" (`{{Resonance Infobox}}`); códigos de "Redeem Code" (`{{Code Row}}`, solo no caducados).
+  La wiki tarda en registrar la 2.ª fase de cada versión y los banners (el 7 nov el último banner registrado era del 23 sep).
+- **Discord** (`infinitynikki:1568519866464600217` en `DISCORD_CHANNELS`): sigue `#game-news` y `#redeem-codes` del Discord oficial. Sus anuncios mandan sobre la wiki
+  (`officialFirst`) y cubren lo que esta no tiene; `discord.ts` ahora también extrae **códigos** ("Redemption Code: …", o el código solo en una línea) con sus
+  recompensas y caducidad, y reconoce "Resonance" como banner. Discord no copia mensajes antiguos: solo llega lo publicado desde el 7 nov.
+- Tiradas: Revelation Crystal = 1; 120 Diamonds = 1 (precio en tienda). La web oficial firma sus peticiones (`chaos.infoldgames.com`): no se usa. Game8 abandonó el juego en 2025.

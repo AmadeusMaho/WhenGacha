@@ -23,6 +23,8 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   arknights: [{ item: /^orundum$/i, per: 600 }, { item: /^headhunting permits?$/i, per: 1 }],
   // AFK Journey: Invite Letter = 1 tirada (All-Hero Recruitment); 300 Diamonds = 1 Invite Letter.
   afkjourney: [{ item: /^invite letters?$/i, per: 1 }, { item: /^diamonds?$/i, per: 300 }],
+  // Infinity Nikki: Revelation Crystal = 1 tirada; la tienda lo vende por 120 Diamonds (wiki, página "Revelation Crystal").
+  infinitynikki: [{ item: /^(limited-time )?revelation crystals?$/i, per: 1 }, { item: /^diamonds?$/i, per: 120 }],
   // BrownDust2: Draw Ticket = 1 tirada. Los Dias se muestran como recompensa pero NO se convierten: ni sus avisos ni una wiki dicen cuánto cuesta
   // una tirada en Dias (revisado el 7 nov 2026), así que no se adivina.
   bd2: [{ item: /^draw tickets?$/i, per: 1 }],

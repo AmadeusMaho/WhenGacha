@@ -9,6 +9,7 @@ import { syncCznEvents } from './czn'
 import { discordChannel, syncDiscord } from './discord'
 import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
+import { syncInfinityNikki } from './infinitynikki'
 import { syncEpic7 } from './epic7'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -19,7 +20,7 @@ import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
 import { syncNikkeGg } from './nikkegg'
 import { syncNevernessGg } from './nevernessgg'
-import { syncGame8 } from './game8'
+import { game8Recurring, syncGame8 } from './game8'
 import { syncPrydwen } from './prydwen'
 import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
@@ -154,7 +155,9 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
       featured: events[i].featured.length ? events[i].featured : r.featured, items: events[i].items.length ? events[i].items : r.items,
       pulls: events[i].pulls || r.pulls, hours: events[i].hours ?? r.hours }
   }
-  return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes: [...o.value.codes, ...c.value.codes] }
+  // Códigos: los de la fuente oficial primero; sin repetir el mismo código (p. ej. el de Discord y el de la wiki).
+  const codes = [...o.value.codes, ...c.value.codes].filter((x, i, all) => all.findIndex(y => y.code.toUpperCase() === x.code.toUpperCase()) === i)
+  return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes }
 }
 
 /** "Virtual Tactical Simulation: Rossweisse" usa el arte del banner de ese combatiente en vez de la imagen genérica del aviso. */
@@ -173,6 +176,18 @@ const CHALLENGE_PAGES: Partial<Record<string, ChallengePage[]>> = {
     { match: /^Shiyu Defense/i, page: 'Shiyu Defense/Critical Node' },
     { match: /^Deadly Assault/i, page: 'Deadly Assault' },
   ],
+}
+
+/**
+ * CZN: rotatorios. Virtual Tactical Simulation llega de los avisos oficiales como evento: es un modo recurrente. Los demás modos recurrentes que los avisos
+ * no traen (Full-Scale Offensive, Spiral Tower of Screams) salen de la lista de Game8 (su sección "Permanent Events" los agrupa). 1 página de Game8 por ciclo.
+ */
+const CZN_RECURRING = /Full[- ]Scale Offensive|Virtual Tactical Simulation|Spiral Tower|Great Rift/i
+async function cznRecurring(s: GameSync): Promise<GameSync> {
+  const events = s.events.map(e => e.kind === 'event' && CZN_RECURRING.test(e.title) ? { ...e, kind: 'challenge' as const } : e)
+  const extra = await game8Recurring(s.events[0]?.gameId ?? 'czn', 'Chaos-Zero-Nightmare/archives/559899', CZN_RECURRING, events)
+    .catch(err => { console.warn('[czn] game8:', (err as Error)?.message ?? err); return [] as GameEvent[] })
+  return { ...s, events: [...events, ...extra] }
 }
 
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
@@ -202,7 +217,7 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'uma': return withGachafocus(id, 'uma', syncUma(id))
     // Banners desde Prydwen (hora exacta, fuente propia); los eventos, de gachafocus si responde.
     // Sin gachafocus (apagado): los eventos salen de los avisos oficiales de STOVE (czn.ts).
-    case 'czn': return GF_ON ? withGachafocus(id, game.api, syncPrydwen(id, game.api), true) : both(syncPrydwen(id, game.api), syncCznEvents(id)).then(withBannerArt)
+    case 'czn': return GF_ON ? withGachafocus(id, game.api, syncPrydwen(id, game.api), true) : both(syncPrydwen(id, game.api), syncCznEvents(id)).then(withBannerArt).then(cznRecurring)
     // WuWa y NTE: banners de Prydwen + eventos de Game8 (solo el día; "≈"); gachafocus los corrige si responde.
     // NTE: banners de Prydwen + avisos oficiales (vía neverness.gg, horas exactas) completados con Game8 (imágenes y eventos aún sin aviso, "≈").
     case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), officialFirst(syncNevernessGg(id), syncGame8(id, game.api))))
@@ -220,6 +235,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'bd2': return syncBd2(id)
     // AFK Journey: eventos (con recompensas), rotatorios y banners de su wiki; sin códigos (no hay fuente fiable).
     case 'afkjourney': return syncAfkJourney(id)
+    // Infinity Nikki: wiki (eventos, banners, códigos); con canal de Discord (#game-news y #redeem-codes oficiales), sus anuncios mandan.
+    case 'infinitynikki': return syncInfinityNikki(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

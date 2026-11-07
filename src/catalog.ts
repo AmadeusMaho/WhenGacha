@@ -25,6 +25,7 @@ const ART: Record<string, string> = {
   reverse1999: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d5/1e/fd/d51efdc0-0d48-66b8-b7df-142c008c2238/1.2868x1320.jpg/1280x1280bb.jpg',
   pgr: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d0/08/45/d00845a7-d0b0-f0b4-0052-bb8eef86b995/KV1.jpg/1280x1280bb.jpg',
   honkai3: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/a3/a4/90/a3a4909d-781f-dfb9-573b-7cf3d11601ba/EN-2208x1242-1.jpg/1280x1280bb.jpg',
+  infinitynikki: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/64/97/17/6497173f-1a90-2150-0bd5-b9f02b3fee6e/2688x1242_Uff08iPhone_U7aef_Uff09.png/1280x1280bb.jpg',
   afkjourney: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/29/ff/d3/29ffd3cb-74af-7408-abf5-2938160186b7/EN_iOS__U6a2a_2688x1242.jpg/1280x1280bb.jpg',
   bd2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/87/88/56/87885688-e7ce-96f5-af56-f678d5da8b65/250909_BD2__Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.jpg/1280x1280bb.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
@@ -68,6 +69,9 @@ export const CATALOG: Game[] = [
   // AFK Journey: su wiki de Fandom (src/sources/afkjourney.ts). Sin códigos: la wiki no mantiene una lista fiable.
   def('afkjourney', 'AFK Journey', 'AFKJ', 'Farlight', '#e9c46a', '#3d3215', 0, 'afk-journey.fandom.com', 'AFK Journey', 'afkjourney',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/90/d2/2190d26d-73b6-74eb-9986-0eec5d7371bd/AppIcon-Global-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
+  // Infinity Nikki: wiki de Fandom + anuncios oficiales por Discord (src/sources/infinitynikki.ts).
+  def('infinitynikki', 'Infinity Nikki', 'IN', 'Infold Games', '#f8a5c2', '#5e2a44', 0, 'infinity-nikki.fandom.com', 'Infinity Nikki', 'infinitynikki',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9f/db/73/9fdb7374-823a-a5e8-a9fd-2bd7cee2dd34/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   { ...def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },

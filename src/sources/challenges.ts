@@ -18,14 +18,15 @@ export interface ChallengePage {
   section?: RegExp
 }
 
-const num = (s: string) => Number(s.replace(/[,\s]/g, ''))
+/** "350,000" → 350000; "20K" / "28.8K" → 20000 / 28800. */
+const num = (s: string) => { const t = s.replace(/[,\s]/g, ''); return /k$/i.test(t) ? Math.round(Number(t.slice(0, -1)) * 1000) : Number(t) }
 
 /** "Polychrome*780; Tempered Crown*1; Title*1" → items (sin cantidad = 1). */
 export function cardList(body: string): RewardItem[] {
   return body.split('|').filter(p => !/^\s*\w+\s*=/.test(p)).join('|').split(/[;,](?![\d])/)
     .map(part => part.split('*').map(x => x.trim()))
     .filter(([name]) => !!name && !/^\d/.test(name))
-    .map(([name, qty]) => ({ name, amount: qty && /^[\d,.\s]+$/.test(qty) ? num(qty) : 1 }))
+    .map(([name, qty]) => ({ name, amount: qty && /^[\d,.\s]+[kK]?$/.test(qty) ? num(qty) : 1 }))
 }
 
 async function wikitext(host: string, page: string): Promise<string> {
