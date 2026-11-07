@@ -39,8 +39,10 @@ async function save(snap) {
   try {
     await mkdir(SNAP_DIR, { recursive: true })
     const file = path.join(SNAP_DIR, `${snap.id}.json`)
-    await writeFile(`${file}.tmp`, JSON.stringify(snap))
-    await rename(`${file}.tmp`, file)
+    // Nombre temporal único: la copia propia y la adoptada de GitHub pueden guardarse a la vez (antes chocaban en el mismo .tmp → ENOENT).
+    const tmp = `${file}.${process.pid}.${Date.now()}.${Math.random().toString(36).slice(2, 8)}.tmp`
+    await writeFile(tmp, JSON.stringify(snap))
+    await rename(tmp, file)
   } catch (err) { console.error(`[collector] no se pudo guardar ${snap.id}: ${err.message}`) }
 }
 
@@ -96,7 +98,8 @@ async function pullRemote() {
       if (Date.now() - snap.updated > REMOTE_MAX_AGE) continue
       const cur = snapshots.get(g.id)
       const newer = !cur || snap.updated > cur.updated
-      const richer = !!cur && snap.events.length > cur.events.length
+      // "Más completa" solo cuenta si no es mucho más vieja: una copia de hace un día (p. ej. de cuando se usaba gachafocus) no debe pisar una recién hecha.
+      const richer = !!cur && snap.events.length > cur.events.length && snap.updated > cur.updated - 6 * 3_600_000
       if (!(newer && (!cur || snap.events.length >= cur.events.length * 0.7)) && !richer) continue
       snapshots.set(g.id, snap)
       await save(snap)
