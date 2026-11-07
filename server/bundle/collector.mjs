@@ -21128,7 +21128,101 @@ function dateIn(s, year) {
 		d: +m[2],
 		...t
 	};
+	m = /(\d{1,2}) de ([a-záéíóú]+)(?: de (\d{4}))?/i.exec(s);
+	const es = m ? MESES.indexOf(m[2].toLowerCase().slice(0, 3)) : -1;
+	if (m && es >= 0) return {
+		y: m[3] ? +m[3] : year,
+		mo: es,
+		d: +m[1],
+		...t
+	};
 	return null;
+}
+var MESES = [
+	"ene",
+	"feb",
+	"mar",
+	"abr",
+	"may",
+	"jun",
+	"jul",
+	"ago",
+	"sep",
+	"oct",
+	"nov",
+	"dic"
+];
+/** Marcas de tiempo de Discord (`<t:1793318400:F>`, las que usan los anuncios oficiales) → "2026/10/30 07:00 (UTC)", que el resto del lector entiende. */
+function discordStamps(s) {
+	return s.replace(/<t:(\d{9,11})(?::[tTdDfFR])?>/g, (_m, sec) => {
+		const d = /* @__PURE__ */ new Date(+sec * 1e3);
+		const p = (n) => String(n).padStart(2, "0");
+		return `${d.getUTCFullYear()}/${p(d.getUTCMonth() + 1)}/${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())} (UTC)`;
+	});
+}
+/**
+* Aviso de temporada (Infinity Nikki "Game Events Overview"): "VERSION 2.11" + "Season starts: <fecha>" + "Season ends: <fecha>" en líneas separadas,
+* y la sección "Limited-Time Resonances" con los banners vigentes ("5-star [Snowbloom Wishsong]"; los de "Upcoming" no traen fecha y se omiten).
+* Devuelve la versión (como parche) y esos banners, que duran como mucho hasta el fin de la temporada (`open`: fin no anunciado).
+*/
+function seasonFrom(gameId, text, year, image) {
+	const lines = text.split("\n").map(clean$2).filter(Boolean);
+	const pick = (re) => {
+		const l = lines.find((x) => re.test(x));
+		return l ? dateIn(l.replace(re, ""), year) : null;
+	};
+	const a = pick(/^.*\b(season|version)?\s*(starts?|begins?|start date)\s*:\s*/i), b = pick(/^.*\b(season|version)?\s*(ends?|end date)\s*:\s*/i);
+	if (!a || !b) return { banners: [] };
+	const zone = zoneOf(text) ?? 0;
+	const exact = /\(UTC\)/.test(text) && a.h !== void 0;
+	const start = Date.UTC(a.y, a.mo, a.d, (a.h ?? 0) - zone, a.mi ?? 0), end = Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59);
+	if (!(end > start)) return { banners: [] };
+	const version = /\bversion\s*(\d+(?:\.\d+)+)/i.exec(text)?.[1];
+	const patch = version ? {
+		id: `${gameId}:patch:${version}`,
+		gameId,
+		version,
+		date: new Date(start).toISOString(),
+		end: new Date(end).toISOString(),
+		notes: "",
+		source: "api"
+	} : void 0;
+	const banners = [];
+	let inRes = false;
+	for (const l of lines) {
+		if (/limited[- ]time resonances?/i.test(l)) {
+			inRes = true;
+			continue;
+		}
+		if (inRes && /^upcoming\b/i.test(l)) break;
+		if (inRes && /^[⸻—–-]{1,3}\s|^store\b/i.test(l)) break;
+		const m = inRes && /(\d)\s*-?\s*star\s*\[([^\]]+)\]/i.exec(l);
+		if (!m) continue;
+		banners.push({
+			id: `${gameId}:banner:dc:${m[2].trim()}:${new Date(start).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "banner",
+			title: m[2].trim(),
+			description: "⟦d.inResonance⟧",
+			image,
+			start: new Date(start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: [{
+				name: m[2].trim(),
+				rarity: +m[1]
+			}],
+			pulls: 0,
+			official: true,
+			source: "api",
+			open: true,
+			precision: exact ? void 0 : "approx"
+		});
+	}
+	return {
+		patch,
+		banners
+	};
 }
 var SEP = /\s+(?:-|–|—|~|to|until)\s+|\s*[~～]\s*/i;
 /** "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento. */
@@ -21162,11 +21256,11 @@ async function syncDiscord(gameId) {
 	if (!res.ok) throw new Error(`discord ${gameId} → HTTP ${res.status}`);
 	const messages = await res.json();
 	if (!Array.isArray(messages)) throw new Error("discord: respuesta inesperada");
-	const textOf = (m) => [m.content, ...(m.embeds ?? []).flatMap((e) => [
+	const textOf = (m) => discordStamps([m.content, ...(m.embeds ?? []).flatMap((e) => [
 		e.title ? `**${e.title}**` : "",
 		e.description ?? "",
 		...(e.fields ?? []).flatMap((f) => [`**${f.name}**`, f.value])
-	])].join("\n");
+	])].join("\n"));
 	const imageOf = (m) => m.attachments?.find((a) => /^image\//.test(a.content_type ?? "") || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url ?? m.embeds?.find((e) => e.image?.url)?.image?.url ?? m.embeds?.find((e) => e.thumbnail?.url)?.thumbnail?.url;
 	const maintEnd = /* @__PURE__ */ new Map();
 	for (const m of messages) {
@@ -21234,9 +21328,18 @@ async function syncDiscord(gameId) {
 			});
 		}
 	}
+	const patches = [];
+	for (const m of messages) {
+		const { patch, banners } = seasonFrom(gameId, textOf(m), new Date(m.timestamp).getUTCFullYear(), imageOf(m));
+		if (patch && !patches.some((p) => p.version === patch.version)) patches.push(patch);
+		for (const b of banners) if (!seen.has(b.id) && +new Date(b.end) > from) {
+			seen.add(b.id);
+			out.push(b);
+		}
+	}
 	return {
 		events: out,
-		patches: [],
+		patches,
 		codes: codesFrom(messages.map((m) => ({
 			text: textOf(m),
 			at: +new Date(m.timestamp)
