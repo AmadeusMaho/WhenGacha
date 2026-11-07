@@ -17,6 +17,16 @@ const PUBLISH = process.argv.includes('--publish')
 // Caché del proxy propia de este script (no se mezcla con la del servidor local).
 process.env.DATA_DIR ??= path.join(ROOT, '.cache', 'snapshot-proxy')
 
+// Token y canales de Discord del equipo del dueño (`.env.local`, que nunca se sube): sin ellos, las copias que publica este script saldrían sin los
+// anuncios de Discord y, al ser más recientes, el servidor podría adoptarlas en lugar de las suyas (que sí los tienen). Las variables ya definidas
+// (p. ej. los secretos de GitHub Actions) mandan. Se carga antes de importar el proxy, que lee DISCORD_* al arrancar.
+try {
+  for (const line of (await readFile(path.join(ROOT, '.env.local'), 'utf8')).split(/\r?\n/)) {
+    const m = /^\s*(DISCORD_TOKEN|DISCORD_CHANNELS)\s*=\s*(.*?)\s*$/.exec(line)
+    if (m && m[2] && !process.env[m[1]]) process.env[m[1]] = m[2]
+  }
+} catch { /* sin .env.local: Discord queda desactivado, como antes */ }
+
 const proxy = await import('../server/proxy.mjs')
 const mod = await import('../server/bundle/collector.mjs')
 mod.setup(proxy.sourceFetch)
