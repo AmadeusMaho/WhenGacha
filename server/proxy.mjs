@@ -180,7 +180,8 @@ async function fetchUpstream(url, ttl) {
   const post = src?.post ? (() => { const u = new URL(url); const body = JSON.stringify(Object.fromEntries(u.searchParams)); u.search = ''; return { url: u.toString(), body } })() : null
   const res = await request(post ? post.url : url, src?.ua ?? ua, limit, post?.body ?? null, src?.headers?.() ?? {})
   if (res.status !== 200) {
-    if (res.status === 403 || res.status === 429) {
+    // 202 = desafío de AWS WAF (CloudFront devuelve una prueba en JavaScript en vez de la página): es un bloqueo, no se intenta resolver.
+    if (res.status === 403 || res.status === 429 || res.status === 202) {
       const fails = st.fails + 1
       hostState.set(host, { until: Date.now() + pauseFor(fails), flip: twoUas ? !st.flip : false, fails })
       console.error(`[proxy] ${host} respondió ${res.status} (${uaName}): sin nuevas peticiones durante ${pauseFor(fails) / MIN} min`)
