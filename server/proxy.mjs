@@ -51,12 +51,20 @@ const SOURCES = [
     && !/^\/wiki\/(Special|File|Talk|User|Category|Template|MediaWiki|Help|Module)(_talk)?:/i.test(u.pathname) },
   // Arknights: datos del cliente EN (repo público actualizado por GitHub Actions con arkprts; sin licencia: decisión del dueño, 6 nov 2026).
   // activity_table pesa ~18 MB: se descarga cada 6 h y el proxy guarda solo el calendario (`shrink`, unos KB), que es lo que reciben recolector y navegadores.
-  { name: 'akgamedata', ttl: 6 * HOUR, maxBody: 48 * 1024 * 1024, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/ArknightsAssets\/ArknightsGamedata\/master\/en\/gamedata\/excel\/(activity|gacha|character)_table\.json$/.test(u.pathname),
+  { name: 'akgamedata', ttl: 6 * HOUR, maxBody: 48 * 1024 * 1024, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/ArknightsAssets\/ArknightsGamedata\/master\/en\/gamedata\/excel\/(activity|gacha|character|campaign|stage)_table\.json$/.test(u.pathname),
     shrink: j => j.basicInfo
       ? { basicInfo: Object.fromEntries(Object.entries(j.basicInfo).map(([k, v]) => [k, { id: v.id, type: v.type, name: v.name, startTime: v.startTime, endTime: v.endTime, isReplicate: v.isReplicate }])) }
       : j.gachaPoolClient
         ? { gachaPoolClient: j.gachaPoolClient.map(p => ({ gachaPoolId: p.gachaPoolId, gachaRuleType: p.gachaRuleType, gachaPoolName: p.gachaPoolName, openTime: p.openTime, endTime: p.endTime,
             dynMeta: p.dynMeta && { main6RarityCharId: p.dynMeta.main6RarityCharId, sub6RarityCharId: p.dynMeta.sub6RarityCharId, rare5CharList: p.dynMeta.rare5CharList } })) }
+        // campaign_table (~600 KB) → rotación de Annihilation y Orundum de primera vez de cada mapa rotatorio.
+        : j.campaignRotateStageOpenTimes
+          ? { rotate: j.campaignRotateStageOpenTimes.map(r => ({ stageId: r.stageId, startTs: r.startTs, endTs: r.endTs })),
+              orundum: Object.fromEntries(Object.entries(j.campaigns ?? {}).filter(([k]) => k.startsWith('camp_r_')).map(([k, c]) => [k,
+                (c.breakLadders ?? []).flatMap(l => l.rewards ?? []).filter(r => r.type === 'DIAMOND_SHD').reduce((a, r) => a + (r.count ?? 0), 0)])) }
+        // stage_table (~24 MB) → solo el nombre de los mapas de Annihilation.
+        : j.stages
+          ? Object.fromEntries(Object.entries(j.stages).filter(([k, v]) => k.startsWith('camp_') && v?.name).map(([k, v]) => [k, v.name]))
         // character_table (~20 MB) → solo "id → nombre" de los operadores.
         : Object.fromEntries(Object.entries(j).filter(([k, v]) => k.startsWith('char_') && v?.name).map(([k, v]) => [k, v.name])) },
   // Reverse: 1999: avisos oficiales de Bluepoch (la API que usa re1999.bluepoch.com/en/home; POST con JSON). Términos sin cláusula contra bots; sin robots.txt.
@@ -75,6 +83,9 @@ const SOURCES = [
   // Epic Seven: calendario de banners (bannerhistory.app, su robots.txt permite /en/) y avisos oficiales de STOVE (tablones Events=988 y Game Maintenance=986).
   { name: 'bannerhistory', ttl: 6 * HOUR, test: u => u.hostname === 'bannerhistory.app' && u.pathname === '/en/e7-pickup-history' },
   { name: 'stove', ttl: 2 * HOUR, test: u => u.hostname === 'api.onstove.com' && (/^\/cwms\/v3\.0\/article_group\/BOARD\/(988|986|139238|139240|142421)\/article\/list$/.test(u.pathname) || (u.pathname === '/cwms/v3.0/article' && /^\d+$/.test(u.searchParams.get('article_id') ?? ''))) },
+  // BrownDust2: avisos oficiales, la API de su propia web de noticias (browndust2.com/robots.txt: Allow /). Lista y aviso suelto, solo en inglés.
+  { name: 'bd2', ttl: 3 * HOUR, test: u => u.hostname === 'webapi.browndust2.com' && /^\/api\/notices(\/[0-9A-Z]{26})?$/.test(u.pathname) && u.searchParams.get('locale') === 'en-us'
+    && [...u.searchParams.keys()].every(k => ['locale', 'page', 'limit'].includes(k)) && Number(u.searchParams.get('limit') ?? 0) <= 50 },
   { name: 'wiki', ttl: 12 * HOUR, test: u => ((u.hostname.endsWith('.fandom.com') || u.hostname.endsWith('.wiki.gg')) && u.pathname === '/api.php') || (u.hostname === 'bluearchive.wiki' && u.pathname === '/w/api.php') },
 ]
 
@@ -141,7 +152,7 @@ export function setTransport(fn) { request = fn ?? httpsRequest }
 const pauseFor = fails => Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR)
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

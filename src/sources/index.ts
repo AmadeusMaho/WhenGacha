@@ -3,12 +3,15 @@ import { GACHAFOCUS, syncGachafocus } from './gachafocus'
 import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
 import { hasWikiCodes, syncWikiCodes } from './codes'
 import { syncBluepoch } from './bluepoch'
+import { withChallengeRewards, type ChallengePage } from './challenges'
+import { hi3MemorialArena, r99Limbo } from './cycles'
 import { syncCznEvents } from './czn'
 import { discordChannel, syncDiscord } from './discord'
+import { syncBd2 } from './bd2'
 import { syncEpic7 } from './epic7'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
-import { syncKuro, syncPgr, wuwaChallenges } from './kuro'
+import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
 import { syncHonkai3 } from './honkai3'
 import { syncHoyoWiki } from './hoyowiki'
 import { syncLimbus } from './limbus'
@@ -163,6 +166,14 @@ function withBannerArt(s: GameSync): GameSync {
   }) }
 }
 
+/** Página de la wiki con la tabla "Total Rewards" de cada desafío rotatorio (ver challenges.ts), por juego. */
+const CHALLENGE_PAGES: Partial<Record<string, ChallengePage[]>> = {
+  zenless: [
+    { match: /^Shiyu Defense/i, page: 'Shiyu Defense/Critical Node' },
+    { match: /^Deadly Assault/i, page: 'Deadly Assault' },
+  ],
+}
+
 /** Descarga eventos, banners, desafíos, parches y códigos de un juego. */
 /** Hora (UTC) a la que suelen salir las versiones: tras el mantenimiento, 11:00 UTC+8 (Endfield, 12:00 UTC+8). Para fechas de la wiki sin hora. */
 const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail: 3, zenless: 3, endfield: 4 }
@@ -194,35 +205,44 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // WuWa y NTE: banners de Prydwen + eventos de Game8 (solo el día; "≈"); gachafocus los corrige si responde.
     // NTE: banners de Prydwen + avisos oficiales (vía neverness.gg, horas exactas) completados con Game8 (imágenes y eventos aún sin aviso, "≈").
     case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), officialFirst(syncNevernessGg(id), syncGame8(id, game.api))))
+      // Hunter's Crucible es el endgame recurrente de NTE (wiki: "recurrent event … end-game combat content"): rotatorio, no evento.
+      .then(s => ({ ...s, events: s.events.map(e => e.kind === 'event' && /Hunter's Crucible/i.test(e.title) ? { ...e, kind: 'challenge' as const, description: e.description ?? '⟦d.nteCrucible⟧' } : e) }))
     // Avisos oficiales de Bluepoch (eventos y banners con hora exacta e imagen) + la wiki para lo que no traen.
-    case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id)))
+    case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id))).then(s => ({ ...s, events: [...s.events, ...r99Limbo(id)] }))
     // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.
     case 'stellasora': return withGachafocus(id, 'stellasora', syncStellaSora(id), true)
     // Epic Seven: banners de bannerhistory.app + eventos de los avisos oficiales de STOVE. Gachafocus solo si se reactiva (GACHAFOCUS_ENABLED=1).
     case 'epic7': return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id)
     // Notas de parche oficiales (vía nikke.gg) con hora exacta + Prydwen/wiki para banners y lo que no traen.
     case 'nikke': return withGachafocus(id, 'nikke', officialFirst(syncNikkeGg(id), syncNikke(id)))
+    // BrownDust2: avisos oficiales (eventos, pickups, temporadas del Colosseum/Tower) de webapi.browndust2.com.
+    case 'bd2': return syncBd2(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
     case 'wuwa': {
       // Banners de Prydwen + eventos de las notas de parche oficiales de Kuro (horas exactas), con las imágenes y los eventos extra de Reverie.
-      const events = officialFirst(syncKuro(id), syncReverie(id, 'wuwa'), true).then(s => ({ ...s, events: [...s.events, ...wuwaChallenges(id)] }))
-      const [s, history] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), events)), fetchHistory('wuwa').catch(() => [])])
-      return { ...s, patches: buildPatches(id, [], history, game.patchCycleDays) }
+      // Desafíos rotatorios: Tower of Adversity y Whimpering Wastes (ciclo fijo) y Endstate Matrix (una fase por versión), con recompensas de la wiki.
+      const rewards = wuwaChallengeRewards().catch((): WuwaRewards => ({}))
+      const events = officialFirst(syncKuro(id), syncReverie(id, 'wuwa'), true)
+      const [s, history, r] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), events)), fetchHistory('wuwa').catch(() => []), rewards])
+      const patches = buildPatches(id, [], history, game.patchCycleDays)
+      return { ...s, events: [...s.events, ...wuwaChallenges(id, Date.now(), r), ...wuwaMatrix(id, patches, r.matrix)], patches }
     }
     case 'genshin':
     case 'starrail':
     case 'zenless': {
       // La wiki de Fandom (Event List) manda en las horas: inicio tras la actualización (11:00 UTC+8) y cierre real del servidor (03:59 UTC+8), mientras que
       // ennead da 07:00 UTC+8 (en pleno mantenimiento) y cierres redondos. ennead aporta las recompensas y tiradas, sus banners y desafíos, y lo que la wiki no tenga.
-      const [s, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])])
+      const [s0, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])])
+      // ennead no trae recompensas para los desafíos de ZZZ: el total por ciclo sale de la wiki.
+      const s = CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]!) : s0
       return { ...s, patches: buildPatches(id, s.patches, history, game.patchCycleDays) }
     }
     // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa).
     case 'pgr': return syncPgr(id)
     // Honkai Impact 3rd: eventos de su wiki (Fandom); banners solo vía Discord.
-    case 'honkai3': return syncHonkai3(id)
+    case 'honkai3': return syncHonkai3(id).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))
     // Azur Lane: solo anuncios oficiales vía Discord (syncSource los añade si hay canal); sin fuente web permitida.
     case 'azurlane': return { events: [], patches: [], codes: [] }
     default: throw new Error(`Sin fuente para ${game.name}`)

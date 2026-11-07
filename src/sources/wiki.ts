@@ -1,6 +1,6 @@
 import type { Featured, GameEvent, Kind, Patch } from '../types'
 import { viaProxy } from '../net'
-import { withClientData } from './akdata'
+import { akAnnihilation, withClientData } from './akdata'
 import type { GameSync } from './ennead'
 
 /**
@@ -103,7 +103,11 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
   }))
   const base: GameSync = { events: [...events, ...banners], patches: [], codes: [] }
   const refined0 = await withClientData(gameId, base).catch(err => { console.warn('[arknights] datos del cliente:', err?.message ?? err); return base })
-  const refined = await withRotationArt(refined0).catch(() => refined0)
+  const rotation = await withRotationArt(refined0).catch(() => refined0)
+  // Rotatorio: el mapa de Annihilation en curso y el siguiente (datos del cliente).
+  const annihilation = await akAnnihilation(gameId).catch(err => { console.warn('[arknights] annihilation:', err?.message ?? err); return [] as GameEvent[] })
+  // Contingency Contract (temporadas de desafío, tipo CRISIS en el cliente) llega como evento: es un rotatorio.
+  const refined = { ...rotation, events: [...rotation.events.map(e => /Contingency Contract|^CC#/i.test(e.title) && e.kind === 'event' ? { ...e, kind: 'challenge' as const } : e), ...annihilation] }
   // Sin imagen en la tabla: la wiki suele tener el banner del evento como "EN <evento> banner.png" (o el de China, que sale antes).
   const missing = refined.events.filter(e => !e.image && e.kind !== 'banner')
   const names = (e: GameEvent) => { const n = e.title.replace(/\s*\(Rerun\)$/i, ''); return [`EN ${n} Rerun banner.png`, `EN ${n} banner.png`, `CN ${n} banner.png`] }

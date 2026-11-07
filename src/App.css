@@ -192,6 +192,10 @@ nav button { font-weight: 500; }
 .picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 button.pick { font: inherit; color: inherit; text-align: left; width: 100%; }
 .pick:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; border-color: var(--line); }
+/* "En construcción" (Azur Lane sin eventos): la tarjeta se atenúa, pero el aviso se lee claro. */
+.pick.wip:disabled { opacity: 1; border-style: dashed; }
+.pick.wip:disabled > :not(.tag) { opacity: .5; }
+.pick.wip .tag { background: rgba(251, 191, 36, .18); color: #fcd34d; }
 .pick-txt { display: grid; flex: 1; min-width: 0; line-height: 1.25; } .pick-txt strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 details.soon { margin-top: 14px; } details.soon .picks { margin-top: 10px; }
 .gcard-hero .corner { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; display: grid; place-items: center; background: rgba(0, 0, 0, .5); color: #fff; backdrop-filter: blur(6px); }

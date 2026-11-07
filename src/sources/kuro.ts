@@ -1,6 +1,6 @@
 import { viaProxy } from '../net'
 import { withGrayRavens } from './grayravens'
-import type { GameEvent } from '../types'
+import type { GameEvent, Patch, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, segments } from './pulls'
 
@@ -156,9 +156,126 @@ const CYCLES: { title: string; anchor: string; days: number; validUntil: string 
   { title: 'Whimpering Wastes', anchor: '2026-10-26T09:00:00Z', days: 28, validUntil: '2027-05-01T00:00:00Z' },
 ]
 
-export function wuwaChallenges(gameId: string, now = Date.now()): GameEvent[] {
+/* ---------- Recompensas de los desafíos (wiki de Fandom) ---------- */
+
+/**
+ * La wiki de WuWa (Fandom, API de MediaWiki; robots.txt lo permite) tiene la tabla completa de recompensas de cada desafío:
+ *  - "Tower of Adversity" y "Whimpering Wastes": sección "==Rewards==" con un `{{Card List|delim=;|Astrite*100;Shell Credit*30,000}}` por objetivo.
+ *    Se suman todas: es lo máximo que da un ciclo.
+ *  - "Endstate Matrix/<fecha del ciclo>": `{{Event Rewards|Astrite=400|…}}` en "==Total Rewards==" (todo el ciclo, varias versiones), el nombre del
+ *    ciclo (`|name = Endstate Matrix: Adversity Vanguard`) y sus versiones ("spanning over Versions [[3.5]], [[3.6]], [[3.7]] and [[3.8]]").
+ * 4 consultas por sincronización de WuWa (el proxy las cachea 12 h). Si fallan, los desafíos salen igual, sin recompensas.
+ */
+const WUWA_WIKI = 'https://wutheringwaves.fandom.com/api.php'
+const numW = (s: string) => Number(s.replace(/,/g, ''))
+
+async function wikiJson(params: Record<string, string>): Promise<Record<string, unknown>> {
+  const res = await fetch(viaProxy(`${WUWA_WIKI}?${new URLSearchParams({ ...params, format: 'json', origin: '*' })}`))
+  if (!res.ok) throw new Error(`wuwa wiki → HTTP ${res.status}`)
+  return res.json() as Promise<Record<string, unknown>>
+}
+const wikitext = (page: string) => wikiJson({ action: 'parse', page, prop: 'wikitext' })
+  .then(j => ((j.parse as { wikitext?: Record<string, string> } | undefined)?.wikitext?.['*'] ?? ''))
+
+/** Suma "Nombre*cantidad" de todos los Card List y los "Nombre=cantidad" de Event Rewards → mapa de totales. */
+function sumRewards(text: string): Map<string, number> {
+  const tot = new Map<string, number>()
+  const add = (name: string, qty: string) => { const n = name.trim(); const q = numW(qty.trim()); if (n && q > 0) tot.set(n, (tot.get(n) ?? 0) + q) }
+  for (const m of text.matchAll(/\{\{\s*Card List\s*\|([^}]*)\}\}/gi))
+    for (const part of m[1].split('|').filter(p => !/^\s*\w+\s*=/.test(p)).join('|').split(';')) { const [n, q] = part.split('*'); if (q) add(n, q) }
+  for (const m of text.matchAll(/\{\{\s*Event Rewards\s*\|([^}]*)\}\}/gi))
+    for (const part of m[1].split('|')) { const [n, q] = part.split('='); if (q && /^[\d,\s]+$/.test(q) && n.trim() !== 'sort') add(n, q) }
+  return tot
+}
+
+/** Recompensas + tiradas (Astrite/160, Tides = 1) con el mismo criterio que los eventos. */
+function rewardsOf(tot: Map<string, number>): { items: RewardItem[]; pulls: number } {
+  // Tiradas con `pullsIn`; la lista, tal cual la da la wiki (Astrite primero), para no partir nombres como "Past the Endstate: Adversity Vanguard".
+  const items = [...tot].sort((a, b) => Number(b[0] === 'Astrite') - Number(a[0] === 'Astrite')).map(([name, amount]) => ({ name, amount }))
+  return { items: items.slice(0, 12), pulls: pullsIn('wuwa', items.map(i => `${i.name} x${i.amount}`)).pulls }
+}
+
+/** Sección de nivel 2 "==Rewards==" hasta el siguiente título del mismo nivel. */
+const section = (text: string, title: RegExp) => {
+  const at = text.search(title)
+  if (at < 0) return ''
+  const rest = text.slice(at + 2)
+  const next = rest.search(/\n==[^=]/)
+  return next < 0 ? rest : rest.slice(0, next)
+}
+
+export interface WuwaRewards { tower?: Rewards; wastes?: Rewards; matrix?: Rewards & { name: string; versions: string[] } }
+type Rewards = { items: RewardItem[]; pulls: number }
+
+/**
+ * Solo lo que se reinicia cada ciclo: de la sección de recompensas, los apartados `===…===` cuyo título cumple `which`, sin sus tablas "Total …"
+ * (la wiki repite ahí la suma). Tower of Adversity: "Hazard Zone" ("Hazard Zone rewards refresh each cycle"; Stable/Experimental/Overdrive son permanentes,
+ * se cobran una vez). Whimpering Wastes: "Respawning Waters: Chasm" y "…: Torrents" (Forbidden Waters es permanente).
+ */
+function cyclic(text: string, which: RegExp): Map<string, number> {
+  const rewards = section(text, /==\s*Rewards\s*==/i)
+  const tot = new Map<string, number>()
+  for (const m of rewards.matchAll(/===\s*([^=\n]+?)\s*===([\s\S]*?)(?=\n===[^=]|$)/g)) {
+    if (!which.test(m[1])) continue
+    // Corta en el título de la tabla de totales ("Total Cyclic Rewards"), no en filas como "Obtain a total of 1,600 points" (sensible a mayúsculas; las filas empiezan por "|").
+    const body = m[2].split(/\n(?![|!{])[^\n]*\bTotal [A-Z]/)[0]
+    for (const [n, q] of sumRewards(body)) tot.set(n, (tot.get(n) ?? 0) + q)
+  }
+  return tot
+}
+
+export async function wuwaChallengeRewards(): Promise<WuwaRewards> {
+  const [tower, wastes, matrix] = await Promise.allSettled([
+    wikitext('Tower of Adversity').then(t => rewardsOf(cyclic(t, /^Hazard Zone$/i))),
+    wikitext('Whimpering Wastes').then(t => rewardsOf(cyclic(t, /^Respawning Waters/i))),
+    (async () => {
+      const list = await wikiJson({ action: 'query', list: 'allpages', apprefix: 'Endstate Matrix/2', aplimit: '50' })
+      const pages = ((list.query as { allpages?: { title: string }[] } | undefined)?.allpages ?? []).map(p => p.title).filter(t => /\/\d{4}-\d\d-\d\d$/.test(t)).sort()
+      const last = pages[pages.length - 1]
+      if (!last) throw new Error('sin ciclos de Endstate Matrix')
+      const t = await wikitext(last)
+      const name = /\|\s*name\s*=\s*([^\n|]+)/.exec(t)?.[1]?.trim() ?? 'Endstate Matrix'
+      // "…spanning over [[Version]]s [[3.5]], [[3.6]], [[3.7]] and [[3.8]]." (hasta el final de la línea: los números llevan punto).
+      const span = /spanning over[^\n]*/i.exec(t)?.[0] ?? ''
+      const versions = [...span.matchAll(/\[\[(\d+\.\d+)\]\]/g)].map(m => m[1])
+      return { name, versions, ...rewardsOf(sumRewards(section(t, /==\s*Total Rewards\s*==/i))) }
+    })(),
+  ])
+  const ok = <T,>(r: PromiseSettledResult<T>) => (r.status === 'fulfilled' ? r.value : undefined)
+  for (const r of [tower, wastes, matrix]) if (r.status === 'rejected') console.warn('[wuwa] recompensas de desafíos:', (r.reason as Error)?.message ?? r.reason)
+  return { tower: ok(tower), wastes: ok(wastes), matrix: ok(matrix) }
+}
+
+/**
+ * Endstate Matrix: cada fase dura una versión (se reinicia con la actualización) y un ciclo abarca varias versiones (3.5–3.8 = "Adversity Vanguard").
+ * Se muestra la fase en curso y la siguiente, con las fechas de versión que ya calcula la app (`patches`). Las recompensas de la wiki son del ciclo entero:
+ * se listan completas y las tiradas se reparten a partes iguales entre sus fases (aprox.), para no contarlas varias veces.
+ * Requisito del juego: 24 crestas en Tower of Adversity y 3.500 puntos en Whimpering Wastes.
+ */
+export function wuwaMatrix(gameId: string, patches: Patch[], info: WuwaRewards['matrix'], now = Date.now()): GameEvent[] {
+  const out: GameEvent[] = []
+  const live = patches.filter(p => p.end && +new Date(p.end) > now - 3 * DAY).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 2)
+  for (const p of live) {
+    const inCycle = !!info && info.versions.includes(p.version)
+    const phase = inCycle ? info.versions.indexOf(p.version) + 1 : 0
+    const start = +new Date(p.date), end = +new Date(p.end!) - 1000
+    out.push({
+      id: `${gameId}:challenge:Endstate Matrix:${p.version}`, gameId, kind: 'challenge',
+      title: inCycle ? info.name : 'Endstate Matrix',
+      description: inCycle ? `⟦d.matrixPhase|${phase}/${info.versions.length}⟧` : undefined,
+      start: new Date(start).toISOString(), end: new Date(end).toISOString(),
+      items: inCycle ? info.items : [], featured: [],
+      pulls: inCycle ? Math.round((info.pulls / info.versions.length) * 10) / 10 : 0,
+      source: 'api', precision: p.estimated || start > now ? 'estimated' : 'approx',
+    })
+  }
+  return out
+}
+
+export function wuwaChallenges(gameId: string, now = Date.now(), rewards: WuwaRewards = {}): GameEvent[] {
   const out: GameEvent[] = []
   for (const c of CYCLES) {
+    const r = c.title === 'Tower of Adversity' ? rewards.tower : rewards.wastes
     const anchor = +new Date(c.anchor), len = c.days * DAY, limit = +new Date(c.validUntil)
     const k = Math.floor((now - anchor) / len)
     for (const n of [k, k + 1]) {
@@ -168,7 +285,7 @@ export function wuwaChallenges(gameId: string, now = Date.now()): GameEvent[] {
         id: `${gameId}:challenge:${c.title}:${new Date(start).toISOString().slice(0, 10)}`,
         gameId, kind: 'challenge', title: c.title,
         start: new Date(start).toISOString(), end: new Date(end).toISOString(),
-        items: [], featured: [], pulls: 0, source: 'api',
+        items: r?.items ?? [], featured: [], pulls: r?.pulls ?? 0, source: 'api',
         precision: start > now ? 'estimated' : undefined,
       })
     }

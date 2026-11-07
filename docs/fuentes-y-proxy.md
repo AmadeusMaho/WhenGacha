@@ -43,6 +43,22 @@ solo estarán en su **API oficial de pago** (aún sin abrir; contacto: gachafocu
   (≈07:00 UTC si aún no existe); "antes del mantenimiento" = 00:00 UTC (aviso oficial de jul 2026: el mantenimiento semanal empieza a las 00:00 UTC). Banners siguen viniendo de Prydwen.
   Medido el 6 nov 2026: **recupera los 11 eventos de gachafocus con las mismas horas** (+ Overdrive: Simulation, VTS Nine y 2 concursos de comentarios menores). Imágenes: la de la sección del aviso; los
   "Virtual Tactical Simulation: X" usan el arte del banner de X (`withBannerArt` en index.ts).
+- **BrownDust2** (`src/sources/bd2.ts`, añadido el 7 nov 2026): avisos oficiales desde la API de su web de noticias (`webapi.browndust2.com/api/notices?locale=en-us`, la que llama
+  `api-client.*.js` de browndust2.com; `browndust2.com/robots.txt`: `Allow: /`; no se revisaron sus términos). 1 lista de 50 + hasta ~8 avisos por ciclo, caché de 3 h, 2 s entre peticiones.
+  Lee "Events after the X Update" (eventos y misiones de pickup = banners), "Contents Schedule after X Update" (Golden Colosseum, Tower of Salvation), "X Routine Maintenance and Update"
+  (horario del mantenimiento y evento de temporada) y "Notice of Live Update". "After the X maintenance" = fin real del mantenimiento (si no hay aviso, X+1 03:00 UTC "≈");
+  "before the X maintenance" = su inicio (23:50 UTC por defecto). El JSON antiguo `browndust2.com/api/newsData_en.json` (8 MB) dejó de actualizarse en mayo de 2026: no usarlo.
+  **Códigos**: avisos "… Coupon" (mensual y especiales; hasta 3 por ciclo), código + caducidad; la recompensa casi siempre va solo en la imagen, así que se muestra "Until <fecha>".
+  **Recompensas**: casi todas van en imágenes (tablas `image.png`); se leen las que vienen en texto ("Draw Ticket x20 + Dia x600") y los regalos con plazo
+  ("Claim Period" de compensaciones y directos). **Tiradas**: solo Draw Ticket = 1; los Dias NO se convierten (ni avisos ni wiki dicen cuánto cuesta una tirada).
+- **Juegos candidatos revisados el 7 nov 2026 (sin añadir; ninguno tiene fuente completa permitida):**
+  - **Girls' Frontline 2 (EN)**: eventos con hora exacta y servidor en iopwiki (`iopwiki.com`, página "GFL2 Events", plantillas `{{EventPeriod|…|server=EN}}`;
+    la tabla Cargo `EventPeriods` pierde la zona horaria). robots.txt: Crawl-delay 20, API permitida. **Sin banners de personaje ni códigos** en la wiki.
+  - **Infinity Nikki**: códigos con recompensas y caducidad en su Fandom (`Redeem Code`, `{{Code Row|CÓDIGO|Diamond*200;…|alta|caducidad}}`) y eventos
+    con hora exacta (`{{Event Infobox|time_start|time_start_offset|…}}`), **pero la wiki va ~6 semanas atrasada** (último evento: 27 sep; la versión del 29 oct sin páginas).
+    La web oficial carga las noticias desde `chaos.infoldgames.com` (API propia, no documentada): no se usó.
+  - **Love and Deepspace**: Fandom con "Events" sin tocar desde abril de 2026; `loveanddeepspace.wiki.gg` activa pero sin lista de eventos ni códigos.
+  - **Persona 5X**: Prydwen tiene la sección (`/persona-5x`) pero sin página de banners; sin wiki con eventos encontrada.
 - Las imágenes de STOVE (cloudfront, varios MB) se piden por `image.onstove.com/850x0//<host>/<ruta>/webp` (~60 KB): `sized()` en `stove.ts`.
 - **Stella Sora: SIN fuente automática (eventos perdidos).** Su web oficial (`stellasora.global`, API `/api/resource/news?type=latest|activity|notice`) trae todo lo necesario (avisos "Version X is Now Live!" con
   `Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)` y avisos de mantenimiento con inicio/fin), pero **sus Términos de Uso (Yostar, stellasora.global/agreement) prohíben el scraping y el acceso con
@@ -327,3 +343,21 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
   para el camino sin servidor. Medido el 6 nov: Arknights, WuWa, Blue Archive y NTE sin huecos; R:1999 6 y Endfield 2 sin imagen en su wiki (la app pone el fondo del juego).
 - Contactar con gachafocus (`/en/contact`) y Prydwen para pedir autorización/uso formal; es la solución de fondo.
 - Epic Seven y Stella Sora no tienen otra fuente abierta; eventos menores de NIKKE/Arknights/Blue Archive/R99 solo vienen de gachafocus.
+
+## Rotatorios (desafíos) por juego — revisado el 7 nov 2026
+
+| Juego | Rotatorios | Fuente | Recompensas |
+|---|---|---|---|
+| Genshin / HSR | Abyss, Theater, Stygian / MoC, PF, AS… | ennead + wiki | ennead |
+| ZZZ | Shiyu Defense, Deadly Assault (+ Annihilation Simulacrum) | wiki + ennead | total por ciclo de la wiki (`challenges.ts`, tabla "Total Rewards") |
+| WuWa | Tower of Adversity, Whimpering Wastes, Endstate Matrix | ciclo fijo de 28 días / fases = versiones (`kuro.ts`) | wiki: solo lo que se reinicia (Hazard Zone, Respawning Waters) y total del ciclo de la Matrix |
+| NIKKE | Union Raid, Solo Raid, Coordinated Operation | notas oficiales (nikke.gg) | según ranking: descripción sin cifras |
+| Arknights | Annihilation (mapa rotatorio), Contingency Contract | datos del cliente (`campaign_table`, `stage_table`) | Orundum de primera vez; el tope semanal no está en los datos |
+| Blue Archive | Total/Grand Assault, Final Restriction Release, Joint Firing Drill | bucket `raids`/`events` de bluearchive.wiki | según rango: descripción |
+| HI3 | Memorial Arena | ciclo fijo documentado (martes 04:00 – lunes 02:00, UTC+8) en `cycles.ts` | según grupo: descripción |
+| R:1999 | Limbo | ciclo fijo documentado (días 1 y 16, 05:00 UTC+8) en `cycles.ts` | descripción |
+| NTE | Hunter's Crucible | eventos (Game8/neverness), reclasificado | descripción |
+| Endfield, Uma, Limbus, BD2 | propios de cada fuente | — | — |
+
+**Sin rotatorios por falta de fuente fiable:** PGR (la página "War Zone" de la wiki es de 2023), HI3 Abyss (horario no documentado),
+Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Arena), CZN y Stella Sora (sin información). FGO no tiene.

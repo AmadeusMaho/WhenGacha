@@ -25,6 +25,7 @@ const ART: Record<string, string> = {
   reverse1999: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d5/1e/fd/d51efdc0-0d48-66b8-b7df-142c008c2238/1.2868x1320.jpg/1280x1280bb.jpg',
   pgr: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d0/08/45/d00845a7-d0b0-f0b4-0052-bb8eef86b995/KV1.jpg/1280x1280bb.jpg',
   honkai3: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/a3/a4/90/a3a4909d-781f-dfb9-573b-7cf3d11601ba/EN-2208x1242-1.jpg/1280x1280bb.jpg',
+  bd2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/87/88/56/87885688-e7ce-96f5-af56-f678d5da8b65/250909_BD2__Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.jpg/1280x1280bb.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -59,9 +60,13 @@ export const CATALOG: Game[] = [
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/f2/db/86/f2db8629-a697-d3a8-345c-16e1cc9c6f89/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
   def('honkai3', 'Honkai Impact 3rd', 'HI3', 'HoYoverse', '#f48fb1', '#5e2340', 0, 'honkaiimpact3.fandom.com', 'Honkai Impact 3rd', 'honkai3',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/20/4b/e7/204be75d-5108-d55b-eac2-3dac080e7f3e/AppIcon-1x_U007emarketing-0-10-0-85-220-0.png/256x256bb.jpg'),
+  // BrownDust2: avisos oficiales de browndust2.com (src/sources/bd2.ts). Actualiza cada 2 semanas (miércoles).
+  def('bd2', 'BrownDust2', 'BD2', 'Neowiz', '#d4a373', '#4a2c17', 14, '', 'BrownDust2', 'bd2',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/11/b3/f8/11b3f84d-1f7e-67a7-7b85-916916f5743d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // Azur Lane: solo vía Discord (su web es de Yostar y su wiki pone una barrera anti-bots). Sin canal configurado no muestra nada.
-  def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
-    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
+  { ...def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
 ]
 
 export const initialState = (): AppState => ({

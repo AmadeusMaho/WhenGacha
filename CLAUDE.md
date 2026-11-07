@@ -17,6 +17,12 @@ Comprueba que `git status` muestre cambios en `dist/` antes de hacer push. Si no
 `build:prod` también regenera `server/bundle/collector.mjs` (el recolector del servidor, con las fuentes de `src/sources` y `linkedom` ya dentro).
 Ese archivo **también se versiona**: el host no instala dependencias de desarrollo ni compila. Si cambias algo en `src/sources/` o `src/catalog.ts`, recompila y súbelo.
 
+## Añadir un juego: siempre completo
+
+Un gacha nuevo se añade de una vez con **todo** lo que tienen los demás: eventos, banners, desafíos, **códigos de canje** (`codes`) y
+**recompensas y tiradas** de los eventos (`items`/`pulls`; la equivalencia moneda→tirada va en `RULES` de `src/sources/pulls.ts`).
+Si alguna parte no tiene fuente permitida, se deja dicho (en el código y en `docs/fuentes-y-proxy.md`), no se omite en silencio.
+
 ## Antes de tocar fuentes, proxy o recolector
 
 Lee **`docs/fuentes-y-proxy.md`**: explica el incidente en que gachafocus bloqueó al servidor (403 en todas las páginas) y cómo se evitó repetirlo.

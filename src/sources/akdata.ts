@@ -91,3 +91,31 @@ export async function withClientData(gameId: string, wiki: GameSync): Promise<Ga
   }
   return { ...wiki, events: [...events, ...extra] }
 }
+
+/**
+ * Annihilation (misión rotatoria): del cliente, `campaign_table.campaignRotateStageOpenTimes` da cada mapa con su inicio y fin exactos y
+ * `stage_table` su nombre ("Vermilion Restaurant Yan"). Se muestra el mapa en curso y el siguiente. Recompensas: el Orundum de primera vez del mapa
+ * (`breakLadders`, sumado por el proxy); el Orundum semanal tiene un tope que los datos no exponen, así que se menciona sin cifra.
+ */
+export async function akAnnihilation(gameId: string): Promise<GameEvent[]> {
+  const [camp, names] = await Promise.all([
+    get<{ rotate?: { stageId: string; startTs: number; endTs: number }[]; orundum?: Record<string, number> }>('campaign_table.json'),
+    get<Record<string, string>>('stage_table.json').catch(() => ({} as Record<string, string>)),
+  ])
+  const now = Date.now()
+  return (camp.rotate ?? [])
+    .filter(r => r.endTs * 1000 > now - 3 * DAY && r.startTs * 1000 < now + 120 * DAY)
+    .sort((a, b) => a.startTs - b.startTs).slice(0, 2)
+    .map(r => {
+      const orundum = camp.orundum?.[r.stageId] ?? 0
+      const name = names[r.stageId]
+      return {
+        id: `${gameId}:challenge:ak:${r.stageId}`, gameId, kind: 'challenge' as const,
+        title: name ? `Annihilation: ${name}` : 'Annihilation',
+        description: '⟦d.akAnnihilation⟧',
+        start: iso(r.startTs), end: iso(r.endTs),
+        items: orundum ? [{ name: 'Orundum', amount: orundum }] : [], featured: [],
+        pulls: Math.round((orundum / 600) * 10) / 10, official: true, source: 'api' as const,
+      }
+    })
+}

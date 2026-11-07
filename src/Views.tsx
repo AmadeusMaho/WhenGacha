@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { t } from './i18n'
 import { bannerArt, officialArt, wallpaperOf } from './images'
 import { countdown, eventStatus, isTaskDone, trackedGames, uid, verdict } from './logic'
+import { fetchSnapshot } from './net'
 import { enableNotifications } from './notify'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, type Ctx } from './ui'
 import type { Cadence, Game, GameEvent, Patch } from './types'
@@ -18,8 +19,28 @@ const FIRST_VISIT = (() => {
   } catch { return true }
 })()
 
+/**
+ * Juegos "en construcción" (`wip`) sin eventos vigentes: no se pueden seguir todavía. Se mira su copia del recolector (/data/<id>.json, solo nuestro
+ * servidor, nunca la fuente externa) y lo que ya haya en el estado; hasta saberlo, cuentan como vacíos.
+ */
+function useWipEmpty(games: Game[], events: GameEvent[], now: number): Set<string> {
+  const ids = games.filter(g => g.wip).map(g => g.id).join(',')
+  const [counts, setCounts] = useState<Record<string, number>>({})
+  useEffect(() => {
+    let alive = true
+    for (const id of ids ? ids.split(',') : []) {
+      fetchSnapshot(id).then(snap => {
+        const n = snap ? snap.events.filter(e => +new Date(e.end) > Date.now()).length : 0
+        if (alive) setCounts(c => ({ ...c, [id]: n }))
+      })
+    }
+    return () => { alive = false }
+  }, [ids])
+  return new Set(games.filter(g => g.wip && !(counts[g.id] ?? 0) && !events.some(e => e.gameId === g.id && +new Date(e.end) > now)).map(g => g.id))
+}
+
 export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => void }) {
-  const { state, games, setState } = ctx
+  const { state, games, setState, now } = ctx
   const [msg, setMsg] = useState('')
   const [query, setQuery] = useState('')
   const [addOpen, setAddOpen] = useState(FIRST_VISIT)
@@ -30,6 +51,7 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
   const match = (g: Game) => !q || `${g.name} ${g.short} ${g.publisher}`.toLowerCase().includes(q)
   const auto = games.filter(g => g.api && match(g))
   const soon = games.filter(g => !g.api && match(g))
+  const wipEmpty = useWipEmpty(games, state.events, now)
   // El catálogo se pliega tras un botón (salvo en la primera visita, si aún no sigues ninguno o mientras buscas).
   const showAdd = addOpen || !mine.length || !!q
 
@@ -48,7 +70,12 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
         <div className={`add-body ${showAdd ? 'open' : ''}`}>
           <input className="pick-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('mine.search')} aria-label={t('mine.search')} />
           <div className="picks">
-            {auto.map(g => <Pick key={g.id} g={g} on={state.tracked.includes(g.id)} state={state} onClick={() => toggle(g.id)} />)}
+            {auto.map(g => {
+              const on = state.tracked.includes(g.id)
+              // En construcción y sin eventos: desactivado (salvo que ya lo siguieras, para poder quitarlo).
+              const wip = wipEmpty.has(g.id) && !on
+              return <Pick key={g.id} g={g} on={on} state={state} onClick={() => toggle(g.id)} disabled={wip} wip={wip} />
+            })}
           </div>
           {!auto.length && !soon.length && <p className="muted">{t('mine.noMatch')}</p>}
         {soon.length > 0 && (
@@ -91,14 +118,14 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
   )
 }
 
-function Pick({ g, on, state, onClick, disabled }: { g: Game; on?: boolean; state: Ctx['state']; onClick?: () => void; disabled?: boolean }) {
+function Pick({ g, on, state, onClick, disabled, wip }: { g: Game; on?: boolean; state: Ctx['state']; onClick?: () => void; disabled?: boolean; wip?: boolean }) {
   return (
-    <button className={`pick ${on ? 'on' : ''}`} style={cssVar(g)} onClick={onClick} disabled={disabled} aria-pressed={on}>
+    <button className={`pick ${on ? 'on' : ''} ${wip ? 'wip' : ''}`} style={cssVar(g)} onClick={onClick} disabled={disabled} aria-pressed={on} title={wip ? t('mine.wipHint') : undefined}>
       {/* Arte del juego de fondo (el de su parche o el oficial), bajo un velo que mantiene el texto legible. */}
       <span className="pick-art" aria-hidden><Img src={wallpaperOf(g.id) || officialArt(g.id)} /></span>
       <GameAvatar game={g} state={state} size={52} />
       <span className="pick-txt"><strong>{g.name}</strong><small>{g.publisher}</small></span>
-      {disabled ? <Tag tone="off">{t('tag.soon')}</Tag> : <span className="check">{on ? '✓' : '＋'}</span>}
+      {disabled ? <Tag tone="off">{wip ? `🚧 ${t('tag.wip')}` : t('tag.soon')}</Tag> : <span className="check">{on ? '✓' : '＋'}</span>}
     </button>
   )
 }

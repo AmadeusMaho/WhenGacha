@@ -42,6 +42,12 @@ function lines(html: string): string[] {
 /** Secciones que no son eventos (ventas de trajes, paquetes) o que no tienen periodo. */
 const SKIP_SECTION = /Costume|Commodit|Package|Content & Features|Optimi|Champion Arena|Outpost/i
 const CHALLENGE_SECTION = /Union Raid|Solo Raid|Coordinated Operation/i
+/** Qué da cada raid según las notas oficiales ("collect Union Chips", "Gems … according to the ranking", "Broken Cores to exchange for Gems"). */
+const RAID_DESC: [RegExp, string][] = [
+  [/Union Raid/i, '⟦d.nkUnion⟧'],
+  [/Solo Raid/i, '⟦d.nkSolo⟧'],
+  [/Coordinated Operation/i, '⟦d.nkCoop⟧'],
+]
 
 function parseNotes(gameId: string, html: string, out: GameEvent[], seen: Set<string>) {
   const ls = lines(html)
@@ -83,6 +89,8 @@ function parseNotes(gameId: string, html: string, out: GameEvent[], seen: Set<st
     seen.add(id)
     const ev: GameEvent = {
       id, gameId, kind, title: name, image: img,
+      // Las recompensas de los raids dependen del ranking (las notas no dan cantidades): se describe qué se gana en vez de inventar cifras.
+      description: kind === 'challenge' ? RAID_DESC.find(([re]) => re.test(name))?.[1] : undefined,
       start: new Date(start).toISOString(), end: new Date(end).toISOString(),
       items: [], featured: banner ? [{ name, rarity: 3 } as Featured] : [], pulls: 0, official: true, source: 'api',
       minor: /AFFECTION TRAIL|Skill Reset|Welcome Back/i.test(name) || undefined,

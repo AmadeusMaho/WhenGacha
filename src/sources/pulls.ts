@@ -19,6 +19,11 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   zenless: [{ item: /^polychromes?$/i, per: 160 }, { item: /^(encrypted )?master tapes?$/i, per: 1 }],
   // Punishing: Gray Raven: cada investigación cuesta 250 Black Card o 250 billetes ("Research Consumption: 250 Event Construct R&D Tickets for each
   // research attempt", nota de versión 4527); algunos banners de colaboración bajan a 175-180, así que la cifra es un mínimo.
+  // Arknights: 600 Orundum por tirada; Headhunting Permit = 1 (y el de 10 = 10, que el aviso escribe aparte).
+  arknights: [{ item: /^orundum$/i, per: 600 }, { item: /^headhunting permits?$/i, per: 1 }],
+  // BrownDust2: Draw Ticket = 1 tirada. Los Dias se muestran como recompensa pero NO se convierten: ni sus avisos ni una wiki dicen cuánto cuesta
+  // una tirada en Dias (revisado el 7 nov 2026), así que no se adivina.
+  bd2: [{ item: /^draw tickets?$/i, per: 1 }],
   pgr: [{ item: /^black cards?$/i, per: 250 }, { item: /^(event|basic) construct r&d tickets?$/i, per: 250 }, { item: /^target weapon r&d tickets?$/i, per: 250 }],
 }
 

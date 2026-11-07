@@ -95,6 +95,8 @@ async function fileThumbs(files: string[], width: number): Promise<Map<string, s
 }
 
 const RAID_LABEL: Record<string, string> = { Raid: 'Total Assault', Elimination: 'Grand Assault', 'Limit Break': 'Final Restriction Release' }
+/** Qué da cada raid: las recompensas dependen del rango y la dificultad, así que se describen sin cifras. */
+const RAID_DESC: Record<string, string> = { Raid: '⟦d.baRaid⟧', Elimination: '⟦d.baGrand⟧', 'Limit Break': '⟦d.baFrr⟧' }
 /** "Decagrammaton: Hod (Grand Assault)" → "Hod". */
 const raidBoss = (name: string) => name.replace(/\s*\([^)]*\)\s*$/, '').split(': ').pop()!.trim()
 
@@ -112,7 +114,7 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
     bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [] as BucketRow[]),
   ])
   const skip = new Set(['PermanentEvent', 'Guide mission'])
-  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean }[] = []
+  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean; challenge?: string }[] = []
   for (const r of evs) {
     const s = +new Date(String(r.start_date ?? '')), e = +new Date(String(r.end_date ?? ''))
     const title = String(r.name_en ?? '').trim()
@@ -124,7 +126,8 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
       file: (r.promo ?? r.banner) as string | undefined,
       // Los reestrenos tienen id = 10000 + id original (p. ej. 10846 → 846).
       rerun: id > 10000 && orig > 0 && id !== orig && id % 10000 === orig % 10000,
-      minor: r.category === 'Joint Firepower Exercise',
+      // Ejercicio conjunto (Joint Firing Drill): rotatorio, no evento.
+      challenge: r.category === 'Joint Firepower Exercise' ? '⟦d.baDrill⟧' : undefined,
     })
   }
   for (const r of raids) {
@@ -137,15 +140,16 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
       title: label ? `${label}: ${raidBoss(name)}` : name,
       s, e,
       file: r.image as string | undefined,
+      challenge: RAID_DESC[String(r.type)] ?? '⟦d.baRaid⟧',
     })
   }
   const thumbs = await fileThumbs(rows.map(r => r.file).filter((f): f is string => !!f), 320).catch(() => new Map<string, string>())
   return rows.map(r => ({
     id: r.id,
     gameId,
-    kind: 'event' as const,
+    kind: r.challenge ? 'challenge' as const : 'event' as const,
     title: r.title,
-    description: r.rerun ? '⟦d.rerun⟧' : undefined,
+    description: r.challenge ?? (r.rerun ? '⟦d.rerun⟧' : undefined),
     image: r.file ? thumbs.get(r.file) : undefined,
     start: new Date(r.s).toISOString(),
     end: new Date(r.e).toISOString(),

@@ -1,5 +1,5 @@
 export type Cadence = 'daily' | 'weekly' | 'once'
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {
@@ -23,6 +23,8 @@ export interface Game {
   wiki: { host: string; q: string }
   /** Sin fuente de datos abierta todavía. */
   soon?: boolean
+  /** En construcción: tiene fuente, pero mientras no traiga eventos vigentes el catálogo lo muestra desactivado ("En construcción"). */
+  wip?: boolean
 }
 
 export interface RewardItem {
