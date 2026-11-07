@@ -7,6 +7,7 @@ import { withChallengeRewards, type ChallengePage } from './challenges'
 import { hi3MemorialArena, r99Limbo } from './cycles'
 import { syncCznEvents } from './czn'
 import { discordChannel, syncDiscord } from './discord'
+import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
 import { syncEpic7 } from './epic7'
 import { syncFgo } from './fgo'
@@ -217,6 +218,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'nikke': return withGachafocus(id, 'nikke', officialFirst(syncNikkeGg(id), syncNikke(id)))
     // BrownDust2: avisos oficiales (eventos, pickups, temporadas del Colosseum/Tower) de webapi.browndust2.com.
     case 'bd2': return syncBd2(id)
+    // AFK Journey: eventos (con recompensas), rotatorios y banners de su wiki; sin códigos (no hay fuente fiable).
+    case 'afkjourney': return syncAfkJourney(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

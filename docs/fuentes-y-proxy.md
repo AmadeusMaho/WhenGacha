@@ -361,3 +361,13 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 
 **Sin rotatorios por falta de fuente fiable:** PGR (la página "War Zone" de la wiki es de 2023), HI3 Abyss (horario no documentado),
 Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Arena), CZN y Stella Sora (sin información). FGO no tiene.
+
+## AFK Journey (añadido el 7 nov 2026) y candidatos descartados
+
+- **AFK Journey** (`src/sources/afkjourney.ts`): wiki de Fandom `afk-journey.fandom.com`, al día. Eventos de "Category:Events" (`{{Event Infobox |time_start |time_end |group}}`)
+  con recompensas sumadas de sus `Card List`/`Item List` (sin tarjetas de enemigo ni "Event Points"); las ediciones con fecha de modos de Guild/Strategy
+  ("Horn Rally/2026-11-02", "Treasure Rush/…") son rotatorios. Banners: subpáginas "Rate Up Recruitment/<fecha>" (`{{Rate Up Info |hero |time_start |time_end}}`).
+  Horas en UTC (documentación de sus plantillas). Arte de banners: imagen de la página o "Recruitment Rate Up <héroe>.png" (los Rate Up Return reutilizan la del original). Tiradas: Invite Letter = 1, 300 Diamonds = 1. **Sin códigos**: la página "Redemption Code"
+  está marcada para rehacer y su lista de activos es de 2024. 3 consultas por ciclo.
+- **Descartados (7 nov 2026)**: Solo Leveling: Arise (su Fandom dejó de registrar eventos en primavera de 2026), Duet Night Abyss, Ananta, Honkai: Nexus Anima y
+  Snowbreak (wikis sin actividad desde jul–sep), Etheria Restart y Silver and Blood (sin wiki en Fandom); Prydwen solo tiene página de banners de WuWa, NTE, CZN y NIKKE.
