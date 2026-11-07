@@ -303,6 +303,8 @@ export async function sourceFetch(url) {
     const { entry } = await getCached(target.toString(), source.ttl)
     return new Response(entry.body, { status: 200, headers: { 'content-type': entry.type } })
   } catch (err) {
+    // Igual que en /proxy: el motivo real (p. ej. "upstream 403", "upstream 503", un error de red) queda en el log; el recolector solo ve el 502.
+    if (!/en pausa/.test(String(err.message))) console.error(`[proxy] ${source.name} ${target.pathname}: ${err.message ?? err}`)
     return new Response(String(err.message ?? err), { status: 502 })
   }
 }
