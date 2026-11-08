@@ -148,8 +148,14 @@ export function setTransport(fn) { request = fn ?? httpsRequest }
  * durante la pausa (ver pauseFor); pasado ese tiempo se hace una sola prueba. Así un bloqueo no se agrava con cada visita.
  * gachafocus se prueba con el UA de navegador y, tras un fallo, la siguiente prueba usa el UA identificado (y así).
  */
-/** Espera tras un 403/429: 10 min, y el doble en cada fallo seguido (20, 40, 80 min) hasta un máximo de 2 h. Un éxito la reinicia. */
-const pauseFor = fails => Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR)
+/**
+ * Espera tras un 403/429/202: 10 min, y el doble en cada fallo seguido (20 min…) hasta 2 h. Un éxito la reinicia.
+ * Tras BLOCK_AFTER rechazos seguidos se trata como bloqueo persistente (p. ej. BrownDust2 y Game8 rechazan la IP del servidor con AWS WAF):
+ * una sola prueba al día, en vez de una cada 2 h que se rechazaría igual. La fuente no se quita; si el sitio vuelve a responder, se reanuda.
+ */
+const BLOCK_AFTER = 3
+const BLOCK_PAUSE = 24 * HOUR
+const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
 const GAP = { 'bannerhistory.app': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
@@ -184,11 +190,13 @@ async function fetchUpstream(url, ttl) {
     if (res.status === 403 || res.status === 429 || res.status === 202) {
       const fails = st.fails + 1
       hostState.set(host, { until: Date.now() + pauseFor(fails), flip: twoUas ? !st.flip : false, fails })
-      console.error(`[proxy] ${host} respondió ${res.status} (${uaName}): sin nuevas peticiones durante ${pauseFor(fails) / MIN} min`)
+      saveHosts()
+      console.error(`[proxy] ${host} respondió ${res.status} (${uaName}): sin nuevas peticiones durante ${pauseFor(fails) / MIN} min${fails >= BLOCK_AFTER ? ` (bloqueo persistente: ${fails} rechazos seguidos)` : ''}`)
     }
     throw new Error(`upstream ${res.status}`)
   }
-  hostState.set(host, { until: 0, flip: st.flip, fails: 0 }) // se recuerda qué UA funcionó
+  if (st.fails) { hostState.set(host, { until: 0, flip: st.flip, fails: 0 }); saveHosts(); console.log(`[proxy] ${host} vuelve a responder`) }
+  else hostState.set(host, { until: 0, flip: st.flip, fails: 0 }) // se recuerda qué UA funcionó
   if (Number(res.headers.get('content-length')) > limit) throw new Error('respuesta demasiado grande')
   let body = Buffer.from(await res.arrayBuffer())
   if (body.length > limit) throw new Error('respuesta demasiado grande')
@@ -288,7 +296,29 @@ async function loadSnapshot() {
   } catch { /* primera vez o archivo ilegible: se empieza vacía */ }
 }
 
+/* Pausas por sitio en disco: un reinicio del proceso no vuelve a mandar peticiones a un sitio que nos tiene bloqueados.
+   (Un redeploy en Botkeep borra .cache/: entonces bastan BLOCK_AFTER rechazos para volver a la pausa larga.) */
+const HOSTS_FILE = path.join(DATA_DIR, 'proxy-hosts.json')
+function saveHosts() {
+  const out = {}
+  for (const [host, st] of hostState) if (st.fails) out[host] = { until: st.until, fails: st.fails }
+  mkdir(DATA_DIR, { recursive: true })
+    .then(() => writeFile(`${HOSTS_FILE}.tmp`, JSON.stringify(out)))
+    .then(() => rename(`${HOSTS_FILE}.tmp`, HOSTS_FILE))
+    .catch(err => console.error(`[proxy] no se pudieron guardar las pausas: ${err.message}`))
+}
+async function loadHosts() {
+  try {
+    const saved = JSON.parse(await readFile(HOSTS_FILE, 'utf8'))
+    for (const [host, st] of Object.entries(saved)) {
+      if (!hostState.has(host)) hostState.set(host, { until: Number(st.until) || 0, flip: false, fails: Number(st.fails) || 0 })
+      if (Number(st.until) > Date.now()) console.log(`[proxy] ${host} sigue en pausa hasta ${new Date(Number(st.until)).toISOString()} (${st.fails} rechazos seguidos)`)
+    }
+  } catch { /* sin pausas guardadas */ }
+}
+
 loadSnapshot()
+loadHosts()
 setInterval(() => { refreshDue(); saveSnapshot() }, 5 * MIN).unref()
 setTimeout(refreshDue, 30_000).unref() // tras un reinicio, renueva lo que ya caducó
 /** Guarda la caché en disco (se llama al apagar el servidor). */

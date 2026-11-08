@@ -291,7 +291,14 @@ function Codes({ g, ctx }: { g: Game; ctx: Ctx }) {
   return (
     <details className="codes">
       <summary className="codes-chip">
-        🎁 {codes.length === 1 ? t('card.codesOne') : t('card.codesChip', { n: codes.length })}{fresh > 0 && <b> · {fresh === 1 ? t('code.newOne') : t('code.newCount', { n: fresh })}</b>}
+        <span className="cc-ico" aria-hidden>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="8" width="18" height="4" rx="1" /><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5" />
+          </svg>
+        </span>
+        <span className="cc-txt">{codes.length === 1 ? t('card.codesOne') : t('card.codesChip', { n: codes.length })}</span>
+        {fresh > 0 && <span className="cc-new">{fresh === 1 ? t('code.newOne') : t('code.newCount', { n: fresh })}</span>}
+        <span className="cc-chev" aria-hidden>▾</span>
       </summary>
       <ul className="list">
         {sorted.map(c => {

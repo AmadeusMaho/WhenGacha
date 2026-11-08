@@ -813,11 +813,19 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .face-xs { display: block; width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex: none; background: #222; }
 .face-xs img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
 /* Códigos: un chip al pie que abre el panel. */
-.codes-chip { display: inline-flex; align-items: center; gap: 4px; list-style: none; padding: 5px 12px; border-radius: 999px; font-size: .82rem; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); }
+/* Botón de códigos: discreto en reposo (gris, sin color del juego); al pasar el ratón o abrirlo toma el color del juego. Flecha que gira al abrir. */
+.codes-chip { display: inline-flex; align-items: center; gap: 8px; list-style: none; padding: 4px 12px 4px 4px; border-radius: 999px; font-size: .82rem; font-weight: 600; cursor: pointer;
+  background: rgba(255, 255, 255, .03); border: 1px solid var(--line); transition: border-color .2s, background .2s, box-shadow .2s; }
 .codes-chip::-webkit-details-marker { display: none; }
-.codes-chip:hover { border-color: var(--c); }
-.codes-chip b { color: #f9a8d4; }
-.codes[open] .codes-chip { border-color: var(--c); }
+.cc-ico { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: var(--muted); background: rgba(255, 255, 255, .06); transition: color .2s, background .2s; }
+.cc-txt { color: var(--muted); transition: color .2s; }
+.cc-new { padding: 1px 7px; border-radius: 999px; font-size: .7rem; font-weight: 700; color: #fbcfe8; background: rgba(236, 72, 153, .18); }
+.cc-chev { font-size: .7rem; color: var(--muted); transition: transform .25s var(--ease); }
+.codes-chip:hover, .codes[open] .codes-chip { background: linear-gradient(90deg, color-mix(in srgb, var(--c) 14%, transparent), rgba(255, 255, 255, .03)); border-color: color-mix(in srgb, var(--c) 60%, transparent); }
+.codes-chip:hover { box-shadow: 0 0 14px color-mix(in srgb, var(--c) 18%, transparent); }
+.codes-chip:hover .cc-ico, .codes[open] .cc-ico { color: var(--c); background: color-mix(in srgb, var(--c) 20%, transparent); }
+.codes-chip:hover .cc-txt, .codes[open] .cc-txt { color: var(--text); }
+.codes[open] .cc-chev { transform: rotate(180deg); }
 
 /* Modal de un banner con splash de personaje: la imagen desenfocada de fondo (como los retratos de Mis gachas). */
 .modal-hero.has-bg { background: #0b0e1a; isolation: isolate; }

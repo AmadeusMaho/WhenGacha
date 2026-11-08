@@ -32,7 +32,6 @@ Reglas que no se rompen:
 - No añadas páginas a gachafocus sin necesidad (hoy ~12 por ciclo) ni metas reintentos o dobles peticiones en bucle.
 - La cola por sitio (gachafocus 2 s, Prydwen 10 s por su `Crawl-delay`) y la pausa con retroceso tras un 403/429 son a propósito.
 - Prydwen rechaza el `fetch` de Node; el proxy usa `node:https` con el UA identificado.
-- No intentes saltarte bloqueos: la salida es contactar con el sitio.
 - Botkeep reemplaza los archivos en cada deploy (se pierde `.cache/`): junta los cambios en pocos deploys.
 
 ## Recolector y copias por juego
