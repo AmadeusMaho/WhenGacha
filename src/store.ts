@@ -63,11 +63,17 @@ export function useAutoSync(state: AppState, setState: React.Dispatch<React.SetS
         if (r.status === 'rejected') { failed.push(g.name); return }
         const keep = next.events.filter(e => !(e.gameId === g.id && e.source === 'api'))
         const keepPatches = next.patches.filter(p => !(p.gameId === g.id && p.source === 'api'))
+        // Códigos nuevos: se apunta cuándo aparecieron. En la primera sincronización del juego cuentan como ya vistos (0), no como "nuevos".
+        // La marca "<juego>:" dice que ya se hizo esa primera pasada (así quien ya lo seguía antes de esta función tampoco ve todos sus códigos como nuevos).
+        const firstSync = !(`${g.id}:` in next.codeSeen)
+        const seen = { ...next.codeSeen, [`${g.id}:`]: 0 }
+        for (const c of r.value.codes) seen[`${g.id}:${c.code.toUpperCase()}`] ??= firstSync ? 0 : Date.now()
         next = {
           ...next,
           events: [...keep, ...r.value.events],
           patches: [...keepPatches, ...r.value.patches],
           codes: { ...next.codes, [g.id]: r.value.codes },
+          codeSeen: seen,
           synced: { ...next.synced, [g.id]: Date.now() },
         }
       })

@@ -161,7 +161,24 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
   }))
 }
 
+/**
+ * Cupones de Blue Archive Global puestos a mano: el aviso oficial (#game-news de Discord) trae el código solo dentro de la imagen,
+ * así que discord.ts no puede leerlo. Cada uno desaparece solo al caducar (`until`).
+ */
+const BA_CODES: { code: string; rewards: string[]; until: string }[] = [
+  // 5-Year Anniversary Celebration Coupon (aviso del 8 nov 2026): hasta el 24/11 14:59 UTC, una vez por cuenta.
+  { code: '5YEARSWITHSENSEI', rewards: ['Pyroxene ×600', 'Beautiful Bouquet ×5'], until: '2026-11-24T14:59:00Z' },
+]
+
+const baCodes = () => BA_CODES.filter(c => +new Date(c.until) > Date.now())
+  .map(c => ({ code: c.code, rewards: [...c.rewards, `Until ${new Date(c.until).toUTCString().slice(5, 16)} (UTC)`] }))
+
 export async function syncBlueArchive(gameId: string): Promise<GameSync> {
+  const s = await syncBlueArchiveWiki(gameId)
+  return { ...s, codes: [...s.codes, ...baCodes()] }
+}
+
+async function syncBlueArchiveWiki(gameId: string): Promise<GameSync> {
   const [fromBucket, banners] = await Promise.all([
     blueArchiveBucket(gameId).catch(err => { console.warn('[bluearchive] bucket:', err?.message ?? err); return null }),
     blueArchiveBanners(gameId).catch(() => []),

@@ -21224,12 +21224,25 @@ function seasonFrom(gameId, text, year, image) {
 		banners
 	};
 }
-var SEP = /\s+(?:-|–|—|~|to|until)\s+|\s*[~～]\s*/i;
-/** "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento. */
-function rangeIn(line, year, fallbackZone) {
+var SEP = /\s+(?:-|–|—|~|to|until|through|thru)\s+|\s*[~～]\s*/i;
+/**
+* "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento.
+* "Now through <fin>" (Blue Archive: "Event Period: Now through <t:…>") empieza a la hora del mensaje (`postedAt`).
+*/
+function rangeIn(line, year, fallbackZone, postedAt) {
 	const parts = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, "").split(SEP);
 	if (parts.length < 2) return null;
 	const zone = zoneOf(line) ?? fallbackZone;
+	if (postedAt !== void 0 && /^\s*(?:from\s+)?(?:now|today)\s*$/i.test(parts[0])) {
+		const b = dateIn(parts.slice(1).join(" "), new Date(postedAt).getUTCFullYear());
+		if (!b) return null;
+		return {
+			start: postedAt,
+			end: Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59) + 59e3,
+			afterMaint: null,
+			approx: b.h === void 0
+		};
+	}
 	const a = dateIn(parts[0], year), b = dateIn(parts.slice(1).join(" "), a?.y ?? year);
 	if (!a || !b) return null;
 	if (b.y === a.y && (b.mo < a.mo || b.mo === a.mo && b.d < a.d) && !/\d{4}/.test(parts.slice(1).join(" "))) b.y++;
@@ -21292,13 +21305,13 @@ async function syncDiscord(gameId) {
 		for (const line of raw) {
 			const c = clean$2(line);
 			if (!c) continue;
-			const r = rangeIn(c, year, msgZone);
+			const r = rangeIn(c, year, msgZone, +new Date(m.timestamp));
 			if (!r) {
 				if (isHeading(line) && c.length <= 90 && !/:$/.test(c)) heading = c;
 				continue;
 			}
 			const inline = /^(.{3,80}?):\s*\S/.exec(c)?.[1];
-			const name = inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : heading;
+			const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, "");
 			if (!name) continue;
 			let start = r.start, approx = r.approx;
 			if (r.afterMaint) {
@@ -22550,7 +22563,27 @@ async function blueArchiveBucket(gameId) {
 		source: "api"
 	}));
 }
+/**
+* Cupones de Blue Archive Global puestos a mano: el aviso oficial (#game-news de Discord) trae el código solo dentro de la imagen,
+* así que discord.ts no puede leerlo. Cada uno desaparece solo al caducar (`until`).
+*/
+var BA_CODES = [{
+	code: "5YEARSWITHSENSEI",
+	rewards: ["Pyroxene ×600", "Beautiful Bouquet ×5"],
+	until: "2026-11-24T14:59:00Z"
+}];
+var baCodes = () => BA_CODES.filter((c) => +new Date(c.until) > Date.now()).map((c) => ({
+	code: c.code,
+	rewards: [...c.rewards, `Until ${new Date(c.until).toUTCString().slice(5, 16)} (UTC)`]
+}));
 async function syncBlueArchive(gameId) {
+	const s = await syncBlueArchiveWiki(gameId);
+	return {
+		...s,
+		codes: [...s.codes, ...baCodes()]
+	};
+}
+async function syncBlueArchiveWiki(gameId) {
 	const [fromBucket, banners] = await Promise.all([blueArchiveBucket(gameId).catch((err) => {
 		console.warn("[bluearchive] bucket:", err?.message ?? err);
 		return null;

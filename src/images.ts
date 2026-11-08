@@ -186,6 +186,12 @@ function currentPatch(state: AppState, gameId: string) {
   return state.patches.find(p => p.gameId === gameId && !p.estimated && +new Date(p.date) <= now && (!p.end || +new Date(p.end) > now))
 }
 
+/**
+ * Juegos cuyo fondo NO se busca en la wiki: la búsqueda devuelve una imagen que no sirve (FGO: "FGOver.png", una captura de una página de
+ * descarga del APK). Se quedan con su arte oficial de la tienda (`officialArt`).
+ */
+const NO_WALL_SEARCH = new Set(['fgo'])
+
 /** Pide las imágenes que falten y devuelve un contador que cambia cuando llegan nuevas. */
 export function useImages(state: AppState): number {
   const games = new Map<string, Game>(CATALOG.map(g => [g.id, g]))
@@ -213,8 +219,10 @@ export function useImages(state: AppState): number {
         const u = await pageImage(g.wiki.host, `Version ${ver}`, 1600).catch(() => '')
         if (u) return u
       }
+      // Sin versión ni fondo propio, se busca en la wiki; en los juegos de NO_WALL_SEARCH esa búsqueda da basura y se usa el arte oficial.
+      if (NO_WALL_SEARCH.has(id)) return ''
       return searchImage(g.wiki.host, g.wiki.q, 1600)
-    }, `${ver ?? ''}|${cur?.name ?? ''}|${g.wallpaper ?? ''}`) // si cambia el fondo del catálogo, se vuelve a buscar
+    }, `${ver ?? ''}|${cur?.name ?? ''}|${g.wallpaper ?? ''}${NO_WALL_SEARCH.has(id) ? '|oficial' : ''}`) // si cambia el fondo del catálogo, se vuelve a buscar
   }
 
   for (const e of state.events) {

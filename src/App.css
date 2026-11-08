@@ -425,8 +425,6 @@ header { transition: background .3s, border-color .3s; }
 .gsec .kind-group.tall .grid > .bcard, .gsec .kind-group.tall .grid > .ecard { height: auto; aspect-ratio: 3 / 4; contain-intrinsic-size: auto 520px; }
 .gsec .kind-group.tall .grid > .ecard .ecard-img { flex: 1 1 auto; height: auto; min-height: 0; aspect-ratio: auto; }
 .gsec .kind-group.tall .grid > .ecard .ecard-body { flex: 0 0 auto; }
-.nopatch { margin-top: 18px; line-height: 2; }
-.nopatch .tag { margin: 0 4px; }
 
 @media (max-width: 700px) {
   .tl { max-height: calc(100vh - 210px); min-height: 320px; }
@@ -677,3 +675,183 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .soon-toggle:hover { color: var(--text); background: rgba(255, 255, 255, .1); }
 .soon-list.open { flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
 .soon-list.open .soon-card { flex: 1 1 260px; max-width: none; }
+
+/* ====== Mis gachas: tarjetas (8 nov 2026) ====== */
+/* Todas del mismo tamaño: filas iguales (la más alta manda) y el contenido apilado con los códigos al pie. */
+.grid.even { grid-auto-rows: 1fr; align-items: stretch; }
+.grid.even .gcard { display: flex; flex-direction: column; }
+.grid.even .gcard-hero { flex: none; }
+.grid.even .gcard-body { flex: 1; display: flex; flex-direction: column; }
+.grid.even .gcard-body .codes { margin-top: auto; padding-top: 10px; }
+/* Los títulos largos ocupan como mucho 2 líneas. */
+.grid.even .list:not(.ev-list):not(.codes .list) li > span:first-child { overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+/* Códigos desplegados: un panel encima del cuerpo de la tarjeta, con su propio scroll, en vez de alargarla. */
+.grid.even .codes[open] > ul { position: absolute; inset: 0 0 52px; z-index: 3; overflow: auto; margin: 0; padding: 12px 16px; background: #151a2e; border-bottom: 1px solid var(--line); }
+.grid.even .codes[open] > ul li { margin: 0; }
+/* Enlace de texto. */
+.link-btn { align-self: flex-start; background: none; border: 0; padding: 4px 0; font: inherit; font-size: .85rem; color: var(--acc2, #93c5fd); cursor: pointer; }
+.link-btn:hover { text-decoration: underline; }
+/* Listas compactas (eventos de la próxima versión en Parches). */
+.list.compact li { padding-block: 3px; font-size: .88rem; color: var(--muted); }
+.list.compact li small { white-space: nowrap; }
+/* Códigos: los que ya copiaste quedan en verde (botón "Copiado ✓" y el código); caducidad aparte. */
+.codes summary { cursor: pointer; }
+.codes summary .tag { margin-left: 6px; }
+.code-until { color: #fcd34d; font-size: .76rem; }
+.copy-btn { flex: none; }
+.copy-btn.done { background: rgba(52, 211, 153, .18); color: #6ee7b7; border-color: rgba(52, 211, 153, .45); box-shadow: none; }
+.codes li.copied code { color: #6ee7b7; background: rgba(52, 211, 153, .12); }
+
+/* ====== Parches (8 nov 2026) ====== */
+/* Próximas actualizaciones: franja con la siguiente versión de cada juego. */
+.up-patches { margin-bottom: 22px; }
+.up-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.up-card { display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; color: inherit; cursor: pointer; padding: 10px 12px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--c); transition: transform .2s var(--ease), border-color .2s; }
+.up-card:hover { transform: translateY(-2px); border-color: var(--c); }
+.up-txt { display: grid; min-width: 0; flex: 1; }
+.up-txt small { color: var(--muted); font-size: .78rem; }
+.up-ver { color: var(--c); }
+.up-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-style: italic; }
+/* Versión en curso con su arte de fondo. */
+/* Versión en curso: arte a la izquierda (16:9) y nombre + avance a la derecha. */
+.current.has-art { display: flex; gap: 16px; align-items: center; padding: 10px 16px 10px 10px; }
+.current-art { flex: none; width: 200px; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: rgba(255, 255, 255, .06); box-shadow: 0 6px 20px rgba(0, 0, 0, .35); }
+.current-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.current-main { flex: 1; min-width: 0; }
+@media (max-width: 600px) {
+  .current.has-art { flex-direction: column; align-items: stretch; padding: 10px; }
+  .current-art { width: 100%; }
+}
+.cur-name { font-style: italic; color: #ddd; }
+.next-patch { flex-direction: column; align-items: stretch; }
+.next-top { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.next-top em { color: #ddd; }
+.stream { color: var(--muted); }
+/* Qué trae la versión: fases de banners y eventos principales. */
+.vcontent { display: grid; gap: 10px; margin-top: 12px; }
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
+.phase { padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, .05); border: 1px solid transparent; }
+.phase.on { border-color: color-mix(in srgb, var(--c) 55%, transparent); }
+.phase-head { display: block; color: var(--muted); margin-bottom: 6px; } .phase-head b { color: var(--text); }
+.phase-units { display: flex; flex-wrap: wrap; gap: 6px; }
+.phase-units .unit { display: inline-flex; align-items: center; gap: 6px; font: inherit; font-size: .82rem; color: inherit; cursor: pointer; padding: 3px 9px 3px 3px; border-radius: 999px; background: rgba(0, 0, 0, .25); border: 1px solid var(--line); }
+.phase-units .unit:hover { border-color: var(--c); }
+/* Miniaturas de las fases: cara redonda o arte del banner en píldora (siempre con tamaño fijo: las imágenes originales miden miles de px). */
+.phase-units .face-sm { display: block; flex: none; width: 24px; height: 24px; border-radius: 50%; overflow: hidden; background: #222; border: 1px solid var(--c); }
+.phase-units .bart { display: block; flex: none; width: 44px; height: 24px; border-radius: 999px; overflow: hidden; background: #222; }
+.phase-units .face-sm img, .phase-units .bart img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+/* Historial compacto: versión, nombre, fechas y (si varían) la barra de duración. */
+.uniform { margin: 4px 0 6px; font-size: .85rem; }
+.hist li { grid-template-columns: 52px minmax(0, 1fr) 130px 140px 48px; }
+.hist.flat li { grid-template-columns: 52px minmax(0, 1fr) 130px; }
+.hist .pname { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #ccd; font-size: .88rem; }
+.psec .link-btn { margin-top: 6px; }
+@media (max-width: 700px) {
+  .hist li { grid-template-columns: 44px minmax(0, 1fr) 44px; } .hist .when, .hist .bar-wrap { display: none; }
+  .hist.flat li { grid-template-columns: 44px minmax(0, 1fr) auto; } .hist.flat .when { display: block; }
+}
+/* Juegos sin versiones: una línea al final. */
+.nopatch { margin-top: 22px; }
+.nopatch .link-btn { padding: 0; }
+.next-top .lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.next-top .stream { margin-left: auto; }
+
+/* ====== Mis gachas: tarjetas más visuales (8 nov 2026) ====== */
+/* Cabecera: versión + indicadores (⏳ terminan en < 48 h, 🎁 códigos nuevos). */
+.head-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 3px; padding: 1px 8px; border-radius: 999px; font-size: .74rem; font-weight: 700; text-shadow: none; backdrop-filter: blur(6px); }
+.pill.hot { background: rgba(248, 113, 113, .3); color: #fecaca; }
+.pill.new { background: rgba(236, 72, 153, .3); color: #fbcfe8; }
+/* Banners activos como retratos. */
+/* Una fila con tantas columnas como banners (máx. 3): uno solo ocupa todo el ancho y no deja huecos. */
+.bports { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.bport { position: relative; isolation: isolate; height: 124px; padding: 0; border-radius: 14px; overflow: hidden; cursor: pointer; font: inherit; color: #fff;
+  background: #0b0e1a; border: 1px solid rgba(255, 255, 255, .09); box-shadow: 0 8px 22px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(255, 255, 255, .06);
+  transition: transform .25s var(--ease), box-shadow .25s, border-color .25s; }
+.bport:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 70%, #fff 0%); box-shadow: 0 12px 28px color-mix(in srgb, var(--c) 30%, rgba(0, 0, 0, .5)); }
+.bp-bg { position: absolute; inset: -20%; z-index: -2; filter: blur(22px) saturate(1.5) brightness(.5); }
+.bp-bg img { width: 100%; height: 100%; object-fit: cover; }
+.bport img.bp-art { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; transition: transform .5s var(--ease); }
+/* Personaje: encuadre de medio cuerpo. Banner apaisado: centrado. */
+.bport.splash img.bp-art { object-position: 50% 8%; transform: scale(1.15); transform-origin: 50% 0; }
+.bport.splash:hover img.bp-art { transform: scale(1.22); }
+.bport.wide img.bp-art { object-position: 50% 45%; }
+.bport.wide:hover img.bp-art { transform: scale(1.05); }
+/* Un solo banner apaisado: se ve entero sobre su propio fondo desenfocado, sin recortar arriba ni abajo. */
+.bport.wide.solo img.bp-art { object-fit: contain; }
+.bport.wide.solo:hover img.bp-art { transform: scale(1.03); }
+/* Velo inferior para el nombre y brillo sutil arriba. */
+.bport::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 30%, transparent 50%, rgba(5, 7, 15, .92)); }
+.p-time { position: absolute; top: 7px; right: 7px; padding: 2px 8px; border-radius: 999px; font-size: .68rem; font-weight: 700; letter-spacing: .02em;
+  background: rgba(8, 10, 20, .55); border: 1px solid rgba(255, 255, 255, .12); backdrop-filter: blur(6px); }
+.p-time.hot { background: rgba(220, 38, 38, .75); border-color: rgba(255, 255, 255, .25); }
+.p-name { position: absolute; left: 9px; right: 9px; bottom: 7px; display: grid; text-align: left; line-height: 1.15; }
+.p-stars { font-style: normal; font-size: .6rem; letter-spacing: 1px; color: #fcd34d; text-shadow: 0 0 6px rgba(252, 211, 77, .6); }
+.p-n { font-size: .82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 1px 6px #000; }
+.p-n small { font-weight: 600; opacity: .7; }
+.bport.more { display: grid; place-items: center; font-size: 1.15rem; font-weight: 700; color: var(--muted); background: rgba(255, 255, 255, .04); box-shadow: none; }
+.bport.more::after { display: none; }
+/* Eventos: miniatura + título en una línea. */
+.ev-list li { padding-block: 4px; }
+.ev-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ev-thumb { display: block; flex: none; width: 36px; height: 36px; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--c) 25%, #222); }
+.ev-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ev-title { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Próximos: chips. */
+.up-chips { margin-top: 14px; }
+/* Una sola fila: los chips se encogen (con "…") en vez de saltar de línea, así todas las tarjetas ocupan lo mismo. */
+.up-row { display: flex; gap: 6px; margin-top: 6px; }
+.up-row .up-chip { flex: 0 1 auto; min-width: 0; }
+.up-row .up-chip.more { flex: none; }
+.up-lbl { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.up-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 10px 3px 6px; border-radius: 999px; font: inherit; font-size: .8rem; color: var(--text); cursor: pointer; background: rgba(255, 255, 255, .05); border: 1px solid var(--line); }
+.up-chip:hover { border-color: var(--c); }
+.up-chip-t { min-width: 0; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #ccd; }
+.up-chip b { flex: none; color: var(--c); font-size: .76rem; }
+.up-chip .face-xs { flex: none; }
+.face-xs { display: block; width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex: none; background: #222; }
+.face-xs img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 15%; }
+/* Códigos: un chip al pie que abre el panel. */
+.codes-chip { display: inline-flex; align-items: center; gap: 4px; list-style: none; padding: 5px 12px; border-radius: 999px; font-size: .82rem; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); }
+.codes-chip::-webkit-details-marker { display: none; }
+.codes-chip:hover { border-color: var(--c); }
+.codes-chip b { color: #f9a8d4; }
+.codes[open] .codes-chip { border-color: var(--c); }
+
+/* Modal de un banner con splash de personaje: la imagen desenfocada de fondo (como los retratos de Mis gachas). */
+.modal-hero.has-bg { background: #0b0e1a; isolation: isolate; }
+.hero-bg { position: absolute; inset: -20%; z-index: -1; filter: blur(28px) saturate(1.5) brightness(.5); }
+.hero-bg img { width: 100%; height: 100%; object-fit: cover; }
+/* Arte de personaje que no es splash de la wiki, según su forma (ver useArtShape):
+   cuadrado (Prydwen "…_full.webp"): encuadre en el centro, donde suele estar el personaje; vertical (cuerpo entero): la cara, arriba;
+   pequeño (caras de FGO, AFK): entero y sin ampliar de más, sobre su fondo desenfocado. */
+.modal-hero.art-square .hero-art { object-position: 50% 48%; }
+.modal-hero.art-vertical .hero-art { object-position: 50% 14%; }
+.modal-hero.art-small { height: 240px; }
+.modal-hero.art-small .hero-art { object-fit: contain; object-position: 50% 20%; padding: 16px 0 64px; transform: none; animation: none; }
+/* Tira muy alargada (Epic Seven, Reverse: 1999): pegada arriba a todo el ancho, sin hueco, y el título debajo (no encima de la tira). */
+.modal-hero.art-strip.wide-art { height: auto; max-height: none; aspect-ratio: auto !important; display: flex; flex-direction: column; background: transparent; }
+.modal-hero.art-strip .hero-art { position: static; display: block; width: 100%; height: auto; object-fit: initial; animation: none; transform: none; }
+.modal-hero.art-strip .modal-hero-fade { display: none; }
+.modal-hero.art-strip .modal-title { position: static; padding: 14px 20px 2px; }
+/* Banner ya compuesto: con su propia proporción (sin recortar) y fondo oscuro neutro en vez del degradado azul. */
+.modal-hero.wide-art { height: auto; background: #0b0e1a; }
+.modal-hero.wide-art .hero-art { object-position: center; }
+.modal-hero.wide-art .modal-hero-fade { background: linear-gradient(transparent 55%, #181826); }
+
+/* Retratos de Mis gachas según la forma real del arte (ver useArtShape). */
+.bport.art-vertical img.bp-art { object-position: 50% 10%; }
+.bport.art-square img.bp-art { object-position: 50% 42%; }
+/* Tiras muy alargadas (R:1999, Epic Seven): en una casilla estrecha, entera quedaría diminuta; se llena con su parte derecha, donde
+   estos juegos ponen al personaje. Si la casilla es ancha (banner solo), se ve entera. */
+.bport.art-strip img.bp-art { object-position: 82% 50%; }
+.bport.art-strip.solo img.bp-art { object-fit: contain; object-position: center; }
+/* Banners con margen vacío arriba (Uma, Blue Archive): la cabecera es un poco más apaisada que la imagen y se recorta por arriba. */
+.modal-hero.trim-top .hero-art { object-position: 50% 78%; }
+/* Línea clara bajo la imagen mientras el zoom de entrada se asienta: la imagen va en su propia capa (will-change: transform) y en los
+   medios píxeles de la animación asomaba ~1 px por fuera del recorte de la cabecera, sin el velo encima. Dos defensas:
+   - la cabecera recorta con clip-path (el navegador lo aplica también a la capa de la imagen);
+   - el cuerpo, con fondo propio, se monta 2 px sobre el borde inferior de la cabecera y tapa lo que asome. */
+.modal-hero { clip-path: inset(0); }
+.modal-body { position: relative; z-index: 1; background: #181826; margin-top: -2px; padding-top: 6px; }

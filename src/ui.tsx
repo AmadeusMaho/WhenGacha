@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { locale, t } from './i18n'
 import { bannerArt, eventImage, faceOf, gameImage, logoOf, officialArt, wallpaperOf } from './images'
 import { moveTracked, placeTracked, trackedGames } from './logic'
@@ -154,3 +154,37 @@ export const FILTER_ICON = {
 } as const
 
 /** Filtro de solo icono: se explica con un tooltip y funciona como interruptor. */
+
+/**
+ * Forma del arte de un banner según su tamaño real (se mide al cargarlo y se recuerda por URL):
+ * - `vertical`: cuerpo entero en vertical (NTE, BrownDust2): la cara está arriba.
+ * - `square`: arte cuadrado de composición libre (Prydwen "…_full.webp", CZN): el personaje suele estar en el centro.
+ * - `wide`: banner ya compuesto (Arknights, NIKKE, Blue Archive…).
+ * - `strip`: tira muy alargada (Epic Seven, Reverse: 1999): se muestra entera, sin recortar.
+ * - `small`: imagen pequeña (caras de FGO de 128 px, AFK Journey): no se amplía a lo grande.
+ */
+export type ArtShape = 'vertical' | 'square' | 'wide' | 'strip' | 'small'
+const sizes = new Map<string, { w: number; h: number }>()
+export function artShapeOf(w: number, h: number): ArtShape {
+  const r = w / h
+  if (r > 3.2) return 'strip'
+  if (r >= 1.4) return 'wide'
+  if (w < 400) return 'small'
+  return r < 0.8 ? 'vertical' : 'square'
+}
+export function useArtShape(src?: string): ArtShape | undefined {
+  const [, force] = useState(0)
+  useEffect(() => {
+    if (!src || sizes.has(src)) return
+    let alive = true
+    const img = new Image()
+    img.referrerPolicy = 'no-referrer'
+    img.onload = () => { if (img.naturalWidth && img.naturalHeight) sizes.set(src, { w: img.naturalWidth, h: img.naturalHeight }); if (alive) force(n => n + 1) }
+    img.src = src
+    return () => { alive = false }
+  }, [src])
+  const z = src ? sizes.get(src) : undefined
+  return z ? artShapeOf(z.w, z.h) : undefined
+}
+/** Proporción real (ancho / alto) de una imagen ya medida por `useArtShape`. */
+export const ratioOf = (src?: string) => { const z = src ? sizes.get(src) : undefined; return z ? z.w / z.h : undefined }

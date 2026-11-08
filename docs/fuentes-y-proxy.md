@@ -250,7 +250,7 @@ asumió cuál; el sistema está hecho para ser inofensivo en ambos casos.
 | Arknights | wiki.gg Cargo: eventos (`EventServerDetails`) y banners (`Banners`), **horas en UTC** | complemento: eventos |
 | Arknights: Endfield | wiki.gg Cargo (`Ameu*` ya viene en **UTC**, no UTC‑5) | opcional (`GACHAFOCUS_EXTRAS`) |
 | Umamusume | uma.moe (`is_confirmed` decide "≈") | opcional |
-| Blue Archive | bluearchive.wiki: banners (`action=parse`) + **Bucket** `events` y `raids` (eventos, ejercicios conjuntos, Total/Grand Assault, Final Restriction; hora exacta). Si Bucket falla, tabla HTML de `Events` | complemento: eventos (apagado) |
+| Blue Archive | bluearchive.wiki: banners (`action=parse`) + **Bucket** `events` y `raids` (eventos, ejercicios conjuntos, Total/Grand Assault, Final Restriction; hora exacta). Si Bucket falla, tabla HTML de `Events`. Avisos del #game-news oficial vía Discord (canal propio desde el 6 nov 2026; "Event Period: Now through …" empieza a la hora del mensaje). **Códigos**: el aviso los trae solo en la imagen, así que van a mano en `BA_CODES` (`mediawiki.ts`), que caducan solos | complemento: eventos (apagado) |
 | Reverse: 1999 | wiki Fandom (`Events`, `Summons`, horas con "(UTC-5)") | complemento: eventos |
 | Stella Sora | **PENDIENTE** | 8 eventos del aniversario (banners sí, wiki) | Sin fuente permitida: web de Yostar (Términos prohíben robots); la wiki solo tiene los eventos grandes (`EventData`, sin los del aniversario) y sus páginas de versión llegan a la 1.6; no hay sitio DotGG. Salidas: permiso de Yostar o archivo manual |
 | **Epic Seven** | **solo gachafocus** (probado epic7db.com y se quitó: ver abajo) | obligatorio (eventos y banners) |

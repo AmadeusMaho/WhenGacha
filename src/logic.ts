@@ -1,10 +1,9 @@
 import { t } from './i18n'
-import type { Game, GameEvent, Task } from './types'
+import type { Game, GameEvent } from './types'
 
 const DAY = 86_400_000
 const HOUR = 3_600_000
 
-export const uid = () => Math.random().toString(36).slice(2, 10)
 
 export function countdown(ms: number): string {
   if (ms <= 0) return t('time.ended')
@@ -50,22 +49,6 @@ export function verdict(e: GameEvent, now: number, game?: Game): { label: string
   if (p >= 3) return { label: t('v.worth'), tone: 'good' }
   if (p > 0) return { label: t('v.optional'), tone: 'mid' }
   return { label: e.kind === 'challenge' ? t('v.challenge') : t('v.noPulls'), tone: 'off' }
-}
-
-function startOfWeek(d: Date): number {
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7))
-  return +x
-}
-
-export function isTaskDone(task: Task, now: number): boolean {
-  if (!task.doneAt) return false
-  const done = new Date(task.doneAt)
-  const n = new Date(now)
-  if (task.cadence === 'once') return true
-  if (task.cadence === 'daily') return done.toDateString() === n.toDateString()
-  return startOfWeek(done) === startOfWeek(n)
 }
 
 /** Reparte los elementos en filas para que no se solapen en la línea de tiempo. */

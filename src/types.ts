@@ -1,4 +1,3 @@
-export type Cadence = 'daily' | 'weekly' | 'once'
 export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2' | 'afkjourney' | 'infinitynikki'
 export type Kind = 'event' | 'banner' | 'challenge'
 
@@ -83,14 +82,6 @@ export interface Patch {
   estimated?: boolean
 }
 
-export interface Task {
-  id: string
-  gameId: string
-  title: string
-  cadence: Cadence
-  doneAt?: string
-}
-
 export interface PromoCode {
   code: string
   rewards: string[]
@@ -101,10 +92,13 @@ export interface AppState {
   customGames: Game[]
   events: GameEvent[]
   patches: Patch[]
-  tasks: Task[]
   codes: Record<string, PromoCode[]>
   /** ids de eventos que ya completaste */
   done: Record<string, boolean>
+  /** códigos que ya copiaste ("<juego>:<CÓDIGO>") */
+  copied: Record<string, boolean>
+  /** cuándo apareció cada código por primera vez ("<juego>:<CÓDIGO>" → ms; 0 = ya estaba al empezar a seguir el juego) */
+  codeSeen: Record<string, number>
   /** última sincronización por juego (ms) */
   synced: Record<string, number>
   notify: boolean

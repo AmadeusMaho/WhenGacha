@@ -94,16 +94,25 @@ export function seasonFrom(gameId: string, text: string, year: number, image?: s
   return { patch, banners }
 }
 
-const SEP = /\s+(?:-|–|—|~|to|until)\s+|\s*[~～]\s*/i
+const SEP = /\s+(?:-|–|—|~|to|until|through|thru)\s+|\s*[~～]\s*/i
 
 interface Range { start: number; end: number; afterMaint: string | null; approx: boolean }
 
-/** "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento. */
-function rangeIn(line: string, year: number, fallbackZone: number): Range | null {
+/**
+ * "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento.
+ * "Now through <fin>" (Blue Archive: "Event Period: Now through <t:…>") empieza a la hora del mensaje (`postedAt`).
+ */
+function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: number): Range | null {
   const body = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, '')
   const parts = body.split(SEP)
   if (parts.length < 2) return null
   const zone = zoneOf(line) ?? fallbackZone
+  if (postedAt !== undefined && /^\s*(?:from\s+)?(?:now|today)\s*$/i.test(parts[0])) {
+    const b = dateIn(parts.slice(1).join(' '), new Date(postedAt).getUTCFullYear())
+    if (!b) return null
+    const end = Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59) + 59_000
+    return { start: postedAt, end, afterMaint: null, approx: b.h === undefined }
+  }
   const a = dateIn(parts[0], year), b = dateIn(parts.slice(1).join(' '), a?.y ?? year)
   if (!a || !b) return null
   if (b.y === a.y && (b.mo < a.mo || (b.mo === a.mo && b.d < a.d)) && !/\d{4}/.test(parts.slice(1).join(' '))) b.y++
@@ -160,11 +169,12 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
     for (const line of raw) {
       const c = clean(line)
       if (!c) continue
-      const r = rangeIn(c, year, msgZone)
+      const r = rangeIn(c, year, msgZone, +new Date(m.timestamp))
       if (!r) { if (isHeading(line) && c.length <= 90 && !/:$/.test(c)) heading = c; continue }
       // "Bounty / Scrimmage Triple Rewards: 11/9 (Mon) 19:00 ~ …" → el nombre va en la misma línea.
       const inline = /^(.{3,80}?):\s*\S/.exec(c)?.[1]
-      const name = inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : heading
+      // Sin emojis al final ("… On-Time Gift 🎁").
+      const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
       if (!name) continue
       let start = r.start, approx = r.approx
       if (r.afterMaint) {

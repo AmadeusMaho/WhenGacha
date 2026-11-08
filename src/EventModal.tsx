@@ -2,8 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { t, tx } from './i18n'
 import { bannerArt, eventImage, faceOf, splashOf } from './images'
 import { KIND_LABEL, countdown, eventStatus, partialPulls, pullsBefore, verdict } from './logic'
-import { GameAvatar, Img, Tag, fmtDateTime, fmtEnd, type Ctx } from './ui'
+import { GameAvatar, Img, Tag, fmtDateTime, fmtEnd, ratioOf, useArtShape, type Ctx } from './ui'
 import type { GameEvent } from './types'
+
+/** Juegos cuyas imágenes de banner traen un margen vacío o transparente arriba (Uma: franja vacía; Blue Archive: el personaje sale del marco):
+ *  se recortan un poco más por arriba para que no quede un hueco. */
+const TRIM_TOP = new Set(['uma', 'bluearchive'])
 
 /** Último punto donde el usuario hizo clic: el modal "crece" desde ahí. */
 export const lastPointer = { x: 0, y: 0 }
@@ -20,6 +24,16 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
   const art = isBanner ? bannerArt(e) : eventImage(e)
   const plan = pullsBefore(e, state, g, now)
   const f0Splash = isBanner ? splashOf(e.gameId, e.featured[0]) : undefined
+  // Forma real del arte del banner (ver `useArtShape`): el arte de personaje va alto y con su fondo desenfocado; los banners compuestos,
+  // con su propia proporción sobre fondo oscuro neutro (algunos traen partes transparentes, como el sombrero de Makoto); las tiras muy
+  // alargadas, enteras arriba; y las imágenes pequeñas, sin ampliarlas a lo grande.
+  const shape = useArtShape(isBanner && !f0Splash ? art : undefined)
+  const ratio = ratioOf(art)
+  const charArt = isBanner && (!!f0Splash || shape === 'vertical' || shape === 'square' || shape === 'small')
+  const wideArt = isBanner && (shape === 'wide' || shape === 'strip')
+  // Proporción mínima 2:1 (≈ 320 px de alto en el modal): con un tope de altura en CSS, el navegador encogería el ANCHO para mantener
+  // la proporción y quedaría un hueco a la derecha (banners 16:9 de PGR). Así siempre ocupa todo el ancho; lo que sobra arriba/abajo se recorta.
+  const backdrop = charArt
 
   useEffect(() => {
     const onKey = (k: KeyboardEvent) => k.key === 'Escape' && onClose()
@@ -40,7 +54,10 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
       <div ref={box} className={`modal ${closing ? 'closing' : ''}`} role="dialog" aria-modal="true" aria-label={e.title}
         style={{ '--c': g?.color } as React.CSSProperties} onClick={ev => ev.stopPropagation()}>
         <button className="close" onClick={onClose} aria-label={t('modal.close')}>×</button>
-        <div className={`modal-hero ${isBanner && f0Splash ? 'tall' : isBanner && e.gameId === 'uma' && e.image ? 'bnr' : ''}`}>
+        <div className={`modal-hero ${charArt ? 'tall' : isBanner && e.gameId === 'uma' && e.image ? 'bnr' : ''} ${backdrop ? 'has-bg' : ''} ${!f0Splash && shape ? `art-${shape}` : ''} ${wideArt ? 'wide-art' : ''} ${wideArt && TRIM_TOP.has(e.gameId) ? 'trim-top' : ''}`}
+          style={wideArt && ratio ? { aspectRatio: String(Math.min(3.2, Math.max(2, ratio * (TRIM_TOP.has(e.gameId) ? 1.15 : 1)))) } : undefined}>
+          {/* Splash de personaje: detrás, la misma imagen desenfocada (como los retratos de Mis gachas). */}
+          {backdrop && <span className="hero-bg" aria-hidden><Img src={art} /></span>}
           <Img className={`hero-art ${e.gameId}`} src={art} />
           <div className="modal-hero-fade" />
           <div className="modal-title">
