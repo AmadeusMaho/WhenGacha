@@ -50,6 +50,14 @@ for (const g of mod.games()) {
   try {
     const snap = await mod.collect(g.id)
     const old = await previous(g.id)
+    // Sin datos y sin copia anterior (p. ej. Azur Lane, que solo tiene Discord y a veces ningún anuncio con fechas): se publica igualmente la copia
+    // vacía, para que el servidor no reciba un 404 cada 20 min. No pisa nada: pullRemote no adopta una copia vacía si la suya tiene elementos.
+    if (!snap.events.length && !old) {
+      await writeFile(path.join(dir, `${g.id}.json`), JSON.stringify(snap))
+      summary[g.id] = { updated: snap.updated, count: 0 }
+      log(`${g.id}: 0 elementos (se publica vacía)`)
+      continue
+    }
     if (!snap.events.length) throw new Error('sin datos')
     if (old && old.events.length > snap.events.length * 1.4 && Date.now() - old.updated < 12 * 3_600_000) {
       log(`${g.id}: ${snap.events.length} elementos (menos que los ${old.events.length} de la copia anterior): se conserva la anterior`)
