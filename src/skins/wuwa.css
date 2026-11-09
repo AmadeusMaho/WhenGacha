@@ -1,7 +1,7 @@
 /* ===== Skin "Wuthering Waves" (prototipo, 9 nov 2026) =====
    Recursos de la web oficial (wutheringwaves.kurogames.com, copiados en public/skins/wuwa/): botón dorado (btn.png),
-   fondo de noticias (bg.jpg) y brillo (glow.png). El cursor y los rombos están dibujados aquí (SVG): la web no tiene cursor propio y
-   los del juego solo están en sus archivos. Solo aplica con <html data-skin="wuwa">. Para quitarla: src/skins/README.md */
+   fondo de noticias (bg.jpg) y brillo (glow.png). Cursor: el del juego (cursor.png / cursor@2x.png, de los archivos del cliente que aportó
+   el dueño). Los rombos están dibujados aquí. Solo aplica con <html data-skin="wuwa">. Para quitarla: src/skins/README.md */
 
 html[data-skin="wuwa"] {
   --bg: #0b0c0f;
@@ -150,7 +150,15 @@ html[data-skin="wuwa"] :is(input, select):focus { border-color: var(--ww-gold); 
 html[data-skin="wuwa"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ww-gold); }
 html[data-skin="wuwa"] .bar:focus-visible, html[data-skin="wuwa"] .btn:focus-visible { outline: 1px solid var(--ww-gold); outline-offset: 2px; }
 
-/* --- Cursor (SVG propio con la estética del juego) --- */
-html[data-skin="wuwa"], html[data-skin="wuwa"] body { cursor: url(/skins/wuwa/cursor.svg) 3 2, auto; }
-html[data-skin="wuwa"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) { cursor: url(/skins/wuwa/cursor-hand.svg) 3 2, pointer !important; }
+/* --- Cursor del juego (48 px; 96 px en pantallas de alta densidad). Punta en (3, 3).
+   El juego usa la misma imagen para normal, resaltado y pulsado, así que también va en botones y enlaces. --- */
+/* Dos declaraciones: si el navegador no entiende image-set, se queda con la primera (48 px). */
+html[data-skin="wuwa"], html[data-skin="wuwa"] body {
+  cursor: url(/skins/wuwa/cursor.png) 3 3, auto;
+  cursor: image-set(url(/skins/wuwa/cursor.png) 1x, url(/skins/wuwa/cursor@2x.png) 2x) 3 3, auto;
+}
+html[data-skin="wuwa"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) {
+  cursor: url(/skins/wuwa/cursor.png) 3 3, pointer !important;
+  cursor: image-set(url(/skins/wuwa/cursor.png) 1x, url(/skins/wuwa/cursor@2x.png) 2x) 3 3, pointer !important;
+}
 html[data-skin="wuwa"] :is(input[type="text"], input[type="search"], textarea) { cursor: text !important; }

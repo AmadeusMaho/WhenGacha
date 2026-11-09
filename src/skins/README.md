@@ -7,8 +7,8 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
 - `SkinPicker.tsx` + `skins.css`: el botón y su menú.
 - `wuwa.css`: la skin **Wuthering Waves**. Solo aplica con `<html data-skin="wuwa">`.
 - `public/skins/wuwa/`: sus recursos. `btn.png`, `bg.jpg` y `glow.png` son de la web oficial (wutheringwaves.kurogames.com,
-  arte de Kuro Games, copiados el 9 nov 2026); `cursor.svg` y `cursor-hand.svg` están dibujados para WhenGacha (la web no tiene cursor
-  propio y los de la interfaz del juego solo están en sus archivos).
+  arte de Kuro Games, copiados el 9 nov 2026). `cursor.png` (48 px) y `cursor@2x.png` (96 px) son el cursor del juego, del `Aki.zip`
+  del cliente que aportó el dueño (`Content/Aki/Cursor/CursorNor*.png`; los estados Hi y Pre son la misma imagen). Punta en (3, 3).
 
 - `LiveWallpaper.tsx`: fondo animado de la **línea de tiempo** (no sale en "Mis gachas" ni en "Parches"), si la skin tiene `live` en `SKINS`.
   WuWa usa el vídeo de la portada de su web oficial (`public/skins/wuwa/live.mp4`, arte de Kuro Games: sin bandas negras, 960 px, sin audio,
