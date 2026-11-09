@@ -148,7 +148,66 @@ html[data-skin="wuwa"] :is(.seg button.on:hover, .chip.on:hover, header nav butt
 html[data-skin="wuwa"] .lang-menu button.on, html[data-skin="wuwa"] .skin-panel button.on { background: rgba(214, 180, 122, .16); box-shadow: inset 2px 0 0 var(--ww-gold); }
 html[data-skin="wuwa"] :is(input, select):focus { border-color: var(--ww-gold); box-shadow: 0 0 0 2px var(--ww-gold-soft); outline: none; }
 html[data-skin="wuwa"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ww-gold); }
-html[data-skin="wuwa"] .bar:focus-visible, html[data-skin="wuwa"] .btn:focus-visible { outline: 1px solid var(--ww-gold); outline-offset: 2px; }
+/* Aro de foco del teclado: dorado (el original es celeste). */
+html[data-skin="wuwa"] :is(.bar, .btn, .chip, .ichip, .seg button, .pick):focus-visible { outline: 1px solid var(--ww-gold); outline-offset: 2px; }
+/* Pestañas: sin recuadro; la marca es la barra dorada de abajo (y con el teclado, el texto se ilumina). */
+html[data-skin="wuwa"] header nav button:focus-visible { outline: none; color: #fff6dc !important; text-shadow: 0 0 10px rgba(214, 180, 122, .6); }
+html[data-skin="wuwa"] header nav .nav-ind { height: 2px; background: linear-gradient(90deg, transparent, var(--ww-gold) 20%, #f3dfae 50%, var(--ww-gold) 80%, transparent);
+  box-shadow: 0 0 12px rgba(214, 180, 122, .55), 0 0 2px rgba(243, 223, 174, .9); }
+
+/* ===== Piezas de la interfaz del juego (public/skins/wuwa/ui/, del repo TomyJan/WutheringWaves-UIResources, Common) =====
+   Sustituyen a las formas inventadas de arriba (esquinas cortadas, rombos). Se dibujan con border-image: las píldoras se cortan por la
+   mitad de su altura, así los extremos redondos no se deforman al estirar el botón. Para volver a lo anterior, borra este bloque. */
+
+/* Botones: píldora negra con borde (T_BtnStyleA2), más clara al pasar el ratón. */
+html[data-skin="wuwa"] .btn {
+  clip-path: none; border: 0; border-radius: 0; background: none; box-shadow: none;
+  border-image: url(/skins/wuwa/ui/btn.png) 36 fill / 17px / 2px stretch; padding: 9px 20px;
+}
+html[data-skin="wuwa"] .btn.sm { border-image-width: 15px; padding: 6px 16px; }
+/* Al pasar el ratón solo cambia la píldora: las reglas base (App.css, botones.css) ponen un fondo y un borde rectangulares que asomaban
+   detrás y hacían el botón "cuadrado"; aquí se anulan. */
+html[data-skin="wuwa"] .btn:hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-hold.png); box-shadow: none; color: #fff;
+  background: none !important; border-color: transparent; transform: none; }
+html[data-skin="wuwa"] .btn::after { display: none; }
+/* Botón principal: el de confirmar del juego (T_BtnStyleA1), blanco con olas; texto oscuro. */
+html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate),
+html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  border: 0; border-image: url(/skins/wuwa/ui/btn-main.png) 50 fill / 18px / 2px stretch; background: none;
+  padding: 9px 22px; min-height: 0; color: #1b1a17; text-shadow: none; font-weight: 700; filter: none;
+}
+html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-main-hold.png); }
+html[data-skin="wuwa"] .btn.primary.sm, html[data-skin="wuwa"] .site-foot a.btn.donate { border-image-width: 16px; padding: 6px 18px; }
+
+/* Chips, filtros y etiquetas: píldora pequeña (T_BtnStyleC). */
+html[data-skin="wuwa"] :is(.chip, .up-chip, .codes-chip, .jump-chip, .soon-toggle, .fopt, .pick-search) {
+  clip-path: none; border: 0; border-radius: 0; background: none; box-shadow: none;
+  border-image: url(/skins/wuwa/ui/chip.png) 32 fill / 13px / 1px stretch;
+}
+html[data-skin="wuwa"] :is(.chip, .up-chip, .codes-chip, .jump-chip, .soon-toggle, .fopt):hover { border-image-source: url(/skins/wuwa/ui/chip-hold.png);
+  background: none !important; border-color: transparent; box-shadow: none; transform: none; }
+html[data-skin="wuwa"] .ichip:hover { border-color: var(--ww-gold-soft); }
+html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .cc-new, .phase-units .unit) { clip-path: none; border-radius: 999px; }
+/* Segmentos (Línea / Cuadrícula) y filtros de tipo: la misma píldora; el activo, en dorado. */
+html[data-skin="wuwa"] .seg { border: 0; background: none; border-image: url(/skins/wuwa/ui/btn.png) 36 fill / 16px / 2px stretch; }
+html[data-skin="wuwa"] .seg button, html[data-skin="wuwa"] .ichip { border-radius: 999px; }
+
+/* Filas de las listas ("Terminan pronto", códigos, historial): la fila del juego (T_TogListNor), con su trama a la izquierda. */
+html[data-skin="wuwa"] :is(.list li, .pull-list li) {
+  border-radius: 0; background: none; border: 0; border-image: url(/skins/wuwa/ui/row.png) 12 fill / 6px stretch; margin-bottom: 3px;
+}
+html[data-skin="wuwa"] :is(.list li, .pull-list li):hover { box-shadow: none; filter: brightness(1.35); }
+
+/* Títulos de sección: emblema dorado del juego y su barra de título (T_ShopTitleBg). */
+html[data-skin="wuwa"] h3 { padding: 3px 12px 3px 4px; background: url(/skins/wuwa/ui/title.png) left center / 100% 100% no-repeat; }
+html[data-skin="wuwa"] h3::before { width: 15px; height: 15px; transform: none; background: url(/skins/wuwa/ui/emblem.png) center / contain no-repeat; }
+
+/* Destello de cuatro puntas del juego (T_PcStarB) en vez de los rombos: pestaña activa, "hoy" y eventos en curso. */
+html[data-skin="wuwa"] header nav .nav-ind::after { top: -9px; width: 9px; height: 20px; transform: translateX(-50%); background: url(/skins/wuwa/ui/star.png) center / contain no-repeat; }
+html[data-skin="wuwa"] .bar.live::before { left: -6px; width: 10px; height: 24px; transform: translateY(-50%); background: url(/skins/wuwa/ui/star.png) center / contain no-repeat;
+  box-shadow: none; filter: sepia(1) saturate(2.2) hue-rotate(-8deg) drop-shadow(0 0 4px rgba(214, 180, 122, .8)); }
+html[data-skin="wuwa"] .today-flag::before { content: ""; display: inline-block; width: 6px; height: 13px; margin-right: 5px; vertical-align: -2px;
+  background: url(/skins/wuwa/ui/star.png) center / contain no-repeat; filter: brightness(0) opacity(.75); }
 
 /* --- Cursor del juego (48 px; 96 px en pantallas de alta densidad). Punta en (3, 3).
    El juego usa la misma imagen para normal, resaltado y pulsado, así que también va en botones y enlaces. --- */
