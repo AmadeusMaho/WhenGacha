@@ -50,7 +50,7 @@ solo estarán en su **API oficial de pago** (aún sin abrir; contacto: gachafocu
   "before the X maintenance" = su inicio (23:50 UTC por defecto). El JSON antiguo `browndust2.com/api/newsData_en.json` (8 MB) dejó de actualizarse en mayo de 2026: no usarlo.
   **Códigos**: avisos "… Coupon" (mensual y especiales; hasta 3 por ciclo), código + caducidad; la recompensa casi siempre va solo en la imagen, así que se muestra "Until <fecha>".
   **Recompensas**: casi todas van en imágenes (tablas `image.png`); se leen las que vienen en texto ("Draw Ticket x20 + Dia x600") y los regalos con plazo
-  ("Claim Period" de compensaciones y directos). **Tiradas**: solo Draw Ticket = 1; los Dias NO se convierten (ni avisos ni wiki dicen cuánto cuesta una tirada).
+  ("Claim Period" de compensaciones y directos). **Tiradas**: Draw Ticket = 1; 200 Dia = 1 (dato del dueño, 9 nov 2026).
 - **Juegos candidatos revisados el 7 nov 2026 (sin añadir; ninguno tiene fuente completa permitida):**
   - **Girls' Frontline 2 (EN)**: eventos con hora exacta y servidor en iopwiki (`iopwiki.com`, página "GFL2 Events", plantillas `{{EventPeriod|…|server=EN}}`;
     la tabla Cargo `EventPeriods` pierde la zona horaria). robots.txt: Crawl-delay 20, API permitida. **Sin banners de personaje ni códigos** en la wiki.
@@ -382,3 +382,25 @@ Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Aren
   (`officialFirst`) y cubren lo que esta no tiene; `discord.ts` ahora también extrae **códigos** ("Redemption Code: …", o el código solo en una línea) con sus
   recompensas y caducidad, y reconoce "Resonance" como banner. Discord no copia mensajes antiguos: solo llega lo publicado desde el 7 nov.
 - Tiradas: Revelation Crystal = 1; 120 Diamonds = 1 (precio en tienda). La web oficial firma sus peticiones (`chaos.infoldgames.com`): no se usa. Game8 abandonó el juego en 2025.
+
+## Huecos de los juegos existentes (9 nov 2026)
+
+- **Tiradas** (`RULES` en `src/sources/pulls.ts`), comprobadas en su wiki o en varias guías que coinciden: Blue Archive 120 Pyroxene, Limbus 130 Lunacy,
+  FGO 3 Saint Quartz (Summon Ticket = 1), HI3 280 Crystals (Supply Card = 1), CZN 160 Crystals (Rescue Anchor/Amplifier = 1), Endfield 500 Oroberyl (HH Permit = 1),
+  NTE 160 Annulith (Solid/Fabricated Dice = 1), Umamusume 150 Carats (Scout Ticket = 1). `pullsIn` acepta juegos sin reglas: lista las recompensas sin calcular tiradas.
+  **Confirmadas por el dueño (9 nov 2026):** Stella Sora 300 Stellanite Dust; Epic Seven 5 Covenant Bookmarks = 100 Skystones = 1 tirada; CZN "Signal Amplification Anchor" = 1
+  (banner limitado); Blue Archive "1-Recruitment Ticket" = 1 y "10-Recruitment Ticket" = 10 (`pullsIn` los reescribe como "Single/Ten Recruitment Ticket" para leerlos).
+  Epic Seven lee las recompensas de sus avisos (tablas aplanadas "Covenant Bookmark 50"), salvo los de recompensas por compras. BrownDust2: 200 Dia = 1 (dato del dueño). Azur Lane: 2 Wisdom Cubes = 1 (construcción limitada: 2 cubos + 1500 monedas, wiki koumakan "Building"; los grupos permanentes cuestan 1).
+- **Recompensas en el texto**: ahora se leen en CZN (secciones de los avisos de STOVE, y cada sub-evento con lo suyo), NTE (apartado "●" de neverness.gg) y en
+  cualquier juego con canal de Discord (apartado del evento en el mensaje). Uma, FGO, Limbus, HI3, Endfield y BA (wiki) no traen recompensas en sus fuentes: siguen en 0.
+- **Discord** (`discord.ts`): quita la mención del rol ("@News Feed", "@Schale news"), los enlaces y "A new tweet has been posted!"; salta saludos ("Dear Commander,");
+  saca el nombre de frases ("The collab event, X, will be available…"); entiende "11:59 P.M."; descarta los avisos de mantenimiento como eventos.
+  Azur Lane (que sigue `#game-news`, tuits reenviados) ya da su primer evento bien: antes salía "@News Feed https://…" y cerraba 5 h antes.
+- **Códigos de Game8** (`syncGame8Codes` en `codes.ts`): CZN (`archives/557967`) y Endfield (`archives/571509`), tabla de activos (código en `input.a-clipboard__textInput`).
+  Sin fuente de códigos: NIKKE, PGR, AFK Journey, Epic Seven y Arknights (ni wiki ni Game8 ni nikke.gg) → seguir su canal de códigos/anuncios oficial en Discord.
+  Umamusume Global aún no tiene códigos públicos (Game8); Limbus y FGO (NA) no tienen sistema de códigos.
+- **Arte de FGO** (`fgo.ts`): banners = `static.atlasacademy.io/NA/SummonBanners/img_summon_<imageId>.png` (de `nice_gacha`); eventos = campo `banner` de
+  `/nice/NA/event/<id>` (hasta 6 por ciclo, fuente `atlasacademy-event` del proxy, 24 h). Las campañas que citan un evento entre comillas toman su arte.
+- **Stella Sora**: su wiki (Miraheze) va muy atrasada (último evento fechado: jun 2026) y su `#game-news` de Discord no ha publicado nada desde el 6 nov:
+  sigue sin eventos. Si el canal oficial de anuncios es otro, seguir ese.
+- **BrownDust2**: las imágenes de sus avisos son tablas de recompensas (comprobado), no arte; sus eventos se quedan con el fondo del juego.

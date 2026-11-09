@@ -792,6 +792,11 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .p-n small { font-weight: 600; opacity: .7; }
 .bport.more { display: grid; place-items: center; font-size: 1.15rem; font-weight: 700; color: var(--muted); background: rgba(255, 255, 255, .04); box-shadow: none; }
 .bport.more::after { display: none; }
+/* Con vista previa del siguiente banner: su arte oscurecido y el "+N" encima. */
+.bport.more.has-art { color: #fff; }
+.bport.more.has-art img.bp-art { object-position: 50% 15%; filter: brightness(.38) saturate(.85); }
+.bport.more.has-art:hover img.bp-art { filter: brightness(.5); transform: scale(1.06); }
+.bport.more .more-n { position: relative; text-shadow: 0 1px 8px #000; }
 /* Eventos: miniatura + título en una línea. */
 .ev-list li { padding-block: 4px; }
 .ev-row { display: flex; align-items: center; gap: 10px; min-width: 0; }

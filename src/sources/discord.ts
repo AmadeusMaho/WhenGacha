@@ -1,6 +1,7 @@
 import { viaProxy } from '../net'
 import type { GameEvent, Kind, Patch, PromoCode } from '../types'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * Anuncios oficiales que llegan a NUESTRO servidor de Discord: cada canal "sigue" (función Follow de Discord) el canal de anuncios oficial de un juego
@@ -34,8 +35,10 @@ function zoneOf(s: string): number | undefined {
 
 /** Una fecha con hora opcional dentro de un trozo de texto → [año, mes, día, h, min] o null. */
 function dateIn(s: string, year: number): { y: number; mo: number; d: number; h?: number; mi?: number } | null {
-  const time = /(\d{1,2}):(\d{2})/.exec(s.replace(/\d{4}[/-]\d{1,2}[/-]\d{1,2}/, ''))
-  const t = time ? { h: +time[1], mi: +time[2] } : {}
+  const time = /(\d{1,2}):(\d{2})(?:\s*([ap])\.?\s?m\b\.?)?/i.exec(s.replace(/\d{4}[/-]\d{1,2}[/-]\d{1,2}/, ''))
+  // "11:59 P.M." (Azur Lane) → 23:59; "12:00 A.M." → 00:00.
+  const h12 = (h: number, ap?: string) => !ap ? h : /p/i.test(ap) ? (h % 12) + 12 : h % 12
+  const t = time ? { h: h12(+time[1], time[3]), mi: +time[2] } : {}
   let m = /(\d{4})[/-](\d{1,2})[/-](\d{1,2})/.exec(s)
   if (m) return { y: +m[1], mo: +m[2] - 1, d: +m[3], ...t }
   m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/.exec(s)
@@ -122,6 +125,22 @@ function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: nu
   return { start: at(a, 0, 0), end, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined }
 }
 
+/**
+ * Ruido de los avisos reenviados: la mención del rol que los anuncia ("@News Feed", "@Schale news"), el aviso de tuit nuevo y los enlaces.
+ * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
+ */
+const noise = (s: string) => s.replace(/<?https?:\/\/\S+>?/g, '')
+  .replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, '')
+  .replace(/^\s*a new (tweet|post) has been posted!?\s*/i, '')
+/** Saludos que no son el nombre de nada ("Dear Commander,", "Sensei,"). */
+const GREETING = /^(dear\s+)?(commanders?|doctors?|sensei|managers?|captains?|trailblazers?|travell?ers?|proxies|trekkers?|everyone|all)\s*[,!]?$/i
+/** Nombre dentro de una frase: "The collab event, It's Showtime! Angels' Azur Stage, will be available…". */
+function sentenceName(c: string): string | undefined {
+  const m = /\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c)
+    ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c)
+  return m?.[1].trim()
+}
+
 const clean = (s: string) => s.replace(/[*_`#>|]+/g, '').replace(/^[\s■◆●▶◇□・\-–•]+/, '').replace(/[【】]/g, ' ').replace(/\s+/g, ' ').trim()
 const isHeading = (raw: string) => /^\s*(\*\*|__|#+\s|[■◆●▶◇□【[])/.test(raw) || /\*\*\s*$/.test(raw)
 
@@ -161,20 +180,24 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
   const out: GameEvent[] = []
   const seen = new Set<string>()
   for (const m of messages) {
-    const raw = textOf(m).split('\n')
+    const raw = textOf(m).split('\n').map(noise)
     const year = new Date(m.timestamp).getUTCFullYear()
     const msgZone = zoneOf(raw.join(' ')) ?? 0
     const image = imageOf(m)
-    let heading = clean(raw.find(l => clean(l)) ?? '')
-    for (const line of raw) {
+    const firstLine = raw.findIndex(l => clean(l) && !GREETING.test(clean(l)))
+    let heading = firstLine >= 0 ? clean(raw[firstLine]) : ''
+    let headAt = Math.max(firstLine, 0)
+    for (const [i, line] of raw.entries()) {
       const c = clean(line)
       if (!c) continue
       const r = rangeIn(c, year, msgZone, +new Date(m.timestamp))
-      if (!r) { if (isHeading(line) && c.length <= 90 && !/:$/.test(c)) heading = c; continue }
+      if (!r) { if (isHeading(line) && c.length <= 90 && !/:$/.test(c) && !GREETING.test(c)) { heading = c; headAt = i } continue }
+      // Avisos de mantenimiento ("the service will be unavailable during … through …"): ya se usaron para `maintEnd`, no son eventos.
+      if (/maintenance|unavailable/i.test(c) && !/after (the )?(maintenance|update)/i.test(c)) continue
       // "Bounty / Scrimmage Triple Rewards: 11/9 (Mon) 19:00 ~ …" → el nombre va en la misma línea.
       const inline = /^(.{3,80}?):\s*\S/.exec(c)?.[1]
       // Sin emojis al final ("… On-Time Gift 🎁").
-      const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
+      const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
       if (!name) continue
       let start = r.start, approx = r.approx
       if (r.afterMaint) {
@@ -187,10 +210,13 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
       if (seen.has(id)) continue
       seen.add(id)
+      // Recompensas: los "Nombre xN" / "600 Pyroxenes" del apartado del evento (desde su título hasta el siguiente); tiradas según pulls.ts.
+      const nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean(l).length <= 90)
+      const { pulls, items } = kind === 'event' ? pullsIn(gameId, raw.slice(headAt, nextHead > 0 ? nextHead : raw.length).map(clean)) : { pulls: 0, items: [] }
       out.push({
         id, gameId, kind, title: name, image,
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
-        items: [], featured: [], pulls: 0, official: true, source: 'api',
+        items, featured: [], pulls, official: true, source: 'api',
         precision: approx ? 'approx' : undefined,
       })
     }

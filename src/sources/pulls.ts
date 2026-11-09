@@ -25,18 +25,46 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   afkjourney: [{ item: /^invite letters?$/i, per: 1 }, { item: /^diamonds?$/i, per: 300 }],
   // Infinity Nikki: Revelation Crystal = 1 tirada; la tienda lo vende por 120 Diamonds (wiki, página "Revelation Crystal").
   infinitynikki: [{ item: /^(limited-time )?revelation crystals?$/i, per: 1 }, { item: /^diamonds?$/i, per: 120 }],
-  // BrownDust2: Draw Ticket = 1 tirada. Los Dias se muestran como recompensa pero NO se convierten: ni sus avisos ni una wiki dicen cuánto cuesta
-  // una tirada en Dias (revisado el 7 nov 2026), así que no se adivina.
-  bd2: [{ item: /^draw tickets?$/i, per: 1 }],
+  // 200 Dia = 1 tirada (= 1 Draw Ticket), confirmado por el dueño el 9 nov 2026. "Free Dia"/"Paid Dia" cuentan igual.
+  bd2: [{ item: /^draw tickets?$/i, per: 1 }, { item: /^((free|paid) )?dias?$/i, per: 200 }],
+  // Azur Lane: la construcción limitada (la de los banners de evento) cuesta 2 Wisdom Cubes + 1500 monedas; los grupos permanentes, 1 cubo
+  // (wiki azurlane.koumakan.jp, página "Building"). Se cuenta a 2 cubos por tirada.
+  azurlane: [{ item: /^wisdom cubes?$/i, per: 2 }],
   pgr: [{ item: /^black cards?$/i, per: 250 }, { item: /^(event|basic) construct r&d tickets?$/i, per: 250 }, { item: /^target weapon r&d tickets?$/i, per: 250 }],
+  // Equivalencias añadidas el 9 nov 2026, cada una comprobada en su wiki o en guías que coinciden entre sí. Los billetes con cifra delante
+  // ("1-Recruitment Ticket", "10-Recruitment Ticket" de Blue Archive) no los separa bien el lector de "Nombre xN", así que no se cuentan.
+  // Blue Archive: 120 Pyroxene por reclutamiento (bluearchive.wiki, FAQ: "A 1 ticket = 120 pyroxene"; pity = 24.000 = 200 tiradas).
+  // Billetes (confirmado por el dueño, 9 nov 2026): "1-Recruitment Ticket" = 1 tirada y "10-Recruitment Ticket" = 10 (un billete que tira 10).
+  // `pullsIn` los reescribe antes como "Single/Ten Recruitment Ticket", porque el lector de "Nombre xN" no admite la cifra pegada al nombre.
+  bluearchive: [{ item: /^pyroxenes?$/i, per: 120 }, { item: /^single recruitment tickets?$/i, per: 1 }, { item: /^ten recruitment tickets?$/i, per: 0.1 }],
+  // Limbus Company: extracción simple = 130 Lunacy (limbuscompany.wiki.gg, página "Lunacy").
+  limbus: [{ item: /^lunacy$/i, per: 130 }],
+  // Fate/Grand Order: 3 Saint Quartz por invocación (fategrandorder.fandom.com, "Saint Quartz"); Summon Ticket = 1.
+  fgo: [{ item: /^saint quartz$/i, per: 3 }, { item: /^summon tickets?$/i, per: 1 }],
+  // Honkai Impact 3rd: los suministros limitados cuestan 280 Crystals; cada Supply Card = 1 tirada (honkaiimpact3.fandom.com, "Supply").
+  honkai3: [{ item: /^crystals?$/i, per: 280 }, { item: /^(expansion|focused|equipment|battlesuit|astralop) supply cards?$/i, per: 1 }],
+  // Chaos Zero Nightmare: 160 Crystals = 1 Rescue Anchor (estándar) o Rescue Amplifier (limitado) = 1 tirada (Prydwen, guía "Gacha System").
+  // "Signal Amplification Anchor" = 1 tirada del banner limitado (confirmado por el dueño, 9 nov 2026).
+  czn: [{ item: /^crystals?$/i, per: 160 }, { item: /^rescue (anchor|amplifier)s?$/i, per: 1 }, { item: /^signal amplification anchors?$/i, per: 1 }],
+  // Stella Sora: 300 Stellanite Dust por tirada (confirmado por el dueño, 9 nov 2026).
+  stellasora: [{ item: /^stellanite dust$/i, per: 300 }],
+  // Epic Seven: 5 Covenant Bookmarks por invocación; 100 Skystones = 5 Bookmarks = 1 tirada (confirmado por el dueño, 9 nov 2026).
+  epic7: [{ item: /^covenant bookmarks?$/i, per: 5 }, { item: /^skystones?$/i, per: 100 }],
+  // Arknights: Endfield: 500 Oroberyl por tirada; los HH Permit = 1 (Prydwen y varias guías, mismas cifras).
+  endfield: [{ item: /^oroberyl$/i, per: 500 }, { item: /^((chartered|basic) )?(hh|headhunting) permits?$/i, per: 1 }],
+  // Neverness to Everness: 160 Annulith por tirada; Solid Dice (limitado) y Fabricated Dice (estándar) = 1 (Prydwen y guías, mismas cifras).
+  nte: [{ item: /^annulith$/i, per: 160 }, { item: /^(solid|fabricated) dice$/i, per: 1 }],
+  // Umamusume: 150 Carats por scout; los Scout Ticket = 1 (guías de Sportskeeda, bo3.gg y Game8, mismas cifras).
+  uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume) )?scout tickets?$/i, per: 1 }],
 }
 
 const num = (s: string) => Number(s.replace(/,/g, ''))
 
 export type PullGame = keyof typeof RULES
 
-export function pullsIn(game: PullGame, lines: string[]): { pulls: number; items: RewardItem[] } {
-  const rules = RULES[game]
+/** `game` sin reglas (p. ej. Azur Lane): se listan las recompensas, pero no se calculan tiradas. */
+export function pullsIn(game: string, lines: string[]): { pulls: number; items: RewardItem[] } {
+  const rules = RULES[game] ?? []
   const found = new Map<string, number>()
   // Todas las recompensas "Nombre xN" del bloque (para la ficha del evento), aunque no sean tiradas.
   const all = new Map<string, number>()
@@ -53,7 +81,9 @@ export function pullsIn(game: PullGame, lines: string[]): { pulls: number; items
     if (!amount || !n) return
     found.set(n, (found.get(n) ?? 0) + amount)
   }
-  for (const l of lines) {
+  for (const raw of lines) {
+    // "10-Recruitment Ticket" (Blue Archive) → "Ten Recruitment Ticket": un nombre que empieza por letra, que es lo que leen las expresiones de abajo.
+    const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, 'Ten Recruitment Ticket').replace(/\b1[- ]Recruitment Ticket/gi, 'Single Recruitment Ticket')
     // Compensaciones de mantenimiento y precios no son recompensas del evento.
     if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue
     for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)\s*[x×]\s?(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
@@ -68,7 +98,9 @@ export function pullsIn(game: PullGame, lines: string[]): { pulls: number; items
   }
   // Primero las de tirada; después el resto de recompensas del aviso (máx. 10 en total).
   for (const [name, amount] of all) if (!items.some(i => i.name.toLowerCase() === name.toLowerCase() || name.toLowerCase().endsWith(i.name.toLowerCase()))) items.push({ name, amount })
-  return { pulls: Math.round(pulls * 10) / 10, items: items.slice(0, 10) }
+  // En la ficha, los billetes de Blue Archive con su nombre del juego.
+  const shown = (n: string) => n.replace(/^Ten (?=Recruitment Ticket)/, '10-').replace(/^Single (?=Recruitment Ticket)/, '1-')
+  return { pulls: Math.round(pulls * 10) / 10, items: items.slice(0, 10).map(i => ({ ...i, name: shown(i.name) })) }
 }
 
 /**

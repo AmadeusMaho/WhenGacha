@@ -1,6 +1,7 @@
 import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { articles, bodyLines, thumb, type Article } from './stove'
+import { pullsIn } from './pulls'
 
 /**
  * Chaos Zero Nightmare (servidor Global): eventos desde los avisos oficiales de su comunidad en STOVE (los banners vienen de Prydwen).
@@ -92,15 +93,23 @@ function fromUpdate(gameId: string, lines: string[], ends: Map<string, string>, 
     for (let i = 0; i < sec.length && !main; i++) {
       if (/^[◆→▸ㄴ*\s-]*(Event Period|Period|Schedule|Open Schedule)\b/i.test(sec[i])) main = rangeAt(sec, i, ends)
     }
-    if (main) out.push(mk(title, main, image))
+    // Recompensas del evento: los "Nombre xN" de su sección (sin las de los sub-eventos, que van aparte); 160 Crystals = 1 tirada (pulls.ts).
+    if (main) {
+      const firstSub = sec.findIndex(l => l.startsWith('◆') && !NOT_SUB.test(l.slice(1).trim()))
+      const { pulls, items } = pullsIn('czn', firstSub > 0 ? sec.slice(0, firstSub) : sec)
+      out.push({ ...mk(title, main, image), items, pulls })
+    }
     // Sub-eventos: "◆ Nombre" con periodo propio (misma línea o la siguiente), o los que heredan el del evento.
     sec.forEach((l, i) => {
       if (!l.startsWith('◆')) return
       const label = l.slice(1).trim()
       if (NOT_SUB.test(label)) return
-      if (INHERIT.test(label)) { if (main) out.push(mk(`${title}: ${label.replace(/:.*$/, '').trim()}`, main, image)); return }
+      // Su bloque llega hasta el siguiente sub-evento ("◆ Reward" y similares siguen siendo suyos).
+      const next = sec.findIndex((x, j) => j > i && x.startsWith('◆') && !NOT_SUB.test(x.slice(1).trim()))
+      const { pulls, items } = pullsIn('czn', sec.slice(i, next > 0 ? next : sec.length))
+      if (INHERIT.test(label)) { if (main) out.push({ ...mk(`${title}: ${label.replace(/:.*$/, '').trim()}`, main, image), items, pulls }); return }
       const p = rangeAt(sec, i, ends) ?? parseRange(sec[i + 1] ?? '', ends) ?? parseRange(sec[i + 2] ?? '', ends)
-      if (p) out.push(mk(`${title}: ${label.split(':')[0].trim()}`, p, image))
+      if (p) out.push({ ...mk(`${title}: ${label.split(':')[0].trim()}`, p, image), items, pulls })
     })
   })
   return out

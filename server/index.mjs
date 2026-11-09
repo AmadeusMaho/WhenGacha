@@ -1,5 +1,6 @@
 // Servidor de WhenGacha: sirve la app compilada (dist/) y un proxy con caché para las fuentes de datos.
 // Sin dependencias: solo módulos de Node. Variables opcionales: PORT (3000), HOST (0.0.0.0), CACHE_MB (64), RATE_PER_MIN (600). El proxy vive en proxy.mjs.
+// SUPPORTER_SECRET (y SUPPORTER_REVOKED): códigos de apoyo que desbloquean las skins (supporter.mjs).
 import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import http from 'node:http'
@@ -9,6 +10,7 @@ import { promisify } from 'node:util'
 import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
+import { handleUnlock } from './supporter.mjs'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
@@ -20,7 +22,7 @@ const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json',
   '.png': 'image/png', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
-  '.txt': 'text/plain; charset=utf-8', '.woff2': 'font/woff2',
+  '.txt': 'text/plain; charset=utf-8', '.woff2': 'font/woff2', '.mp4': 'video/mp4',
 }
 const COMPRESSIBLE = /^(text\/|application\/(json|javascript|manifest\+json)|image\/svg)/
 
@@ -37,7 +39,7 @@ const staticCache = new Map() // ruta -> { mtime, gz }
 function cacheControl(rel) {
   if (rel.startsWith('/assets/')) return 'public, max-age=31536000, immutable'
   if (rel === '/sw.js' || rel === '/manifest.webmanifest' || rel === '/index.html') return 'no-cache'
-  if (/\.(png|webp|ico)$/.test(rel)) return 'public, max-age=86400'
+  if (/\.(png|webp|ico|jpg|mp4)$/.test(rel)) return 'public, max-age=86400'
   return 'no-cache'
 }
 
@@ -69,7 +71,18 @@ async function handleStatic(req, res, pathname) {
     headers['content-encoding'] = 'gzip'
     return send(res, 200, headers, req.method === 'HEAD' ? undefined : c.gz)
   }
-  res.writeHead(200, { 'x-content-type-options': 'nosniff', ...headers, 'content-length': info.size })
+  // Peticiones por rangos ("Range: bytes=0-"): las necesitan los vídeos (Safari no reproduce sin ellas; Chrome las usa al repetir el bucle).
+  const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '')
+  if (range && (range[1] || range[2])) {
+    const size = info.size
+    let start = range[1] ? +range[1] : Math.max(0, size - +range[2])
+    let end = range[1] && range[2] ? Math.min(+range[2], size - 1) : size - 1
+    if (start >= size || start > end) return send(res, 416, { 'content-range': `bytes */${size}` }, '')
+    res.writeHead(206, { 'x-content-type-options': 'nosniff', ...headers, 'accept-ranges': 'bytes', 'content-range': `bytes ${start}-${end}/${size}`, 'content-length': end - start + 1 })
+    if (req.method === 'HEAD') return res.end()
+    return void createReadStream(file, { start, end }).pipe(res)
+  }
+  res.writeHead(200, { 'x-content-type-options': 'nosniff', ...headers, 'accept-ranges': 'bytes', 'content-length': info.size })
   if (req.method === 'HEAD') return res.end()
   createReadStream(file).pipe(res)
 }
@@ -77,8 +90,10 @@ async function handleStatic(req, res, pathname) {
 /* ---------- servidor ---------- */
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' }, 'Método no permitido')
     const url = new URL(req.url ?? '/', 'http://localhost')
+    // Códigos de apoyo (desbloquean las skins): única ruta con POST. server/supporter.mjs
+    if (url.pathname === '/api/unlock') return await handleUnlock(req, res)
+    if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' }, 'Método no permitido')
     if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain' }, 'ok')
     if (url.pathname === '/proxy') return await handleProxy(req, res, url)
     const data = /^\/data\/([a-z0-9]+)\.json$/.exec(url.pathname)

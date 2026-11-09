@@ -1,0 +1,30 @@
+/* ===== Selector de skins (el botón del pincel). Cada skin tiene su propia hoja (p. ej. wuwa.css). Para quitarlas: src/skins/README.md ===== */
+.skin { position: relative; }
+.skin-panel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 220px; margin: 0; padding: 6px; list-style: none;
+  border-radius: 14px; background: rgba(16, 20, 38, .97); border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0, 0, 0, .5); animation: rise .2s var(--ease); }
+.skin-title { padding: 6px 12px 8px; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }
+.skin-panel button { display: flex; width: 100%; align-items: center; gap: 10px; padding: 8px 12px; border: none; border-radius: 10px; background: none;
+  color: var(--text); font: inherit; cursor: pointer; transition: background .15s; text-align: left; }
+.skin-panel button:hover { background: rgba(255, 255, 255, .08); }
+.skin-panel button.on { background: rgba(255, 255, 255, .06); }
+.skin-panel button span { flex: 1; }
+.skin-panel button img { border-radius: 6px; flex: none; }
+.skin-panel button i { font-style: normal; color: var(--acc); }
+.skin-panel { max-width: min(300px, calc(100vw - 32px)); }
+/* Sin código de apoyo: skins con candado y el formulario para desbloquearlas. */
+.skin-panel button.locked { opacity: .55; cursor: not-allowed; }
+.skin-panel button.locked:hover { background: none; }
+.skin-lock { font-size: .8rem; }
+.skin-unlock { display: grid; gap: 8px; margin-top: 6px; padding: 10px 12px 6px; border-top: 1px solid var(--line); }
+.skin-unlock p { margin: 0; font-size: .8rem; line-height: 1.45; color: var(--muted); }
+.skin-unlock .donate { justify-self: start; }
+.skin-unlock form { display: flex; gap: 6px; }
+.skin-unlock input { flex: 1; min-width: 0; padding: 6px 9px; border-radius: 9px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05);
+  font-family: ui-monospace, monospace; font-size: .72rem; letter-spacing: .02em; }
+.skin-panel .skin-unlock form .btn { width: auto; flex: none; padding: 6px 12px; border-radius: 999px; justify-content: center; }
+.skin-msg { display: block; padding: 2px 12px 6px; font-size: .78rem; }
+.skin-msg.bad { color: var(--bad); padding: 0; }
+.skin-msg.good { color: var(--good); }
+@media (max-width: 600px) {
+  .skin-panel { position: fixed; top: 62px; left: 16px; right: 16px; max-width: none; }
+}

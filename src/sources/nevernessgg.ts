@@ -1,6 +1,7 @@
 import { viaProxy } from '../net'
 import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * NTE (Global): avisos oficiales de Perfect World ("Source: Perfect World"), tal como los reproduce neverness.gg (red DotGG) en su API
@@ -44,7 +45,7 @@ function parse(gameId: string, post: Post, out: GameEvent[], seen: Set<string>) 
   const maintEnd = mw ? when(`${mw[1]}, ${mw[2]}:${mw[3]}`, +mw[4], year) : NaN
   const now = Date.now(), from = now - 3 * DAY, to = now + 120 * DAY
   let head: string | null = null
-  for (const l of ls) {
+  for (const [i, l] of ls.entries()) {
     if (l.startsWith('●')) { head = l.replace(/^●\s*/, ''); continue }
     const m = /^(Duration|Available|Discount Period):\s*(.+?)\s*[–-]\s*(.+?)\s*\((UTC([+-]\d+)|server time)\)/i.exec(l)
     if (!m || !head) continue
@@ -68,10 +69,17 @@ function parse(gameId: string, post: Post, out: GameEvent[], seen: Set<string>) 
       id, gameId, kind, title,
       description: banner ? undefined : h.replace(/"[^"]+"/, '').trim() || undefined,
       start: new Date(start).toISOString(), end: new Date(end).toISOString(),
-      items: [], featured: banner && /Character/i.test(banner[1]) ? [{ name: title, rarity: 5 }] : [], pulls: 0, official: true, source: 'api',
+      // Recompensas: los "Nombre xN" hasta el siguiente apartado "●"; 160 Annulith = 1 tirada (pulls.ts).
+      ...rewardsAt(ls, i),
+      featured: banner && /Character/i.test(banner[1]) ? [{ name: title, rarity: 5 }] : [], official: true, source: 'api',
       minor: /Web Event|Gift Pack/i.test(h) || undefined,
     })
   }
+}
+
+function rewardsAt(ls: string[], i: number) {
+  const next = ls.findIndex((l, j) => j > i && l.startsWith('●'))
+  return pullsIn('nte', ls.slice(i, next > 0 ? next : ls.length))
 }
 
 export async function syncNevernessGg(gameId: string): Promise<GameSync> {

@@ -193,7 +193,7 @@ function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: (
           <div className="bports" style={{ '--n': Math.min(banners.length, MAX_BANNERS) } as React.CSSProperties}>
             {/* Siempre una fila de 3 casillas: con más banners, 2 retratos y un "+N" que lleva a la línea de tiempo. */}
             {banners.slice(0, banners.length > MAX_BANNERS ? MAX_BANNERS - 1 : MAX_BANNERS).map(b => <Portrait key={b.id} b={b} now={now} onClick={() => open(b)} solo={banners.length === 1} />)}
-            {banners.length > MAX_BANNERS && <button className="bport more" onClick={onOpen}>+{banners.length - MAX_BANNERS + 1}</button>}
+            {banners.length > MAX_BANNERS && <MorePortrait b={banners[MAX_BANNERS - 1]} n={banners.length - MAX_BANNERS + 1} onClick={onOpen} />}
           </div>
         )}
 
@@ -259,6 +259,17 @@ function Portrait({ b, now, onClick, solo }: { b: GameEvent; now: number; onClic
         {f?.rarity ? <i className="p-stars">{'★'.repeat(Math.min(f.rarity, 6))}</i> : null}
         <span className="p-n">{name}{extra && <small> {extra}</small>}</span>
       </span>
+    </button>
+  )
+}
+
+/** Casilla "+N" de los banners que no caben: de fondo, el arte (oscurecido) del primero que queda fuera, para que no sea un cuadro vacío. */
+function MorePortrait({ b, n, onClick }: { b: GameEvent; n: number; onClick: () => void }) {
+  const art = splashOf(b.gameId, b.featured[0]) || b.image || bannerArt(b)
+  return (
+    <button className={`bport more ${art ? 'has-art' : ''}`} onClick={onClick} title={b.title}>
+      {art && <Img src={art} className="bp-art" />}
+      <span className="more-n">+{n}</span>
     </button>
   )
 }

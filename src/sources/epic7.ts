@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { articles, bodyLines, bodyText as body, sized, thumb, type Article } from './stove'
+import { pullsIn } from './pulls'
 
 /**
  * Epic Seven (servidor Global) sin gachafocus:
@@ -131,21 +132,27 @@ async function syncEvents(gameId: string, list: Article[], ends: Map<string, str
   let details = 0
   for (const a of list) {
     if (NOT_AN_EVENT.test(a.title)) continue
-    let p = period(a.summary ?? '', a.create_datetime, ends)
+    let text = a.summary ?? ''
+    let p = period(text, a.create_datetime, ends)
     // El resumen se corta a ~1000 caracteres: si no trae el periodo, y el aviso es reciente, se lee el aviso entero.
     if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY) {
       details++
-      try { p = period(await body(a.article_id), a.create_datetime, ends) } catch { /* se omite este aviso */ }
+      try { text = await body(a.article_id); p = period(text, a.create_datetime, ends) } catch { /* se omite este aviso */ }
     }
     if (!p || +p.end < from) continue
     const title = a.title.replace(/\s*\((?:Edited|Added on)[^)]*\)?\s*$/i, '').trim()
     const key = `${title.toLowerCase()}|${p.start.toISOString().slice(0, 10)}`
     if (seen.has(key)) continue
     seen.add(key)
+    // Recompensas del aviso ("Covenant Bookmark x5", "300 Skystones"); 5 Covenant Bookmarks o 100 Skystones = 1 tirada (pulls.ts).
+    // Sus tablas llegan aplanadas ("Reward Name Quantity … Covenant Bookmark 50"): se reescriben como "Covenant Bookmark x50". Los avisos de
+    // recompensas por compras (Golden Scales: "points earned from purchasing") no se cuentan: no son tiradas gratis.
+    const flat = text.replace(/\b(Covenant Bookmarks?|Skystones?)\s+(\d[\d,]*)\b/g, '$1 x$2')
+    const { pulls, items } = /purchas|top-?up/i.test(text) ? { pulls: 0, items: [] } : pullsIn('epic7', flat.split(/\n|(?<=[.!])\s+/))
     out.push({
       id: `${gameId}:event:${a.article_id}`, gameId, kind: 'event', title,
       image: thumb(a),
-      start: p.start.toISOString(), end: p.end.toISOString(), items: [], featured: [], pulls: 0,
+      start: p.start.toISOString(), end: p.end.toISOString(), items, featured: [], pulls,
       minor: p.dayOnly || undefined, // los eventos semanales de comentarios no traen hora: campañas menores
       precision: p.precision, official: true, source: 'api',
     })

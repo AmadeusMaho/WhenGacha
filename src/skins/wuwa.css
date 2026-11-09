@@ -1,0 +1,156 @@
+/* ===== Skin "Wuthering Waves" (prototipo, 9 nov 2026) =====
+   Recursos de la web oficial (wutheringwaves.kurogames.com, copiados en public/skins/wuwa/): botón dorado (btn.png),
+   fondo de noticias (bg.jpg) y brillo (glow.png). El cursor y los rombos están dibujados aquí (SVG): la web no tiene cursor propio y
+   los del juego solo están en sus archivos. Solo aplica con <html data-skin="wuwa">. Para quitarla: src/skins/README.md */
+
+html[data-skin="wuwa"] {
+  --bg: #0b0c0f;
+  --panel: rgba(17, 18, 22, .82);
+  --panel2: rgba(28, 28, 32, .9);
+  --line: rgba(214, 186, 128, .16);
+  --text: #ece6d6;
+  --muted: #a39b88;
+  --acc: #d6b47a;
+  --acc2: #f0dcaa;
+  --ww-gold: #d6b47a;
+  --ww-gold-soft: rgba(214, 180, 122, .35);
+  --ww-dark: #121316;
+  --ww-cut: 9px;
+  color-scheme: dark;
+}
+html[data-skin="wuwa"] body { font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; letter-spacing: .01em; }
+html[data-skin="wuwa"] h1, html[data-skin="wuwa"] h2, html[data-skin="wuwa"] h3,
+html[data-skin="wuwa"] header nav button { font-family: 'Barlow Condensed', 'Barlow', sans-serif; }
+html[data-skin="wuwa"] ::selection { background: rgba(214, 180, 122, .4); }
+html[data-skin="wuwa"] * { scrollbar-color: var(--ww-gold-soft) transparent; }
+
+/* --- Fondo: el de las noticias de la web, oscurecido, con el brillo dorado abajo --- */
+html[data-skin="wuwa"] .aurora { background: #0b0c0f url(/skins/wuwa/bg.jpg) center / cover no-repeat; }
+html[data-skin="wuwa"] .aurora::after { background: linear-gradient(180deg, rgba(8, 9, 12, .55), rgba(8, 9, 12, .82) 55%, rgba(8, 9, 12, .9)),
+  url(/skins/wuwa/glow.png) center bottom / 70% 40% no-repeat; }
+
+/* Fondo animado (solo en la línea de tiempo, LiveWallpaper.tsx): encima del fondo fijo y debajo del contenido, oscurecido para que se lea. */
+html[data-skin="wuwa"] .skin-live { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; pointer-events: none;
+  background: center / cover no-repeat; filter: brightness(.34) saturate(.85) contrast(1.05); animation: ww-live-in 1.2s ease both; }
+@keyframes ww-live-in { from { opacity: 0; } }
+
+/* --- Cabecera: oscura, con el separador dorado de la web debajo --- */
+/* Línea dorada fina abajo (antes era line.png de la web oficial, pero estirada a todo el ancho se veía como una banda rara). */
+html[data-skin="wuwa"] header { background: rgba(10, 11, 14, .78); border-bottom: 0;
+  box-shadow: inset 0 -1px 0 rgba(214, 180, 122, .22); }
+html[data-skin="wuwa"] header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(214, 180, 122, .55) 30%, rgba(214, 180, 122, .55) 70%, transparent); }
+html[data-skin="wuwa"] .brand h1 { text-transform: uppercase; letter-spacing: .12em; font-weight: 600; color: #f1e6c8; }
+html[data-skin="wuwa"] header nav { background: transparent; border: 0; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; overflow-y: hidden; }
+html[data-skin="wuwa"] header nav button { text-transform: uppercase; letter-spacing: .12em; font-size: .92rem; color: var(--muted) !important; }
+html[data-skin="wuwa"] header nav button.on { color: #f6ecd2 !important; }
+html[data-skin="wuwa"] header nav .nav-ind { top: auto; bottom: 0; height: 2px; border-radius: 0; background: linear-gradient(90deg, transparent, var(--ww-gold), transparent);
+  box-shadow: 0 0 10px var(--ww-gold-soft); }
+html[data-skin="wuwa"] header nav .nav-ind::after { content: ""; position: absolute; left: 50%; top: -3px; width: 8px; height: 8px; transform: translateX(-50%) rotate(45deg); background: var(--ww-gold); }
+
+/* --- Botones: esquinas cortadas; el principal con el botón dorado de la web --- */
+html[data-skin="wuwa"] .btn {
+  border-radius: 0; border: 1px solid var(--ww-gold-soft); background: linear-gradient(180deg, rgba(40, 38, 34, .85), rgba(20, 20, 22, .9));
+  clip-path: polygon(var(--ww-cut) 0, 100% 0, 100% calc(100% - var(--ww-cut)), calc(100% - var(--ww-cut)) 100%, 0 100%, 0 var(--ww-cut));
+  color: #efe4c6; box-shadow: none; letter-spacing: .04em;
+}
+html[data-skin="wuwa"] .btn::after { background: linear-gradient(105deg, transparent 25%, rgba(240, 220, 170, .25) 50%, transparent 75%); }
+html[data-skin="wuwa"] .btn:hover:not(:disabled) { border-color: var(--ww-gold); color: #fff6dc; box-shadow: inset 0 0 18px rgba(214, 180, 122, .18); transform: none; }
+html[data-skin="wuwa"] .btn.primary, html[data-skin="wuwa"] .btn.primary:hover:not(:disabled) {
+  clip-path: none; border: 12px solid transparent; border-image: url(/skins/wuwa/btn.png) 12 fill / 12px stretch; background: none;
+  padding: 0 16px; min-height: 36px; color: #f7e9c4; text-shadow: 0 1px 2px #000;
+}
+html[data-skin="wuwa"] .btn.primary:hover:not(:disabled) { filter: brightness(1.25); }
+html[data-skin="wuwa"] .btn.sm { --ww-cut: 6px; }
+
+/* --- Chips, segmentos y filtros --- */
+html[data-skin="wuwa"] :is(.chip, .ichip, .seg) { border-radius: 0; border-color: var(--ww-gold-soft); background: rgba(18, 18, 22, .75); }
+html[data-skin="wuwa"] .seg button { border-radius: 0; }
+html[data-skin="wuwa"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge)) {
+  background: linear-gradient(180deg, rgba(214, 180, 122, .32), rgba(214, 180, 122, .12)); color: #fff4d6; box-shadow: inset 0 -2px 0 var(--ww-gold);
+}
+html[data-skin="wuwa"] .pill { border-radius: 2px; }
+
+/* --- Paneles: línea de tiempo, tarjetas de "Mis gachas", ventana del evento --- */
+html[data-skin="wuwa"] :is(.tl, .gcard, .up-card) {
+  border-radius: 0; border: 1px solid var(--line); background: var(--panel);
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+html[data-skin="wuwa"] .gcard:hover { border-color: var(--ww-gold-soft); box-shadow: none; }
+html[data-skin="wuwa"] :is(.tl-corner, .tl-label, .tl-axis) { background: var(--ww-dark); }
+html[data-skin="wuwa"] .tl-label { border-left-width: 2px; }
+html[data-skin="wuwa"] .today-flag { border-radius: 0; background: var(--ww-gold); color: #17140e; box-shadow: 0 0 14px var(--ww-gold-soft);
+  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%); padding: 1px 14px; }
+html[data-skin="wuwa"] .modal { border-radius: 0; background: #131418; border-color: var(--ww-gold-soft);
+  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); }
+html[data-skin="wuwa"] .modal-hero-fade { background: linear-gradient(transparent 30%, #131418); }
+html[data-skin="wuwa"] .modal-hero { background: linear-gradient(135deg, var(--c), #131418); }
+
+/* Barras: rectas, con un rombo a la izquierda en vez de esquinas redondas. */
+html[data-skin="wuwa"] .bar, html[data-skin="wuwa"] .bar-clip { border-radius: 2px; }
+html[data-skin="wuwa"] .bar.live::before { content: ""; position: absolute; left: -5px; top: 50%; width: 8px; height: 8px; z-index: 2;
+  transform: translateY(-50%) rotate(45deg); background: var(--ww-gold); box-shadow: 0 0 8px var(--ww-gold); }
+html[data-skin="wuwa"] .bport, html[data-skin="wuwa"] .bport .p-time { border-radius: 0; }
+
+/* Títulos de sección: dorados, con rombo. */
+html[data-skin="wuwa"] h3 { color: var(--ww-gold); letter-spacing: .14em; }
+html[data-skin="wuwa"] h3::before { content: ""; flex: none; width: 6px; height: 6px; transform: rotate(45deg); background: var(--ww-gold); }
+
+/* Menús desplegables (idioma, skin). */
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) { border-radius: 0; background: rgba(16, 16, 20, .97); border-color: var(--ww-gold-soft); }
+html[data-skin="wuwa"] .site-foot { border-top: 1px solid var(--line); }
+html[data-skin="wuwa"] .site-foot a.btn.donate { clip-path: none; border: 12px solid transparent; border-image: url(/skins/wuwa/btn.png) 12 fill / 12px stretch;
+  background: none; padding: 0 14px; min-height: 34px; color: #f7e9c4; }
+
+/* --- Color de los juegos → paleta de la skin ---
+   Tarjetas, carriles, barras y secciones se tiñen con el color de cada gacha (--c/--c2, puestos en línea con cssVar()); en la skin
+   todo usa el dorado y el carbón de WuWa (el !important de la hoja gana al estilo en línea). Cada juego sigue identificado por su icono y nombre. */
+html[data-skin="wuwa"] [style*="--c:"] { --c: #c9a464 !important; --c2: #2b2519 !important; }
+html[data-skin="wuwa"] .gcard-hero { background: linear-gradient(135deg, #3a3224, #121316); }
+/* El azul marino fijo de la hoja base (#151a2e en tarjetas, #181826 en la ventana del evento) → carbón. */
+html[data-skin="wuwa"] :is(.gcard, .gcard-body, .ecard, .ecard-body, .grid.even .codes[open] > ul) { background: #141418; }
+html[data-skin="wuwa"] :is(.gcard-hero, .ecard-img) { background-color: #141418; }
+html[data-skin="wuwa"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 20%, #141418); }
+html[data-skin="wuwa"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, #141418); }
+html[data-skin="wuwa"] .modal-body { background: #131418; }
+html[data-skin="wuwa"] :is(.modal-hero.bnr, .modal-hero.wide-art) .modal-hero-fade { background: linear-gradient(transparent 30%, #131418); }
+html[data-skin="wuwa"] .bar.banner { background: linear-gradient(120deg, rgba(58, 48, 32, .95), rgba(22, 21, 20, .95)); }
+html[data-skin="wuwa"] .bar.event { background: linear-gradient(120deg, rgba(36, 36, 40, .95), rgba(20, 20, 23, .95)); }
+html[data-skin="wuwa"] .bar.challenge { background: repeating-linear-gradient(135deg, rgba(40, 36, 30, .95) 0 8px, rgba(28, 26, 24, .95) 8px 16px); }
+html[data-skin="wuwa"] .bar { border-color: var(--ww-gold-soft); }
+html[data-skin="wuwa"] .bar.live { box-shadow: 0 0 0 1px rgba(214, 180, 122, .55), 0 4px 18px rgba(214, 180, 122, .14); }
+html[data-skin="wuwa"] .bar:hover { box-shadow: 0 8px 22px rgba(214, 180, 122, .22); }
+html[data-skin="wuwa"] :is(.ecard, .bcard, .soon-card, .up-card, .gcard):hover { border-color: rgba(214, 180, 122, .55); box-shadow: 0 10px 28px rgba(0, 0, 0, .5); }
+
+/* --- Pulido: nada redondeado salvo las caras de personajes y avatares (circulares a propósito) --- */
+html[data-skin="wuwa"] :is(.banner-err, .hist li, .lang-menu button, .skin-panel button, .reorder-grip, .current-art, .phase, .pull-list li, .reorder-btns button,
+  .soon-img, select, input, .pick, .fopt, .next-patch, .reorder li, .stats div, .list li, .plist li, .gsec-head, .x, code, .bar .thumb, .ev-thumb,
+  .brand .logo, .logo, .p-time, .progress, .prog-bar, .bar-wrap, .phase-units .bart, ::-webkit-scrollbar-thumb) { border-radius: 2px; }
+/* Paneles grandes (Parches, cuadrícula, hojas en móvil, avisos): esquinas cortadas como las tarjetas. */
+html[data-skin="wuwa"] :is(.gsec, .psec, .bcard, .ecard, .sheet, .current, .soon-card, .form, .consent, .reorder, .next-patch) {
+  border-radius: 0; border-color: var(--line);
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+/* Píldoras y chips (cuenta atrás, recompensas, códigos, próximos…): rectángulos con dos esquinas cortadas. */
+html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .up-chip, .codes-chip, .jump-chip, .cc-new, .patch-mark, .soon-toggle, .soon-card em,
+  .pick-search, .fbtn .badge, .phase-units .unit, .today-flag) { border-radius: 0; }
+html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .up-chip, .codes-chip, .jump-chip, .cc-new, .soon-toggle, .pick-search, .phase-units .unit) {
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+html[data-skin="wuwa"] :is(.codes-chip, .up-chip, .jump-chip, .soon-toggle) { border-color: var(--ww-gold-soft); background: rgba(24, 23, 22, .8); }
+html[data-skin="wuwa"] :is(.codes-chip, .up-chip, .jump-chip, .soon-toggle):hover { border-color: var(--ww-gold); color: #fff4d6; }
+/* Filas de listas ("Terminan pronto", códigos, parches): sin fondo redondeado, con una línea dorada al pasar. */
+html[data-skin="wuwa"] :is(.list li, .plist li, .hist li, .pull-list li):hover { box-shadow: inset 2px 0 0 var(--ww-gold); }
+/* Barra de progreso general en dorado (las de cada evento conservan el color del juego y el rojo de "urgente"). */
+html[data-skin="wuwa"] .progress i { background: linear-gradient(90deg, #a8864f, var(--ww-gold)); box-shadow: 0 0 10px var(--ww-gold-soft); }
+/* Restos del rosa/celeste original. */
+html[data-skin="wuwa"] :is(.seg button.on:hover, .chip.on:hover, header nav button.on:hover) { background: linear-gradient(180deg, rgba(214, 180, 122, .4), rgba(214, 180, 122, .16)); }
+html[data-skin="wuwa"] .lang-menu button.on, html[data-skin="wuwa"] .skin-panel button.on { background: rgba(214, 180, 122, .16); box-shadow: inset 2px 0 0 var(--ww-gold); }
+html[data-skin="wuwa"] :is(input, select):focus { border-color: var(--ww-gold); box-shadow: 0 0 0 2px var(--ww-gold-soft); outline: none; }
+html[data-skin="wuwa"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ww-gold); }
+html[data-skin="wuwa"] .bar:focus-visible, html[data-skin="wuwa"] .btn:focus-visible { outline: 1px solid var(--ww-gold); outline-offset: 2px; }
+
+/* --- Cursor (SVG propio con la estética del juego) --- */
+html[data-skin="wuwa"], html[data-skin="wuwa"] body { cursor: url(/skins/wuwa/cursor.svg) 3 2, auto; }
+html[data-skin="wuwa"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) { cursor: url(/skins/wuwa/cursor-hand.svg) 3 2, pointer !important; }
+html[data-skin="wuwa"] :is(input[type="text"], input[type="search"], textarea) { cursor: text !important; }

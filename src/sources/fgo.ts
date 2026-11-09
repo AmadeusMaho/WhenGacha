@@ -11,7 +11,20 @@ const BASE = 'https://api.atlasacademy.io/export/NA'
 const DAY = 86_400_000
 
 interface RawEvent { id: number; type: string; name: string; startedAt: number; endedAt: number }
-interface RawGacha { id: number; name: string; type: string; openedAt: number; closedAt: number; featuredSvtIds?: number[] }
+interface RawGacha { id: number; name: string; type: string; openedAt: number; closedAt: number; featuredSvtIds?: number[]; imageId?: number }
+
+/** Arte del banner de invocación (mismo CDN de Atlas Academy; comprobado el 9 nov 2026 con los banners vigentes). */
+const summonArt = (imageId?: number) => imageId ? `https://static.atlasacademy.io/NA/SummonBanners/img_summon_${imageId}.png` : undefined
+/** Máximo de fichas de evento que se piden por ciclo (solo para su arte). */
+const MAX_EVENT_ART = 6
+
+/** Arte de un evento: el campo `banner` de su ficha (`/nice/NA/event/<id>`); las campañas y quests sueltas no tienen. */
+async function eventArt(id: number): Promise<string | undefined> {
+  const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/NA/event/${id}`))
+  if (!res.ok) return undefined
+  const banner = ((await res.json()) as { banner?: string }).banner
+  return typeof banner === 'string' && banner.startsWith('https://static.atlasacademy.io/') ? banner : undefined
+}
 interface RawServant { id: number; name: string; rarity?: number; face?: string; className?: string }
 
 async function getJson<T>(file: string): Promise<T> {
@@ -67,8 +80,20 @@ export async function syncFgo(gameId: string): Promise<GameSync> {
       id: `${gameId}:banner:${g.id}`, gameId, kind: 'banner',
       title: named ? featured.map(f => f.name).join(' / ') : clean(g.name),
       description: clean(g.name),
+      image: summonArt(g.imageId),
       start: iso(g.openedAt), end: iso(g.closedAt), items: [], featured, pulls: 0, source: 'api',
     })
+  }
+
+  // Arte de los eventos principales (no las campañas), en serie y con tope; las campañas que nombran un evento entre comillas
+  // ("\"Mystery House Crafters\" Related Servant Bond…") usan el arte de ese evento.
+  const main = events.filter(e => e.kind === 'event' && !e.minor).slice(0, MAX_EVENT_ART)
+  for (const e of main) e.image = await eventArt(+e.id.split(':').pop()!).catch(() => undefined)
+  for (const e of events) {
+    if (e.kind !== 'event' || e.image) continue
+    const quoted = /"([^"]{4,})"/.exec(e.title)?.[1]
+    const parent = quoted && events.find(p => p.image && p.kind === 'event' && p.title.includes(quoted))
+    if (parent) e.image = parent.image
   }
   return { events, patches: [], codes: [] }
 }

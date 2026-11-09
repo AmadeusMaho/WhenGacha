@@ -8,6 +8,7 @@ import EventModal, { lastPointer } from './EventModal'
 import { t, useLang } from './i18n'
 import { useImages } from './images'
 import LangSwitch from './LangSwitch'
+import SkinPicker from './skins/SkinPicker' // skins (prueba): para quitarlas, ver src/skins/README.md
 import { fireDue, mirrorAlerts } from './notify'
 import { useAutoSync, useStore } from './store'
 import TimelineTab from './Timeline'
@@ -117,6 +118,7 @@ export default function App() {
           {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{t(label)}</button>)}
         </nav>
         <div className="head-actions">
+          <SkinPicker timeline={tab === 'timeline'} donateUrl={DONATE_URL} /> {/* skins */}
           <LangSwitch />
           <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
             <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> <span className="sync-t">{status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}</span>

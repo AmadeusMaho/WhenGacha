@@ -15,7 +15,46 @@ const PAGES: Record<string, { host: string; page: string }> = {
   nte: { host: 'neverness-to-everness.fandom.com', page: 'Redemption Codes' },
 }
 
-export const hasWikiCodes = (api: string) => api in PAGES
+/**
+ * Juegos sin página de códigos en su wiki: la lista "Redeem Codes" de Game8 (robots.txt no restringe a bots genéricos; ya se usa para eventos).
+ * Cada fila de la tabla de activos: el código en `input.a-clipboard__textInput`, "Duration: November 3 - November 17" o "Expires TBA" y las
+ * recompensas ("Lumina Lens x5", "T-Creds x8,000"). Se para en el primer apartado "Expired". 1 página por juego, caché de 6 h en el proxy.
+ * Revisado el 9 nov 2026: Game8 no tiene páginas de NIKKE, AFK Journey, PGR, Arknights, Blue Archive, Limbus ni Azur Lane; la de Umamusume dice
+ * que aún no hay códigos públicos (Global); Epic Seven y FGO no tienen página de códigos.
+ */
+const GAME8_CODES: Record<string, string> = {
+  czn: 'Chaos-Zero-Nightmare/archives/557967',
+  endfield: 'Arknights-Endfield/archives/571509',
+}
+
+export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
+
+export async function syncGame8Codes(api: string): Promise<PromoCode[]> {
+  const path = GAME8_CODES[api]
+  if (!path) return []
+  const res = await fetch(viaProxy(`https://game8.co/games/${path}`))
+  if (!res.ok) throw new Error(`game8 códigos ${api} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  const out: PromoCode[] = []
+  // Las tablas de códigos van en orden: activos, después caducados (precedidos por un h2/h3 "Expired").
+  for (const el of doc.querySelectorAll('h2, h3, table')) {
+    if (el.tagName !== 'TABLE') { if (/expired|inactive/i.test(text(el))) break; continue }
+    for (const row of el.querySelectorAll('tr')) {
+      const cells = row.querySelectorAll('td')
+      const code = cells[0]?.querySelector('input')?.getAttribute('value')?.trim()
+      if (!code || !/^[A-Za-z0-9]{4,30}$/.test(code) || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
+      const info = text(cells[0])
+      if (/expired/i.test(info)) continue
+      const rewards = [...text(cells[1]).matchAll(/(?:•\s*)?([A-Z][A-Za-z0-9'():\- ]{1,50}?)\s*x\s?(\d[\d,]*)/g)].map(m => `${m[1].trim()} ×${m[2]}`)
+      // "Duration: October 20 - November 19" → caducidad; "Only for PC Users" se conserva como aviso.
+      const until = /Duration:.*?[-–]\s*([A-Z][a-z]+ \d{1,2}(?:, \d{4})?)/.exec(info)?.[1]
+      const pc = /only for pc/i.test(info) ? ['PC only'] : []
+      out.push({ code, rewards: [...rewards.slice(0, 6), ...pc, ...(until ? [`Until ${until}`] : [])] })
+    }
+  }
+  return out
+}
 
 const num = (s: string) => Number(s.replace(/[,.\s]/g, ''))
 
@@ -34,7 +73,7 @@ function rewardsOf(cell: string): string[] {
 
 export async function syncWikiCodes(api: string): Promise<PromoCode[]> {
   const cfg = PAGES[api]
-  if (!cfg) return []
+  if (!cfg) return syncGame8Codes(api)
   const qs = new URLSearchParams({ action: 'parse', page: cfg.page, prop: 'wikitext', format: 'json', origin: '*' })
   const res = await fetch(viaProxy(`https://${cfg.host}/api.php?${qs}`))
   if (!res.ok) throw new Error(`${cfg.host} → HTTP ${res.status}`)
