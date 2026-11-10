@@ -1,5 +1,5 @@
 /* Whengacha service worker: funciona sin conexión y avisa de eventos que terminan. */
-const SHELL = 'whengacha-shell-v3'
+const SHELL = 'whengacha-shell-v4' // v4: v3 guardaba respuestas de /api/ (Premium salía desactivado)
 const IMGS = 'whengacha-img-v1'
 const API = 'whengacha-api-v2'
 const KEEP = [SHELL, IMGS, API, 'whengacha-prefs']
@@ -18,6 +18,8 @@ self.addEventListener('fetch', e => {
   const req = e.request
   if (req.method !== 'GET') return
   const url = new URL(req.url)
+  // API del servidor (Premium, sesión): siempre a la red, nunca desde caché (una respuesta vieja dejaba Premium desactivado).
+  if (url.origin === location.origin && url.pathname.startsWith('/api/')) return
 
   // Datos (fuentes y copias del servidor en /data/): red primero, caché si no hay conexión. Solo se guardan respuestas correctas.
   if (url.hostname === 'api.ennead.cc' || url.pathname === '/proxy' || url.pathname.startsWith('/data/')) {
