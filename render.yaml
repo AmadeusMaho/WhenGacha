@@ -8,7 +8,8 @@ services:
     branch: main
     autoDeployTrigger: commit # se actualiza solo con cada push a main
     # Compila aquí (VITE_USE_PROXY=1 viene del .env del repo), así no depende de que dist/ esté recompilado antes del push.
-    buildCommand: npm ci && npm run build:prod
+    # --include=dev: con NODE_ENV=production npm se salta las devDependencies (TypeScript, Vite) y la compilación falla.
+    buildCommand: npm ci --include=dev && npm run build:prod
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
