@@ -255,3 +255,16 @@ html[data-skin="wuwa"] .tag.great { background: var(--ww-gold); color: #17140e; 
 @media (max-width: 560px) {
   html[data-skin="wuwa"] header nav button { font-size: .74rem; letter-spacing: .02em; padding-left: 9px; padding-right: 9px; }
 }
+
+/* Selector de skins: skins.css quita el border-image a los botones del panel (!important), y sin él los de WuWa se quedaban sin forma
+   ("Apoyar y desbloquear" con texto oscuro sobre el panel oscuro, "Enviar enlace" como texto suelto). Aquí llevan píldora propia. */
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn {
+  background: rgba(30, 29, 27, .95) !important; border: 1px solid var(--ww-gold-soft) !important; border-radius: 999px !important;
+  color: #efe4c6; text-shadow: none;
+}
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:hover:not(:disabled) { background: rgba(214, 180, 122, .16) !important; border-color: var(--ww-gold) !important; color: #fff6dc; }
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:disabled { opacity: .55; }
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary {
+  background: linear-gradient(180deg, #ecd39e, #c9a464) !important; border-color: #f2dfb0 !important; color: #17140e; font-weight: 600;
+}
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #f6e2b6, #d6b47a) !important; color: #17140e; filter: none; }
