@@ -1,0 +1,44 @@
+# Despliegue en Render (Blueprint). Guía completa: docs/render.md
+# Convive con Botkeep: Botkeep sigue sirviendo el dist/ del repositorio; Render compila el suyo en cada push.
+services:
+  - type: web
+    name: whengacha
+    runtime: node
+    plan: free
+    branch: main
+    autoDeployTrigger: commit # se actualiza solo con cada push a main
+    # Compila aquí (VITE_USE_PROXY=1 viene del .env del repo), así no depende de que dist/ esté recompilado antes del push.
+    buildCommand: npm ci && npm run build:prod
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      # Discord (docs/discord-bot.md)
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: DISCORD_CHANNELS
+        sync: false
+      # Premium (docs/premium.md)
+      - key: SUPPORTER_SECRET
+        sync: false
+      - key: DONORS_REPO
+        sync: false
+      - key: DONORS_TOKEN
+        sync: false
+      - key: KOFI_TOKEN
+        sync: false
+      - key: KOFI_URL
+        sync: false
+      - key: SUPPORT_MIN
+        sync: false
+      - key: SUPPORT_CURRENCY
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: PUBLIC_URL
+        sync: false

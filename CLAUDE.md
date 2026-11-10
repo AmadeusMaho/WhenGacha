@@ -14,6 +14,9 @@ git add -A           # incluye dist/ (assets con hash nuevo, index.html, sw.js)
 
 Comprueba que `git status` muestre cambios en `dist/` antes de hacer push. Si no hay, no se compiló.
 
+Hay un segundo despliegue en **Render** (`render.yaml`, guía en `docs/render.md`) que compila solo en cada push; no sustituye a Botkeep.
+`dist/skins/` no se versiona (es copia de `public/skins/`); el servidor sirve las skins desde `public/` si faltan en `dist/`.
+
 `build:prod` también regenera `server/bundle/collector.mjs` (el recolector del servidor, con las fuentes de `src/sources` y `linkedom` ya dentro).
 Ese archivo **también se versiona**: el host no instala dependencias de desarrollo ni compila. Si cambias algo en `src/sources/` o `src/catalog.ts`, recompila y súbelo.
 
