@@ -26,11 +26,13 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
     (carita en los eventos en curso), assets oficiales marcados "Non-commercial fan use only" (derechos de miHoYo); el dueño decidió usarlos.
     `cursor.png` (32 px) y `cursor@2x.png` (64 px) = el cursor del juego, recortado del `.cur` que aportó el dueño (traía 3×3 copias sobre fondo de cuadros: se tomó una, sin fondo y con contorno oscuro). Punta en (2, 2).
   - Las pegatinas chibi se probaron y se quitaron (no gustaron).
-- `hsr.css` (prueba, 10 nov 2026, rehecha con capturas del juego): la skin **Honkai: Star Rail**, como sus menús de teléfono y misiones:
-  paneles carbón con borde gris fino, dorado ámbar de acento, fila seleccionada clara con franja dorada, botón principal en píldora gris
-  clara, pestaña activa blanca con barra debajo, títulos como la barra "Trailblaze Mission" (estrella de cuatro puntas, se difumina),
-  fichas de destacados como las recompensas (fondo de rareza y franja oscura) y fondo de escena desenfocado.
-  `public/skins/hsr/`: `bg.webp` (Backgrounds, nebulosa con destellos dorados) y `star.webp` (Star of Honor), assets oficiales de skowt.cc
+- `hsr.css` (3.ª versión, 10 nov 2026): la skin **Honkai: Star Rail**. La anterior (carbón y dorado) se parecía demasiado a WuWa; esta
+  usa la paleta del arte del juego (índigo y violeta, lavanda y celeste de acento, dorado solo para lo destacado) y el motivo de la **vía**:
+  galaxia dibujada en CSS como fondo (nebulosas + estrellas que titilan), paneles de cristal esmerilado azulado con marcas de esquina
+  (en un `::after`, para no confundir a `skin-contrast.js`), títulos con estrella + vía hasta un nodo, filas como estaciones (punto a la
+  izquierda), botón principal crema y dorado con anillo interior, pestaña activa con estrella dorada sobre una vía corta, barras de la
+  línea de tiempo índigo con el color del tipo, y fichas de destacados con fondo de rareza dorado, haz diagonal y franja azul noche.
+  `public/skins/hsr/`: `star.webp` (Star of Honor), asset oficial de skowt.cc (`bg.webp`, de 1024×442, ya no se usa y se borró)
   marcados "Non-commercial fan use only" (el dueño decidió usarlos); `cursor.png` = el cursor del juego, convertido del `.cur` que aportó el dueño (punta en 4, 4).
   Fuente: la del juego en inglés es **DIN Next** (Monotype, de pago): se usa si el visitante la tiene instalada; si no, **Barlow** (OFL).
 - `nikke.css` (prueba, 10 nov 2026, rehecha con capturas del juego: Squad, Outpost Defense, Nikkepedia, Reset Level, lobby): la skin
@@ -123,7 +125,7 @@ Origen (webs oficiales, 10 nov 2026; arte de cada estudio, el dueño decidió us
 - **Genshin**: `live-hour.mp4` (portada de la versión "Hour of Ruin", 3 s) + paisajes de las páginas de región: `still-mond`,
   `still-mond-dusk`, `still-liyue`, `still-inazuma`, `still-sumeru`.
 - **ZZZ**: `live-v33.mp4` (portada de la versión 3.3, 13 s) + `still-agents`, `still-shards`, `still-sofa`, `still-party`.
-- **HSR**: la portada no tiene vídeo; 5 fondos fijos de la web (`still-v46`, `still-pink`, `still-mech`, `still-radio`, `still-pool`).
+- **HSR**: la portada no tiene vídeo; 4 fondos fijos de la web (`still-v46`, `still-pink`, `still-radio`, `still-pool`). Las tres últimas son imágenes de evento: se les recortó el marco beige que traían (22 px por lado). `still-mech` (el robot) se quitó a petición del dueño.
 - **Umamusume**: sin vídeo; `still-kv`, `still-stadium`, `still-race` de umamusume.com. Como es una skin clara, el fondo va aclarado
   (`opacity: .45`) detrás del marco lila.
 **Según la versión (automático):** el servidor mira cada 12 h el vídeo/imagen de portada de las webs de Genshin, ZZZ y WuWa

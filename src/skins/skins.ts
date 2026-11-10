@@ -45,9 +45,9 @@ export const SKINS: SkinDef[] = [
   // Prueba local (zzz.css) con assets oficiales de skowt.cc en public/skins/zzz/ y cursor propio (ver README).
   { id: 'zzz', game: 'zzz', name: 'Zenless Zone Zero', fonts: 'family=Rubik:wght@500;600;700;800;900',
     live: [{ video: '/skins/zzz/live-v33.mp4', poster: '/skins/zzz/live-v33.webp', official: 'https://act-webstatic.hoyoverse.com/puzzle/zzz/pz_ZYBGoSIMEV/resource/puzzle/2026/10/14/ef6f80c3ae7410ca14fd4d77571450ec_1154396356221499835.mp4' }, ...stills('zzz', ['agents', 'shards', 'sofa', 'party'])] },
-  // Prueba local (hsr.css) con fondo y estrella de skowt.cc en public/skins/hsr/ y cursor propio (ver README).
+  // hsr.css (3.ª versión): galaxia en CSS, paneles de cristal y el motivo de la vía; cursor del juego (ver README).
   { id: 'hsr', game: 'hsr', name: 'Honkai: Star Rail', fonts: 'family=Barlow:wght@400;500;600;700',
-    live: stills('hsr', ['v46', 'pink', 'mech', 'radio', 'pool']) },
+    live: stills('hsr', ['v46', 'pink', 'radio', 'pool']) },
   // Prueba local (nikke.css) con fondo y galones de la web oficial en public/skins/nikke/ (ver README); sin cursor propio.
   { id: 'nikke', game: 'nikke', name: 'NIKKE', fonts: 'family=Saira+Semi+Condensed:wght@400;500;600;700',
     // Siete live wallpapers de la página Art de la web oficial: uno distinto en cada visita a la línea de tiempo (LiveWallpaper.tsx).

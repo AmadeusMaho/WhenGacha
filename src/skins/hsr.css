@@ -1,176 +1,249 @@
-/* ===== Skin "Honkai: Star Rail" (prueba local, 10 nov 2026; rehecha con capturas del juego que aportó el dueño) =====
-   Como los menús del juego (teléfono, misiones): paneles carbón casi negros con borde gris fino, separadores finos con un punto en cada
-   extremo, dorado ámbar para lo destacado, fila seleccionada clara con texto oscuro y franja dorada a la izquierda, botón principal en
-   píldora gris clara ("Stop Navigation"), pestaña activa en blanco con barra blanca debajo, títulos de sección como la barra
-   "Trailblaze Mission" (estrella de cuatro puntas dorada) y fondo de escena desenfocado.
-   public/skins/hsr/ (skowt.cc, assets oficiales "Non-commercial fan use only"; el dueño decidió usarlos): bg.webp (Backgrounds),
-   star.webp (Star of Honor). cursor.png = el cursor del juego (.cur aportado por el dueño, 10 nov 2026).
-   Fuente: la del juego en inglés es DIN Next (Monotype, de pago): se usa si el visitante la tiene instalada; si no, Barlow (OFL).
+/* ===== Skin "Honkai: Star Rail" (3.ª versión, 10 nov 2026) =====
+   Antes era carbón y dorado, casi igual que WuWa. Ahora va con la paleta del arte del juego (índigo y violeta de las portadas,
+   lavanda y celeste de acento, dorado solo para lo destacado) y con su motivo propio, la VÍA (Star Rail):
+   - Fondo: galaxia dibujada en CSS (nebulosas + dos capas de estrellas que titilan), nítida a cualquier tamaño. Antes se estiraba
+     bg.webp (1024×442) y se veía pixelada y con el suelo de cuadros.
+   - Paneles de cristal esmerilado azulado, borde fino lavanda y marcas de esquina (como las ventanas del juego).
+   - Títulos de sección: estrella de cuatro puntas + texto + una vía que sigue hasta un nodo (·────◆).
+   - Filas de listas como estaciones: un punto de la vía a la izquierda en lugar de franja.
+   - Botón principal crema y dorado con anillo interior (el "Confirmar" del juego); el resto, píldoras de cristal.
+   - Pestaña activa: texto blanco y una estrella dorada sobre una vía corta.
+   - Línea de tiempo: barras índigo con el nodo del color de su tipo (banner dorado, evento celeste, desafío lavanda).
+   - Destacados: ficha de personaje (fondo de rareza dorado con un haz diagonal, franja azul noche con línea dorada).
+   public/skins/hsr/: star.webp (Star of Honor) y cursor.png (el cursor del juego). Fondos de la línea de tiempo: still-*.webp
+   (marcos de las imágenes de evento recortados; el del robot se quitó a petición del dueño).
+   Fuente: DIN Next si el visitante la tiene (la del juego, de pago); si no, Barlow (OFL).
    Solo aplica con <html data-skin="hsr">. */
 
 html[data-skin="hsr"] {
-  --hs-gold: #e8bd57;
-  --hs-gold2: #c9993a;
-  --hs-panel: rgba(20, 20, 22, .93);
-  --hs-row: rgba(38, 38, 42, .9);
-  --hs-edge: rgba(255, 255, 255, .2);
-  --hs-light: #e6e6e6;
-  --bg: #0c0c0e;
-  --panel: var(--hs-panel);
-  --panel2: rgba(34, 34, 38, .94);
-  --line: rgba(255, 255, 255, .12);
-  --text: #f2f2f2;
-  --muted: #b4b4b8;
+  --hs-gold: #f3c76a;
+  --hs-gold2: #d9a441;
+  --hs-lav: #b9a8ff;
+  --hs-sky: #8fd3ff;
+  --hs-ink: #0a0d24;
+  --hs-glass: rgba(20, 24, 54, .78);
+  --hs-glass2: rgba(28, 33, 70, .86);
+  --hs-solid: #151a3c;
+  --hs-edge: rgba(185, 168, 255, .26);
+  --hs-edge2: rgba(185, 168, 255, .5);
+  --bg: #080b1f;
+  --panel: var(--hs-glass);
+  --panel2: var(--hs-glass2);
+  --line: rgba(185, 168, 255, .16);
+  --text: #eef0ff;
+  --muted: #b9bfe6;
   --acc: var(--hs-gold);
-  --acc2: #f3d68c;
+  --acc2: #ffe2a3;
   color-scheme: dark;
+  /* Estrella de cuatro puntas del juego (contorno dorado y centro), y la misma en lavanda para lo secundario. */
+  --hs-spark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1 Q11.2 8.8 19 10 Q11.2 11.2 10 19 Q8.8 11.2 1 10 Q8.8 8.8 10 1Z' fill='none' stroke='%23f3c76a' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M10 6.5 L13.5 10 L10 13.5 L6.5 10Z' fill='%23f3c76a'/%3E%3C/svg%3E");
+  --hs-spark-solid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 0 Q11.4 8.6 20 10 Q11.4 11.4 10 20 Q8.6 11.4 0 10 Q8.6 8.6 10 0Z' fill='%23f3c76a'/%3E%3C/svg%3E");
 }
-html[data-skin="hsr"] body { font-family: 'DIN Next LT Pro', 'DIN Next', 'DIN Pro', 'Barlow', 'Segoe UI', system-ui, sans-serif; font-weight: 500; letter-spacing: .015em; }
+html[data-skin="hsr"] body { background: var(--bg); font-family: 'DIN Next LT Pro', 'DIN Next', 'DIN Pro', 'Barlow', 'Segoe UI', system-ui, sans-serif; font-weight: 500; letter-spacing: .015em; }
 html[data-skin="hsr"] :is(h1, h2, h3, h4, b, strong) { font-weight: 600; }
-html[data-skin="hsr"] ::selection { background: rgba(232, 189, 87, .4); }
-html[data-skin="hsr"] * { scrollbar-color: rgba(255, 255, 255, .25) transparent; }
+html[data-skin="hsr"] ::selection { background: rgba(185, 168, 255, .45); color: #fff; }
+html[data-skin="hsr"] * { scrollbar-color: rgba(185, 168, 255, .35) transparent; }
 
-/* Estrella de cuatro puntas del juego (contorno dorado), dibujada en SVG: títulos, eventos en curso, "hoy". */
-html[data-skin="hsr"] { --hs-spark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 1 Q11.2 8.8 19 10 Q11.2 11.2 10 19 Q8.8 11.2 1 10 Q8.8 8.8 10 1Z' fill='none' stroke='%23e8bd57' stroke-width='1.6' stroke-linejoin='round'/%3E%3Cpath d='M10 6.5 L13.5 10 L10 13.5 L6.5 10Z' fill='%23e8bd57'/%3E%3C/svg%3E"); }
+/* ===== Fondo: galaxia en CSS ===== */
+html[data-skin="hsr"] .aurora {
+  background:
+    radial-gradient(60% 45% at 12% 8%, rgba(118, 84, 220, .38), transparent 70%),
+    radial-gradient(50% 40% at 92% 18%, rgba(64, 120, 230, .30), transparent 70%),
+    radial-gradient(55% 45% at 70% 95%, rgba(214, 92, 170, .20), transparent 70%),
+    radial-gradient(40% 30% at 30% 70%, rgba(80, 60, 190, .18), transparent 70%),
+    linear-gradient(180deg, #0b0f2a, #080b1f 60%, #0a0a22);
+}
+/* Dos capas de estrellas (puntos repetidos en rejillas de distinto tamaño, así no se nota el patrón) que titilan despacio. */
+html[data-skin="hsr"] .aurora::before, html[data-skin="hsr"] .aurora::after { content: ""; position: absolute; inset: 0; pointer-events: none; display: block; }
+html[data-skin="hsr"] .aurora::before {
+  background:
+    radial-gradient(1.2px 1.2px at 23px 41px, rgba(255, 255, 255, .9), transparent 60%),
+    radial-gradient(1px 1px at 141px 97px, rgba(220, 210, 255, .8), transparent 60%),
+    radial-gradient(1.4px 1.4px at 87px 163px, rgba(255, 240, 210, .85), transparent 60%),
+    radial-gradient(1px 1px at 199px 21px, rgba(200, 230, 255, .75), transparent 60%);
+  background-size: 223px 191px;
+  animation: hs-twinkle 7s ease-in-out infinite alternate;
+}
+html[data-skin="hsr"] .aurora::after {
+  background:
+    radial-gradient(1px 1px at 61px 13px, rgba(255, 255, 255, .7), transparent 60%),
+    radial-gradient(1.6px 1.6px at 251px 187px, rgba(243, 199, 106, .8), transparent 60%),
+    radial-gradient(1px 1px at 171px 263px, rgba(185, 168, 255, .75), transparent 60%),
+    radial-gradient(1.2px 1.2px at 307px 71px, rgba(255, 255, 255, .6), transparent 60%);
+  background-size: 337px 293px;
+  animation: hs-twinkle 11s ease-in-out -4s infinite alternate;
+}
+@keyframes hs-twinkle { from { opacity: .45; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { html[data-skin="hsr"] .aurora::before, html[data-skin="hsr"] .aurora::after { animation: none; } }
+/* Fondos de la línea de tiempo (still-*.webp): visibles pero apagados, con un velo índigo para que el texto se lea. */
+html[data-skin="hsr"] .skin-live { filter: brightness(.48) saturate(1.05) contrast(1.05); }
+html[data-skin="hsr"] main { position: relative; }
 
-/* --- Fondo: escena del juego desenfocada y oscura --- */
-html[data-skin="hsr"] .aurora { background: #0c0c0e; }
-html[data-skin="hsr"] .aurora::after { display: block; content: ""; position: absolute; inset: -20px; pointer-events: none; filter: blur(6px);
-  background: linear-gradient(180deg, rgba(10, 10, 12, .55), rgba(10, 10, 12, .82) 55%, rgba(10, 10, 12, .92)),
-    url(/skins/hsr/bg.webp) center top / cover no-repeat; }
-html[data-skin="hsr"] .skin-live { filter: brightness(.4) saturate(.85) blur(2px); }
-
-/* --- Cabecera: barra negra; pestaña activa en blanco con barra blanca gruesa debajo (como las pestañas de Misiones) --- */
-html[data-skin="hsr"] header { background: rgba(10, 10, 12, .9); border-bottom: 1px solid rgba(255, 255, 255, .1); box-shadow: none; backdrop-filter: blur(8px); }
-html[data-skin="hsr"] .brand h1 { color: #fff; letter-spacing: .03em; }
+/* ===== Cabecera ===== */
+html[data-skin="hsr"] header { background: linear-gradient(180deg, rgba(10, 13, 36, .92), rgba(12, 15, 40, .82)); border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .04), 0 8px 24px rgba(4, 6, 20, .45); backdrop-filter: blur(12px) saturate(1.2); }
+html[data-skin="hsr"] .brand h1 { color: #fff; letter-spacing: .04em; }
 html[data-skin="hsr"] header nav { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow-y: hidden; }
-html[data-skin="hsr"] header nav button { color: #a9a9ad !important; }
+html[data-skin="hsr"] header nav button { color: #aeb4dc !important; }
 html[data-skin="hsr"] header nav button.on { color: #fff !important; }
-html[data-skin="hsr"] header nav button:focus-visible { outline: none; color: var(--hs-gold) !important; }
-html[data-skin="hsr"] header nav .nav-ind { top: auto; bottom: 0; height: 3px; border-radius: 2px; background: #fff; box-shadow: 0 0 8px rgba(255, 255, 255, .35); }
-html[data-skin="hsr"] header nav .nav-ind::after { display: none; }
+html[data-skin="hsr"] header nav button:hover:not(.on) { color: #dfe2ff !important; }
+html[data-skin="hsr"] header nav button:focus-visible { outline: 1px solid var(--hs-lav); outline-offset: -2px; }
+/* Indicador: vía corta con la estrella dorada en el centro, bajo la pestaña activa. */
+html[data-skin="hsr"] header nav .nav-ind { top: auto; bottom: 1px; height: 2px; border-radius: 0; box-shadow: none;
+  background: linear-gradient(90deg, transparent, rgba(243, 199, 106, .9) 30%, rgba(243, 199, 106, .9) 70%, transparent); }
+html[data-skin="hsr"] header nav .nav-ind::after { content: ""; display: block; position: absolute; left: 50%; top: 50%; width: 11px; height: 11px;
+  transform: translate(-50%, -50%); background: var(--hs-spark-solid) center / contain no-repeat; filter: drop-shadow(0 0 4px rgba(243, 199, 106, .9)); }
 
-/* --- Botones: píldora oscura con borde gris; el principal, píldora gris clara con texto oscuro ("Stop Navigation") --- */
-html[data-skin="hsr"] .btn { border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(28, 28, 32, .9); color: #f2f2f2; box-shadow: none; text-shadow: none; }
+/* ===== Botones ===== */
+html[data-skin="hsr"] .btn { border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(30, 35, 74, .82); color: #eef0ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); text-shadow: none; }
 html[data-skin="hsr"] .btn::after { display: none; }
-html[data-skin="hsr"] .btn:hover:not(:disabled) { border-color: rgba(255, 255, 255, .5); background: rgba(48, 48, 54, .95) !important; color: #fff; transform: none; box-shadow: none; }
+html[data-skin="hsr"] .btn:hover:not(:disabled) { border-color: var(--hs-edge2); background: rgba(48, 54, 108, .92) !important; color: #fff; transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 14px rgba(185, 168, 255, .22); }
+/* Principal: crema y dorado con anillo interior, como el botón de confirmar del juego. */
 html[data-skin="hsr"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="hsr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
-  border: 2px solid #f4f4f4; background: linear-gradient(180deg, #ececec, #d6d6d6) !important; color: #1b1b1d; font-weight: 600; filter: none; }
-html[data-skin="hsr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { box-shadow: 0 0 0 3px rgba(255, 255, 255, .2); }
-html[data-skin="hsr"] .btn.mark .spark { color: #9a7424; }
-html[data-skin="hsr"] .btn.mark:not(.primary) { background: rgba(60, 60, 66, .9) !important; color: #d6d6da; }
+  border: 1px solid #ffeec7; background: linear-gradient(180deg, #fff6df, #f6d892 60%, #edc672) !important; color: #2b1f05; font-weight: 700; filter: none;
+  box-shadow: inset 0 0 0 2px rgba(255, 252, 240, .9), inset 0 0 0 3px rgba(150, 104, 24, .35), 0 4px 14px rgba(243, 199, 106, .22); }
+html[data-skin="hsr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  box-shadow: inset 0 0 0 2px rgba(255, 252, 240, .95), inset 0 0 0 3px rgba(150, 104, 24, .45), 0 0 22px rgba(243, 199, 106, .45); }
+html[data-skin="hsr"] .btn.mark .spark { color: #8a6514; }
+html[data-skin="hsr"] .btn.mark:not(.primary) { background: rgba(60, 54, 110, .9) !important; color: #e4e0ff; }
 html[data-skin="hsr"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 1px solid var(--hs-gold); outline-offset: 2px; }
-html[data-skin="hsr"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(12, 12, 14, .85); color: #f2f2f2; }
-html[data-skin="hsr"] :is(input, select):focus { border-color: var(--hs-gold); box-shadow: 0 0 0 2px rgba(232, 189, 87, .25); outline: none; }
-html[data-skin="hsr"] :is(input, textarea)::placeholder { color: #95959b; opacity: 1; }
+html[data-skin="hsr"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 999px; border: 1px solid var(--hs-edge);
+  background: rgba(10, 13, 36, .85); color: #eef0ff; }
+html[data-skin="hsr"] :is(input, select):focus { border-color: var(--hs-lav); box-shadow: 0 0 0 2px rgba(185, 168, 255, .25); outline: none; }
+html[data-skin="hsr"] :is(input, textarea)::placeholder { color: #9aa1cf; opacity: 1; }
 html[data-skin="hsr"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--hs-gold); }
 
-/* --- Chips y filtros: píldoras con borde (como los atajos "Esc", "Tab"); la activa, clara con texto oscuro --- */
+/* ===== Chips y filtros: cristal; el activo, lavanda claro con texto oscuro ===== */
 html[data-skin="hsr"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
-  border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(22, 22, 26, .85); color: #ececec; box-shadow: none; }
-html[data-skin="hsr"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: rgba(255, 255, 255, .5); background: rgba(44, 44, 50, .95) !important; transform: none; }
+  border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(22, 26, 58, .8); color: #e6e8ff; box-shadow: none; }
+html[data-skin="hsr"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: var(--hs-edge2); background: rgba(44, 50, 100, .92) !important; transform: none; }
 html[data-skin="hsr"] .seg button { border-radius: 999px; }
 html[data-skin="hsr"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
-html[data-skin="hsr"] :is(.chip.on, .seg button.on):hover { background: var(--hs-light) !important; color: #1b1b1d; border-color: var(--hs-light); box-shadow: none; }
+html[data-skin="hsr"] :is(.chip.on, .seg button.on):hover { background: linear-gradient(180deg, #e9e3ff, #cfc4ff) !important; color: #1b1640; border-color: #e9e3ff;
+  box-shadow: 0 0 12px rgba(185, 168, 255, .35); }
 
-/* --- Etiquetas: cápsulas oscuras con borde; texto de color --- */
-html[data-skin="hsr"] .tag { border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(16, 16, 18, .9); color: #ececec; font-weight: 600; }
-html[data-skin="hsr"] .tag.great { color: var(--hs-gold); border-color: rgba(232, 189, 87, .5); }
-html[data-skin="hsr"] .tag.good { color: #9fe0b4; }
-html[data-skin="hsr"] .tag.mid { color: #f2c98a; }
-html[data-skin="hsr"] .tag.bad { color: #ff9f9a; }
-html[data-skin="hsr"] .pill.hot { background: rgba(16, 16, 18, .9); color: #ff9f9a; }
-html[data-skin="hsr"] .pill.new { background: rgba(16, 16, 18, .9); color: var(--hs-gold); }
-html[data-skin="hsr"] .today-flag { border-radius: 999px; background: var(--hs-light); color: #1b1b1d; }
-html[data-skin="hsr"] .soon-card em { border-radius: 999px; background: rgba(16, 16, 18, .9); color: #f2c98a; }
-html[data-skin="hsr"] .soon-card.urgent em { color: #ff9f9a; }
+/* ===== Etiquetas ===== */
+html[data-skin="hsr"] .tag { border-radius: 999px; border: 1px solid var(--hs-edge); background: rgba(12, 15, 40, .9); color: #e6e8ff; font-weight: 600; }
+html[data-skin="hsr"] .tag.great { color: var(--hs-gold); border-color: rgba(243, 199, 106, .5); }
+html[data-skin="hsr"] .tag.good { color: #9ff0c8; }
+html[data-skin="hsr"] .tag.mid { color: #ffd59a; }
+html[data-skin="hsr"] .tag.bad { color: #ffa3b4; }
+html[data-skin="hsr"] .pill.hot { background: rgba(12, 15, 40, .9); color: #ffa3b4; }
+html[data-skin="hsr"] .pill.new { background: rgba(12, 15, 40, .9); color: var(--hs-gold); }
+html[data-skin="hsr"] .today-flag { border-radius: 999px; background: var(--hs-gold); color: #2b1f05; }
+html[data-skin="hsr"] .soon-card em { border-radius: 999px; background: rgba(12, 15, 40, .9); color: #ffd59a; }
+html[data-skin="hsr"] .soon-card.urgent em { color: #ffa3b4; }
 
-/* --- Títulos de sección: como la barra "Trailblaze Mission": estrella dorada en un cuadro y franja gris que se difumina a la derecha --- */
-html[data-skin="hsr"] h3 { color: #f2f2f2; letter-spacing: .03em; text-transform: none; font-size: .86rem; font-weight: 600; padding: 3px 40px 3px 0; width: fit-content; max-width: 100%;
-  background: linear-gradient(90deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .06) 70%, transparent); }
-html[data-skin="hsr"] h3:has(> button) { width: auto; padding-right: 4px; }
-html[data-skin="hsr"] h3::before { content: ""; flex: none; width: 20px; height: 20px; margin: -3px 2px -3px 0; background: var(--hs-spark) center / 14px no-repeat, rgba(232, 189, 87, .22); }
-html[data-skin="hsr"] h3 small { color: #c9c9ce; }
-/* Dentro de los paneles: separador fino con un punto en cada extremo debajo del título. */
-html[data-skin="hsr"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 { position: relative; }
-html[data-skin="hsr"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 + * { position: relative; }
+/* ===== Títulos de sección: estrella + texto + la vía hasta un nodo (·────◆) ===== */
+html[data-skin="hsr"] h3 { color: #f1f2ff; letter-spacing: .05em; text-transform: none; font-size: .86rem; font-weight: 600; }
+html[data-skin="hsr"] h3::before { content: ""; flex: none; width: 16px; height: 16px; background: var(--hs-spark) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(243, 199, 106, .55)); }
+/* La vía solo ocupa el espacio que sobra (base 0): el texto nunca se parte por ella; si el título va encogido, simplemente no se ve. */
+html[data-skin="hsr"] h3:not(:has(> button, > .btn, > a))::after { content: ""; flex: 1 1 0; min-width: 0; height: 7px; margin-left: 4px;
+  background: radial-gradient(circle, var(--hs-lav) 2.5px, transparent 3px) right center / 7px 7px no-repeat,
+    linear-gradient(90deg, rgba(185, 168, 255, .55), rgba(185, 168, 255, .12)) left center / calc(100% - 9px) 1px no-repeat; }
+html[data-skin="hsr"] h3 small { color: #c3c8ee; }
+/* Títulos que ya traen su icono (Banners ☆, Eventos…): sin la estrella extra; el icono hace de estrella, en dorado. */
+html[data-skin="hsr"] h3:has(> .sec-ico)::before { display: none; }
+html[data-skin="hsr"] h3 > .sec-ico { color: var(--hs-gold); filter: drop-shadow(0 0 4px rgba(243, 199, 106, .45)); }
 
-/* --- Paneles: carbón casi negro, borde gris fino --- */
+/* ===== Paneles: cristal esmerilado azulado con marcas de esquina ===== */
 html[data-skin="hsr"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
-  border-radius: 6px; border: 1px solid rgba(255, 255, 255, .14); background-color: var(--hs-panel); box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
-html[data-skin="hsr"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: rgba(20, 20, 22, .97); }
-html[data-skin="hsr"] :is(.gcard-hero, .ecard-img) { background-color: #151517; }
-html[data-skin="hsr"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 25%, rgba(20, 20, 22, .97)); }
-html[data-skin="hsr"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, rgba(20, 20, 22, .97)); }
-html[data-skin="hsr"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(20, 20, 22, .98)); }
-html[data-skin="hsr"] .modal { background: rgba(20, 20, 22, .98); }
-html[data-skin="hsr"] .modal-hero { background: linear-gradient(135deg, #2b2b30, #141416); }
+  border-radius: 10px; border: 1px solid var(--hs-edge); background-color: var(--hs-glass);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07), 0 12px 32px rgba(3, 5, 18, .55); }
+/* Marcas de esquina (arriba a la izquierda y abajo a la derecha) en los paneles grandes. Van en un ::after y no en el fondo del panel:
+   así no tapan nada y la auditoría de contraste (scripts/skin-contrast.js) no las toma por el color del panel. */
+html[data-skin="hsr"] :is(.psec, .gsec, .current, .next-patch) { position: relative; }
+html[data-skin="hsr"] :is(.psec, .gsec, .current, .next-patch)::after { content: ""; position: absolute; inset: 6px; pointer-events: none; z-index: 0; opacity: .8;
+  background:
+    linear-gradient(var(--hs-lav), var(--hs-lav)) left top / 14px 1px no-repeat, linear-gradient(var(--hs-lav), var(--hs-lav)) left top / 1px 14px no-repeat,
+    linear-gradient(var(--hs-lav), var(--hs-lav)) right bottom / 14px 1px no-repeat, linear-gradient(var(--hs-lav), var(--hs-lav)) right bottom / 1px 14px no-repeat; }
+html[data-skin="hsr"] :is(.psec, .gsec, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .current, .next-patch) { backdrop-filter: blur(14px) saturate(1.25); }
+html[data-skin="hsr"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: rgba(16, 20, 48, .95); }
+html[data-skin="hsr"] :is(.gcard-hero, .ecard-img) { background-color: var(--hs-solid); }
+html[data-skin="hsr"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 25%, rgba(16, 20, 48, .97)); }
+html[data-skin="hsr"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, rgba(16, 20, 48, .97)); }
+html[data-skin="hsr"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(16, 20, 48, .98)); }
+html[data-skin="hsr"] .modal { background: rgba(16, 20, 48, .97); }
+html[data-skin="hsr"] .modal-hero { background: linear-gradient(135deg, #2a2466, #121638); }
 html[data-skin="hsr"] .modal-title small { color: var(--hs-gold); }
-html[data-skin="hsr"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { border-color: rgba(255, 255, 255, .4); transform: translateY(-2px); }
-html[data-skin="hsr"] .gsec-head { background: rgba(14, 14, 16, .92); border-radius: 6px; }
-html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button.on { background: var(--hs-light); color: #1b1b1d; box-shadow: inset 4px 0 0 var(--hs-gold); }
-html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button.on i { color: #7a5a14; }
-html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: rgba(255, 255, 255, .08); }
-html[data-skin="hsr"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--hs-gold); border-color: rgba(232, 189, 87, .5); opacity: 1; }
-/* Filas de listas: oscuras con franja dorada a la izquierda; al pasar, la fila clara con texto oscuro (como la misión seleccionada). */
-html[data-skin="hsr"] :is(.list li, .hist li) { margin: 0 0 4px; padding: 7px 10px; border-radius: 3px; background: var(--hs-row); border: 1px solid rgba(255, 255, 255, .1); box-shadow: inset 4px 0 0 rgba(232, 189, 87, .55); }
-html[data-skin="hsr"] :is(.list li, .hist li):hover { background: var(--hs-light); border-color: #fff; box-shadow: inset 4px 0 0 var(--hs-gold); }
-html[data-skin="hsr"] :is(.list li, .hist li):hover :is(.ev-title, .pname, span, b, small, .when) { color: #1b1b1d !important; }
-html[data-skin="hsr"] .progress { background: rgba(255, 255, 255, .12); }
-html[data-skin="hsr"] .progress i { background: var(--hs-gold); box-shadow: none; }
-html[data-skin="hsr"] .stats > div { border-radius: 4px; background: rgba(34, 34, 38, .9); border: 1px solid rgba(255, 255, 255, .1); }
+html[data-skin="hsr"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { border-color: var(--hs-edge2); transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .09), 0 0 0 1px rgba(185, 168, 255, .18), 0 14px 34px rgba(3, 5, 18, .6), 0 0 26px rgba(118, 84, 220, .25); }
+html[data-skin="hsr"] .gsec-head { background: rgba(14, 18, 44, .9); border-radius: 8px; }
+html[data-skin="hsr"] :is(.lang-menu, .skin-panel) { background-color: rgba(16, 20, 48, .96); }
+html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button.on { background: linear-gradient(90deg, rgba(243, 199, 106, .22), rgba(185, 168, 255, .12)); color: #fff;
+  box-shadow: inset 3px 0 0 var(--hs-gold); }
+html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button.on i { color: var(--hs-gold); }
+html[data-skin="hsr"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: rgba(185, 168, 255, .1); }
+html[data-skin="hsr"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--hs-gold); border-color: rgba(243, 199, 106, .5); opacity: 1; }
+
+/* Filas de listas: estaciones de la vía (un punto a la izquierda unido por una línea fina); al pasar, se ilumina en lavanda. */
+html[data-skin="hsr"] :is(.list li, .hist li) { position: relative; margin: 0 0 4px; padding: 7px 10px 7px 22px; border-radius: 6px;
+  background: rgba(26, 31, 68, .88); border: 1px solid rgba(185, 168, 255, .14); box-shadow: none; }
+html[data-skin="hsr"] :is(.list li, .hist li)::before { content: ""; position: absolute; left: 8px; top: 50%; width: 7px; height: 7px; border-radius: 50%;
+  transform: translateY(-50%); background: var(--hs-ink); border: 1.5px solid var(--hs-lav); box-shadow: 0 0 6px rgba(185, 168, 255, .5); }
+html[data-skin="hsr"] :is(.list li, .hist li):hover { background: rgba(48, 52, 108, .95); border-color: var(--hs-edge2); }
+html[data-skin="hsr"] :is(.list li, .hist li):hover::before { background: var(--hs-gold); border-color: #ffeec7; box-shadow: 0 0 8px rgba(243, 199, 106, .8); }
+html[data-skin="hsr"] .progress { background: rgba(185, 168, 255, .16); }
+html[data-skin="hsr"] .progress i { background: linear-gradient(90deg, var(--hs-lav), var(--hs-gold)); box-shadow: 0 0 6px rgba(243, 199, 106, .4); }
+html[data-skin="hsr"] .stats > div { border-radius: 8px; background: rgba(26, 31, 68, .88); border: 1px solid rgba(185, 168, 255, .14); }
 html[data-skin="hsr"] .gsec-head .stats b { color: var(--hs-gold); }
 html[data-skin="hsr"] :is(.ev-loc, .gcard-head p) { color: var(--hs-gold); }
 
-/* ===== Línea de tiempo: barras carbón con el color de su tipo a la izquierda (banner dorado, evento blanco, desafío violeta) ===== */
-html[data-skin="hsr"] [style*="--c:"] { --c: #e8bd57 !important; --c2: #1c1c20 !important; }
-html[data-skin="hsr"] .tl.tl { background: rgba(14, 14, 16, .7); backdrop-filter: blur(2px); }
-html[data-skin="hsr"] :is(.tl-corner, .tl-label, .tl-axis) { background: #161618; }
-html[data-skin="hsr"] .tl-lane { border-color: rgba(255, 255, 255, .06); }
-html[data-skin="hsr"] .grid-line { background: rgba(255, 255, 255, .05); }
-html[data-skin="hsr"] .tick { color: #b4b4b8; }
-html[data-skin="hsr"] .month b { color: #f2f2f2; }
-html[data-skin="hsr"] .bar { border-radius: 3px; border: 1px solid rgba(255, 255, 255, .16); background: #1c1c20 !important; }
-html[data-skin="hsr"] .bar-clip { border-radius: 2px; }
-html[data-skin="hsr"] .bar.banner { border-left: 4px solid var(--hs-gold); }
-html[data-skin="hsr"] .bar.event { border-left: 4px solid #e6e6e6; }
-html[data-skin="hsr"] .bar.challenge { border-left: 4px solid #a48cf0; }
-html[data-skin="hsr"] .bar.live { box-shadow: 0 0 0 1px rgba(232, 189, 87, .45); }
-html[data-skin="hsr"] .bar:hover { border-color: rgba(255, 255, 255, .5); }
-html[data-skin="hsr"] .bar.live::before { content: ""; position: absolute; left: -9px; top: 50%; width: 16px; height: 16px; z-index: 2; transform: translateY(-50%);
-  background: var(--hs-spark) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(232, 189, 87, .8)); }
-html[data-skin="hsr"] .bar-prog { background: var(--hs-gold); opacity: .85; }
-html[data-skin="hsr"] .bar.past { opacity: 1; filter: grayscale(.85) brightness(.72); }
-html[data-skin="hsr"] .bar .bar-txt .when.upcoming { color: #d6d6da !important; }
-html[data-skin="hsr"] .sec-title { color: #f2f2f2 !important; }
+/* ===== Línea de tiempo ===== */
+html[data-skin="hsr"] [style*="--c:"] { --c: #f3c76a !important; --c2: #1a1f48 !important; }
+html[data-skin="hsr"] .tl.tl { background: rgba(10, 13, 36, .72); backdrop-filter: blur(3px); }
+html[data-skin="hsr"] :is(.tl-corner, .tl-label, .tl-axis) { background: #11153a; }
+html[data-skin="hsr"] .tl-lane { border-color: rgba(185, 168, 255, .08); }
+html[data-skin="hsr"] .grid-line { background: rgba(185, 168, 255, .07); }
+html[data-skin="hsr"] .tick { color: #b9bfe6; }
+html[data-skin="hsr"] .month b { color: #f1f2ff; }
+/* Barras índigo con el nodo de su tipo a la izquierda (banner dorado, evento celeste, desafío lavanda). */
+html[data-skin="hsr"] .bar { border-radius: 6px; border: 1px solid rgba(185, 168, 255, .2); background: linear-gradient(90deg, #232a5e, #1a1f48) !important; }
+html[data-skin="hsr"] .bar-clip { border-radius: 5px; }
+html[data-skin="hsr"] .bar.banner { border-left: 3px solid var(--hs-gold); }
+html[data-skin="hsr"] .bar.event { border-left: 3px solid var(--hs-sky); }
+html[data-skin="hsr"] .bar.challenge { border-left: 3px solid var(--hs-lav); }
+html[data-skin="hsr"] .bar.live { box-shadow: 0 0 0 1px rgba(243, 199, 106, .4), 0 0 14px rgba(243, 199, 106, .18); }
+html[data-skin="hsr"] .bar:hover { border-color: var(--hs-edge2); }
+html[data-skin="hsr"] .bar.live::before { content: ""; position: absolute; left: -8px; top: 50%; width: 15px; height: 15px; z-index: 2; transform: translateY(-50%);
+  background: var(--hs-spark-solid) center / contain no-repeat; filter: drop-shadow(0 0 4px rgba(243, 199, 106, .9)); }
+html[data-skin="hsr"] .bar-prog { background: linear-gradient(90deg, rgba(185, 168, 255, .9), var(--hs-gold)); opacity: .85; }
+html[data-skin="hsr"] .bar.past { opacity: 1; filter: grayscale(.8) brightness(.7); }
+html[data-skin="hsr"] .bar .bar-txt .when.upcoming { color: #d4d8f7 !important; }
+html[data-skin="hsr"] .sec-title { color: #f1f2ff !important; }
 html[data-skin="hsr"] .sec-band.banner .sec-title { color: var(--hs-gold) !important; }
-html[data-skin="hsr"] .sec-band.challenge .sec-title { color: #c8b9ff !important; }
+html[data-skin="hsr"] .sec-band.event .sec-title { color: var(--hs-sky) !important; }
+html[data-skin="hsr"] .sec-band.challenge .sec-title { color: #d2c7ff !important; }
 html[data-skin="hsr"] .patch-mark { opacity: 1; color: var(--hs-gold); }
 
-/* ===== Retratos: ficha de personaje (fondo de rareza dorado como las recompensas del juego, nombre sobre franja oscura) ===== */
-html[data-skin="hsr"] .bport { border-radius: 6px; border: 1px solid rgba(255, 255, 255, .2); }
-html[data-skin="hsr"] .bport:hover { border-color: rgba(255, 255, 255, .5); transform: translateY(-2px); }
-html[data-skin="hsr"] .bport .p-time { border-radius: 999px; background: rgba(16, 16, 18, .9); color: var(--hs-gold); border: 1px solid rgba(232, 189, 87, .5); backdrop-filter: none; }
-html[data-skin="hsr"] .bport .p-time.hot { color: #ff9f9a; border-color: rgba(255, 159, 154, .45); }
+/* ===== Destacados: ficha de personaje (fondo de rareza dorado con haz diagonal, franja azul noche con línea dorada) ===== */
+html[data-skin="hsr"] .bport { border-radius: 8px; border: 1px solid var(--hs-edge); }
+html[data-skin="hsr"] .bport:hover { border-color: var(--hs-edge2); transform: translateY(-2px); }
+html[data-skin="hsr"] .bport .p-time { border-radius: 999px; background: rgba(10, 13, 36, .9); color: var(--hs-gold); border: 1px solid rgba(243, 199, 106, .5); backdrop-filter: none; }
+html[data-skin="hsr"] .bport .p-time.hot { color: #ffa3b4; border-color: rgba(255, 163, 180, .45); }
 html[data-skin="hsr"] .featured { gap: 8px; }
-html[data-skin="hsr"] .portrait { width: 88px; gap: 0; overflow: hidden; border-radius: 8px 8px 4px 4px; border: 0; background: #1a1a1d; }
+html[data-skin="hsr"] .portrait { position: relative; width: 88px; gap: 0; overflow: hidden; border-radius: 10px 10px 4px 4px; border: 1px solid rgba(243, 199, 106, .45); background: #121638; }
 html[data-skin="hsr"] .portrait img { width: 100%; height: 100px; border: 0; border-radius: 0; object-position: 50% 8%;
-  background: linear-gradient(180deg, #8a5a2c 0%, #c58a45 55%, #e7b45f 100%); }
-html[data-skin="hsr"] .portrait:hover { box-shadow: 0 0 0 2px rgba(255, 255, 255, .5); }
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 246, 220, .35) 48%, transparent 58%),
+    linear-gradient(180deg, #6b4a2a 0%, #b9823e 50%, #f0c46a 100%); }
+html[data-skin="hsr"] .portrait:hover { box-shadow: 0 0 0 1px var(--hs-gold), 0 0 16px rgba(243, 199, 106, .35); }
 html[data-skin="hsr"] .portrait:hover img { transform: none; }
-html[data-skin="hsr"] .portrait span { padding: 4px 4px 5px; background: #1a1a1d; color: #f2f2f2; font-weight: 600; font-size: .76rem; line-height: 1.15; }
-html[data-skin="hsr"] .portrait small { padding: 0 4px 5px; background: #1a1a1d; color: #c9c9ce; font-size: .68rem; }
+html[data-skin="hsr"] .portrait span { padding: 5px 4px 5px; background: #121638; border-top: 1px solid var(--hs-gold); color: #f1f2ff; font-weight: 600; font-size: .76rem; line-height: 1.15; }
+html[data-skin="hsr"] .portrait small { padding: 0 4px 5px; background: #121638; color: #c3c8ee; font-size: .68rem; }
 
 /* Textos con color fijo de la hoja base. */
-html[data-skin="hsr"] :is(.code-until, .prec) { color: #f2c98a; }
+html[data-skin="hsr"] :is(.code-until, .prec) { color: #ffd59a; }
 html[data-skin="hsr"] .link-btn { color: var(--hs-gold); }
 html[data-skin="hsr"] .stars { color: var(--hs-gold); text-shadow: none; }
-/* Pie: separador fino con un punto en cada extremo (·————·). */
+/* Pie: la vía con un nodo en cada extremo (◆────◆). */
 html[data-skin="hsr"] .site-foot { border-top: 0; position: relative; }
-html[data-skin="hsr"] .site-foot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 5px;
-  background: radial-gradient(circle, rgba(255, 255, 255, .45) 2px, transparent 2.5px) left center / 5px 5px no-repeat,
-    radial-gradient(circle, rgba(255, 255, 255, .45) 2px, transparent 2.5px) right center / 5px 5px no-repeat,
-    linear-gradient(rgba(255, 255, 255, .18), rgba(255, 255, 255, .18)) center / calc(100% - 12px) 1px no-repeat; }
+html[data-skin="hsr"] .site-foot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 7px;
+  background: radial-gradient(circle, var(--hs-lav) 2.5px, transparent 3px) left center / 7px 7px no-repeat,
+    radial-gradient(circle, var(--hs-lav) 2.5px, transparent 3px) right center / 7px 7px no-repeat,
+    linear-gradient(90deg, rgba(185, 168, 255, .15), rgba(185, 168, 255, .45), rgba(185, 168, 255, .15)) center / calc(100% - 16px) 1px no-repeat; }
 
 /* --- Cursor del juego (cursor.png, 32 px, convertido del .cur que aportó el dueño). Punta en (4, 4). --- */
 html[data-skin="hsr"], html[data-skin="hsr"] body { cursor: url(/skins/hsr/cursor.png) 4 4, auto; }
