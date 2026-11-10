@@ -8,6 +8,8 @@
 //                          "orders": [ { "id": "<pedido PayPal o 'manual'>", "amount": "5.00", "currency": "USD", "at": "<ISO>" } ] } ] }
 // Nunca se guarda el correo en claro (ver tokens.mjs, emailHash).
 
+import { nativeFetch } from '../native-fetch.mjs'
+
 const repo = () => process.env.DONORS_REPO ?? ''
 const path = () => process.env.DONORS_PATH || 'donors.json'
 export const donorsConfigured = () => /^[\w.-]+\/[\w.-]+$/.test(repo()) && !!process.env.DONORS_TOKEN
@@ -23,41 +25,20 @@ const parseDonors = text => {
   return { donors: Array.isArray(data.donors) ? data.donors : [] }
 }
 
-// Respaldo de SOLO LECTURA por raw.githubusercontent.com (mismo token): en Botkeep, api.github.com responde 403 sin mensaje de GitHub
-// (parece un filtro del host) mientras raw.githubusercontent.com sí funciona (lo usa el recolector). Sin el sha no se puede escribir:
-// las escrituras (aviso de Ko-fi, npm run premium) siguen necesitando la API.
-let rawWarned = false
-async function loadRaw(apiError) {
-  const url = `https://raw.githubusercontent.com/${repo()}/${encodeURIComponent(process.env.DONORS_BRANCH || 'HEAD')}/${path()}`
-  const res = await fetch(url, { headers: { authorization: `Bearer ${process.env.DONORS_TOKEN}`, 'user-agent': 'WhenGacha' }, signal: AbortSignal.timeout(15_000) })
-  // Aquí un 404 no significa "lista vacía": raw responde 404 también si el token no da acceso al repo privado.
-  if (!res.ok) throw new Error(`${apiError.message}; respaldo raw.githubusercontent.com → HTTP ${res.status}`)
-  if (!rawWarned) {
-    rawWarned = true
-    console.warn(`[donors] la API de GitHub falla (${apiError.message}); se lee la lista por raw.githubusercontent.com. Las altas automáticas de Ko-fi necesitan la API.`)
-  }
-  return { at: Date.now(), data: parseDonors(await res.text()), sha: null }
-}
-
 async function load(force = false) {
   if (!force && Date.now() - cache.at < CACHE_MS) return cache
-  try {
-    cache = await loadApi()
-  } catch (e) {
-    if (force) throw e // escritura: hace falta el sha de la API
-    cache = await loadRaw(e)
-  }
+  cache = await loadApi()
   return cache
 }
 
 async function loadApi() {
   const ref = process.env.DONORS_BRANCH ? `?ref=${encodeURIComponent(process.env.DONORS_BRANCH)}` : ''
-  const res = await fetch(api(ref), { headers: headers(), signal: AbortSignal.timeout(15_000) })
+  const res = await nativeFetch(api(ref), { headers: headers(), signal: AbortSignal.timeout(15_000) })
   if (res.status === 404) return { at: Date.now(), data: { donors: [] }, sha: null } // todavía no hay archivo: se crea al primer donante
   if (!res.ok) {
     // El mensaje de GitHub distingue "Resource not accessible by personal access token" (permisos), "Bad credentials",
     // límites de uso, etc. Del token solo se registra la longitud, para ver si está cortado o con espacios (nunca el valor).
-    // Si la respuesta no es JSON de GitHub (sin "message"), probablemente la da algo de por medio (filtro del host): se registra quién.
+    // Si la respuesta no es JSON de GitHub (sin "message"), la dio otra cosa (p. ej. el fetch del recolector): se registra quién.
     const body = await res.text().catch(() => '')
     let msg = ''
     try { msg = JSON.parse(body)?.message ?? '' } catch { /* no es JSON */ }
@@ -83,7 +64,7 @@ function write(mutate, message) {
     if (!mutate(next)) return false
     const body = { message, content: Buffer.from(`${JSON.stringify(next, null, 1)}\n`).toString('base64'), ...(sha ? { sha } : {}),
       ...(process.env.DONORS_BRANCH ? { branch: process.env.DONORS_BRANCH } : {}) }
-    const res = await fetch(api(), { method: 'PUT', headers: { ...headers(), 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(20_000) })
+    const res = await nativeFetch(api(), { method: 'PUT', headers: { ...headers(), 'content-type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(20_000) })
     if ((res.status === 409 || res.status === 422) && retry) return run(false)
     if (!res.ok) throw new Error(`github donors (escritura) → HTTP ${res.status}`)
     const j = await res.json()

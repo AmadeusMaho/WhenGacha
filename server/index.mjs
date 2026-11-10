@@ -13,7 +13,6 @@ import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
 import { handleApi, supportProblems } from './supporter.mjs'
-import { githubCheck } from './github-check.mjs'
 import { getSkinLive, startSkinLive } from './skin-live.mjs'
 
 const gzip = promisify(gzipCb)
@@ -138,7 +137,6 @@ server.listen(PORT, HOST, async () => {
   if (envFileKeys.length) console.log(`[env] cargadas de .env: ${envFileKeys.join(', ')}`) // solo nombres, nunca valores
   const premium = supportProblems() // si el host no pasa las variables al proceso, aquí se ve cuáles (solo nombres)
   console.log(premium.length ? `[premium] desactivado. Faltan o no valen: ${premium.join(', ')}` : '[premium] activo')
-  githubCheck().catch(err => console.error('[github-check]', err))
   if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
 })
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => flushCache().finally(() => server.close(() => process.exit(0))))

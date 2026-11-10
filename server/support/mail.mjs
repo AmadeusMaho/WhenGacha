@@ -1,3 +1,4 @@
+import { nativeFetch } from '../native-fetch.mjs'
 // Correos de acceso a WhenGacha Premium, enviados con la API de Resend (resend.com). Sin dependencias: una petición HTTP.
 // Variables: RESEND_API_KEY, MAIL_FROM ("WhenGacha <no-reply@tu-dominio>", con el dominio verificado en Resend) y PUBLIC_URL
 // (https://tu-dominio, sin barra final): de ahí sale el enlace del correo. No se usa la cabecera Host de la petición para que nadie
@@ -34,7 +35,7 @@ export async function sendAccessLink(to, link, lang, welcome) {
 <p style="margin:24px 0"><a href="${esc(link)}" style="background:#d6ad5c;color:#2a1f08;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:700">${esc(t.btn)}</a></p>
 <p style="color:#555;font-size:14px">${esc(t.again)}</p><p style="color:#888;font-size:13px">${esc(t.ignore)}</p></div>`
   const text = `${welcome ? t.hiNew : t.hi}\n\n${t.how}\n${link}\n\n${t.again}\n${t.ignore}`
-  const res = await fetch('https://api.resend.com/emails', {
+  const res = await nativeFetch('https://api.resend.com/emails', {
     method: 'POST', headers: { authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'content-type': 'application/json' },
     body: JSON.stringify({ from: process.env.MAIL_FROM, to: [to], subject: welcome ? t.subjectNew : t.subject, html, text }),
     signal: AbortSignal.timeout(15_000),
