@@ -23,6 +23,20 @@ const TTL = { login: 30 * MIN, session: 60 * DAY }
 const LANGS = new Set(['es', 'en', 'zh'])
 
 export const supportEnabled = () => secretConfigured() && kofiConfigured() && donorsConfigured() && mailConfigured()
+
+/** Para el registro de arranque: qué variables de Premium faltan o no valen (solo nombres, nunca valores). */
+export function supportProblems() {
+  const env = process.env
+  const bad = []
+  if (!secretConfigured()) bad.push('SUPPORTER_SECRET (falta o tiene menos de 16 caracteres)')
+  if (!env.KOFI_TOKEN) bad.push('KOFI_TOKEN')
+  if (!kofiUrl()) bad.push(env.KOFI_URL ? 'KOFI_URL (no es https://ko-fi.com/usuario; ¿espacios al final?)' : 'KOFI_URL')
+  if (!donorsConfigured()) bad.push(env.DONORS_REPO ? 'DONORS_REPO (formato usuario/repo) o DONORS_TOKEN' : 'DONORS_REPO / DONORS_TOKEN')
+  if (!env.RESEND_API_KEY) bad.push('RESEND_API_KEY')
+  if (!env.MAIL_FROM) bad.push('MAIL_FROM')
+  if (!/^https:\/\/[^/]+$/.test(env.PUBLIC_URL ?? '')) bad.push(env.PUBLIC_URL ? 'PUBLIC_URL (https://dominio, sin barra final ni espacios)' : 'PUBLIC_URL')
+  return bad
+}
 const loginEnabled = () => secretConfigured() && donorsConfigured() && mailConfigured()
 
 /* Límites por IP (y por correo para los enlaces), en memoria. */

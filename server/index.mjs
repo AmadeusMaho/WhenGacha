@@ -11,7 +11,7 @@ import { promisify } from 'node:util'
 import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
-import { handleApi } from './supporter.mjs'
+import { handleApi, supportProblems } from './supporter.mjs'
 import { getSkinLive, startSkinLive } from './skin-live.mjs'
 
 const gzip = promisify(gzipCb)
@@ -133,6 +133,8 @@ server.listen(PORT, HOST, async () => {
   console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
   startCollector().catch(err => console.error('[collector]', err))
   startSkinLive().catch(err => console.error('[skin-live]', err))
+  const premium = supportProblems() // si el host no pasa las variables al proceso, aquí se ve cuáles (solo nombres)
+  console.log(premium.length ? `[premium] desactivado. Faltan o no valen: ${premium.join(', ')}` : '[premium] activo')
   if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
 })
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => flushCache().finally(() => server.close(() => process.exit(0))))
