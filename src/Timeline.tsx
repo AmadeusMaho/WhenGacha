@@ -309,9 +309,12 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const short = e.open ? `${fmtDate(s)} → ${t('time.open')}` : `${fmtShort(s)} → ${e.precision ? '≈ ' : ''}${fmtShort(en)}`
   const left_ = en - now
   const urgency = s > now ? 'upcoming' : en <= now ? 'ended' : e.open ? '' : left_ < DAY ? 'urgent' : left_ < 3 * DAY ? 'soon' : ''
+  // Barra estrecha de algo en curso (se acaba pronto): una pastilla con lo que queda ("18h", "1d") para que no se pierda entre el texto
+  // recortado. Solo la primera unidad de la cuenta atrás: cabe en barras de ~28 px.
+  const chip = s < now && en > now && !e.open && w < 150 ? countdown(left_).split(' ')[0] : ''
   return (
     <button
-      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''} ${urgency === 'urgent' || urgency === 'soon' ? urgency : ''}`}
+      className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''} ${urgency === 'urgent' || urgency === 'soon' ? urgency : ''}${chip ? ' has-chip' : ''}`}
       style={{ left, width: w, top }}
       onClick={() => open(e)}
       title={`${e.title}\n${range}${e.pulls ? `\n${t('pulls.about', { n: e.pulls })}` : ''}${e.precision ? `\n≈ ${precHint(e.precision)}` : ''}`}
@@ -325,10 +328,11 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
         <span className="bar-txt">
           <b>{e.precision && '≈ '}{done && '✓ '}{e.title}</b>
           {/* Primero el estado (lo que más importa): si falta sitio se recortan las fechas, no el "quedan…". */}
-          {w > 90 && <small>{!e.open && <><span className={`when ${urgency}`}>{state}</span>{w > 130 && ' · '}</>}{(w > 130 || e.open) && short}</small>}
+          {w > 90 && !chip && <small>{!e.open && <><span className={`when ${urgency}`}>{state}</span>{w > 130 && ' · '}</>}{(w > 130 || e.open) && short}</small>}
         </span>
         {e.pulls > 0 && w > 260 && <em>~{e.pulls}✦</em>}
       </span>}
+      {chip && w >= 26 && <span className={`bar-left ${urgency}`} aria-label={state}>{chip}</span>}
     </button>
   )
 }

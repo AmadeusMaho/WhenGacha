@@ -978,3 +978,12 @@ img.plan-ico { object-fit: contain; }
 /* Calculadora dedicada recomendada para el juego (p. ej. Uma). */
 .plan-more { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; font-size: .84rem; color: var(--text); }
 .plan-more a { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+
+/* Línea de tiempo: lo que queda de un evento/banner en curso con la barra estrecha (Timeline.tsx, `chip`). Fondo propio oscuro para que se
+   lea igual con cualquier skin; en rojo claro si queda menos de un día. */
+.bar .bar-left { position: absolute; right: 3px; top: 50%; transform: translateY(-50%); z-index: 3; padding: 1px 6px; border-radius: 999px;
+  background: rgba(8, 10, 18, .82); color: #fff; font-size: .68rem; font-weight: 800; line-height: 1.5; letter-spacing: 0; white-space: nowrap; pointer-events: none; }
+.bar .bar-left.urgent { color: #ffc2ca; box-shadow: inset 0 0 0 1px rgba(255, 140, 155, .55); }
+.bar .bar-left.soon { color: #ffe3a3; }
+.bar.has-chip .bar-in { padding-right: 42px; }
+.bar.has-chip .bar-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

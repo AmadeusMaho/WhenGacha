@@ -152,10 +152,14 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
             </label>
           </div>
 
-          {econ.choices && econ.choices.length > 0 && <>
+          {((econ.choices?.length ?? 0) > 0 || (econ.inputs?.length ?? 0) > 0) && <>
             <h3><Ico name="trophy" title />{t('plan.ranks')}</h3>
             <div className="plan-fields">
-              {econ.choices.map(ch => (
+              {econ.inputs?.map(inp => (
+                <Num key={inp.id} label={<><Ico name="trophy" />{inp.name}</>} value={cfg.custom?.[inp.id] ?? 0}
+                  onChange={n => set({ custom: { ...cfg.custom, [inp.id]: n } })} suffix={`${cur} ${inp.per === 'week' ? t('plan.perWeek') : inp.per === 'month' ? t('plan.perMonth') : t('plan.perDay')}`} />
+              ))}
+              {econ.choices?.map(ch => (
                 <label key={ch.id} className="plan-field">
                   <span><Ico name="trophy" />{ch.name}</span>
                   <select value={cfg.ranks?.[ch.id] ?? 0} onChange={e => set({ ranks: { ...cfg.ranks, [ch.id]: Number(e.target.value) } })}>
@@ -164,6 +168,7 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
                 </label>
               ))}
             </div>
+            {(econ.inputs?.length ?? 0) > 0 && <small className="muted plan-hint">{t('plan.inputsHint')}</small>}
           </>}
 
           <h3><Ico name="target" title />{t('plan.target')}</h3>

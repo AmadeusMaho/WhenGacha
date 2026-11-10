@@ -19,6 +19,7 @@ import type { GameEvent } from './types'
 import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
 import { Planner } from './Planner'
+import { estimatedEvents } from './pullPlan'
 
 /** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
 /** Servidor de Discord de la comunidad (botón del pie). */
@@ -91,7 +92,13 @@ export default function App() {
   const games = useMemo(() => [...CATALOG, ...state.customGames], [state.customGames])
   const open = useCallback((e: GameEvent) => { setClosing(false); setSelected(e) }, [])
   const close = useCallback(() => { setClosing(true); setTimeout(() => { setSelected(null); setClosing(false) }, 230) }, [])
-  const ctx: Ctx = { state, setState, games, now, gameOf: id => games.find(g => g.id === id), open }
+  // Reinicios estimados de los modos de dificultad (pullPlan.ts, estimatedEvents): se ven en la línea de tiempo y la calculadora los cuenta
+  // como temporadas conocidas. No se guardan en el estado (se recalculan), así una sincronización nunca los mezcla con los datos reales.
+  const hour = Math.floor(now / 3_600_000)
+  const estimated = useMemo(() => [...new Set(state.tracked)].flatMap(id => { const g = games.find(x => x.id === id); return g ? estimatedEvents(g, state.events, hour * 3_600_000) : [] }),
+    [state.tracked, state.events, games, hour])
+  const view = useMemo(() => (estimated.length ? { ...state, events: [...state.events, ...estimated] } : state), [state, estimated])
+  const ctx: Ctx = { state: view, setState, games, now, gameOf: id => games.find(g => g.id === id), open }
 
   /** Cambios de pestaña/vista con transición suave del navegador (View Transitions), si existe. */
   const transition = useCallback((fn: () => void) => {
@@ -101,7 +108,7 @@ export default function App() {
   }, [])
   useEffect(() => { if ('startViewTransition' in document) document.documentElement.classList.add('has-vt') }, [])
   // El modal debe reflejar el estado más reciente (p. ej. "completado").
-  const current = selected ? state.events.find(e => e.id === selected.id) ?? selected : null
+  const current = selected ? view.events.find(e => e.id === selected.id) ?? selected : null
   const goMine = () => transition(() => setTab('mine'))
   const goGame = (id: string) => transition(() => { setFocusGame(id); setTab('timeline') })
 

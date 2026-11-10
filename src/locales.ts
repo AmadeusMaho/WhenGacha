@@ -142,6 +142,8 @@ export const es = {
   // pestaña "Tiradas" (Planner.tsx)
   'plan.empty': 'Elige tus gachas para calcular tus tiradas.',
   'plan.lead': 'Calculadora de tiradas',
+  'plan.perMonth': '/mes',
+  'plan.inputsHint': 'Pon lo que te dan a ti: depende de tu puesto y no hay tabla fiable.',
   'plan.more': 'Para un cálculo más completo (banners, eventos y todo lo de tu cuenta), te recomendamos',
   'plan.ranks': 'Tu puesto',
   'plan.noRank': 'No participo / sin elegir',
@@ -447,6 +449,8 @@ export const en: Record<Key, string> = {
 
   'plan.empty': 'Pick your gachas to plan your pulls.',
   'plan.lead': 'Pull calculator',
+  'plan.perMonth': '/mo',
+  'plan.inputsHint': 'Enter what you get: it depends on your rank and there is no reliable table.',
   'plan.more': 'For a more complete plan (banners, events and everything on your account), we recommend',
   'plan.ranks': 'Your rank',
   'plan.noRank': 'Not taking part / not set',
@@ -746,6 +750,8 @@ export const zh: Record<Key, string> = {
 
   'plan.empty': '选择你的游戏来规划抽数。',
   'plan.lead': '抽数计算器',
+  'plan.perMonth': '/月',
+  'plan.inputsHint': '请填写你实际获得的数量：取决于排名，没有可靠的数据。',
   'plan.more': '如需更完整的规划（卡池、活动和账号的全部收入），推荐使用',
   'plan.ranks': '你的排名',
   'plan.noRank': '不参与 / 未选择',

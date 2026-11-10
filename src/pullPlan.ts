@@ -36,8 +36,9 @@ import type { Game, GameEvent, Patch, PlanCfg } from './types'
  *   Superstring Abyss paga según el puesto y no hay tabla fiable: no se cuenta.
  * - NTE (Icy Veins, GameWith): Beyond the Rails, ruta especial 700 por versión.
  * - Uma: Team Trials, rango de club y Champions Meeting son elecciones (`choices`) que cada uno rellena con su puesto.
- * Sin datos fiables todavía: CZN (Basin of Hyperspace se reinicia cada mes, sin cifra publicada), Endfield (Umbral Monument es
- * permanente; su extra es por evento), Epic Seven y AFK Journey (Arena según el puesto, sin tabla actual), BD2.
+ * Dados por el dueño (10 nov 2026): Endfield, Umbral Monument 1200 por cada parte nueva (una por versión); CZN, Basin of Hyperspace
+ *   (Dimensional Twilight) 1000 al mes; se reinicia el día 11 (el del 10 nov 2026 acababa hacia las 00:00 UTC del 11). Epic Seven, AFK Journey y BD2: ni el dueño ni las guías tienen tabla de la Arena / Mirror Wars,
+ *   así que son campos (`inputs`) que rellena cada jugador.
  * Ingresos con `tickets: true` son billetes de tirada (cada uno = 1 tirada), no moneda.
  * Billetes promocionales de la tienda (10 nov 2026, a petición del dueño: "5 promocionales y 5 del permanente al mes"): Genshin
  * (Paimon's Bargains), HSR (Embers) y ZZZ (Residual Signal) 5 al mes, el día 1; WuWa, 7 Radiant Tides por versión (su tienda de Coral se
@@ -64,6 +65,10 @@ export interface Source {
   rank?: boolean
   /** Nombres con que el modo sale entre los eventos de la app (por defecto, `name`): esos eventos se cuentan en esta fila y no aparte. */
   aliases?: string[]
+  /** Días del mes (si son varios; `per: 'month'`). */
+  days?: number[]
+  /** Un reinicio conocido (ISO) para los ciclos de `every` días cuando la app no trae ninguna temporada del modo. */
+  anchor?: string
   /** Este modo son los desafíos del juego que no coinciden con otro (HSR: las temporadas de MoC / Pure Fiction / Apocalyptic Shadow
    *  salen con su nombre temático, "Survival of the Fittest"…). */
   matchChallenges?: boolean
@@ -78,6 +83,8 @@ export interface Econ {
   currency: string; per: number; pass: number; pity: number; sources: Source[]
   /** Modos cuya recompensa depende de tu puesto: se rellenan en la ficha. */
   choices?: RankChoice[]
+  /** Modos sin tabla fiable: cada jugador pone cuánto le dan (cfg.custom[id], moneda por cada vez). */
+  inputs?: { id: string; name: string; per: Source['per']; day?: number }[]
   /** Nota propia en lugar de la genérica. */
   note?: 'limbus'
   /** Página de la wiki del juego con el icono de la moneda y del billete promocional (images.ts, `itemIcon`). */
@@ -119,10 +126,11 @@ const ECON: Record<string, Econ> = {
   wuwa: { currency: 'Astrite', icon: 'Astrite', ticket: 'Radiant Tide', per: 160, pass: 90, pity: 80, sources: [
     daily(60),
     { name: 'Thousand Gateways', amount: 160, per: 'week' },
-    { name: 'Tower of Adversity', amount: 800, per: 'patch', endgame: true },
-    // 800 por reinicio y dos reinicios por versión (Game8): cada 21 días. Antes iba como 1600 de golpe por versión y la fila decía «× 1 +10».
-    { name: 'Whimpering Wastes', amount: 800, per: 'every', every: 21, endgame: true },
-    { name: 'Endstate Matrix', amount: 150, per: 'patch', endgame: true },
+    // Ciclos sacados de las fechas que trae la app (10 nov 2026): Torre y Whimpering Wastes cada 28 días, Endstate Matrix cada 42.
+    { name: 'Tower of Adversity', amount: 800, per: 'every', every: 28, endgame: true },
+    // 800 por reinicio (Game8). Antes iba como 1600 de golpe por versión y la fila decía «× 1 +10».
+    { name: 'Whimpering Wastes', amount: 800, per: 'every', every: 28, endgame: true },
+    { name: 'Endstate Matrix', amount: 150, per: 'every', every: 42, endgame: true },
     tickets('ticketShopPatch', 7, 'patch'),
     ...version(600, 300)] },
   arknights: { currency: 'Orundum', icon: 'Orundum', ticket: 'Headhunting Permit', per: 600, pass: 0, pity: 0, sources: [
@@ -131,10 +139,12 @@ const ECON: Record<string, Econ> = {
     { key: 'shop', amount: 600, per: 'month', day: 1 }] },
   reverse1999: { currency: 'Clear Drop', icon: 'Clear Drop', ticket: 'Unilog', per: 180, pass: 0, pity: 70, sources: [
     daily(90), weekly(100),
-    { name: 'Limbo', amount: 600, per: 'patch', endgame: true }] },
+    // Limbo se reinicia los días 1 y 16 de cada mes (dotgg y las notas de la 2.4: 1 y 16 mar 2025), hasta 600 por reinicio.
+    { name: 'Limbo', amount: 600, per: 'month', days: [1, 16], endgame: true }] },
   bluearchive: { currency: 'Pyroxene', icon: 'Pyroxene', per: 120, pass: 0, pity: 200, sources: [daily(20), weekly(120)] },
   nikke: { currency: 'Gems', icon: 'Gem', ticket: 'Advanced Recruit Voucher', per: 300, pass: 0, pity: 200, sources: [daily(100), weekly(100)] },
-  endfield: { currency: 'Oroberyl', icon: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200)] },
+  endfield: { currency: 'Oroberyl', icon: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200),
+    { name: 'Umbral Monument', amount: 1200, per: 'patch', endgame: true }] },
   uma: { currency: 'Carats', more: { name: 'Uma Carat Calculator', url: 'https://umacaratcalculator.com/app' }, icon: 'Carat', iconUrl: '/icons/uma-carat.webp', per: 150, pass: 0, pity: 200, sources: [
     daily(75), weekly(150),
     { key: 'monthly', amount: 500, per: 'month', day: 1 },
@@ -150,12 +160,16 @@ const ECON: Record<string, Econ> = {
         { label: 'Group B 3rd', amount: 1000, tickets: 1 }, { label: 'Group B 2nd', amount: 1250, tickets: 2 }, { label: 'Group B 1st', amount: 1800, tickets: 3 },
         { label: 'Group A 3rd', amount: 1600, tickets: 3 }, { label: 'Group A 2nd', amount: 2400, tickets: 4 }, { label: 'Champion', amount: 3300, tickets: 5 }] },
     ] },
-  czn: { currency: 'Crystals', icon: 'Crystal', per: 160, pass: 0, pity: 0, sources: [daily(60)] },
+  czn: { currency: 'Crystals', icon: 'Crystal', per: 160, pass: 0, pity: 0, sources: [daily(60),
+    // Cada 28 días: la temporada 5 acabó el 4 feb 2026 (GameWith) y la del 10 nov 2026 acaba hacia las 00:00 UTC del 11 (el dueño):
+    // 280 días = 10 ciclos de 28. "Full-Scale Offensive" (30 sep → 10 nov 2026 en los datos) es OTRO modo, de las seasons de CZN
+    // (confirmado por el dueño): no se junta con este aunque terminen el mismo día.
+    { name: 'Basin of Hyperspace', amount: 1000, per: 'every', every: 28, anchor: '2026-11-11T00:00:00Z', endgame: true, aliases: ['basin of hyperspace', 'dimensional twilight'] }] },
   nte: { currency: 'Annulith', icon: 'Annulith', per: 160, pass: 0, pity: 0, sources: [daily(60),
     { name: 'Beyond the Rails', amount: 700, per: 'patch', endgame: true }] },
   fgo: { currency: 'Saint Quartz', icon: 'Saint Quartz', ticket: 'Summon Ticket', per: 3, pass: 0, pity: 0, sources: [weekly(3), { key: 'login', amount: 4, per: 'week' }, tickets('login', 1, 'week'), tickets('ticketShop', 5, 'month', 1)] },
   limbus: { currency: 'Lunacy', icon: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [], note: 'limbus' },
-  epic7: { currency: 'Skystones', icon: 'Skystone', per: 100, pass: 0, pity: 0, sources: [daily(50)] },
+  epic7: { currency: 'Skystones', icon: 'Skystone', per: 100, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }], sources: [daily(50)] },
   stellasora: { currency: 'Stellanite Dust', icon: 'Stellanite Dust', per: 300, pass: 0, pity: 0, sources: [daily(100), weekly(500),
     { key: 'monthly', amount: 100, per: 'month', day: 25 },
     { key: 'maint', amount: 450, per: 'patch' }],
@@ -165,8 +179,8 @@ const ECON: Record<string, Econ> = {
     { name: 'Elysian Realm', amount: 500, per: 'week', endgame: true },
     { name: 'Memorial Arena', amount: 140, per: 'week', endgame: true }] },
   azurlane: { currency: 'Wisdom Cubes', icon: 'Wisdom Cube', per: 2, pass: 0, pity: 0, sources: [daily(4)] },
-  bd2: { currency: 'Dia', icon: 'Dia', per: 200, pass: 0, pity: 0, sources: [daily(60)] },
-  afkjourney: { currency: 'Diamonds', icon: 'Diamonds', ticket: 'Invite Letter', per: 300, pass: 0, pity: 0, sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
+  bd2: { currency: 'Dia', icon: 'Dia', per: 200, pass: 0, pity: 0, inputs: [{ id: 'mirror', name: 'Mirror Wars', per: 'week' }], sources: [daily(60)] },
+  afkjourney: { currency: 'Diamonds', icon: 'Diamonds', ticket: 'Invite Letter', per: 300, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }, { id: 'honor', name: 'Honor Duel', per: 'week' }], sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
   infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
 }
 
@@ -200,15 +214,21 @@ function mondays(from: number, to: number): number {
 }
 
 /** Veces que llega el día `day` del mes (a las 04:00) entre `from` y `to`. */
-function monthDays(from: number, to: number, day: number): number {
-  let n = 0
-  const d = new Date(from); d.setDate(1); d.setHours(4, 0, 0, 0)
-  for (let i = 0; i < 48; i++) {
-    const at = new Date(d.getFullYear(), d.getMonth() + i, day, 4)
-    if (+at > to) break
-    if (+at > from) n++
+function monthDays(from: number, to: number, day: number | number[]): number {
+  return monthTimes(from, to, day).length
+}
+
+/** Reinicios de los días `day` del mes (a las 04:00) entre `from` y `to`. */
+function monthTimes(from: number, to: number, day: number | number[]): number[] {
+  const out: number[] = []
+  const days = Array.isArray(day) ? day : [day]
+  const d = new Date(from)
+  for (let i = -1; i < 48; i++) {
+    const ts = days.map(x => +new Date(d.getFullYear(), d.getMonth() + i, x, 4))
+    if (Math.min(...ts) > to) break
+    for (const t of ts) if (t > from && t <= to) out.push(t)
   }
-  return n
+  return out.sort((a, b) => a - b)
 }
 
 /** Versiones nuevas entre `from` y `to`: las fechas que ya conoce la app (anunciadas o estimadas) o, si no hay, por la duración típica. */
@@ -222,6 +242,77 @@ function patchesBetween(patches: Patch[], game: Game, from: number, to: number):
     n += Math.floor((to - base) / (game.patchCycleDays * DAY))
   }
   return n
+}
+
+/** Reinicios de un ciclo de `every` días anclado en `anchor`, entre `from` y `to`. */
+function everyTimes(anchor: number, every: number, from: number, to: number): number[] {
+  const step = every * DAY, out: number[] = []
+  for (let t = anchor + Math.ceil((from - anchor) / step) * step; t <= to; t += step) if (t > from) out.push(t)
+  return out
+}
+
+/* ---------- Reinicios estimados para la línea de tiempo ---------- */
+/**
+ * Temporadas de los modos de dificultad que la app no trae (CZN, Limbo…) y las siguientes de los que sí trae (Abismo, Shiyu, Torre…),
+ * marcadas como estimadas ("≈"). Se generan desde la última temporada conocida (o la fecha de referencia del modo) hasta 90 días.
+ * Solo modos con ciclo fijo (cada N días o días fijos del mes); los semanales llenarían la línea de tiempo de barras repetidas.
+ * La línea de tiempo y la calculadora usan esta misma lista (App.tsx): la calculadora los cuenta como temporadas conocidas.
+ */
+const HORIZON = 90 * DAY
+/** HSR: los tres modos rotan cada 14 días en este orden; Apocalyptic Shadow empezó el 5 oct 2026 (Sportskeeda, fechas de la 4.6). */
+const HSR_ROTATION = { anchor: Date.parse('2026-10-04T20:00:00Z'), modes: ['Apocalyptic Shadow', 'Pure Fiction', 'Memory of Chaos'] }
+/* Uma: los Champions Meeting ya vienen en los datos ("Aquarius Cup", "Pisces Cup"…); hubo una lista a mano aquí que los
+   duplicaba con otro nombre (10 nov 2026) y se quitó. */
+
+/** Temporada de MoC / Pure Fiction / Apocalyptic Shadow (HSR, `matchChallenges`): un desafío de unas 6 semanas. Otros rotatorios
+ *  ("Return to Roots") duran menos y no son estos modos. */
+const isSeason = (e: GameEvent) => { const d = (+new Date(e.end) - +new Date(e.start)) / DAY; return e.kind === 'challenge' && d >= 35 && d <= 49 }
+
+const slug = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+
+export function estimatedEvents(game: Game, events: GameEvent[], nowMs: number): GameEvent[] {
+  const econ = econOf(game)
+  const own = events.filter(e => e.gameId === game.id && e.kind !== 'banner')
+  const out: GameEvent[] = []
+  const make = (name: string, start: number, end: number, pulls: number): GameEvent => ({
+    id: `est:${game.id}:${slug(name)}:${new Date(start).toISOString().slice(0, 10)}`, gameId: game.id, kind: 'challenge', title: name,
+    start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [], pulls, precision: 'estimated', source: 'feed',
+  })
+  const taken = new Set<string>()
+  const named = (s: Source) => (s.aliases ?? (s.name ? [s.name.toLowerCase()] : []))
+  const ordered = [...econ.sources.filter(s => !s.matchChallenges), ...econ.sources.filter(s => s.matchChallenges)]
+  for (const s of ordered) {
+    if (!s.endgame || !s.name || (s.per !== 'every' && s.per !== 'month')) continue
+    const known = own.filter(e => !taken.has(e.id) && (s.matchChallenges ? isSeason(e) : named(s).some(a => e.title.toLowerCase().includes(a))))
+    known.forEach(e => taken.add(e.id))
+    // Lo que da cada temporada: la media de las que ya trae la app (HSR da ~11,3 por temporada, no los 800 de la cifra fija); si no hay,
+    // la cifra fija del modo.
+    const seen = known.filter(e => e.pulls > 0)
+    const pulls = Math.round((seen.length ? seen.reduce((n, e) => n + e.pulls, 0) / seen.length : s.amount / Math.max(1, econ.per)) * 10) / 10
+    const lastStart = known.length ? Math.max(...known.map(e => +new Date(e.start))) : 0
+    const after = lastStart ? lastStart + 2 * DAY : nowMs - 60 * DAY
+    const to = nowMs + HORIZON
+    const hsr = !!s.matchChallenges && game.api === 'starrail'
+    if (s.per === 'every') {
+      const every = s.every || 1
+      const anchor = lastStart || (s.anchor ? +new Date(s.anchor) : 0)
+      if (!anchor) continue
+      // Sin temporadas conocidas: también la que está en curso (empezó en el reinicio anterior).
+      const starts = everyTimes(anchor, every, after - 1, to).filter(t => lastStart || t + every * DAY > nowMs)
+      for (const t of starts) {
+        // HSR: cada temporada nueva con el nombre de su modo; duran 6 semanas aunque se reinicie uno cada 14 días.
+        const name = hsr ? HSR_ROTATION.modes[((Math.round((t - HSR_ROTATION.anchor) / (14 * DAY)) % 3) + 3) % 3] : s.name
+        out.push(make(name, t, t + (hsr ? 42 : every) * DAY, pulls))
+      }
+    } else {
+      const all = monthTimes(after - 40 * DAY, to + 40 * DAY, s.days ?? s.day ?? 1)
+      all.forEach((t, i) => {
+        const next = all[i + 1] ?? t + 30 * DAY
+        if (t > after && t <= to && (lastStart || next > nowMs)) out.push(make(s.name!, t, next, pulls))
+      })
+    }
+  }
+  return out
 }
 
 export interface SourceRow { src: Source; times: number; amount: number }
@@ -253,7 +344,7 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
   const between = (s: Source, from: number) => !until || from >= until ? 0
     : s.per === 'day' ? Math.floor((until - from) / DAY)
     : s.per === 'week' ? mondays(from, until)
-    : s.per === 'month' ? monthDays(from, until, s.day ?? 1)
+    : s.per === 'month' ? monthDays(from, until, s.days ?? s.day ?? 1)
     : s.per === 'every' ? Math.floor((until - from) / DAY / (s.every || 1))
     : patchesBetween(state.patches, game, from, until)
   const timesOf = (s: Source) => between(s, nowMs)
@@ -262,7 +353,7 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
   const claimed = new Set<string>()
   const named = (s: Source) => (s.aliases ?? (s.name ? [s.name.toLowerCase()] : []))
   const matchesOf = (s: Source) => state.events.filter(e => e.gameId === game.id && e.kind !== 'banner' && !claimed.has(e.id)
-    && (s.matchChallenges ? e.kind === 'challenge' : named(s).some(a => e.title.toLowerCase().includes(a))))
+    && (s.matchChallenges ? isSeason(e) : named(s).some(a => e.title.toLowerCase().includes(a))))
   const ordered = [...econ.sources.filter(s => !s.matchChallenges), ...econ.sources.filter(s => s.matchChallenges)]
   const known = new Map<Source, { pending: GameEvent[]; from: number }>()
   for (const src of ordered) {
@@ -270,11 +361,13 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
     const m = matchesOf(src)
     if (!m.length) continue
     m.forEach(e => claimed.add(e.id))
-    const pending = until ? m.filter(e => e.pulls > 0 && !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until) : []
+    // Sin `pulls > 0`: una temporada conocida sin cifra en los datos (Memorial Arena de HI3) vale lo de la cifra fija, no 0.
+    const pending = until ? m.filter(e => !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until) : []
     known.set(src, { pending, from: Math.max(...m.map(e => +new Date(e.start))) })
   }
   const rows = econ.sources.filter(s => cfg.endgame || !s.endgame).map(src => {
     const k = known.get(src)
+    if (!k && src.per === 'every' && src.anchor) { const times = everyTimes(+new Date(src.anchor), src.every || 1, nowMs, until).length; return { src, times, amount: times * src.amount } }
     if (!k) { const times = timesOf(src); return { src, times, amount: times * src.amount } }
     // Reinicios después de la última temporada conocida (`k.from`, su inicio). Cada N días: anclados a ese inicio (HSR escalona sus tres
     // modos cada 14 días). El resto: desde 2 días después de ese inicio, para no volver a contar la misma temporada (Endstate Matrix de
@@ -282,7 +375,7 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
     const fixed = src.per === 'every'
       ? Math.max(0, Math.floor((until - k.from) / DAY / (src.every || 1)) - Math.floor(Math.max(0, nowMs - k.from) / DAY / (src.every || 1)))
       : between(src, Math.max(nowMs, k.from + 2 * DAY))
-    return { src, times: k.pending.length + fixed, amount: k.pending.reduce((n, e) => n + e.pulls * per, 0) + fixed * src.amount }
+    return { src, times: k.pending.length + fixed, amount: k.pending.reduce((n, e) => n + (e.pulls > 0 ? e.pulls * per : src.amount), 0) + fixed * src.amount }
   })
   // Modos según tu puesto: cada elección hecha se convierte en una fila (y otra con sus tickets, si da).
   for (const ch of econ.choices ?? []) {
@@ -292,6 +385,13 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
     const times = timesOf(base)
     if (opt.amount) rows.push({ src: base, times, amount: times * opt.amount })
     if (opt.tickets) rows.push({ src: { ...base, amount: opt.tickets, tickets: true }, times, amount: times * opt.tickets })
+  }
+  for (const inp of econ.inputs ?? []) {
+    const amount = Math.max(0, cfg.custom?.[inp.id] ?? 0)
+    if (!amount) continue
+    const src: Source = { name: inp.name, amount, per: inp.per, day: inp.day, rank: true }
+    const times = timesOf(src)
+    rows.push({ src, times, amount: times * amount })
   }
   const eventList = until && cfg.events
     ? state.events.filter(e => e.gameId === game.id && e.kind !== 'banner' && !claimed.has(e.id) && e.pulls > 0 && !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until)

@@ -116,6 +116,8 @@ export interface PlanCfg {
   endgame: boolean
   /** Puesto elegido en los modos que pagan según tu rango (pullPlan.ts, `choices`): id → índice de la opción (0 = no participo). */
   ranks?: Record<string, number>
+  /** Lo que pones a mano en los modos sin tabla (Arena de Epic Seven…): id → moneda por cada vez. */
+  custom?: Record<string, number>
 }
 
 export interface AppState {
