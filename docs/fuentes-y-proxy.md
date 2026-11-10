@@ -21,6 +21,26 @@ navegador ◄── GET /data/<juego>.json (copia normalizada, ~10 KB gz) ◄─
 - **Cliente** (`src/store.ts` + `fetchSnapshot` en `src/net.ts`): pide primero la copia; si falta, usa el camino directo.
 - Service worker (`public/sw.js`): `/data/` y `/proxy` van "red primero" y solo se guardan respuestas correctas.
 
+## Fondos de las skins según la versión (`server/skin-live.mjs`, 10 nov 2026)
+
+No son datos de eventos: es el vídeo/imagen de portada que tiene AHORA la web oficial de cada juego, para el fondo de las skins.
+Cada 12 h (el primero, al minuto de arrancar) y **solo desde el servidor** (fuentes `internal` del proxy: `/proxy` las rechaza):
+
+| Juego | Peticiones por ciclo | Qué se guarda (`shrinkText`/`shrink`) |
+|---|---|---|
+| Genshin | `genshin.hoyoverse.com/en/` (HTML, ~5 KB) + `act.hoyoverse.com/puzzle/hk4e/pz_…/config.<hash>.js` (~550 KB) | la URL del script; las URL de los `.mp4` |
+| ZZZ | `zenless.hoyoverse.com/en-us/` (~11 KB) + su `config.<hash>.js` (~900 KB) | ídem |
+| WuWa | `hw-media-cdn-mingchao.kurogame.com/…/G152/en/MainMenu.json` (~400 KB) | `pcTopPicture`: `backgroundVideo`, `coverImage` |
+
+- El vídeo elegido es el más reciente (la ruta de HoYoverse lleva la fecha `/AAAA/MM/DD/`). El póster de HoYoverse es la captura que
+  ofrece su propio CDN (`?x-oss-process=video/snapshot,…`, la que usa su web).
+- **Los vídeos no se descargan**: se hace una petición `HEAD` (una sola vez por vídeo nuevo) para saber su peso; el navegador los
+  reproduce desde el CDN oficial solo si pesan ≤ 12 MB (Genshin 4,6 MB y ZZZ 9,3 MB el 10 nov; WuWa 23 MB → se usa su imagen de portada).
+- Resultado en `.cache/skin-live.json` y en `GET /data/skin-live.json` (`src/skins/liveFeed.ts` lo pide una vez por visita y lo pone delante
+  de los fondos de la skin si no está ya entre ellos: campo `official` en `skins.ts`). Si una web falla, se conserva lo anterior.
+- HSR no tiene vídeo en su portada; Umamusume, tampoco. NIKKE ya trae 24 live wallpapers en su página Art.
+- Términos: no se revisaron los de HoYoverse ni Kuro para este uso; son 2–3 peticiones cada 12 h a páginas públicas de su web.
+
 ## Estado actual: gachafocus DESACTIVADO (6 nov 2026)
 
 La web de gachafocus muestra un aviso que **prohíbe la recolección automatizada** (scraping, navegadores automáticos, uso de sus rutas internas como API, IA) y dice que los datos

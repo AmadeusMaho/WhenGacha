@@ -4,6 +4,7 @@ import { bannerArt, eventImage, faceOf, officialArt, splashOf, wallpaperOf } fro
 import { countdown, eventStatus, trackedGames, verdict } from './logic'
 import { fetchSnapshot } from './net'
 import { enableNotifications } from './notify'
+import { iosNotInstalled, useInstall } from './install'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, useArtShape, type Ctx } from './ui'
 import type { Game, GameEvent, Patch } from './types'
 
@@ -55,6 +56,8 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
   // El catálogo se pliega tras un botón (salvo en la primera visita, si aún no sigues ninguno o mientras buscas).
   const showAdd = addOpen || !mine.length || !!q
 
+  const install = useInstall()
+  const [ios] = useState(iosNotInstalled)
   const toggleNotify = async () => {
     if (!state.notify && !(await enableNotifications())) { setMsg(t('notify.blocked')); return }
     setMsg('')
@@ -112,7 +115,9 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
               {[6, 12, 24, 48, 72].map(h => <option key={h} value={h}>{t('notify.before', { h })}</option>)}
             </select>
           </label>
+          {install && <button className="btn sm primary" onClick={install}>{t('install')}</button>}
         </div>
+        {(install || ios) && <p className="muted install-hint">{t(install ? 'install.hint' : 'install.ios')}</p>}
         {msg && <p className="muted">{msg}</p>}
       </section>
     </>

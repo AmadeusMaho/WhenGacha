@@ -182,7 +182,7 @@ html[data-skin="genshin"] :is(.ecard, .bcard):hover { box-shadow: 0 0 0 3px rgba
 /* ===== Línea de tiempo: marco pizarra oscuro (como el del pase de batalla) con los eventos como filas crema encima ===== */
 html[data-skin="genshin"] [style*="--c:"] { --c: #c19a5b !important; --c2: #3b4255 !important; }
 /* (Doble clase para ganar a la regla de "paneles crema", cuyo :is() incluye ".plist li" y pesa más.) */
-html[data-skin="genshin"] .tl.tl { background: #2c3243; --text: var(--gi-cream); --muted: rgba(236, 229, 216, .62); --line: rgba(236, 229, 216, .09); --panel: #2c3243; color: var(--gi-cream); }
+html[data-skin="genshin"] .tl.tl { background: rgba(44, 50, 67, .72); backdrop-filter: blur(2px); --text: var(--gi-cream); --muted: rgba(236, 229, 216, .62); --line: rgba(236, 229, 216, .09); --panel: #2c3243; color: var(--gi-cream); }
 html[data-skin="genshin"] :is(.tl-corner, .tl-label, .tl-axis) { background: var(--gi-slate); color: var(--gi-cream); --text: var(--gi-cream); --muted: rgba(236, 229, 216, .7); }
 html[data-skin="genshin"] .tl-label { border-left: 0; }
 html[data-skin="genshin"] .tl-lane { border-color: rgba(236, 229, 216, .08); }

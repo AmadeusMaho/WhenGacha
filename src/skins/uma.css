@@ -1,0 +1,296 @@
+/* ===== Skin "Umamusume: Pretty Derby" (prueba local, 10 nov 2026; ajustada con capturas del juego: Menu, Star Unlock, Training) =====
+   Como los menús del juego: tema CLARO con el fondo lila facetado; paneles blancos redondeados con borde lila suave;
+   - botones = rectángulos blancos redondeados con borde fino oscuro y el "labio" gris de abajo (Inventory, Profile, Back), texto MARRÓN;
+   - etiquetas de sección ("Trainer", "Umamusume", "Other") = barra verde fina con el texto blanco y el final cortado en diagonal;
+   - cabeceras ("Menu", "Select Star Unlock Grade", "Stats") = cápsula verde con el texto blanco;
+   - acento rosa ("Closing in 5d", "Junior Year Pre-Debut") = cápsula rosa con el texto blanco; × roja redonda del juego.
+   El verde y el rosa del juego (lima #7ecc08, rosa #ff6194) no llegan a 4.5:1 con texto blanco (en el juego lo salva un contorno):
+   donde hay texto, el degradado empieza en un verde/rosa más oscuro y termina en el del juego.
+   public/skins/uma/: piezas de la interfaz del zip "Umamusume UI sprites" que aportó el dueño (10 nov 2026; extraídas del cliente por
+   un tercero, © Cygames; el dueño decidió usarlas). Lista completa en README.md.
+   cursor.png (32 px) / cursor@2x.png (64 px) = el cursor del juego, convertido del .cur que aportó el dueño (24 bits + máscara). Punta en (10, 6).
+   Solo aplica con <html data-skin="uma">. */
+
+html[data-skin="uma"] {
+  --um-green: #7ecc08;   /* lima del juego: rellenos y adornos */
+  --um-green-d: #3d7d00; /* verde para TEXTO sobre blanco (≥ 4.5:1) */
+  --um-green-bar: #3b8200; /* verde con texto blanco (≥ 4.5:1) */
+  --um-green-grad: linear-gradient(90deg, #3b8200 0%, #4a9600 45%, #7ecc08 100%);
+  /* Enrejado de rombos de las barras verdes del juego (sacado de utx_frm_dialog_hdr_00 como capa blanca translúcida: hdr-fx.png). */
+  --um-green-fx: url(/skins/uma/hdr-fx.png) left center / auto 100% no-repeat;
+  --um-pink: #ff6194;
+  --um-pink-d: #b0174f;  /* rosa para texto sobre blanco */
+  --um-pink-bar: #c8336c; /* rosa con texto blanco (≥ 4.5:1) */
+  --um-brown: #6b3d12;   /* texto de los botones (Inventory, Profile…) */
+  --um-ink: #3e3445;
+  --um-ink2: #5b5266;
+  --um-lilac: #d9d2ea;   /* bordes */
+  --um-paper: #ffffff;
+  --um-paper2: #f4f3f7;  /* filas, del sprite de las listas */
+  --bg: #ece8f4;
+  --panel: var(--um-paper);
+  --panel2: var(--um-paper2);
+  --line: rgba(62, 52, 69, .12);
+  --text: var(--um-ink);
+  --muted: var(--um-ink2);
+  --acc: var(--um-green);
+  --acc2: var(--um-green-d);
+  --warn: #7a5200;
+  --good: #2f6b00;
+  --bad: #b3261e;
+  color-scheme: light;
+}
+html[data-skin="uma"] body { font-family: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 700; color: var(--um-ink); }
+html[data-skin="uma"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
+html[data-skin="uma"] ::selection { background: rgba(126, 204, 8, .35); }
+html[data-skin="uma"] * { scrollbar-color: rgba(126, 204, 8, .7) transparent; }
+
+/* --- Fondo: el lila facetado del juego, sin oscurecer --- */
+html[data-skin="uma"] .aurora { background: url(/skins/uma/bg.webp) center top / cover no-repeat, #ece8f4; }
+html[data-skin="uma"] .aurora::after { display: none; }
+html[data-skin="uma"] .skin-live { opacity: .45; filter: saturate(.9) brightness(1.08); }
+
+/* --- Cabecera: barra blanca con línea verde; pestañas como las de abajo del juego (Enhance, Story, Home…): baldosa blanca con
+   labio gris; la activa, verde con el texto blanco --- */
+html[data-skin="uma"] header { background: rgba(255, 255, 255, .95); border-bottom: 3px solid var(--um-green); box-shadow: 0 2px 10px rgba(80, 60, 120, .15); backdrop-filter: blur(6px); }
+html[data-skin="uma"] .brand h1 { color: var(--um-brown); }
+html[data-skin="uma"] header nav { gap: 6px; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow-y: hidden; padding-bottom: 3px; }
+html[data-skin="uma"] header nav button { border-radius: 10px !important; border: 1px solid #b9b3c8 !important; color: var(--um-brown) !important;
+  background: linear-gradient(180deg, #fff 0%, #fbfaff 55%, #e3e0ea 100%) !important; box-shadow: 0 2px 0 #b9b3c8; }
+html[data-skin="uma"] header nav button.on { color: #fff !important; border-color: #2f6a00 !important; background: var(--um-green-fx), var(--um-green-grad) !important;
+  box-shadow: 0 2px 0 #2f6a00, inset 0 1px 0 rgba(255, 255, 255, .35); text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+html[data-skin="uma"] header nav .nav-ind { display: none; }
+/* Con la chica de cada pestaña, como la barra inferior del juego (los iconos asoman por arriba de la baldosa) y cada pestaña activa
+   con su color, como "Enhance" en rosa o "Home" en azul. Iconos del zip: nav-timeline = utx_ico_home_umamusume_03,
+   nav-mine = utx_ico_home_umamusume_04 (Oguri Cap con la estrella), nav-patches = utx_ico_menu_28 (Tazuna, la de los avisos). */
+html[data-skin="uma"] header nav { overflow: visible; padding-top: 6px; }
+html[data-skin="uma"] header nav button { position: relative; padding-left: 50px !important; }
+html[data-skin="uma"] header nav button::before { content: ""; position: absolute; left: 2px; bottom: 2px; width: 46px; height: 48px; pointer-events: none;
+  background: center bottom / contain no-repeat; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .25)); transition: transform .2s; }
+html[data-skin="uma"] header nav button:nth-of-type(1)::before { background-image: url(/skins/uma/nav-timeline.webp); }
+html[data-skin="uma"] header nav button:nth-of-type(2)::before { background-image: url(/skins/uma/nav-mine.webp); }
+html[data-skin="uma"] header nav button:nth-of-type(3)::before { background-image: url(/skins/uma/nav-patches.webp); }
+html[data-skin="uma"] header nav button:is(:hover, .on)::before { transform: translateY(-3px) scale(1.06); }
+html[data-skin="uma"] header nav button:nth-of-type(2).on { border-color: #8f1546 !important; background: linear-gradient(90deg, var(--um-pink-bar), #d84078 60%, #e8558c) !important; box-shadow: 0 2px 0 #8f1546, inset 0 1px 0 rgba(255, 255, 255, .35); }
+html[data-skin="uma"] header nav button:nth-of-type(3).on { border-color: #0b4f8f !important; background: linear-gradient(90deg, #1565b8, #1f7fd6 60%, #3fa0ec) !important; box-shadow: 0 2px 0 #0b4f8f, inset 0 1px 0 rgba(255, 255, 255, .35); }
+@media (max-width: 700px) {
+  html[data-skin="uma"] header nav { gap: 4px; }
+  html[data-skin="uma"] header nav button { padding: 6px 8px 6px 32px !important; font-size: .82rem; }
+  html[data-skin="uma"] header nav button::before { left: 1px; width: 30px; height: 34px; } }
+/* Sincronizar: las flechas naranjas del juego (utx_ico_charachange_00) en lugar de ⟳. */
+html[data-skin="uma"] header .btn .spin { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -.2em; font-size: inherit; color: transparent; background: url(/skins/uma/ico-sync.webp) center / contain no-repeat; }
+
+/* --- Botones: rectángulo blanco con labio (btn-rect.png) y texto marrón; principal verde con texto blanco; donar rosa --- */
+html[data-skin="uma"] .btn { border: 0; border-radius: 12px; background: none; color: var(--um-brown); text-shadow: none; box-shadow: none; font-weight: 800;
+  border-image: url(/skins/uma/btn-rect.png) 40 44 46 44 fill / 12px 14px 14px 14px / 1px stretch; padding: 7px 16px 9px; }
+html[data-skin="uma"] .btn::after { display: none; }
+html[data-skin="uma"] .btn:hover:not(:disabled) { background: none !important; filter: brightness(1.03) drop-shadow(0 0 4px rgba(126, 204, 8, .6)); transform: translateY(-1px); color: var(--um-brown); }
+html[data-skin="uma"] .btn:active:not(:disabled) { transform: translateY(1px) scale(.98); }
+/* El principal: el verde del sprite es lima (el blanco no se leería), así que va con el degradado oscuro y el mismo labio. */
+html[data-skin="uma"] :is(.btn.primary), html[data-skin="uma"] .btn.primary:hover:not(:disabled) {
+  border-image: none; border: 2px solid #2f6a00; border-radius: 12px; color: #fff; background: var(--um-green-fx), var(--um-green-grad) !important;
+  box-shadow: 0 3px 0 #2f6a00, inset 0 1px 0 rgba(255, 255, 255, .35); text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+html[data-skin="uma"] .site-foot a.btn.donate, html[data-skin="uma"] .site-foot a.btn.donate:hover:not(:disabled) {
+  border-image: none; border: 2px solid #8f1546; border-radius: 12px; color: #fff; filter: none;
+  background: linear-gradient(90deg, var(--um-pink-bar), #d84078 55%, #e8558c) !important; box-shadow: 0 3px 0 #8f1546, inset 0 1px 0 rgba(255, 255, 255, .35); }
+/* Apoyar el proyecto: con el apretón de manos rosa del juego (utx_ico_shop_103). */
+html[data-skin="uma"] .site-foot a.btn.donate { position: relative; padding-left: 40px; }
+html[data-skin="uma"] .site-foot a.btn.donate::before { content: ""; position: absolute; left: 6px; top: 50%; width: 30px; height: 26px; transform: translateY(-55%);
+  background: url(/skins/uma/ico-support.webp) center / contain no-repeat; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .3)); }
+html[data-skin="uma"] .btn:disabled { opacity: 1; filter: grayscale(1) brightness(.97); color: var(--um-ink2); }
+html[data-skin="uma"] .btn.mark .spark { color: #8a5d00; }
+html[data-skin="uma"] .btn.primary .spark { color: #ffe27a; }
+html[data-skin="uma"] .btn.mark:not(.primary) { filter: grayscale(.6) brightness(.95); color: var(--um-ink2); }
+html[data-skin="uma"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 3px solid var(--um-green); outline-offset: 2px; }
+html[data-skin="uma"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 10px; border: 2px solid var(--um-lilac); background: #fff; color: var(--um-ink); }
+html[data-skin="uma"] :is(input, select):focus { border-color: var(--um-green); box-shadow: 0 0 0 3px rgba(126, 204, 8, .25); outline: none; }
+html[data-skin="uma"] :is(input, textarea)::placeholder { color: #6d6780; opacity: 1; }
+html[data-skin="uma"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--um-green-d); }
+
+/* --- Chips y filtros: interruptor gris del juego (chip.png); el activo, verde con texto blanco (como "Star Unlock") --- */
+html[data-skin="uma"] :is(.chip, .ichip, .fopt) { border: 0; border-radius: 999px; background: none; box-shadow: none; color: var(--um-brown);
+  border-image: url(/skins/uma/chip.png) 29 40 fill / 13px 18px / 1px stretch; }
+html[data-skin="uma"] :is(.chip, .ichip, .fopt):hover { background: none !important; filter: brightness(1.05); transform: none; }
+/* "Próximos", "Códigos", "Ver todos" e "Ir a…" son botones, no interruptores: el botón blanco con relieve, como "Inventory"
+   (con el interruptor gris parecían botones ya pulsados). */
+html[data-skin="uma"] :is(.soon-toggle, .up-chip, .codes-chip, .jump-chip) { border: 0; border-radius: 12px; background: none; box-shadow: none; color: var(--um-brown);
+  border-image: url(/skins/uma/btn-rect.png) 40 44 46 44 fill / 11px 12px 13px 12px / 1px stretch; padding-bottom: 5px; }
+html[data-skin="uma"] :is(.soon-toggle, .up-chip, .codes-chip, .jump-chip):hover { background: none !important; filter: brightness(1.03) drop-shadow(0 0 4px rgba(126, 204, 8, .6)); transform: translateY(-1px); }
+html[data-skin="uma"] .codes[open] .codes-chip { filter: drop-shadow(0 0 0 2px var(--um-green)); }
+html[data-skin="uma"] :is(.chip.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on) { border-image: none; border: 1px solid #2f6a00; color: #fff; background: var(--um-green-grad) !important; }
+/* Línea / Cuadrícula: como "Potential | Star Unlock": pestañas blancas unidas, la activa verde. */
+html[data-skin="uma"] .seg { border-radius: 10px; border: 2px solid var(--um-lilac); background: #fff; padding: 3px; }
+html[data-skin="uma"] .seg button { border-radius: 8px; color: var(--um-brown); }
+html[data-skin="uma"] .seg button.on, html[data-skin="uma"] .seg button.on:hover { background: var(--um-green-grad) !important; color: #fff; box-shadow: none; }
+html[data-skin="uma"] .pick-search { border-radius: 10px; border: 2px solid var(--um-lilac); background: #fff; color: var(--um-ink); }
+html[data-skin="uma"] :is(.up-chip .up-chip-t, .up-chip b, .up-chip.more, .codes-chip *) { color: var(--um-brown) !important; text-shadow: none; }
+
+/* --- Etiquetas: cápsulas pastel con texto oscuro; lo urgente en cápsula rosa con texto blanco ("Closing in 5d") --- */
+html[data-skin="uma"] .tag { border-radius: 999px; border: 0; background: #ebe7f3; color: var(--um-ink); font-weight: 800; }
+html[data-skin="uma"] .tag.great { background: #e2f6c4; color: #2f5c00; }
+html[data-skin="uma"] .tag.good { background: #e2f6c4; color: #2f5c00; }
+html[data-skin="uma"] .tag.mid { background: #fff0c6; color: #7a5200; }
+html[data-skin="uma"] .tag.bad { background: var(--um-pink-bar); color: #fff; }
+html[data-skin="uma"] .pill.hot { background: var(--um-pink-bar); color: #fff; }
+html[data-skin="uma"] .pill.new { background: #e2f6c4; color: #2f5c00; }
+html[data-skin="uma"] .today-flag { border-radius: 999px; background: var(--um-pink-bar); color: #fff; }
+html[data-skin="uma"] .soon-card em { border-radius: 999px; background: #ebe7f3; color: var(--um-ink); }
+html[data-skin="uma"] .soon-card.urgent em { background: var(--um-pink-bar); color: #fff; }
+
+/* --- Etiquetas de sección ("Trainer", "Other"): barra verde fina, texto blanco, final cortado en diagonal --- */
+html[data-skin="uma"] h3 { color: #fff; letter-spacing: .02em; font-size: .9rem; padding: 3px 28px 3px 10px; border-radius: 3px 0 0 3px;
+  background: var(--um-green-fx), var(--um-green-grad); clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); text-shadow: 0 1px 1px rgba(0, 0, 0, .35); }
+html[data-skin="uma"] h3 small { color: #f3ffe0; }
+html[data-skin="uma"] :is(.bcard, .ecard, .soon-card, .up-card) h3 { background: none; clip-path: none; padding: 0; color: inherit; border-radius: 0; text-shadow: none; }
+
+/* ===== Paneles: blancos, muy redondeados, borde lila y sombra lila suave ===== */
+html[data-skin="uma"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 16px; border: 2px solid var(--um-lilac); background: var(--um-paper); box-shadow: 0 6px 18px rgba(90, 70, 140, .16); }
+html[data-skin="uma"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: var(--um-paper); }
+html[data-skin="uma"] :is(.gcard-hero, .ecard-img) { background-color: #ddd6ea; }
+html[data-skin="uma"] .gcard-hero .fade { background: linear-gradient(transparent 30%, rgba(40, 30, 60, .8)); }
+/* El nombre del juego va SOBRE el arte: en blanco (el tema claro lo dejaba en tinta oscura e ilegible). */
+html[data-skin="uma"] .gcard-head { --text: #fff; --muted: #ece8f4; color: #fff; }
+html[data-skin="uma"] .gcard-head :is(h2, h3, b, strong) { color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); }
+html[data-skin="uma"] .gcard-head p { color: #c4f27a; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+html[data-skin="uma"] .gcard-hero { --acc2: #c4f27a; --acc: #c4f27a; --text: #fff; --muted: #ece8f4; }
+html[data-skin="uma"] .gcard-hero .head-meta, html[data-skin="uma"] .gcard-hero .head-meta * { color: #c4f27a; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+html[data-skin="uma"] :is(.gcard, .ecard, .up-card, .soon-card, .plist li):hover { border-color: var(--um-green); box-shadow: 0 0 0 2px var(--um-green), 0 8px 20px rgba(90, 70, 140, .2); transform: translateY(-2px); }
+/* Cabecera de cada juego (Parches, cuadrícula): la barra verde de las ventanas. */
+html[data-skin="uma"] .gsec-head { --text: #fff; --muted: #f3ffe0; color: #fff; border-radius: 14px 14px 0 0; background: var(--um-green-fx), var(--um-green-grad); box-shadow: none; }
+html[data-skin="uma"] .gsec-head h2 { color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+html[data-skin="uma"] .gsec-head .fold { color: #fff; border: 2px solid rgba(255, 255, 255, .7); background: #3b8200; }
+html[data-skin="uma"] .gsec-head .stats > div { border-radius: 12px; background: #fff; border: 0; --text: var(--um-ink); --muted: var(--um-ink2); color: var(--um-ink); }
+html[data-skin="uma"] .gsec-head .stats b { color: var(--um-green-d); }
+html[data-skin="uma"] .stats > div { border-radius: 12px; background: var(--um-paper2); border: 1px solid var(--um-lilac); }
+html[data-skin="uma"] .stats b { color: var(--um-green-d); }
+/* Filas de listas: el fondo facetado de las listas del juego, con borde lila. */
+html[data-skin="uma"] :is(.list li, .hist li) { margin: 0 0 6px; padding: 7px 12px; border-radius: 12px; border: 1px solid var(--um-lilac);
+  background: url(/skins/uma/panel-bg.png) center / cover, var(--um-paper2); }
+html[data-skin="uma"] :is(.list li, .hist li):hover { border-color: var(--um-green); }
+html[data-skin="uma"] .ev-title { color: var(--um-ink); }
+html[data-skin="uma"] .progress { border-radius: 999px; background: #e3deed; }
+html[data-skin="uma"] .progress i { border-radius: 999px; background: linear-gradient(90deg, #a6e22b, var(--um-green)) !important; box-shadow: none; }
+html[data-skin="uma"] :is(.ev-loc, .gcard-head p) { color: var(--um-green-d); }
+html[data-skin="uma"] .up-lbl { color: var(--um-ink2); }
+
+/* --- Ventana del evento: blanca; el arte funde a oscuro bajo el título blanco; × roja redonda del juego --- */
+html[data-skin="uma"] .modal { overflow: hidden; }
+html[data-skin="uma"] .modal-hero { background: linear-gradient(135deg, #b7a8d8, #8c7cb8); }
+html[data-skin="uma"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(40, 30, 60, .85)); }
+html[data-skin="uma"] .modal-title h2 { color: #fff; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+html[data-skin="uma"] .modal-title :is(p, small, span) { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+html[data-skin="uma"] :is(.modal > .close, .modal .x, .support-x, .modal-close, .gcard-hero .x.corner) { width: 34px; height: 34px; border: 0; border-radius: 50%; font-size: 0; color: transparent;
+  background: url(/skins/uma/close.png) center / contain no-repeat !important; box-shadow: none; }
+/* Destacados: fichas redondeadas con fondo lila claro y el nombre en una cápsula verde. */
+html[data-skin="uma"] .featured { gap: 10px; }
+html[data-skin="uma"] .portrait { width: 90px; gap: 0; overflow: hidden; border-radius: 14px; border: 2px solid var(--um-lilac); background: #fff; box-shadow: 0 2px 6px rgba(90, 70, 140, .18); }
+html[data-skin="uma"] .portrait img { width: 100%; height: 100px; border: 0; border-radius: 0; object-position: 50% 8%; background: linear-gradient(180deg, #f6f3fb, #ddd5ec); }
+html[data-skin="uma"] .portrait:hover { border-color: var(--um-green); }
+html[data-skin="uma"] .portrait:hover img { transform: none; }
+html[data-skin="uma"] .portrait span { margin: 4px 4px 2px; padding: 2px 4px; border-radius: 999px; background: var(--um-green-grad); color: #fff; font-size: .74rem; line-height: 1.2; }
+html[data-skin="uma"] .portrait small { padding: 0 4px 5px; color: var(--um-ink2); font-size: .68rem; }
+
+/* --- Ventanas emergentes: blancas; la de apoyo y el menú de skins con la barra verde de cabecera --- */
+html[data-skin="uma"] .support-dialog { padding-top: 0; }
+html[data-skin="uma"] .support-dialog h2 { margin: 0 -22px; padding: 12px 52px 12px 22px; color: #fff; text-align: center; background: var(--um-green-fx), var(--um-green-grad); text-shadow: 0 1px 0 rgba(0, 0, 0, .25); }
+html[data-skin="uma"] .support-dialog .support-x { top: 6px; right: 8px; }
+html[data-skin="uma"] .skin-panel .skin-title { margin: -6px -6px 6px; border-radius: 14px 14px 0 0; background: var(--um-green-fx), var(--um-green-grad); color: #fff !important; }
+html[data-skin="uma"] :is(.lang-menu, .skin-panel) button { color: var(--um-ink); border-radius: 999px; }
+html[data-skin="uma"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: #eef9dd; }
+html[data-skin="uma"] :is(.lang-menu, .skin-panel) button.on { background: #e2f6c4; color: #2a4a05; box-shadow: inset 0 0 0 2px var(--um-green); }
+html[data-skin="uma"] :is(.lang-menu, .skin-panel) button.on i, html[data-skin="uma"] .lang-menu i { color: var(--um-green-d); }
+html[data-skin="uma"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--um-green-d); border-color: rgba(63, 122, 0, .45); opacity: 1; }
+html[data-skin="uma"] :is(a:not(.btn), .linkbtn, .link-btn) { color: var(--um-pink-d); }
+html[data-skin="uma"] .skin-panel .skin-unlock .linkbtn { color: var(--um-ink2); }
+html[data-skin="uma"] :is(.skin-account p, .skin-msg.good) { color: #2f6b00; }
+html[data-skin="uma"] :is(.skin-msg.bad, .support-error) { color: #b3261e; }
+
+/* ===== Retratos de banners ("Mis gachas") ===== */
+html[data-skin="uma"] .bport { border-radius: 14px; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(90, 70, 140, .25); }
+html[data-skin="uma"] .bport:hover { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--um-green); }
+html[data-skin="uma"] .bport .p-time { border-radius: 999px; border: 0; background: var(--um-green-bar); color: #fff; backdrop-filter: none; }
+html[data-skin="uma"] .bport .p-time.hot { background: var(--um-pink-bar); color: #fff; }
+html[data-skin="uma"] .pick { border-radius: 14px; }
+html[data-skin="uma"] .pick.on { box-shadow: 0 0 0 3px var(--um-green); }
+html[data-skin="uma"] .pick.wip .pick-txt { opacity: 1; }
+
+/* Tarjetas de banner: el texto va sobre el arte (franja oscura), así que ahí es claro. Clase doble: la regla de paneles pesa más. */
+html[data-skin="uma"] .bcard.bcard { --text: #fff; --muted: #e6e1f0; --warn: #ffd36b; --good: #b8f06a; --bad: #ff9fbe; color: #fff; background: #2d2640; }
+html[data-skin="uma"] .bcard.bcard :is(.prog span, h3, b, strong) { color: #fff; }
+html[data-skin="uma"] .bcard.bcard :is(small, .muted) { color: #e6e1f0; }
+html[data-skin="uma"] .bcard.bcard .ev-loc { color: #c4f27a; }
+html[data-skin="uma"] .ecard-img .fade { background: linear-gradient(transparent 60%, rgba(0, 0, 0, .2)); }
+html[data-skin="uma"] .ecard-body small { color: var(--um-green-d); }
+
+/* ===== Línea de tiempo: panel blanco con las barras como cápsulas blancas y una franja de color a la izquierda ===== */
+html[data-skin="uma"] [style*="--c:"] { --c: #7ecc08 !important; --c2: #3b3548 !important; }
+/* Sin blanco puro (cansaba la vista): marco lila suave, columna de juegos y eje en un lila algo más oscuro, barras en blanco roto lavanda. */
+html[data-skin="uma"] .tl.tl { background: rgba(226, 220, 238, .86); backdrop-filter: blur(2px); border-color: #cfc5e2; }
+html[data-skin="uma"] :is(.tl-corner, .tl-label, .tl-axis) { background: #d9d0ea; color: var(--um-ink); }
+html[data-skin="uma"] .tl-label { border-left: 0; border-right: 2px solid #c4b8dc; }
+html[data-skin="uma"] .tl-axis { border-bottom: 2px solid #c4b8dc; }
+html[data-skin="uma"] .tl-lane { border-color: rgba(59, 53, 72, .1); }
+html[data-skin="uma"] .grid-line { background: rgba(126, 204, 8, .12); }
+html[data-skin="uma"] .tick { color: var(--um-ink2); }
+html[data-skin="uma"] .month b { color: var(--um-ink); }
+html[data-skin="uma"] .lane-empty { color: var(--um-ink2); }
+html[data-skin="uma"] .bar { border-radius: 999px; border: 2px solid #c9bfdd; background: #f3f0f8 !important; color: var(--um-ink); box-shadow: 0 2px 4px rgba(90, 70, 140, .18); }
+html[data-skin="uma"] .bar-clip { border-radius: 999px; }
+/* Arte de cada evento: desde donde acaba el texto (300 px) hasta el final de la barra, encuadrado en la parte de arriba de la imagen,
+   nítido y sin velo encima (el texto ya lleva su propio fondo); solo se funde al empezar. En las barras muy largas se ve una franja
+   ancha de la imagen. */
+html[data-skin="uma"] .bar-clip::after { display: none; }
+html[data-skin="uma"] .bar .bar-txt { width: fit-content; max-width: 100%; padding-right: 26px; margin-right: -12px; background: linear-gradient(90deg, rgba(243, 240, 248, .97) calc(100% - 26px), rgba(243, 240, 248, 0)); }
+html[data-skin="uma"] .bar .bar-bg { --o: .95 !important; inset: 0 auto 0 300px; width: calc(100% - 300px); max-width: none; height: 100%; object-fit: cover; object-position: 50% 28%;
+  filter: saturate(1.05); -webkit-mask: linear-gradient(90deg, transparent 0, #000 70px); mask: linear-gradient(90deg, transparent 0, #000 70px); }
+html[data-skin="uma"] .bar:hover .bar-bg { --o: 1 !important; transform: scale(1.04); transform-origin: 50% 50%; }
+html[data-skin="uma"] .bar.past { opacity: 1; filter: grayscale(.8) brightness(.9); }
+html[data-skin="uma"] .bar-prog { background: var(--um-green); opacity: 1; }
+html[data-skin="uma"] .bar.banner { border-left: 6px solid var(--um-pink); }
+html[data-skin="uma"] .bar.event { border-left: 6px solid var(--um-green); }
+html[data-skin="uma"] .bar.challenge { border-left: 6px solid #8f7ad6; }
+html[data-skin="uma"] .bar.live { box-shadow: 0 0 0 2px var(--um-green), 0 2px 8px rgba(126, 204, 8, .35); }
+html[data-skin="uma"] .bar:hover { border-color: var(--um-green); }
+/* En curso: la estrella del juego. */
+html[data-skin="uma"] .bar.live::before { content: "★"; position: absolute; left: -9px; top: 50%; z-index: 2; transform: translateY(-50%); font-size: 15px; line-height: 1;
+  color: #ffc83d; text-shadow: 0 0 0 #fff, 0 1px 2px rgba(0, 0, 0, .35); }
+html[data-skin="uma"] :is(.bar-in b, .bar .bar-in b, .bar .bar-txt b) { color: var(--um-ink) !important; text-shadow: none; }
+html[data-skin="uma"] .bar-in em { color: var(--um-ink2); text-shadow: none; opacity: 1; }
+html[data-skin="uma"] .bar .bar-txt small { color: var(--um-ink2) !important; text-shadow: none !important; }
+html[data-skin="uma"] .bar .bar-txt :is(.when, .when.upcoming) { color: var(--um-green-d) !important; }
+html[data-skin="uma"] .bar .bar-txt .when.soon { color: #7a5200 !important; }
+html[data-skin="uma"] .bar .bar-txt .when.urgent { color: #b3261e !important; }
+html[data-skin="uma"] .when.ended { color: var(--um-ink2); }
+html[data-skin="uma"] .sec-title { color: var(--um-ink) !important; }
+html[data-skin="uma"] .sec-band.banner .sec-title { color: var(--um-pink-d) !important; }
+html[data-skin="uma"] .sec-band.challenge .sec-title { color: #5b3fb0 !important; }
+html[data-skin="uma"] .sec-ico { color: var(--um-green-d); }
+html[data-skin="uma"] .patch-mark { opacity: 1; color: var(--um-pink-d); }
+/* "Banners / Eventos / Rotatorios" (h3): la barra verde de sección, con el texto y la cuenta en blanco. */
+html[data-skin="uma"] .kind-head { color: #fff; border-color: transparent; }
+html[data-skin="uma"] .kind-head small { color: #f3ffe0; }
+html[data-skin="uma"] .gcard-hero .pill.hot { color: #fff; }
+html[data-skin="uma"] .soon-card :is(.soon-txt b, .soon-txt strong, .soon-t, b) { color: var(--um-ink); }
+html[data-skin="uma"] .soon-card .soon-txt small { color: var(--um-ink2); }
+
+/* ===== Textos con color claro FIJO en la hoja base (pensada para fondo oscuro) ===== */
+html[data-skin="uma"] :is(.hist .pname, .cur-name, .next-top em, .desc) { color: var(--um-ink); }
+html[data-skin="uma"] .up-ver { color: var(--um-pink-d); }
+html[data-skin="uma"] :is(.code-until, .prec) { color: #7a5200; }
+html[data-skin="uma"] .cc-new { background: var(--um-pink-bar); color: #fff; }
+html[data-skin="uma"] :is(.prog span) { color: var(--um-ink); text-shadow: none; }
+html[data-skin="uma"] .prog.urgent span { color: #b3261e; }
+html[data-skin="uma"] .stars { color: #8a5d00; text-shadow: none; }
+html[data-skin="uma"] :is(.bport, .bcard-top) .stars { color: #ffd36b; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+html[data-skin="uma"] .site-foot { border-top: 3px solid var(--um-green); color: var(--um-ink2); }
+html[data-skin="uma"] .site-foot .donate-note { color: var(--um-ink); opacity: 1; }
+
+/* --- Cursor del juego (32 px; 64 px en alta densidad). Punta en (10, 6). --- */
+html[data-skin="uma"], html[data-skin="uma"] body {
+  cursor: url(/skins/uma/cursor.png) 10 6, auto;
+  cursor: image-set(url(/skins/uma/cursor.png) 1x, url(/skins/uma/cursor@2x.png) 2x) 10 6, auto; }
+html[data-skin="uma"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) {
+  cursor: url(/skins/uma/cursor.png) 10 6, pointer !important;
+  cursor: image-set(url(/skins/uma/cursor.png) 1x, url(/skins/uma/cursor@2x.png) 2x) 10 6, pointer !important; }
+html[data-skin="uma"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }

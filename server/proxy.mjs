@@ -11,6 +11,7 @@ const gzip = promisify(gzipCb)
 export const MAX_BYTES = (Number(process.env.CACHE_MB) || 64) * 1024 * 1024
 const RATE_PER_MIN = Number(process.env.RATE_PER_MIN) || 600
 const UA = 'WhenGacha/1.0 (+https://github.com/AmadeusMaho/WhenGacha)'
+export const PROXY_UA = UA
 /** gachafocus (Cloudflare) rechaza el UA identificado en algunos hosts: se prueba primero con un UA de navegador y, si falla, con el de siempre. */
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
 /**
@@ -44,6 +45,17 @@ const SOURCES = [
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509)$/.test(u.pathname) },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
+  // Fondos de las skins (server/skin-live.mjs): qué vídeo e imagen de portada tiene AHORA la web oficial de cada juego (cambian con cada
+  // versión). Solo para el servidor (`internal`), cada 12 h; el proxy guarda únicamente las URL que hacen falta (`shrinkText`/`shrink`), no las páginas.
+  // Genshin y ZZZ (HoYoverse): la portada (HTML de ~5–11 KB) enlaza su script de configuración `config.<hash>.js`, que lista los recursos de la
+  // página; el vídeo más reciente (la ruta lleva la fecha) es el de la versión actual.
+  { name: 'hoyo-home', ttl: 12 * HOUR, internal: true, test: u => (u.hostname === 'genshin.hoyoverse.com' && u.pathname === '/en/' || u.hostname === 'zenless.hoyoverse.com' && u.pathname === '/en-us/') && !u.search,
+    shrinkText: t => JSON.stringify({ config: /https:\/\/act\.hoyoverse\.com\/puzzle\/(?:hk4e|zzz)\/pz_[A-Za-z0-9]+\/config\.[a-f0-9]+\.js/.exec(t)?.[0] ?? null }) },
+  { name: 'hoyo-config', ttl: 12 * HOUR, internal: true, test: u => u.hostname === 'act.hoyoverse.com' && /^\/puzzle\/(hk4e|zzz)\/pz_[A-Za-z0-9]+\/config\.[a-f0-9]+\.js$/.test(u.pathname) && !u.search,
+    shrinkText: t => JSON.stringify({ videos: [...new Set(t.match(/https:\/\/act-webstatic\.hoyoverse\.com\/puzzle\/(?:hk4e|zzz)\/pz_[A-Za-z0-9]+\/resource\/puzzle\/\d{4}\/\d{2}\/\d{2}\/[a-f0-9_]+\.mp4/g) ?? [])] }) },
+  // WuWa: el JSON de la portada de su web (MainMenu.json, ~400 KB) trae `pcTopPicture` con `backgroundVideo` y `coverImage`. Va antes de "kuro".
+  { name: 'kuro-home', ttl: 12 * HOUR, internal: true, test: u => u.hostname === 'hw-media-cdn-mingchao.kurogame.com' && u.pathname === '/akiwebsite/website2.0/json/G152/en/MainMenu.json' && !u.search,
+    shrink: j => ({ pc: j.pcTopPicture && { video: j.pcTopPicture.backgroundVideo, image: j.pcTopPicture.coverImage, updated: Number(j.pcTopPicture.updateTime) || null } }) },
   // WuWa: noticias oficiales de Kuro (JSON estáticos de su CDN; términos y robots.txt no lo prohíben). Lista + la nota de parche en curso.
   { name: 'kuro', ttl: 3 * HOUR, test: u => (u.hostname === 'hw-media-cdn-mingchao.kurogame.com' && /^\/akiwebsite\/website2\.0\/json\/G152\/en\/(ArticleMenu|article\/\d+)\.json$/.test(u.pathname))
     // Punishing: Gray Raven (pgr.kurogame.net): mismo sistema de Kuro, otro CDN.
@@ -206,6 +218,8 @@ async function fetchUpstream(url, ttl) {
   let body = Buffer.from(await res.arrayBuffer())
   if (body.length > limit) throw new Error('respuesta demasiado grande')
   if (src?.shrink) body = Buffer.from(JSON.stringify(src.shrink(JSON.parse(body.toString('utf8')))))
+  // `shrinkText`: para páginas y scripts (no JSON): se guarda solo lo que devuelve (un JSON pequeño con las URL que hacen falta).
+  if (src?.shrinkText) body = Buffer.from(src.shrinkText(body.toString('utf8')))
   if (body.length > MAX_BODY) throw new Error('respuesta demasiado grande')
   const entry = { body, gz: null, type: res.headers.get('content-type') ?? 'application/json', at: Date.now(), ttl }
   store(url, entry)

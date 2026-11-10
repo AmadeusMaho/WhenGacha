@@ -1,3 +1,4 @@
+import './install' // registra el evento de instalación al cargar (el botón está en los ajustes de avisos)
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import ConsentBanner from './ConsentBanner'
 import { consentEnabled, reopenConsent } from './ads'
@@ -19,12 +20,12 @@ import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
 
 /** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
+/** Servidor de Discord de la comunidad (botón del pie). */
+const DISCORD_URL = 'https://discord.gg/zz3XtbTrqP'
 const DONATE_URL = 'https://www.paypal.com/donate/?business=amadeusmaho45%40gmail.com&item_name=WhenGacha&currency_code=USD'
 
 type Tab = 'timeline' | 'mine' | 'patches'
 const TABS: [Tab, 'tab.timeline' | 'tab.mine' | 'tab.patches'][] = [['timeline', 'tab.timeline'], ['mine', 'tab.mine'], ['patches', 'tab.patches']]
-
-interface InstallEvent extends Event { prompt(): Promise<void> }
 
 const ago = (ts?: number) => {
   if (!ts) return t('ago.never')
@@ -58,7 +59,6 @@ export default function App() {
   const [now, setNow] = useState(Date.now())
   const [selected, setSelected] = useState<GameEvent | null>(null)
   const [closing, setClosing] = useState(false)
-  const [installEv, setInstallEv] = useState<InstallEvent | null>(null)
   // Juego al que ir al abrir la línea de tiempo (desde "Mis gachas").
   const [focusGame, setFocusGame] = useState<string>()
 
@@ -77,12 +77,6 @@ export default function App() {
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30_000)
     return () => clearInterval(timer)
-  }, [])
-
-  useEffect(() => {
-    const h = (e: Event) => { e.preventDefault(); setInstallEv(e as InstallEvent) }
-    window.addEventListener('beforeinstallprompt', h)
-    return () => window.removeEventListener('beforeinstallprompt', h)
   }, [])
 
   // Avisos: al abrir, cada minuto, y copia para el service worker.
@@ -126,7 +120,6 @@ export default function App() {
           <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
             <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> <span className="sync-t">{status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}</span>
           </button>
-          {installEv && <button className="btn sm primary" onClick={() => installEv.prompt()}>{t('install')}</button>}
         </div>
       </header>
       {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.map(name => { const g = games.find(x => x.name === name); const ts = g && state.synced[g.id]; return ts ? `${name} (${ago(ts)})` : name }).join(', ') })}</div>}
@@ -140,6 +133,7 @@ export default function App() {
         <a href="/acerca.html">{t('footer.about')}</a>
         <a href="/privacidad.html">{t('footer.privacy')}</a>
         {consentEnabled && <button className="linkbtn" onClick={reopenConsent}>{t('consent.settings')}</button>}
+        <a className="btn sm discord" href={DISCORD_URL} title={t('footer.discordTip')} target="_blank" rel="noopener noreferrer">{t('footer.discord')}</a>
         {donateUrl && <a className="btn sm donate" href={donateUrl} title={t('footer.donateTip')} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
         {donateUrl && <span className="donate-note">{t('footer.donateNote')}</span>}
       </footer>

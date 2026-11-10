@@ -93,3 +93,10 @@ html .skin-panel .skin-unlock :is(p, input, .btn) { font-size: 12.5px !important
 html .skin-panel .skin-unlock input { border-width: 1px !important; }
 html .skin-panel .skin-unlock .btn { border-width: 1px !important; border-image: none !important; clip-path: none !important; padding: 6px 14px !important; min-height: 0 !important; }
 @media (max-width: 600px) { html .skin-panel { width: auto; } }
+
+/* Fondo de la línea de tiempo (LiveWallpaper.tsx), para todas las skins: encima del fondo fijo y debajo del contenido. Cada skin le
+   pone su filtro (oscurecer, aclarar). Los fondos sin vídeo (clase "kb") se acercan y se desplazan muy despacio, como un fondo animado. */
+html[data-skin] .skin-live { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: center / cover no-repeat; }
+html[data-skin] .skin-live.kb { inset: -4%; width: 108%; height: 108%; animation: skin-kb 48s ease-in-out infinite alternate !important; will-change: transform; }
+@keyframes skin-kb { from { transform: scale(1) translate(0, 0); } to { transform: scale(1.07) translate(-2.5%, -1.5%); } }
+@media (prefers-reduced-motion: reduce) { html[data-skin] .skin-live.kb { animation: none !important; } }

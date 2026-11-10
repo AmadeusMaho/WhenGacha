@@ -140,7 +140,7 @@ html[data-skin="zzz"] .gsec-head .stats b { color: var(--zz-yellow); }
 
 /* ===== Línea de tiempo: carriles negros; barras carbón con el color de su tipo a la izquierda ===== */
 html[data-skin="zzz"] [style*="--c:"] { --c: #ffdd00 !important; --c2: #1d1d1d !important; }
-html[data-skin="zzz"] .tl.tl { background: #0f0f0f; }
+html[data-skin="zzz"] .tl.tl { background: rgba(15, 15, 15, .7); backdrop-filter: blur(2px); }
 html[data-skin="zzz"] :is(.tl-corner, .tl-label, .tl-axis) { background: #141414; }
 html[data-skin="zzz"] .tl-lane { border-color: rgba(255, 255, 255, .06); }
 html[data-skin="zzz"] .grid-line { background: rgba(255, 255, 255, .05); }

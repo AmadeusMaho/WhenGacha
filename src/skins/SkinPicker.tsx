@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATALOG } from '../catalog'
 import { useLang, type Lang } from '../i18n'
 import LiveWallpaper from './LiveWallpaper'
+import { useLiveWithFeed } from './liveFeed'
 import { clearNotice, logout, requestLink, useNotice, type ApiResult } from './premium'
 import { SKINS, applySkin, endPreview, setSkin, startPreview, usePreview, useSkin, useSupporter } from './skins'
 import SupportDialog from './SupportDialog'
@@ -10,6 +11,8 @@ import './wuwa.css'
 import './genshin.css'
 import './zzz.css'
 import './hsr.css'
+import './nikke.css'
+import './uma.css'
 
 /** Textos propios (no van en locales.ts para que quitar las skins no toque nada más). */
 const TXT: Record<Lang, Record<string, string>> = {
@@ -50,7 +53,8 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
   const preview = usePreview()
   // Lo que se ve: la vista previa (sin Premium) o la skin elegida.
   const active = preview ?? skin
-  const live = timeline ? SKINS.find(k => k.id === active)?.live : undefined
+  // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), solo en la línea de tiempo.
+  const live = useLiveWithFeed(active, timeline ? SKINS.find(k => k.id === active)?.live : undefined)
   const [open, setOpen] = useState(false)
   // Vista del menú: las skins, o "entrar con el correo" (aparte, para no llenar el menú de texto).
   const [view, setView] = useState<'skins' | 'login'>('skins')
@@ -152,7 +156,7 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
       )}
       {dialog && <SupportDialog donateUrl={donateUrl} onClose={() => setDialog(false)}
         onLogin={() => { setDialog(false); toggle(); setView('login') }} />}
-      {live && <LiveWallpaper key={active} live={live} />}
+      {live && active && <LiveWallpaper key={active} skin={active} live={live} />}
     </div>
   )
 }

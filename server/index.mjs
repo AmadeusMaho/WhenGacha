@@ -12,6 +12,7 @@ import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
 import { handleApi } from './supporter.mjs'
+import { getSkinLive, startSkinLive } from './skin-live.mjs'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
@@ -97,6 +98,10 @@ const server = http.createServer(async (req, res) => {
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' }, 'Método no permitido')
     if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain' }, 'ok')
     if (url.pathname === '/proxy') return await handleProxy(req, res, url)
+    if (url.pathname === '/data/skin-live.json') { // vídeo/imagen de portada actual de cada juego, para las skins (server/skin-live.mjs)
+      const body = JSON.stringify(getSkinLive())
+      return send(res, 200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=3600' }, req.method === 'HEAD' ? undefined : body)
+    }
     const data = /^\/data\/([a-z0-9]+)\.json$/.exec(url.pathname)
     if (data) { // copia de un juego generada por el recolector (ya normalizada)
       const snap = getSnapshot(data[1])
@@ -120,6 +125,7 @@ server.listen(PORT, HOST, async () => {
   const built = await stat(path.join(ROOT, 'index.html')).then(() => true, () => false)
   console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
   startCollector().catch(err => console.error('[collector]', err))
+  startSkinLive().catch(err => console.error('[skin-live]', err))
   if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
 })
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => flushCache().finally(() => server.close(() => process.exit(0))))

@@ -38,7 +38,7 @@ html[data-skin="hsr"] .aurora { background: #0c0c0e; }
 html[data-skin="hsr"] .aurora::after { display: block; content: ""; position: absolute; inset: -20px; pointer-events: none; filter: blur(6px);
   background: linear-gradient(180deg, rgba(10, 10, 12, .55), rgba(10, 10, 12, .82) 55%, rgba(10, 10, 12, .92)),
     url(/skins/hsr/bg.webp) center top / cover no-repeat; }
-html[data-skin="hsr"] .skin-live { filter: brightness(.35) saturate(.8) blur(4px); }
+html[data-skin="hsr"] .skin-live { filter: brightness(.4) saturate(.85) blur(2px); }
 
 /* --- Cabecera: barra negra; pestaña activa en blanco con barra blanca gruesa debajo (como las pestañas de Misiones) --- */
 html[data-skin="hsr"] header { background: rgba(10, 10, 12, .9); border-bottom: 1px solid rgba(255, 255, 255, .1); box-shadow: none; backdrop-filter: blur(8px); }
@@ -124,7 +124,7 @@ html[data-skin="hsr"] :is(.ev-loc, .gcard-head p) { color: var(--hs-gold); }
 
 /* ===== Línea de tiempo: barras carbón con el color de su tipo a la izquierda (banner dorado, evento blanco, desafío violeta) ===== */
 html[data-skin="hsr"] [style*="--c:"] { --c: #e8bd57 !important; --c2: #1c1c20 !important; }
-html[data-skin="hsr"] .tl.tl { background: rgba(14, 14, 16, .92); }
+html[data-skin="hsr"] .tl.tl { background: rgba(14, 14, 16, .7); backdrop-filter: blur(2px); }
 html[data-skin="hsr"] :is(.tl-corner, .tl-label, .tl-axis) { background: #161618; }
 html[data-skin="hsr"] .tl-lane { border-color: rgba(255, 255, 255, .06); }
 html[data-skin="hsr"] .grid-line { background: rgba(255, 255, 255, .05); }

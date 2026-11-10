@@ -33,6 +33,52 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
   `public/skins/hsr/`: `bg.webp` (Backgrounds, nebulosa con destellos dorados) y `star.webp` (Star of Honor), assets oficiales de skowt.cc
   marcados "Non-commercial fan use only" (el dueño decidió usarlos); `cursor.png` = el cursor del juego, convertido del `.cur` que aportó el dueño (punta en 4, 4).
   Fuente: la del juego en inglés es **DIN Next** (Monotype, de pago): se usa si el visitante la tiene instalada; si no, **Barlow** (OFL).
+- `nikke.css` (prueba, 10 nov 2026, rehecha con capturas del juego: Squad, Outpost Defense, Nikkepedia, Reset Level, lobby): la skin
+  **NIKKE**. Paneles y ventanas **claros** (gris muy claro / blanco, texto casi negro) sobre el fondo oscuro; cabeceras en degradado
+  azul con el título en blanco ("Outpost Defense": cabecera de cada juego, ventana de apoyo, y el arte del evento se funde en azul bajo
+  su título); títulos "| STAGE CLEAR COUNT" (mayúsculas con barra azul); botón principal azul lleno ("Claim") y secundario blanco con
+  borde azul ("Wipe Out"); chips oscuros cuadrados con el activo en azul ("ALL / I / II / III"); fichas de destacados y retratos como
+  las de Squad (marco azul, franja oscura con el nombre). Azules: `#1aa3f0` para adornos, `#0b72c4` y `#075aa0` donde va texto (≥ 4.5:1).
+  Dentro de los paneles claros se redefinen `--text/--muted/--warn/--good/--bad`; las tarjetas de banner (`.bcard`, texto sobre el arte)
+  los vuelven a poner claros con clase doble (la regla de paneles incluye `.plist li` y pesa más).
+  - **Botones como los del juego** (rehechos el 10 nov 2026; antes eran paneles de cristal que giraban todos y se veían raros):
+    pestañas como la barra inferior del lobby (NIKKE · SQUAD · HALL…): sin caja, mayúsculas claras separadas por una línea fina, y la
+    activa en blanco con la línea brillante arriba y un resplandor, como "HALL"; los retratos de las inactivas van apagados. Es lo único
+    que gira en 3D, muy suave (`perspective(600px)`, 8°, en abanico). Botones de la barra = oscuros translúcidos con borde fino (los de
+    recursos, correo y menú); Filtros y "Ver todos" = como "CAMPAIGN"; en las ventanas, planos: "Claim" en azul lleno (`#0f77c2`, el azul
+    más claro que llega a 4.5:1 con texto blanco; el del juego, `#1fa3f2`, se queda en 2.8:1) y "Wipe Out" blanco con borde azul fino.
+    Chips como "I / II / III": gris oscuro, el activo azul.
+  - La **línea de tiempo** tiene el marco OSCURO y un poco transparente (62 %, para que se vea el live wallpaper detrás; con el marco claro se veía demasiado blanca) y los eventos como filas blancas; los
+    paneles van en gris claro (`#e2e7ed`) con bordes más marcados para que contrasten con las tarjetas blancas.
+  - **Fuente**: la del juego, **Futura Condensed Bold** (© Adobe 1987, marca de Neufville; licencia comercial), el `.otf` que aportó el
+    dueño, pasado a `public/skins/nikke/nikke-font.woff2` sin recortar (12 KB, ya es solo latina). Lo que no cubre cae en Saira Semi Condensed.
+  - `public/skins/nikke/` (web oficial nikke-en.com, página Art, © SHIFT UP / Proxima Beta; el dueño decidió usarlos): `bg.webp` /
+    `bg-m.webp` = wallpaper "KEEP OUT" (fondo fijo, versión de 960 px en móvil); `live-<n>.mp4` + `live-<n>.webp` = **siete live
+    wallpapers** (Sin Editor, Coins in Rush, Phantom Thief vs Detective, Enter Heaven, Absolute, Unbreakable Sphere, Arcane Archive),
+    sacados de sus .zip oficiales y pasados a 960 px, 24 fps, sin audio (20–25 MB → 0,2–1,2 MB cada uno; con el ffmpeg de `pip install
+    imageio-ffmpeg`). Cada visita a la línea de tiempo muestra el siguiente (se recuerda en `whengacha:live:nikke`; ver `LiveWallpaper.tsx`).
+    En desarrollo, el StrictMode de React avanza dos de golpe; en producción, uno.
+  - **Retratos de NIKKE** del zip `goddess-of-victory-nikke-icons` que aportó el dueño (149 iconos `si-cXXX` del juego, los cuadrados
+    de Squad): uno en cada pestaña con marco azul (`nav-timeline` = `si-c010`, Rapi; `nav-mine` = `si-c012`; `nav-patches` = `si-c013`)
+    y el de Rapi junto al título de la ventana de apoyo. El zip solo trae retratos, no piezas de la interfaz.
+  - Sin cursor propio (no hay archivo del juego). No se encontró ningún repo con la interfaz extraída del juego.
+- `uma.css` (prueba, 10 nov 2026, ajustada con capturas del juego: Menu, Star Unlock, Training): la skin **Umamusume**. Tema **claro**
+  con el fondo lila facetado del juego; paneles blancos redondeados con borde lila. Botones = rectángulos blancos con el "labio" gris de
+  abajo y texto marrón (Inventory, Profile); principal verde y apoyo rosa con texto blanco; etiquetas de sección ("Trainer", "Other") =
+  barra verde con el final en diagonal; cabeceras ("Menu", Parches, ventana de apoyo, menú de skins) = barra verde con texto blanco; lo
+  urgente en cápsula rosa ("Closing in 5d"); × roja redonda del juego. El lima (`#7ecc08`) y el rosa (`#ff6194`) del juego no llegan a 4.5:1
+  con texto blanco (en el juego lo salva un contorno): donde hay texto, el degradado empieza más oscuro (`#3b8200`, `#c8336c`).
+  - **Pestañas como la barra inferior del juego**: baldosa blanca con labio, con la chica de cada una asomando por arriba
+    (`nav-timeline` = `utx_ico_home_umamusume_03`, `nav-mine` = `utx_ico_home_umamusume_04` (Oguri Cap), `nav-patches` = `utx_ico_menu_28`
+    (Tazuna)); la activa con su color (verde, rosa como "Enhance", azul como "Home"). Sincronizar lleva las flechas naranjas
+    (`utx_ico_charachange_00`) y "Apoyar el proyecto" el apretón de manos rosa (`utx_ico_shop_103`).
+  - `public/skins/uma/`: del zip "Umamusume UI sprites" que aportó el dueño (1631 PNG extraídos del cliente por un tercero, © Cygames;
+    el dueño decidió usarlos): `bg.webp` = `vertical_bg_6001_00000`; `btn-rect` = `utx_btn_s_02_sl`; `btn-pink` = `utx_btn_s_04_sl`;
+    `chip` = `utx_btn_toggle_00`; `close` = `utx_btn_close_00`; `hdr-fx` = el enrejado de rombos de `utx_frm_dialog_hdr_00` sacado como capa blanca translúcida (va encima del verde de las barras y cabeceras); `panel-bg` = `utx_frm_underwindow_listbase_00` (fondo de las filas) y los
+    iconos de arriba. `cursor.png` (32 px) / `cursor@2x.png` (64 px) = el cursor del juego, convertido del `.cur` que aportó el dueño
+    (24 bits con máscara AND; Pillow lo abría sin transparencia, así que se leyó a mano). Punta en (10, 6).
+  - Sin fondo animado. Fuente: M PLUS Rounded 1c (Google Fonts, OFL); la del juego (FOT-Rodin) es de pago y no se aportó.
+  - Las tarjetas de banner (`.bcard`) y la cabecera de "Mis gachas" (`.gcard-hero`) llevan el texto sobre el arte: ahí se vuelve a blanco.
 - **Vista previa de skins** (`SkinPicker.tsx`): cambia al MOVER el ratón por una fila y se quita al salir del menú entero. El menú tiene
   posición fija (medida al abrirlo) y las mismas medidas y fuente con cualquier skin (bloque final de `skins.css`): antes cambiaba de tamaño
   en cada vista previa y saltaba bajo el ratón (parpadeo con ZZZ). Una skin nueva NO debe tocar las medidas del menú, solo sus colores.
@@ -53,13 +99,38 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
   `Atlas/Button/T_TPI_Common_Button1_UIAtlas`. Se usan con `border-image` en el bloque "Piezas de la interfaz del juego" de `wuwa.css`
   (cortadas dejando una franja central: si se cortan justo por la mitad, el botón muestra una raya horizontal).
 
-- `LiveWallpaper.tsx`: fondo animado de la **línea de tiempo** (no sale en "Mis gachas" ni en "Parches"), si la skin tiene `live` en `SKINS`.
+- `LiveWallpaper.tsx`: fondo animado de la **línea de tiempo** (no sale en "Mis gachas" ni en "Parches"), si la skin tiene `live` en `SKINS`
+  (un vídeo, o una lista: entonces cada visita a la pestaña usa el siguiente).
   WuWa usa el vídeo de la portada de su web oficial (`public/skins/wuwa/live.mp4`, arte de Kuro Games: sin bandas negras, 960 px, sin audio,
   24 MB → 2,3 MB) y un fotograma fijo (`live.jpg`) para móvil, "ahorro de datos" y "reducir movimiento". Se pausa con la pestaña oculta.
   Para quitar solo el vídeo: borra `live` de la entrada de WuWa en `skins.ts` y los dos archivos.
 - En la skin, el color de cada juego (`--c`/`--c2`) se sustituye por el dorado y carbón de WuWa en tarjetas, carriles y barras.
 
 Antes hubo temas ("Negro OLED", "Colores") y opciones de fondo/acento/cursor; se quitaron.
+
+## Fondos de la línea de tiempo (rotan en cada visita)
+
+Todas las skins traen una lista de fondos en `live` (`skins.ts`); cada visita a la línea de tiempo muestra el siguiente (se recuerda en
+`whengacha:live:<skin>`). Un fondo con `video` se reproduce en bucle; uno con solo `poster` (fondo fijo, `still-*.webp`) se acerca y se
+desplaza muy despacio (clase `kb`, en `skins.css`). En móvil, "ahorro de datos" o "reducir movimiento", fotograma fijo sin movimiento.
+Los marcos de la línea de tiempo son algo transparentes para que se vea el fondo; el eje de meses y la columna de juegos siguen OPACOS
+(se quedan fijos al hacer scroll y, transparentes, dejaban ver los eventos por debajo; pasó en NIKKE).
+
+Origen (webs oficiales, 10 nov 2026; arte de cada estudio, el dueño decidió usarlo). Vídeos a 960 px, 24 fps, sin audio; fondos a 1600 px:
+- **NIKKE**: 7 live wallpapers de la página Art (ver arriba).
+- **WuWa**: `live.mp4` (portada de la web, ya estaba) + `still-kv` (ilustración de la versión) + `still-land` (paisaje) + `bg.jpg`.
+  El "bg-wave" de la web es una franja de 1920×180 y no sirve.
+- **Genshin**: `live-hour.mp4` (portada de la versión "Hour of Ruin", 3 s) + paisajes de las páginas de región: `still-mond`,
+  `still-mond-dusk`, `still-liyue`, `still-inazuma`, `still-sumeru`.
+- **ZZZ**: `live-v33.mp4` (portada de la versión 3.3, 13 s) + `still-agents`, `still-shards`, `still-sofa`, `still-party`.
+- **HSR**: la portada no tiene vídeo; 5 fondos fijos de la web (`still-v46`, `still-pink`, `still-mech`, `still-radio`, `still-pool`).
+- **Umamusume**: sin vídeo; `still-kv`, `still-stadium`, `still-race` de umamusume.com. Como es una skin clara, el fondo va aclarado
+  (`opacity: .45`) detrás del marco lila.
+**Según la versión (automático):** el servidor mira cada 12 h el vídeo/imagen de portada de las webs de Genshin, ZZZ y WuWa
+(`server/skin-live.mjs`, `GET /data/skin-live.json`) y `liveFeed.ts` lo pone el primero de la lista si es nuevo (si coincide con uno de
+los fondos de la skin, por su campo `official`, no se repite). El vídeo se reproduce desde el CDN oficial y solo si pesa ≤ 12 MB; si no
+(WuWa, 23 MB), se usa su imagen de portada como fondo fijo. Si ese fondo falla (el vídeo da error o no arranca en 10 s, o su imagen no carga), `LiveWallpaper.tsx` lo cambia por uno de los de la skin (un vídeo si lo hay). Sin servidor propio no hay fondo de versión. Detalles: `docs/fuentes-y-proxy.md`.
+Cuando salga una versión nueva y se quiera su vídeo comprimido en la skin (más ligero), se convierte y se añade a la lista con su `official`.
 
 ## Solo para WhenGacha Premium
 
