@@ -13,7 +13,7 @@
     "build:server": "vite build -c vite.collector.config.ts",
     "snapshot": "node scripts/snapshot.mjs",
     "snapshot:publish": "node scripts/snapshot.mjs --publish",
-    "donor-code": "node scripts/donor-code.mjs"
+    "premium": "node scripts/premium.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",

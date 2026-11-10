@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { isSupporter, subscribe, useSupporter } from './premium'
 
 /**
  * Skins del sitio (prototipo, 9 nov 2026): cambian TODO el aspecto (botones, paneles, línea de tiempo, cursor…) al estilo de un gacha.
@@ -21,49 +22,61 @@ export const SKINS: SkinDef[] = [
   { id: 'wuwa', game: 'wuwa', name: 'Wuthering Waves', fonts: 'family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600',
     // Vídeo de la portada de la web oficial, sin las bandas negras, a 960 px y sin audio (24 MB → 2,3 MB).
     live: { video: '/skins/wuwa/live.mp4', poster: '/skins/wuwa/live.jpg' } },
+  // Prueba local con piezas de interfaz del Drive "UI Assets" (genshin.css); sin vídeo ni arte de personajes.
+  { id: 'genshin', game: 'genshin', name: 'Genshin Impact', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800' },
 ]
 
 const KEY = 'whengacha:skin'
-/** Código de apoyo ya comprobado por el servidor (POST /api/unlock, server/supporter.mjs). Desbloquea las skins en este navegador. */
-const SUPPORTER_KEY = 'whengacha:supporter'
-const listeners = new Set<() => void>()
-const emit = () => listeners.forEach(l => l())
-const subscribe = (cb: () => void) => { listeners.add(cb); return () => { listeners.delete(cb) } }
-
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k) } catch { return null } },
   set: (k: string, v: string | null) => { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k) } catch { /* solo para esta visita */ } },
 }
+// Restos del sistema anterior de códigos "WG-…" (se podían publicar): se borran y ya no desbloquean nada.
+store.set('whengacha:supporter', null)
 
-let supporter = !!store.get(SUPPORTER_KEY)
-// Sin código de apoyo no se aplica ninguna skin (una guardada con el selector anterior, o de antes del desbloqueo, se ignora).
-let current = (() => { const raw = store.get(KEY); return supporter && raw && SKINS.some(s => s.id === raw) ? raw : null })()
+// Las skins son de WhenGacha Premium (premium.ts): sin sesión de apoyo no se aplica ninguna.
+let current = (() => { const raw = store.get(KEY); return isSupporter() && raw && SKINS.some(s => s.id === raw) ? raw : null })()
+
+const listeners = new Set<() => void>()
 
 export function setSkin(id: string | null) {
-  if (id && !supporter) return
+  if (id && !isSupporter()) return
   current = id
   store.set(KEY, id)
-  emit()
+  applySkin(id)
+  listeners.forEach(l => l())
 }
 
-export const useSkin = (): string | null => useSyncExternalStore(subscribe, () => current)
-export const useSupporter = (): boolean => useSyncExternalStore(subscribe, () => supporter)
+const sub = (cb: () => void) => { listeners.add(cb); const off = subscribe(cb); return () => { listeners.delete(cb); off() } }
+export const useSkin = (): string | null => useSyncExternalStore(sub, () => current)
+// Si se cierra la sesión (o la anulan), vuelve la vista original.
+subscribe(() => { if (current && !isSupporter()) { current = null; applySkin(preview) } })
+export { useSupporter }
 
-export type UnlockResult = 'ok' | 'invalid' | 'too-many' | 'unavailable'
+/*
+ * Vista previa: sin Premium, cualquiera puede ver una skin puesta en la web para decidir si le gusta. Es temporal: no se guarda
+ * (desaparece al recargar o al salir) y la barra de abajo lo deja claro. Si activa Premium durante la vista previa, se queda con esa skin.
+ */
+let preview: string | null = null
+export const usePreview = (): string | null => useSyncExternalStore(sub, () => preview)
 
-/** Comprueba un código de apoyo en el servidor y, si vale, desbloquea las skins en este navegador. */
-export async function unlock(code: string): Promise<UnlockResult> {
-  try {
-    const res = await fetch('/api/unlock', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: code.trim() }) })
-    if (res.status === 429) return 'too-many'
-    if (res.status >= 500 || res.status === 404) return 'unavailable'
-    if (!((await res.json().catch(() => ({}))) as { ok?: boolean }).ok) return 'invalid'
-  } catch { return 'unavailable' }
-  supporter = true
-  store.set(SUPPORTER_KEY, code.trim().toUpperCase())
-  emit()
-  return 'ok'
+export function startPreview(id: string) {
+  if (!SKINS.some(s => s.id === id)) return
+  preview = id
+  applySkin(id)
+  listeners.forEach(l => l())
 }
+
+export function endPreview() {
+  if (!preview) return
+  preview = null
+  applySkin(current)
+  listeners.forEach(l => l())
+}
+
+subscribe(() => {
+  if (preview && isSupporter()) { const keep = preview; preview = null; setSkin(keep) }
+})
 
 /** Pone `data-skin` en <html> y carga sus fuentes. Sin skin, no deja nada. */
 export function applySkin(id: string | null) {

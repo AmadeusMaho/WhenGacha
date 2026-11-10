@@ -178,6 +178,13 @@ html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:dis
 }
 html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-main-hold.png); }
 html[data-skin="wuwa"] .btn.primary.sm, html[data-skin="wuwa"] .site-foot a.btn.donate { border-image-width: 16px; padding: 6px 18px; }
+/* "Marcar como completado" ya marcado ("✓ Completado (deshacer)"): pierde .primary y pasaba a la píldora negra. Se queda en la píldora
+   clara del botón principal, apagada en gris, para que se lea como "hecho" sin volverse negra; al pasar el ratón se aclara un poco. */
+html[data-skin="wuwa"] .btn.mark:not(.primary), html[data-skin="wuwa"] .btn.mark:not(.primary):hover:not(:disabled) {
+  border-image: url(/skins/wuwa/ui/btn-main.png) 50 fill / 18px / 2px stretch; background: none !important;
+  padding: 9px 22px; color: #3a3833; font-weight: 700; filter: grayscale(1) brightness(.78);
+}
+html[data-skin="wuwa"] .btn.mark:not(.primary):hover:not(:disabled) { filter: grayscale(1) brightness(.9); }
 
 /* Chips, filtros y etiquetas: píldora pequeña (T_BtnStyleC). */
 html[data-skin="wuwa"] :is(.chip, .up-chip, .codes-chip, .jump-chip, .soon-toggle, .fopt, .pick-search) {
@@ -199,7 +206,11 @@ html[data-skin="wuwa"] :is(.list li, .pull-list li) {
 html[data-skin="wuwa"] :is(.list li, .pull-list li):hover { box-shadow: none; filter: brightness(1.35); }
 
 /* Títulos de sección: emblema dorado del juego y su barra de título (T_ShopTitleBg). */
-html[data-skin="wuwa"] h3 { padding: 3px 12px 3px 4px; background: url(/skins/wuwa/ui/title.png) left center / 100% 100% no-repeat; }
+/* El título mide lo que su texto: la barra está pensada para títulos cortos y, estirada a todo el ancho ("Ajustes", "Añadir o quitar gachas"),
+   se veía como una cuña larga. */
+html[data-skin="wuwa"] h3 { width: fit-content; max-width: 100%; padding: 3px 34px 3px 4px; background: url(/skins/wuwa/ui/title.png) left center / 100% 100% no-repeat; }
+/* Títulos con un botón a la derecha ("Ver todos"): ancho completo para no moverlo; la barra cubre solo la zona del texto. */
+html[data-skin="wuwa"] h3:has(> button) { width: auto; padding-right: 4px; background-size: min(100%, 400px) 100%; }
 html[data-skin="wuwa"] h3::before { width: 15px; height: 15px; transform: none; background: url(/skins/wuwa/ui/emblem.png) center / contain no-repeat; }
 
 /* Destello de cuatro puntas del juego (T_PcStarB) en vez de los rombos: pestaña activa, "hoy" y eventos en curso. */

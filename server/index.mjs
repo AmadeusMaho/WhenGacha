@@ -1,6 +1,7 @@
 // Servidor de WhenGacha: sirve la app compilada (dist/) y un proxy con caché para las fuentes de datos.
 // Sin dependencias: solo módulos de Node. Variables opcionales: PORT (3000), HOST (0.0.0.0), CACHE_MB (64), RATE_PER_MIN (600). El proxy vive en proxy.mjs.
-// SUPPORTER_SECRET (y SUPPORTER_REVOKED): códigos de apoyo que desbloquean las skins (supporter.mjs).
+// WhenGacha Premium (apoyo con PayPal y acceso por correo, supporter.mjs): SUPPORTER_SECRET, PAYPAL_*, DONORS_*, RESEND_API_KEY, MAIL_FROM,
+// PUBLIC_URL y SUPPORT_*. Guía: docs/premium.md.
 import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import http from 'node:http'
@@ -10,7 +11,7 @@ import { promisify } from 'node:util'
 import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
-import { handleUnlock } from './supporter.mjs'
+import { handleApi } from './supporter.mjs'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
@@ -91,8 +92,8 @@ async function handleStatic(req, res, pathname) {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
-    // Códigos de apoyo (desbloquean las skins): única ruta con POST. server/supporter.mjs
-    if (url.pathname === '/api/unlock') return await handleUnlock(req, res)
+    // WhenGacha Premium (apoyo, acceso por correo y sesión): las únicas rutas con POST. server/supporter.mjs
+    if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url)
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' }, 'Método no permitido')
     if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain' }, 'ok')
     if (url.pathname === '/proxy') return await handleProxy(req, res, url)

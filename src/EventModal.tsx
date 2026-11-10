@@ -127,7 +127,6 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
             }}>
               {!done && <span className="spark" aria-hidden>✦</span>}{done ? t('modal.undo') : t('modal.markDone')}
             </button>
-            <small className="muted">{t('modal.synced')}</small>
           </div>
         </div>
       </div>

@@ -1,0 +1,225 @@
+/* ===== Skin "Genshin Impact" (prueba local, 9 nov 2026) =====
+   Estilo de los menús del juego (inventario, pase de batalla): barras y cabeceras en azul pizarra con texto crema, paneles y filas
+   CREMA con texto gris azulado, tarjetas tipo objeto (fondo naranja de rareza + franja crema con el texto), contadores color arena y
+   botón principal amarillo dorado. Piezas de interfaz de la carpeta de Drive "UI Assets" (public/skins/genshin/): cursor, destello y
+   fondo de ranura. Sin arte de personajes. Solo aplica con <html data-skin="genshin">. */
+
+html[data-skin="genshin"] {
+  --gi-slate: #3b4255;
+  --gi-slate2: #4a5366;
+  --gi-cream: #ece5d8;
+  --gi-cream2: #f6f2e9;
+  --gi-rowline: #dcd1bd;
+  --gi-ink: #495366;
+  --gi-ink2: #7b808c;
+  --gi-gold: #d3bc8e;
+  --gi-tan: #e3d4b4;
+  --gi-yellow1: #f8de97;
+  --gi-yellow2: #ecc566;
+  --gi-orange1: #9b6a3e;
+  --gi-orange2: #cb904a;
+  /* Fuera de los paneles (sobre el fondo oscuro): texto crema. */
+  --bg: #262b3a;
+  --panel: var(--gi-cream);
+  --panel2: var(--gi-cream2);
+  --line: rgba(236, 229, 216, .18);
+  --text: #f1ece2;
+  --muted: #b9b4aa;
+  --acc: var(--gi-gold);
+  --acc2: #f2e2bb;
+  color-scheme: dark;
+}
+html[data-skin="genshin"] body { font-family: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 500; }
+html[data-skin="genshin"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
+html[data-skin="genshin"] ::selection { background: rgba(211, 188, 142, .45); }
+html[data-skin="genshin"] * { scrollbar-color: rgba(236, 229, 216, .45) transparent; }
+
+/* --- Fondo: pizarra con brillo (si la skin tiene vídeo, va encima; ver skins.ts) --- */
+html[data-skin="genshin"] .aurora {
+  background: radial-gradient(1200px 600px at 50% -10%, rgba(120, 160, 190, .22), transparent 60%),
+              radial-gradient(900px 600px at 100% 100%, rgba(211, 188, 142, .12), transparent 60%), #262b3a;
+}
+/* Fondo animado propio (sin vídeo ni arte del juego): el brillo se desplaza despacio y motas de luz doradas suben, como en los menús. */
+html[data-skin="genshin"] .aurora { background-size: 140% 140%, 140% 140%, auto; animation: gi-glow 26s ease-in-out infinite alternate; }
+html[data-skin="genshin"] .aurora::after {
+  display: block; content: ""; position: absolute; inset: -100% 0 0; pointer-events: none; opacity: .75;
+  background-image:
+    radial-gradient(2px 2px at 12% 18%, rgba(255, 236, 190, .9), transparent 60%),
+    radial-gradient(1.5px 1.5px at 33% 62%, rgba(255, 245, 220, .8), transparent 60%),
+    radial-gradient(2.5px 2.5px at 58% 34%, rgba(255, 226, 160, .85), transparent 60%),
+    radial-gradient(1.5px 1.5px at 76% 80%, rgba(255, 245, 220, .7), transparent 60%),
+    radial-gradient(2px 2px at 90% 12%, rgba(255, 236, 190, .8), transparent 60%),
+    radial-gradient(1px 1px at 46% 92%, rgba(255, 255, 255, .7), transparent 60%);
+  background-size: 520px 520px; animation: gi-motes 60s linear infinite;
+}
+@keyframes gi-glow { from { background-position: 30% 0%, 100% 100%, 0 0; } to { background-position: 70% 20%, 60% 80%, 0 0; } }
+@keyframes gi-motes { to { transform: translateY(50%); background-position: 40px -520px; } }
+@media (prefers-reduced-motion: reduce) { html[data-skin="genshin"] .aurora, html[data-skin="genshin"] .aurora::after { animation: none; } }
+html[data-skin="genshin"] .skin-live { filter: brightness(.55) saturate(1.05) blur(1.5px); }
+
+/* --- Cabecera: barra pizarra; pestaña activa en crema con la línea dorada debajo --- */
+html[data-skin="genshin"] header { background: rgba(51, 58, 77, .94); border-bottom: 0; box-shadow: 0 2px 10px rgba(0, 0, 0, .25); }
+html[data-skin="genshin"] .brand h1 { color: var(--gi-cream); }
+html[data-skin="genshin"] header nav { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow-y: hidden; }
+html[data-skin="genshin"] header nav button { color: rgba(236, 229, 216, .7) !important; }
+html[data-skin="genshin"] header nav button.on { color: #fff !important; }
+html[data-skin="genshin"] header nav button:focus-visible { outline: none; text-shadow: 0 0 10px rgba(255, 240, 200, .7); }
+html[data-skin="genshin"] header nav .nav-ind { top: auto; bottom: 0; height: 3px; border-radius: 2px; background: var(--gi-cream); box-shadow: 0 0 8px rgba(236, 229, 216, .5); }
+html[data-skin="genshin"] header nav .nav-ind::after { display: none; }
+
+/* --- Botones: píldora crema con texto gris azulado; principal amarillo dorado ("Purchase Level") --- */
+html[data-skin="genshin"] .btn {
+  border-radius: 999px; border: 0; background: var(--gi-cream); color: var(--gi-ink); text-shadow: none; font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, .25);
+}
+html[data-skin="genshin"] .btn::after { display: none; }
+html[data-skin="genshin"] .btn:hover:not(:disabled) { background: #fffaf1 !important; color: #3b4252; transform: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, .35), 0 2px 8px rgba(0, 0, 0, .25); }
+html[data-skin="genshin"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="genshin"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--gi-yellow1), var(--gi-yellow2)) !important; color: #3f3a2e; border: 0; filter: none; }
+html[data-skin="genshin"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { box-shadow: 0 0 0 3px rgba(255, 236, 170, .45), 0 2px 8px rgba(0, 0, 0, .25); }
+html[data-skin="genshin"] .btn.mark .spark { color: #b8862d; }
+html[data-skin="genshin"] .btn.mark:not(.primary) { background: #d6d0c4 !important; color: #5d6270; }
+html[data-skin="genshin"] :is(.btn, .chip, .ichip, .seg button, .bar):focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+html[data-skin="genshin"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 999px; border: 0; background: var(--gi-cream); color: var(--gi-ink); }
+
+/* --- Chips y filtros sobre el fondo oscuro: crema transparente; el activo, crema lleno (como "All") --- */
+html[data-skin="genshin"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt) { border-radius: 999px; border: 1px solid rgba(236, 229, 216, .35); background: rgba(236, 229, 216, .08); color: var(--gi-cream); box-shadow: none; }
+html[data-skin="genshin"] :is(.chip, .ichip, .soon-toggle, .fopt):hover { background: rgba(236, 229, 216, .2) !important; border-color: rgba(236, 229, 216, .6); }
+html[data-skin="genshin"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge)),
+html[data-skin="genshin"] :is(.seg button.on, .chip.on):hover { background: var(--gi-cream) !important; color: var(--gi-ink); box-shadow: none; }
+html[data-skin="genshin"] .seg button { border-radius: 999px; }
+
+/* --- Títulos de sección sobre el fondo: barra pizarra con texto crema (como "Noblesse Oblige") --- */
+html[data-skin="genshin"] h3 { color: var(--gi-cream); letter-spacing: .04em; text-transform: none; font-size: .9rem; padding: 6px 12px; border-radius: 3px;
+  background: rgba(59, 66, 85, .92); }
+html[data-skin="genshin"] h3::before { content: ""; flex: none; width: 15px; height: 15px; background: url(/skins/genshin/star.png) center / contain no-repeat; }
+
+/* ===== Paneles CREMA: dentro, texto oscuro (se cambian las variables, así lo que usa var(--text)/var(--muted) se adapta) ===== */
+html[data-skin="genshin"] :is(.gcard-body, .ecard-body, .bcard, .modal-body, .tl, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .support-dialog, .skin-panel, .lang-menu, .consent) {
+  --text: var(--gi-ink); --muted: var(--gi-ink2); --line: rgba(73, 83, 102, .16); --panel: var(--gi-cream2); --panel2: #fff;
+  color: var(--gi-ink);
+}
+html[data-skin="genshin"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .modal, .support-dialog, .skin-panel, .lang-menu) {
+  background: var(--gi-cream); border: 0; border-radius: 6px; box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+html[data-skin="genshin"] :is(.gcard-body, .modal-body, .grid.even .codes[open] > ul) { background: var(--gi-cream); }
+html[data-skin="genshin"] :is(.gcard-hero, .ecard-img) { background-color: var(--gi-slate); }
+html[data-skin="genshin"] .gcard-hero .fade { background: linear-gradient(transparent 35%, rgba(59, 66, 85, .9)); }
+html[data-skin="genshin"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 40%, var(--gi-cream)); }
+html[data-skin="genshin"] .modal-title h2 { color: #fff; text-shadow: 0 2px 8px rgba(0, 0, 0, .6); }
+html[data-skin="genshin"] :is(.gcard, .up-card, .soon-card, .plist li):hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, .4), 0 8px 22px rgba(0, 0, 0, .4); transform: translateY(-2px); }
+/* Dentro de los paneles crema, los títulos son la cabecera pizarra de sección y ocupan todo el ancho. */
+html[data-skin="genshin"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 { margin-left: -16px; margin-right: -16px; border-radius: 0; padding-left: 16px; }
+html[data-skin="genshin"] .lang-menu button, html[data-skin="genshin"] .skin-panel button { color: var(--gi-ink); }
+html[data-skin="genshin"] :is(.lang-menu, .skin-panel) button:hover { background: rgba(73, 83, 102, .1); }
+html[data-skin="genshin"] :is(.lang-menu, .skin-panel) button.on { background: rgba(211, 188, 142, .35); }
+
+/* Filas de las listas ("Terminan pronto", parches): filas blancas con borde, como las misiones del pase. */
+html[data-skin="genshin"] :is(.list li, .hist li) { margin: 0 0 5px; padding: 7px 10px; border-radius: 3px; background: var(--gi-cream2); border: 1px solid var(--gi-rowline); }
+html[data-skin="genshin"] :is(.list li, .hist li):hover { background: #fff; border-color: var(--gi-gold); }
+html[data-skin="genshin"] .ev-title { color: var(--gi-ink); font-weight: 700; }
+/* Contadores ("140/150"): píldora color arena. Urgente: rojizo. */
+html[data-skin="genshin"] .tag { background: var(--gi-tan); color: #5b5446; border: 0; font-weight: 800; }
+html[data-skin="genshin"] .tag.bad { background: #e7b6a6; color: #7a2f22; }
+html[data-skin="genshin"] .tag.good { background: #cfe0b6; color: #3f5a24; }
+/* "Próximos" y códigos: píldoras arena con texto oscuro. */
+html[data-skin="genshin"] :is(.up-chip, .codes-chip, .jump-chip) { border-radius: 999px; border: 0; background: var(--gi-tan); color: #5b5446; }
+html[data-skin="genshin"] :is(.up-chip, .codes-chip, .jump-chip):hover { background: #ecdfc3 !important; }
+html[data-skin="genshin"] .up-lbl { color: var(--gi-ink2); }
+html[data-skin="genshin"] :is(.up-chip .up-chip-t, .up-chip b, .up-chip.more, .codes-chip *) { color: #5b5446 !important; text-shadow: none; }
+html[data-skin="genshin"] .pill.hot { background: #e7b6a6; color: #7a2f22; }
+html[data-skin="genshin"] .pill.new { background: var(--gi-yellow1); color: #5b4a1e; }
+
+/* ===== Tarjetas tipo objeto del inventario: fondo naranja de rareza + franja crema abajo con el texto ===== */
+/* Retratos de banners en "Mis gachas". */
+html[data-skin="genshin"] .bport { border-radius: 6px; border: 0; overflow: hidden; background: linear-gradient(160deg, var(--gi-orange1), var(--gi-orange2)); box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+html[data-skin="genshin"] .bport::after { background: none; }
+html[data-skin="genshin"] .bport .bp-bg { display: none; }
+html[data-skin="genshin"] .bport img.bp-art { bottom: 24px; height: calc(100% - 24px); }
+html[data-skin="genshin"] .bport .p-name { left: 0; right: 0; bottom: 0; padding: 3px 6px 4px; background: #e9e5dc; text-align: center; }
+html[data-skin="genshin"] .bport .p-n { color: var(--gi-ink); text-shadow: none; font-size: .78rem; }
+html[data-skin="genshin"] .bport .p-stars { position: absolute; left: 0; right: 0; top: -15px; text-align: center; color: #f6d35b; text-shadow: 0 1px 2px rgba(0, 0, 0, .5); font-size: .65rem; }
+/* La cuenta atrás, como la etiqueta amarilla "New" del juego. */
+html[data-skin="genshin"] .bport .p-time { top: 4px; right: 4px; border-radius: 3px; border: 0; background: var(--gi-yellow1); color: #5b4a1e; backdrop-filter: none; box-shadow: 0 1px 3px rgba(0, 0, 0, .3); }
+html[data-skin="genshin"] .bport .p-time.hot { background: #e7b6a6; color: #7a2f22; }
+html[data-skin="genshin"] .bport.more:not(.has-art) { background: url(/skins/genshin/slot-bg.png) center / 100% 100% no-repeat; color: #8a7350; }
+html[data-skin="genshin"] .bport.more.has-art { background: var(--gi-slate); }
+html[data-skin="genshin"] .bport:hover { transform: translateY(-2px); box-shadow: 0 0 0 3px rgba(255, 255, 255, .55), 0 6px 14px rgba(0, 0, 0, .35); }
+/* Tarjetas de la vista de cuadrícula. */
+html[data-skin="genshin"] :is(.ecard, .bcard) { border-radius: 6px; border: 0; overflow: hidden; background: var(--gi-cream); box-shadow: 0 4px 12px rgba(0, 0, 0, .3); }
+html[data-skin="genshin"] .ecard-img { background: linear-gradient(160deg, var(--gi-orange1), var(--gi-orange2)); }
+html[data-skin="genshin"] :is(.ecard-img .fade, .ecard.bnr .fade) { background: linear-gradient(transparent 60%, rgba(0, 0, 0, .25)); }
+html[data-skin="genshin"] .ecard-body { background: var(--gi-cream); }
+html[data-skin="genshin"] .ecard-body small { color: #9b6a3e; }
+html[data-skin="genshin"] :is(.ecard, .bcard):hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, .55), 0 8px 20px rgba(0, 0, 0, .35); transform: translateY(-2px); }
+
+/* ===== Línea de tiempo: marco pizarra oscuro (como el del pase de batalla) con los eventos como filas crema encima ===== */
+html[data-skin="genshin"] [style*="--c:"] { --c: #c19a5b !important; --c2: #3b4255 !important; }
+/* (Doble clase para ganar a la regla de "paneles crema", cuyo :is() incluye ".plist li" y pesa más.) */
+html[data-skin="genshin"] .tl.tl { background: #2c3243; --text: var(--gi-cream); --muted: rgba(236, 229, 216, .62); --line: rgba(236, 229, 216, .09); --panel: #2c3243; color: var(--gi-cream); }
+html[data-skin="genshin"] :is(.tl-corner, .tl-label, .tl-axis) { background: var(--gi-slate); color: var(--gi-cream); --text: var(--gi-cream); --muted: rgba(236, 229, 216, .7); }
+html[data-skin="genshin"] .tl-label { border-left: 0; }
+html[data-skin="genshin"] .tl-lane { border-color: rgba(236, 229, 216, .08); }
+html[data-skin="genshin"] .grid-line { background: rgba(236, 229, 216, .05); }
+html[data-skin="genshin"] .tick { color: rgba(236, 229, 216, .7); }
+html[data-skin="genshin"] .bar { border-radius: 4px; border: 1px solid #cdbf9f; background: var(--gi-cream) !important; color: var(--gi-ink); box-shadow: 0 2px 4px rgba(0, 0, 0, .3); }
+html[data-skin="genshin"] .bar-clip { border-radius: 3px; }
+/* La hoja base oscurece la barra (bar-clip::after) para leer texto blanco sobre el arte; aquí, crema que se desvanece hacia la derecha. */
+/* Crema sólido bajo el texto (izquierda) que se abre hacia la derecha para que se vea el arte del evento. */
+html[data-skin="genshin"] .bar-clip::after { background: linear-gradient(90deg, rgba(236, 229, 216, 1) 0, rgba(236, 229, 216, .92) 170px, rgba(236, 229, 216, .35) 300px, transparent 420px); }
+/* Las barras ya pasadas, apagadas pero legibles sobre el marco oscuro. */
+html[data-skin="genshin"] .bar.past { opacity: .55; }
+html[data-skin="genshin"] .bar-prog { background: #d9a84e; opacity: 1; }
+html[data-skin="genshin"] .bar .bar-bg { --o: .22; filter: saturate(.8); -webkit-mask: linear-gradient(90deg, transparent 30%, #000 85%); mask: linear-gradient(90deg, transparent 30%, #000 85%); }
+html[data-skin="genshin"] .bar:hover .bar-bg { --o: .4; }
+html[data-skin="genshin"] .bar-in b { color: var(--gi-ink); text-shadow: none; font-weight: 800; }
+html[data-skin="genshin"] .bar-in em { color: var(--gi-ink2); text-shadow: none; opacity: 1; }
+/* Acento a la izquierda según el tipo: banner dorado, evento pizarra, rotatorio violeta. */
+html[data-skin="genshin"] .bar.banner { border-left: 4px solid #c99c4f; }
+html[data-skin="genshin"] .bar.event { border-left: 4px solid var(--gi-slate2); }
+html[data-skin="genshin"] .bar.challenge { border-left: 4px solid #8a6fb5; border-style: solid; }
+html[data-skin="genshin"] .bar.live { box-shadow: 0 0 0 1px #c99c4f, 0 2px 8px rgba(201, 156, 79, .3); }
+html[data-skin="genshin"] .bar:hover { box-shadow: 0 0 0 2px #fff, 0 4px 12px rgba(0, 0, 0, .2); }
+html[data-skin="genshin"] .bar.live::before { content: ""; position: absolute; left: -9px; top: 50%; width: 15px; height: 15px; z-index: 2; transform: translateY(-50%);
+  background: url(/skins/genshin/star.png) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(180, 140, 60, .9)); }
+/* Textos con color fijo para fondo oscuro en la hoja base: títulos de sección de la línea de tiempo y "empieza en…". */
+html[data-skin="genshin"] .sec-title { color: var(--gi-cream) !important; font-weight: 800; }
+html[data-skin="genshin"] .bar .bar-in b { color: var(--gi-ink) !important; }
+html[data-skin="genshin"] .sec-ico { color: var(--gi-gold); }
+html[data-skin="genshin"] .lane-empty { color: rgba(236, 229, 216, .6); }
+/* Texto de las barras: la hoja base lo fija en blanco (bar-txt small, .when) para leerlo sobre el arte oscuro; aquí, tonos oscuros. */
+html[data-skin="genshin"] .bar .bar-txt b { color: #3a4254 !important; font-weight: 800; }
+html[data-skin="genshin"] .bar .bar-txt small { color: #5f6676 !important; text-shadow: none !important; font-weight: 600; }
+html[data-skin="genshin"] .bar .bar-txt .when { color: #3f5f8f !important; font-weight: 800; }
+html[data-skin="genshin"] .bar .bar-txt .when.upcoming { color: #3f5f8f !important; }
+html[data-skin="genshin"] .bar .bar-txt .when.soon { color: #9a6410 !important; }
+html[data-skin="genshin"] .bar .bar-txt .when.urgent { color: #b23a2a !important; }
+html[data-skin="genshin"] .when.ended { color: var(--gi-ink2); }
+/* El arte de cada evento, bien visible a la derecha (el texto queda a la izquierda sobre crema). */
+html[data-skin="genshin"] .bar .bar-bg { --o: .85 !important; filter: none; -webkit-mask: linear-gradient(90deg, transparent 0, #000 260px); mask: linear-gradient(90deg, transparent 0, #000 260px); }
+html[data-skin="genshin"] .bar:hover .bar-bg { --o: 1 !important; }
+/* Tarjetas "Termina en las próximas 72 h": cuenta atrás en píldora color arena (rojiza si es urgente) con texto oscuro. */
+html[data-skin="genshin"] .soon-card em { background: var(--gi-tan); color: #5b4a1e; }
+html[data-skin="genshin"] .soon-card.urgent em { background: #e7b6a6; color: #7a2f22; }
+html[data-skin="genshin"] .soon-card :is(.soon-txt b, .soon-txt strong) { color: #3a4254; }
+html[data-skin="genshin"] .soon-card .soon-txt small { color: #6b7181; }
+html[data-skin="genshin"] .today-flag { background: var(--gi-yellow1); color: #5b4a1e; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
+html[data-skin="genshin"] .soon-card .soon-t, html[data-skin="genshin"] .soon-card b { color: var(--gi-ink); }
+
+html[data-skin="genshin"] .progress { background: rgba(73, 83, 102, .15); }
+html[data-skin="genshin"] .progress i { background: linear-gradient(90deg, #e2a64a, #f1c873); box-shadow: none; }
+html[data-skin="genshin"] :is(input, select):focus { box-shadow: 0 0 0 2px var(--gi-gold); outline: none; }
+html[data-skin="genshin"] :is(input[type="checkbox"], input[type="range"]) { accent-color: #c99c4f; }
+html[data-skin="genshin"] .site-foot { color: var(--muted); }
+
+/* --- Cursor del juego (32 px; 64 px en pantallas de alta densidad). Punta en (2, 2). --- */
+html[data-skin="genshin"], html[data-skin="genshin"] body {
+  cursor: url(/skins/genshin/cursor.png) 2 2, auto;
+  cursor: image-set(url(/skins/genshin/cursor.png) 1x, url(/skins/genshin/cursor@2x.png) 2x) 2 2, auto;
+}
+html[data-skin="genshin"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) {
+  cursor: url(/skins/genshin/cursor.png) 2 2, pointer !important;
+  cursor: image-set(url(/skins/genshin/cursor.png) 1x, url(/skins/genshin/cursor@2x.png) 2x) 2 2, pointer !important;
+}
+html[data-skin="genshin"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }

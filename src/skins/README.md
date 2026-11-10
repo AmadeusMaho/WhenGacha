@@ -5,7 +5,13 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
 
 - `skins.ts`: lista de skins (`SKINS`), guardado (`localStorage`, clave `whengacha:skin`) y `data-skin` en `<html>`.
 - `SkinPicker.tsx` + `skins.css`: el botón y su menú.
+- `SupporterBadge.tsx`: insignia dorada **"Premium"** junto al nombre de la web, solo con el desbloqueo de apoyo (mismo estado que las skins).
+  En `App.tsx` va dentro de `.brand`, marcada con `{/* skins */}`.
 - `wuwa.css`: la skin **Wuthering Waves**. Solo aplica con `<html data-skin="wuwa">`.
+- `genshin.css` (prueba): la skin **Genshin Impact**, con el estilo de los menús del juego (barras pizarra, paneles y filas crema con texto
+  gris azulado, tarjetas tipo objeto con fondo naranja y franja crema, contadores arena, botón principal amarillo). Fondo animado propio en
+  CSS (motas de luz y brillo), sin vídeo. `public/skins/genshin/`: cursor, destello y fondo de ranura, de la carpeta de Drive "UI Assets" que
+  aportó el dueño; sin arte de personajes.
 - `public/skins/wuwa/`: sus recursos. `btn.png`, `bg.jpg` y `glow.png` son de la web oficial (wutheringwaves.kurogames.com,
   arte de Kuro Games, copiados el 9 nov 2026). `cursor.png` (48 px) y `cursor@2x.png` (96 px) son el cursor del juego, del `Aki.zip`
   del cliente que aportó el dueño (`Content/Aki/Cursor/CursorNor*.png`; los estados Hi y Pre son la misma imagen). Punta en (3, 3).
@@ -24,19 +30,17 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
 
 Antes hubo temas ("Negro OLED", "Colores") y opciones de fondo/acento/cursor; se quitaron.
 
-## Solo para quien apoya (códigos de apoyo)
+## Solo para WhenGacha Premium
 
-Las skins están bloqueadas (🔒) hasta que se introduce un **código de apoyo** en el menú del pincel. "Original" siempre está disponible.
+Las skins (y la insignia) son de **WhenGacha Premium**: se consigue apoyando con PayPal desde el pincel y se entra con el correo
+(enlace de un solo uso), así que no hay nada que se pueda publicar. "Original" siempre está disponible. Configuración, variables y
+gestión (`npm run premium -- add|revoke|check correo`): **`docs/premium.md`**.
 
-- **Generar un código** (cuando alguien dona): `npm run donor-code` (o `npm run donor-code -- 5` para cinco) y mandárselo, p. ej. al correo de su donación en PayPal.
-- **Clave**: `SUPPORTER_SECRET`, una cadena larga al azar. Tiene que ser **la misma** en `.env.local` (para generar códigos) y en las variables
-  del servidor en Botkeep (para comprobarlos). Si cambia, todos los códigos anteriores dejan de valer. Sin ella en el servidor, el desbloqueo responde
-  "no se pudo comprobar". Crear una: `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"`.
-- **Anular un código**: su parte central (`WG-<id>-…`) en `SUPPORTER_REVOKED` del servidor (separados por comas).
-- Cómo funciona: `server/supporter.mjs` (`POST /api/unlock`, 10 intentos cada 10 min por IP) comprueba la firma HMAC del código; no hay base de
-  datos ni se guardan datos de nadie. El navegador recuerda el desbloqueo (`localStorage`, `whengacha:supporter`).
-- Es un candado de cortesía: quien sepa de programación podría activar una skin a mano (el CSS y las imágenes de una web siempre se pueden
-  descargar). Para un agradecimiento basta.
+- `premium.ts`: sesión (token firmado por el servidor, `whengacha:session`, revalidada cada 12 h), enlace del correo (`?acceso=…`) y pago.
+- `SupportDialog.tsx`: ventana de apoyo (importe, botón de PayPal, correo).
+- Sigue siendo posible activar una skin a mano tocando el código de la web (el CSS y las imágenes siempre se pueden descargar); lo que
+  ya no se puede es compartir un acceso.
+- Los códigos `WG-…` anteriores ya no existen.
 
 ## Añadir otra skin
 
@@ -46,8 +50,8 @@ Las skins están bloqueadas (🔒) hasta que se introduce un **código de apoyo*
 
 ## Cómo quitarlas del todo
 
-1. En `src/App.tsx`, borra las dos líneas marcadas con `// skins`: el `import SkinPicker …` y `<SkinPicker … />`.
+1. En `src/App.tsx`, borra lo marcado con `// skins` o `{/* skins */}`: los `import` de `SkinPicker` y `SupporterBadge`, `<SkinPicker … />` y `<SupporterBadge />`.
 2. Borra esta carpeta (`src/skins/`) y `public/skins/`.
-3. Si también quitas los códigos de apoyo: `server/supporter.mjs` (+ `.d.mts`), `scripts/donor-code.mjs`, el script `donor-code` de `package.json`
-   y las líneas de `/api/unlock` en `server/index.mjs` y `vite.config.ts`.
-3. `npm run build:prod` y subir `dist/` como siempre.
+3. Si también quitas Premium: `server/supporter.mjs` (+ `.d.mts`), `server/support/`, `scripts/premium.mjs`, el script `premium` de
+   `package.json`, las líneas de `/api/` en `server/index.mjs` y `vite.config.ts`, `docs/premium.md` y el apartado de Premium de `public/privacidad.html`.
+4. `npm run build:prod` y subir `dist/` como siempre.

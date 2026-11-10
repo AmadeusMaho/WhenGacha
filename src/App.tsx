@@ -9,6 +9,7 @@ import { t, useLang } from './i18n'
 import { useImages } from './images'
 import LangSwitch from './LangSwitch'
 import SkinPicker from './skins/SkinPicker' // skins (prueba): para quitarlas, ver src/skins/README.md
+import SupporterBadge from './skins/SupporterBadge' // skins
 import { fireDue, mirrorAlerts } from './notify'
 import { useAutoSync, useStore } from './store'
 import TimelineTab from './Timeline'
@@ -111,7 +112,7 @@ export default function App() {
     <div className="app">
       <div className="aurora" aria-hidden />
       <header>
-        <div className="brand"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /><h1>WhenGacha</h1></div>
+        <div className="brand"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /><h1>WhenGacha</h1><SupporterBadge /> {/* skins */}</div>
         <nav ref={navRef}>
           {/* Indicador que se desliza bajo la pestaña activa (posición medida en useLayoutEffect). */}
           <span className="nav-ind" aria-hidden />
