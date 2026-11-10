@@ -23,7 +23,13 @@ async function load(force = false) {
   const ref = process.env.DONORS_BRANCH ? `?ref=${encodeURIComponent(process.env.DONORS_BRANCH)}` : ''
   const res = await fetch(api(ref), { headers: headers(), signal: AbortSignal.timeout(15_000) })
   if (res.status === 404) cache = { at: Date.now(), data: { donors: [] }, sha: null } // todavía no hay archivo: se crea al primer donante
-  else if (!res.ok) throw new Error(`github donors → HTTP ${res.status}`)
+  else if (!res.ok) {
+    // El mensaje de GitHub distingue "Resource not accessible by personal access token" (permisos), "Bad credentials",
+    // límites de uso, etc. Del token solo se registra la longitud, para ver si está cortado o con espacios (nunca el valor).
+    const msg = await res.json().then(j => j?.message ?? '', () => '')
+    const tok = process.env.DONORS_TOKEN ?? ''
+    throw new Error(`github donors → HTTP ${res.status} ${msg} (token de ${tok.length} caracteres${/\s|["']/.test(tok) ? ', con espacios o comillas' : ''})`)
+  }
   else {
     const j = await res.json()
     const data = JSON.parse(Buffer.from(j.content ?? '', 'base64').toString('utf8') || '{"donors":[]}')
