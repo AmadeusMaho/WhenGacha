@@ -66,4 +66,7 @@ los destacados y a las cabeceras de sección de la ventana del evento (como Gens
 - `public/sw.js`: el HTML va "red primero" para que un deploy se vea en la primera carga; los `/assets/` con hash van desde caché.
   Si cambias la estrategia de caché, sube también el nombre de la caché (`whengacha-shell-vN`).
 - El proxy (`server/proxy.mjs`) solo permite las fuentes de su lista: una fuente nueva necesita su entrada ahí.
+- El recolector sustituye `globalThis.fetch` por el del proxy (lista cerrada, sin cabeceras). Todo lo que el servidor pida por su cuenta
+  (GitHub, Resend…) usa `nativeFetch` de `server/native-fetch.mjs`; con `fetch` a secas responde "Fuente no permitida" (403).
+- Botkeep no pasa las variables del panel al proceso: las deja en un `.env` que carga `server/env.mjs` (importado el primero).
 - `server/skin-live.mjs`: cada 12 h mira el vídeo/imagen de portada de las webs de Genshin, ZZZ y WuWa (fuentes `internal` del proxy) para el fondo de las skins (`/data/skin-live.json`). No descarga vídeos; ver "Fondos de las skins según la versión" en `docs/fuentes-y-proxy.md`.
