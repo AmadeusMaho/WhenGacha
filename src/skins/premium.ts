@@ -70,6 +70,15 @@ export async function requestLink(email: string, lang: string): Promise<ApiResul
   try { const { status } = await post('/api/login', { email: email.trim(), lang }); return resultOf(status) } catch { return 'unavailable' }
 }
 
+/** Entra con el código de 6 cifras del correo: para cuando el enlace se abrió en el navegador interno de Gmail u otra app. */
+export async function loginWithCode(email: string, code: string): Promise<ApiResult> {
+  try {
+    const { status, data } = await post('/api/login/code', { email: email.trim(), code: code.replace(/\D/g, '') })
+    if (status === 200 && typeof data.session === 'string') { saveSession(data.session); notice = 'login-ok'; emit(); return 'ok' }
+    return resultOf(status)
+  } catch { return 'unavailable' }
+}
+
 /* ----- Apoyo ----- */
 export interface SupportConfig { enabled: boolean; login: boolean; kofiUrl: string; currency: string; min: number }
 

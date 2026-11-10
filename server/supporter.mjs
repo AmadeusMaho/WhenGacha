@@ -12,11 +12,12 @@
 //   POST /api/support/kofi     data=<JSON de Ko-fi>      → 200 (webhook de Ko-fi; lo llama Ko-fi, no el navegador)
 //   POST /api/login            { email, lang }           → { ok: true }           (siempre igual: no revela si el correo es donante)
 //   POST /api/login/verify     { token }                 → { session } | 403
+//   POST /api/login/code       { email, code }           → { session } | 403      (el código de 6 cifras del mismo correo)
 //   POST /api/session          { session }               → { session } | 401
 import { OrderUsed, addDonor, donorsConfigured, isDonor } from './support/donors.mjs'
 import { currency, kofiConfigured, kofiUrl, minAmount, parseWebhook } from './support/kofi.mjs'
 import { mailConfigured, publicUrl, sendAccessLink } from './support/mail.mjs'
-import { emailHash, normEmail, secretConfigured, sign, validEmail, verify } from './support/tokens.mjs'
+import { checkLoginCode, emailHash, loginCode, normEmail, secretConfigured, sign, validEmail, verify } from './support/tokens.mjs'
 
 const MIN = 60_000, HOUR = 60 * MIN, DAY = 24 * HOUR
 const TTL = { login: 30 * MIN, session: 60 * DAY }
@@ -83,7 +84,7 @@ async function kofiWebhook(req, res) {
   try { await addDonor(h, { id: `kofi:${r.tx}`, amount: r.amount.toFixed(2), currency: r.currency }) }
   catch (e) { if (e instanceof OrderUsed) return json(res, 200, { ok: true, repeated: true }); throw e }
   console.log(`[kofi] Premium dado (${r.amount.toFixed(2)} ${r.currency})`)
-  sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), 'es', true)
+  sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), 'es', true, loginCode(h))
     .catch(e => console.error('[kofi] correo de bienvenida:', e.message))
   return json(res, 200, { ok: true })
 }
@@ -116,7 +117,7 @@ export async function handleApi(req, res, url) {
         if (limited(`login:${ip}`, 5, 10 * MIN) || limited(`mail:${h}`, 3, HOUR)) return json(res, 429, { error: 'too-many' })
         // Misma respuesta sea o no donante (no se puede averiguar quién apoyó). El correo solo sale si lo es.
         if (await isDonor(h)) {
-          sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), langOf(body.lang), false)
+          sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), langOf(body.lang), false, loginCode(h))
             .catch(e => console.error('[support] correo de acceso:', e.message))
         }
         return json(res, 200, { ok: true })
@@ -126,6 +127,16 @@ export async function handleApi(req, res, url) {
         const t = verify('login', body.token)
         if (!t || !firstUse(t.n) || !(await isDonor(t.h))) return json(res, 403, { error: 'link' })
         return json(res, 200, { session: newSession(t.h) })
+      }
+      case '/api/login/code': {
+        if (!loginEnabled()) return json(res, 503, { error: 'not-configured' })
+        const email = normEmail(body.email)
+        if (!validEmail(email)) return json(res, 400, { error: 'email' })
+        const h = emailHash(email)
+        // 6 cifras = un millón de combinaciones: como mucho 5 intentos por correo cada 30 min (y 20 por IP) lo hacen inviable a ciegas.
+        if (limited(`code:${h}`, 5, 30 * MIN) || limited(`code-ip:${ip}`, 20, 30 * MIN)) return json(res, 429, { error: 'too-many' })
+        if (!checkLoginCode(h, body.code) || !(await isDonor(h))) return json(res, 403, { error: 'code' })
+        return json(res, 200, { session: newSession(h) })
       }
       case '/api/session': {
         if (!loginEnabled()) return json(res, 503, { error: 'not-configured' })

@@ -15,6 +15,9 @@ Premium desbloquea las skins y la insignia "Premium". Se consigue apoyando en **
 4. Le llega un correo (al que usó en Ko-fi) con el enlace para activar Premium en su navegador.
 5. En otro dispositivo, o si el correo se perdió, escribe ese correo en el pincel y le llega un enlace (30 min, un solo uso). La
    respuesta es la misma sea o no donante, así que nadie puede averiguar quién apoyó.
+   Cada correo trae también un **código de 6 cifras**. Premium se guarda en el navegador que abre el enlace, y en el móvil Gmail
+   suele abrirlo en su navegador interno. Con el código, la persona entra desde su navegador de verdad: pincel → "¿Ya apoyaste?" →
+   correo + código (`POST /api/login/code`). Vale de 30 a 60 min, máximo 5 intentos por correo cada 30 min (`tokens.mjs`, `loginCode`).
 6. La sesión dura 60 días y se renueva sola cada vez que la persona entra (revalidación cada 12 h): quien visite al menos una vez
    cada dos meses no vuelve a pedir el enlace. Si anulas a alguien, pierde el acceso en ≤ 12 h.
 

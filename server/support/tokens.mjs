@@ -31,3 +31,22 @@ export function verify(typ, token) {
     return data.typ === typ && Number(data.exp) > Date.now() ? data : null
   } catch { return null }
 }
+
+/* Código de 6 cifras del correo de acceso, para cuando el enlace se abre en el navegador interno de Gmail u otra app (la sesión se
+   guarda en el navegador que abre el enlace): se escribe en el pincel del navegador de verdad junto con el correo.
+   Sin estado: sale de la huella del correo y de una ventana de 30 min, así que vale desde el servidor y desde `npm run premium`, y
+   sobrevive a reinicios. Se acepta la ventana actual y la anterior: vale entre 30 y 60 min. No es de un solo uso (pedir otro correo en
+   la misma ventana da el mismo código); lo protegen la caducidad y el límite de intentos por correo (supporter.mjs). */
+export const CODE_WINDOW_MS = 30 * 60_000
+const codeFor = (h, w) => String(createHmac('sha256', secret()).update(`code:${h}:${w}`).digest().readUInt32BE(0) % 1_000_000).padStart(6, '0')
+
+/** Código vigente para la huella `h`. */
+export const loginCode = (h, at = Date.now()) => codeFor(h, Math.floor(at / CODE_WINDOW_MS))
+
+/** ¿Es `code` (se ignoran espacios y guiones) un código vigente de `h`? */
+export function checkLoginCode(h, code) {
+  const c = String(code ?? '').replace(/\D/g, '')
+  if (c.length !== 6 || !secretConfigured()) return false
+  const w = Math.floor(Date.now() / CODE_WINDOW_MS)
+  return [w, w - 1].some(x => timingSafeEqual(Buffer.from(codeFor(h, x)), Buffer.from(c)))
+}

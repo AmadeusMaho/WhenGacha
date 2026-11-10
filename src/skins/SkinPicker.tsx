@@ -3,7 +3,7 @@ import { CATALOG } from '../catalog'
 import { useLang, type Lang } from '../i18n'
 import LiveWallpaper from './LiveWallpaper'
 import { useLiveWithFeed } from './liveFeed'
-import { clearNotice, logout, requestLink, useNotice, type ApiResult } from './premium'
+import { clearNotice, loginWithCode, logout, requestLink, useNotice, type ApiResult } from './premium'
 import { SKINS, applySkin, endPreview, setSkin, startPreview, usePreview, useSkin, useSupporter } from './skins'
 import SupportDialog from './SupportDialog'
 import './skins.css'
@@ -22,21 +22,24 @@ const TXT: Record<Lang, Record<string, string>> = {
     active: 'Premium activo en este dispositivo 💛', logout: 'Cerrar sesión aquí', loginOk: '¡Listo! Premium activado en este dispositivo 💛',
     loginBad: 'Ese enlace caducó o ya se usó. Pide otro con tu correo.', invalid: 'Revisa el correo.',
     'too-many': 'Muchos intentos seguidos, espera unos minutos.', unavailable: 'Ahora mismo no se puede, prueba más tarde.',
-    try: 'Vista previa', haveLink: '¿Ya apoyaste? Entra con tu correo →', back: '← Volver', loginTitle: 'Entrar a Premium' },
+    try: 'Vista previa', haveLink: '¿Ya apoyaste? Entra con tu correo →', back: '← Volver', loginTitle: 'Entrar a Premium',
+    codeHint: '¿El correo se abrió dentro de Gmail u otra app? Escribe tu correo arriba y aquí el código de 6 cifras que viene en él.', code: 'Código', enter: 'Entrar', codeBad: 'Código incorrecto o caducado. Pide otro correo.' },
   en: { title: 'Site skin', none: 'Original', locked: "Skins come with WhenGacha Premium. Support once and they're yours forever 💛",
     support: 'Support and unlock', have: "Enter the email you used to support and I will send you a link to turn on Premium here. It only goes to supporters' emails.",
     email: 'Your email', send: 'Send link', busy: 'Sending…', sent: 'If that email supported the project, a one-time link valid for 30 minutes will arrive in a few minutes (check spam too). Otherwise nothing is sent.',
     active: 'Premium is on for this device 💛', logout: 'Sign out here', loginOk: 'Done! Premium is on for this device 💛',
     loginBad: 'That link expired or was already used. Ask for a new one with your email.', invalid: 'Check the email.',
     'too-many': 'Too many tries in a row, wait a few minutes.', unavailable: "Can't do it right now, try again later.",
-    try: 'Preview', haveLink: 'Already supported? Sign in with your email →', back: '← Back', loginTitle: 'Sign in to Premium' },
+    try: 'Preview', haveLink: 'Already supported? Sign in with your email →', back: '← Back', loginTitle: 'Sign in to Premium',
+    codeHint: 'Did the email open inside Gmail or another app? Enter your email above and the 6-digit code from it here.', code: 'Code', enter: 'Sign in', codeBad: 'Wrong or expired code. Ask for a new email.' },
   zh: { title: '网站皮肤', none: '原版', locked: '皮肤包含在 WhenGacha 高级版中。支持一次，永久拥有 💛',
     support: '支持并解锁', have: '输入支持时使用的邮箱，我会发给你在此设备开启高级版的链接。只会发给支持者的邮箱。',
     email: '你的邮箱', send: '发送链接', busy: '发送中…', sent: '如果该邮箱支持过本项目，几分钟内会收到一次性链接，30 分钟内有效（也请查看垃圾邮件）。否则不会发送任何内容。',
     active: '此设备已开启高级版 💛', logout: '在此设备退出', loginOk: '好了！此设备已开启高级版 💛',
     loginBad: '链接已过期或已使用，请用邮箱重新获取。', invalid: '请检查邮箱。',
     'too-many': '试太多次了，等几分钟再来。', unavailable: '现在不行，晚点再试试。',
-    try: '预览', haveLink: '已经支持过？用邮箱登录 →', back: '← 返回', loginTitle: '登录高级版' },
+    try: '预览', haveLink: '已经支持过？用邮箱登录 →', back: '← 返回', loginTitle: '登录高级版',
+    codeHint: '邮件在 Gmail 或其他应用内打开了？在上面输入你的邮箱，在这里输入邮件中的 6 位验证码。', code: '验证码', enter: '登录', codeBad: '验证码错误或已过期，请重新获取邮件。' },
 }
 
 /**
@@ -61,6 +64,9 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
   const [dialog, setDialog] = useState(false)
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState<ApiResult | 'busy' | null>(null)
+  // Código de 6 cifras del correo (si el enlace se abrió en el navegador interno de Gmail u otra app).
+  const [code, setCode] = useState('')
+  const [codeStatus, setCodeStatus] = useState<ApiResult | 'busy' | null>(null)
   const box = useRef<HTMLDivElement>(null)
   // Posición del menú en pantalla, medida al abrirlo y fija mientras está abierto: cada skin tiene otra altura de cabecera, y con la
   // vista previa el menú saltaba de sitio al pasar el ratón de una fila a otra (10 nov 2026). En móvil manda el CSS (fijo bajo la cabecera).
@@ -93,6 +99,14 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
     setStatus('busy')
     setStatus(await requestLink(email, lang))
   }
+  const codeOk = code.replace(/\D/g, '').length === 6
+  const sendCode = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim() || !codeOk || codeStatus === 'busy') return
+    setCodeStatus('busy')
+    const r = await loginWithCode(email, code)
+    if (r === 'ok') { setCode(''); setCodeStatus(null); setView('skins') } else setCodeStatus(r)
+  }
 
   return (
     <div className="skin" ref={box}>
@@ -118,6 +132,14 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
               </form>
               {status === 'ok' && <small className="skin-msg good" role="status">{s.sent}</small>}
               {status && status !== 'busy' && status !== 'ok' && <small className="skin-msg bad" role="alert">{s[status] ?? s.unavailable}</small>}
+              <p className="skin-code-hint">{s.codeHint}</p>
+              <form onSubmit={sendCode}>
+                <input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9 ]*" maxLength={7} value={code}
+                  onChange={e => { setCode(e.target.value.replace(/[^\d ]/g, '')); if (codeStatus !== 'busy') setCodeStatus(null) }}
+                  placeholder={s.code} aria-label={s.code} className="skin-code" />
+                <button className="btn sm" disabled={!email.trim() || !codeOk || codeStatus === 'busy'}>{codeStatus === 'busy' ? s.busy : s.enter}</button>
+              </form>
+              {codeStatus && codeStatus !== 'busy' && <small className="skin-msg bad" role="alert">{codeStatus === 'invalid' ? s.codeBad : s[codeStatus] ?? s.unavailable}</small>}
             </li>
           ) : <>
           <li role="none">

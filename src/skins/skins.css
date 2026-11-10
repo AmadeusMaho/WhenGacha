@@ -47,6 +47,9 @@
 .skin-panel .skin-unlock .support-open { width: auto; justify-self: start; border-radius: 999px; padding: 7px 16px; }
 .skin-panel .skin-unlock .linkbtn { width: auto; padding: 0; justify-self: start; color: var(--muted); text-decoration: underline; background: none; }
 .skin-panel .skin-unlock input[type="email"] { font-family: inherit; font-size: .8rem; }
+/* Código del correo: separado del envío del enlace, que es lo normal. */
+.skin-unlock .skin-code-hint { margin-top: 2px; padding-top: 8px; border-top: 1px dashed var(--line); }
+.skin-unlock input.skin-code { letter-spacing: .2em; font-variant-numeric: tabular-nums; }
 
 /* Ventana de apoyo (SupportDialog.tsx). */
 .support-wrap { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: 16px; background: rgba(4, 6, 12, .66); backdrop-filter: blur(4px); animation: rise .2s var(--ease); }

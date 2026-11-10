@@ -20,7 +20,7 @@ try {
 
 const { addDonor, donorsConfigured, isDonor, revokeDonor } = await import('../server/support/donors.mjs')
 const { mailConfigured, publicUrl, sendAccessLink } = await import('../server/support/mail.mjs')
-const { emailHash, normEmail, secretConfigured, sign, validEmail } = await import('../server/support/tokens.mjs')
+const { emailHash, loginCode, normEmail, secretConfigured, sign, validEmail } = await import('../server/support/tokens.mjs')
 
 const [cmd, raw] = process.argv.slice(2)
 const email = normEmail(raw)
@@ -42,7 +42,7 @@ if (cmd === 'check') {
   await addDonor(h, { id: 'manual', amount: '0.00', currency: '-' })
   console.log(`${email}: Premium dado.`)
   if (mailConfigured()) {
-    await sendAccessLink(email, `${publicUrl()}/?acceso=${encodeURIComponent(sign('login', { h }, 30 * 60_000))}`, 'es', true)
+    await sendAccessLink(email, `${publicUrl()}/?acceso=${encodeURIComponent(sign('login', { h }, 30 * 60_000))}`, 'es', true, loginCode(h))
     console.log('Enlace de acceso enviado por correo.')
   } else {
     console.log('No se envió correo (falta RESEND_API_KEY, MAIL_FROM o PUBLIC_URL). Puede pedir el enlace desde el pincel de la web.')
