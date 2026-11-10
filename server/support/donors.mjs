@@ -26,7 +26,11 @@ async function load(force = false) {
   else if (!res.ok) {
     // El mensaje de GitHub distingue "Resource not accessible by personal access token" (permisos), "Bad credentials",
     // límites de uso, etc. Del token solo se registra la longitud, para ver si está cortado o con espacios (nunca el valor).
-    const msg = await res.json().then(j => j?.message ?? '', () => '')
+    // Si la respuesta no es JSON de GitHub (sin "message"), probablemente la da algo de por medio (filtro del host): se registra quién.
+    const body = await res.text().catch(() => '')
+    let msg = ''
+    try { msg = JSON.parse(body)?.message ?? '' } catch { /* no es JSON */ }
+    if (!msg) msg = `[no es GitHub: server=${res.headers.get('server') ?? '?'} tipo=${res.headers.get('content-type') ?? '?'} cuerpo="${body.replace(/\s+/g, ' ').slice(0, 160)}"]`
     const tok = process.env.DONORS_TOKEN ?? ''
     throw new Error(`github donors → HTTP ${res.status} ${msg} (token de ${tok.length} caracteres${/\s|["']/.test(tok) ? ', con espacios o comillas' : ''})`)
   }
