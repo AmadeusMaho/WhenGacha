@@ -18,12 +18,43 @@ let cache = { at: 0, data: { donors: [] }, sha: null }
 const api = (suffix = '') => `https://api.github.com/repos/${repo()}/contents/${path()}${suffix}`
 const headers = () => ({ authorization: `Bearer ${process.env.DONORS_TOKEN}`, accept: 'application/vnd.github+json', 'user-agent': 'WhenGacha', 'x-github-api-version': '2022-11-28' })
 
+const parseDonors = text => {
+  const data = JSON.parse(text || '{"donors":[]}')
+  return { donors: Array.isArray(data.donors) ? data.donors : [] }
+}
+
+// Respaldo de SOLO LECTURA por raw.githubusercontent.com (mismo token): en Botkeep, api.github.com responde 403 sin mensaje de GitHub
+// (parece un filtro del host) mientras raw.githubusercontent.com sí funciona (lo usa el recolector). Sin el sha no se puede escribir:
+// las escrituras (aviso de Ko-fi, npm run premium) siguen necesitando la API.
+let rawWarned = false
+async function loadRaw(apiError) {
+  const url = `https://raw.githubusercontent.com/${repo()}/${encodeURIComponent(process.env.DONORS_BRANCH || 'HEAD')}/${path()}`
+  const res = await fetch(url, { headers: { authorization: `Bearer ${process.env.DONORS_TOKEN}`, 'user-agent': 'WhenGacha' }, signal: AbortSignal.timeout(15_000) })
+  // Aquí un 404 no significa "lista vacía": raw responde 404 también si el token no da acceso al repo privado.
+  if (!res.ok) throw new Error(`${apiError.message}; respaldo raw.githubusercontent.com → HTTP ${res.status}`)
+  if (!rawWarned) {
+    rawWarned = true
+    console.warn(`[donors] la API de GitHub falla (${apiError.message}); se lee la lista por raw.githubusercontent.com. Las altas automáticas de Ko-fi necesitan la API.`)
+  }
+  return { at: Date.now(), data: parseDonors(await res.text()), sha: null }
+}
+
 async function load(force = false) {
   if (!force && Date.now() - cache.at < CACHE_MS) return cache
+  try {
+    cache = await loadApi()
+  } catch (e) {
+    if (force) throw e // escritura: hace falta el sha de la API
+    cache = await loadRaw(e)
+  }
+  return cache
+}
+
+async function loadApi() {
   const ref = process.env.DONORS_BRANCH ? `?ref=${encodeURIComponent(process.env.DONORS_BRANCH)}` : ''
   const res = await fetch(api(ref), { headers: headers(), signal: AbortSignal.timeout(15_000) })
-  if (res.status === 404) cache = { at: Date.now(), data: { donors: [] }, sha: null } // todavía no hay archivo: se crea al primer donante
-  else if (!res.ok) {
+  if (res.status === 404) return { at: Date.now(), data: { donors: [] }, sha: null } // todavía no hay archivo: se crea al primer donante
+  if (!res.ok) {
     // El mensaje de GitHub distingue "Resource not accessible by personal access token" (permisos), "Bad credentials",
     // límites de uso, etc. Del token solo se registra la longitud, para ver si está cortado o con espacios (nunca el valor).
     // Si la respuesta no es JSON de GitHub (sin "message"), probablemente la da algo de por medio (filtro del host): se registra quién.
@@ -34,12 +65,8 @@ async function load(force = false) {
     const tok = process.env.DONORS_TOKEN ?? ''
     throw new Error(`github donors → HTTP ${res.status} ${msg} (token de ${tok.length} caracteres${/\s|["']/.test(tok) ? ', con espacios o comillas' : ''})`)
   }
-  else {
-    const j = await res.json()
-    const data = JSON.parse(Buffer.from(j.content ?? '', 'base64').toString('utf8') || '{"donors":[]}')
-    cache = { at: Date.now(), data: { donors: Array.isArray(data.donors) ? data.donors : [] }, sha: j.sha }
-  }
-  return cache
+  const j = await res.json()
+  return { at: Date.now(), data: parseDonors(Buffer.from(j.content ?? '', 'base64').toString('utf8')), sha: j.sha }
 }
 
 export async function isDonor(h) {
