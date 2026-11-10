@@ -2,6 +2,7 @@
 // Sin dependencias: solo módulos de Node. Variables opcionales: PORT (3000), HOST (0.0.0.0), CACHE_MB (64), RATE_PER_MIN (600). El proxy vive en proxy.mjs.
 // WhenGacha Premium (apoyo con PayPal y acceso por correo, supporter.mjs): SUPPORTER_SECRET, PAYPAL_*, DONORS_*, RESEND_API_KEY, MAIL_FROM,
 // PUBLIC_URL y SUPPORT_*. Guía: docs/premium.md.
+import { envFileKeys } from './env.mjs' // primero: carga .env (Botkeep) antes de que los demás módulos lean process.env
 import { createReadStream } from 'node:fs'
 import { readFile, stat } from 'node:fs/promises'
 import http from 'node:http'
@@ -133,6 +134,7 @@ server.listen(PORT, HOST, async () => {
   console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
   startCollector().catch(err => console.error('[collector]', err))
   startSkinLive().catch(err => console.error('[skin-live]', err))
+  if (envFileKeys.length) console.log(`[env] cargadas de .env: ${envFileKeys.join(', ')}`) // solo nombres, nunca valores
   const premium = supportProblems() // si el host no pasa las variables al proceso, aquí se ve cuáles (solo nombres)
   console.log(premium.length ? `[premium] desactivado. Faltan o no valen: ${premium.join(', ')}` : '[premium] activo')
   if (!built) console.error(`[server] AVISO: no existe ${ROOT}/index.html. La app no está compilada: ejecuta "npm run build:prod" y sube dist/.`)
