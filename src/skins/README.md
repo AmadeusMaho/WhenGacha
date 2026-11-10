@@ -12,6 +12,36 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
   gris azulado, tarjetas tipo objeto con fondo naranja y franja crema, contadores arena, botón principal amarillo). Fondo animado propio en
   CSS (motas de luz y brillo), sin vídeo. `public/skins/genshin/`: cursor, destello y fondo de ranura, de la carpeta de Drive "UI Assets" que
   aportó el dueño; sin arte de personajes.
+- `zzz.css` (prueba, 10 nov 2026): la skin **Zenless Zone Zero**, con el estilo "callejero" de los menús del juego (capturas del dueño):
+  paneles negros con borde gris grueso, pestañas en cápsula con la activa amarilla y el borde inclinado, etiquetas oscuras con el texto
+  de color (como INQUIRY / POST / INTEL), títulos blancos muy gruesos (".TÍTULO" fuera de los paneles, "- TÍTULO -" dentro), franjas
+  diagonales amarillas en el fondo y el amarillo del juego **#FFDD00** (muestreado de sus imágenes).
+  - **Fuente**: la del juego, 印品鸿蒙体 (inpin hongmengti, © 上海萌言文化创意有限公司 / 印品字库; de pago para uso comercial), con el
+    archivo que aportó el dueño (10 nov 2026). `public/skins/zzz/zzz-font.woff2` es un recorte solo latino (8,9 KB; el original pesa 1,9 MB):
+    en el original las tildes, la ñ, «…», «→» y «≈» tienen ancho completo como un carácter chino y se veían separadas («L í nea»), así que
+    el recorte les pone el ancho de su letra base. Se regenera con `scripts/skin-font.py` (necesita `pip install fonttools brotli`).
+    El chino y lo que no cubre caen en Rubik (Google Fonts). En móvil, la fuente es más ancha: hay un bloque `@media` al final de `zzz.css`.
+  - `public/skins/zzz/`: `scene.webp` = viñeta de cómic Scene OVA00_03_03_01 de skowt.cc (fondo, oscurecida) y `live.webp` = IconEmoji01
+    (carita en los eventos en curso), assets oficiales marcados "Non-commercial fan use only" (derechos de miHoYo); el dueño decidió usarlos.
+    `cursor.svg` está redibujado a partir de una captura del cursor del juego que aportó el dueño (no está en skowt.cc ni en `leotorrez/ZZ-Model-Importer-assets`).
+  - Las pegatinas chibi se probaron y se quitaron (no gustaron).
+- `hsr.css` (prueba, 10 nov 2026, rehecha con capturas del juego): la skin **Honkai: Star Rail**, como sus menús de teléfono y misiones:
+  paneles carbón con borde gris fino, dorado ámbar de acento, fila seleccionada clara con franja dorada, botón principal en píldora gris
+  clara, pestaña activa blanca con barra debajo, títulos como la barra "Trailblaze Mission" (estrella de cuatro puntas, se difumina),
+  fichas de destacados como las recompensas (fondo de rareza y franja oscura) y fondo de escena desenfocado.
+  `public/skins/hsr/`: `bg.webp` (Backgrounds, nebulosa con destellos dorados) y `star.webp` (Star of Honor), assets oficiales de skowt.cc
+  marcados "Non-commercial fan use only" (el dueño decidió usarlos); `cursor.png` = el cursor del juego, convertido del `.cur` que aportó el dueño (punta en 4, 4).
+  Fuente: la del juego en inglés es **DIN Next** (Monotype, de pago): se usa si el visitante la tiene instalada; si no, **Barlow** (OFL).
+- **Vista previa de skins** (`SkinPicker.tsx`): cambia al MOVER el ratón por una fila y se quita al salir del menú entero. El menú tiene
+  posición fija (medida al abrirlo) y las mismas medidas y fuente con cualquier skin (bloque final de `skins.css`): antes cambiaba de tamaño
+  en cada vista previa y saltaba bajo el ratón (parpadeo con ZZZ). Una skin nueva NO debe tocar las medidas del menú, solo sus colores.
+- **Fuentes de los juegos** (10 nov 2026, archivos aportados por el dueño; recortes solo latinos con `scripts/skin-font.py`, que también
+  arregla los signos de ancho completo):
+  - Genshin: **HYWenHei-85W** (`zhcn.ttf` del cliente, © Beijing Hanyi Keyin) → `public/skins/genshin/genshin-font.woff2` (16,7 KB).
+  - ZZZ: **印品鸿蒙体** → `public/skins/zzz/zzz-font.woff2` (ver abajo).
+  - WuWa: **Sora** (Google Fonts, licencia libre OFL), la más parecida a Cocogoose Pro tras compararlas una al lado de la otra.
+    Cocogoose no se usa: el archivo aportado es la versión de prueba de Zetafonts, cuya licencia (dentro del .ttf) prohíbe usarla como
+    fuente web, y además trae los números sustituidos por un bloque de relleno.
 - `public/skins/wuwa/`: sus recursos. `btn.png`, `bg.jpg` y `glow.png` son de la web oficial (wutheringwaves.kurogames.com,
   arte de Kuro Games, copiados el 9 nov 2026). `cursor.png` (48 px) y `cursor@2x.png` (96 px) son el cursor del juego, del `Aki.zip`
   del cliente que aportó el dueño (`Content/Aki/Cursor/CursorNor*.png`; los estados Hi y Pre son la misma imagen). Punta en (3, 3).
@@ -47,6 +77,36 @@ gestión (`npm run premium -- add|revoke|check correo`): **`docs/premium.md`**.
 1. `public/skins/<id>/` con sus imágenes.
 2. `src/skins/<id>.css` con todas las reglas bajo `html[data-skin="<id>"]` (usa `wuwa.css` de modelo) e impórtala en `SkinPicker.tsx`.
 3. Una entrada en `SKINS` (`skins.ts`).
+4. **Revisión de legibilidad (obligatoria antes de subirla)**: ver abajo.
+
+## Regla: toda skin se revisa campo por campo antes de subirla
+
+La hoja base (`App.css`) fija muchos colores claros pensados para el fondo oscuro (`#fff`, `#ddd`, `#ccd`, `#fcd34d`…: nombres de
+parches, "Caduca…", `.desc`, `.prec`, `.stars`, `.cur-name`, texto de las barras…). Si la skin pone paneles claros, esos textos
+desaparecen aunque se cambien `--text`/`--muted`. Pasó con Genshin (10 nov 2026). Por eso, con la skin puesta:
+
+1. En la consola (con `npm run dev`):
+   `eval(await (await fetch('/@fs/C:/Users/PC/Documents/Whengacha/app/scripts/skin-contrast.js')).text()); __skinAudit()`
+   (o pega `scripts/skin-contrast.js` en la consola). Devuelve cada texto visible por debajo de **4.5:1** (3:1 si es grande).
+2. Pásalo en **todas** las pantallas: Línea de tiempo (vista Líneas y Cuadrícula), Mis gachas (con los códigos desplegados),
+   Parches, ventana de un evento, Filtros, menú de idioma, menú de skins, ventana de apoyo; en escritorio **y** en móvil (375 px).
+3. El resultado debe quedar vacío, salvo falsos positivos que se revisan a ojo: texto sobre degradado o imagen (marcado `IMG:`,
+   p. ej. el botón de donar) y adornos (estrellas, ✦).
+4. Además, captura de pantalla de cada vista: el script no ve texto encima del arte (barras de la línea de tiempo, títulos sobre
+   imágenes), ni campos/botones del mismo color que su panel (un input crema en un panel crema "no se ve" aunque su texto pase).
+5. Nada de `opacity` para apagar texto (barras pasadas, etiquetas): baja el contraste por debajo del mínimo; usa colores o `filter`.
+
+## Regla: los destacados de un banner se ven como en el juego
+
+Cada skin da su propio estilo a los retratos de la ventana del evento (`.featured .portrait`: imagen, nombre y `small` opcional) y a las
+cabeceras de sección dentro de los paneles (`.modal-body h3`, etc.), en lugar del círculo y la barra rectangular de la base:
+
+- **Genshin**: ficha de objeto del inventario (fondo naranja de rareza + franja crema con el nombre); la cabecera pizarra se difumina a la derecha.
+- **ZZZ**: ficha de agente (borde gris grueso, brillo amarillo, nombre en blanco grueso sobre línea amarilla); la cabecera no lleva bloque: texto centrado entre guiones ("- DESTACADOS -"), como en el juego.
+- **WuWa**: ficha de resonador (tarjeta oscura con esquina cortada, brillo dorado desde abajo, franja con línea dorada); la cabecera usa `title.png`, que ya se desvanece.
+
+Una skin nueva debe traer su versión de ambos (bloque "Destacados" de su CSS) y probarse con un banner que tenga retratos
+(p. ej. uno de Uma, que desde el 10 nov 2026 los trae de umapyoi.net, o de Genshin/HSR/ZZZ).
 
 ## Cómo quitarlas del todo
 

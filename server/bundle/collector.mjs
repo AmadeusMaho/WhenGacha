@@ -21415,12 +21415,12 @@ function rangeIn(line, year, fallbackZone, postedAt) {
 * Ruido de los avisos reenviados: la mención del rol que los anuncia ("@News Feed", "@Schale news"), el aviso de tuit nuevo y los enlaces.
 * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
 */
-var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "");
+var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "");
 /** Saludos que no son el nombre de nada ("Dear Commander,", "Sensei,"). */
 var GREETING = /^(dear\s+)?(commanders?|doctors?|sensei|managers?|captains?|trailblazers?|travell?ers?|proxies|trekkers?|everyone|all)\s*[,!]?$/i;
 /** Nombre dentro de una frase: "The collab event, It's Showtime! Angels' Azur Stage, will be available…". */
 function sentenceName(c) {
-	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c))?.[1].trim();
+	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c))?.[1].trim();
 }
 var clean$2 = (s) => s.replace(/[*_`#>|]+/g, "").replace(/^[\s■◆●▶◇□・\-–•]+/, "").replace(/[【】]/g, " ").replace(/\s+/g, " ").trim();
 var isHeading = (raw) => /^\s*(\*\*|__|#+\s|[■◆●▶◇□【[])/.test(raw) || /\*\*\s*$/.test(raw);
@@ -21482,7 +21482,7 @@ async function syncDiscord(gameId) {
 				continue;
 			}
 			if (/maintenance|unavailable/i.test(c) && !/after (the )?(maintenance|update)/i.test(c)) continue;
-			const inline = /^(.{3,80}?):\s*\S/.exec(c)?.[1];
+			const inline = /^(.{3,80}?)(?<!\d):(?!\d)\s*\S/.exec(c)?.[1];
 			const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, "");
 			if (!name) continue;
 			let start = r.start, approx = r.approx;
@@ -21492,7 +21492,7 @@ async function syncDiscord(gameId) {
 				else approx = true;
 			}
 			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$23) continue;
-			const kind = /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? "banner" : "event";
+			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(name) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? "banner" : "event";
 			const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
 			seen.add(id);
@@ -22634,6 +22634,7 @@ async function blueArchiveBanners(gameId) {
 		if (row.getAttribute("data-release") !== "rerun") g.rerun = false;
 		groups.set(key, g);
 	}
+	const faces = await fileThumbs([...groups.values()].flatMap((g) => g.names.slice(0, 3).map((n) => `File:${n}.png`)), 300).catch(() => /* @__PURE__ */ new Map());
 	return [...groups.entries()].map(([key, g]) => ({
 		id: `${gameId}:banner:${key}`,
 		gameId,
@@ -22647,7 +22648,8 @@ async function blueArchiveBanners(gameId) {
 		featured: g.names.slice(0, 3).map((name, i) => ({
 			name,
 			rarity: 3,
-			tag: g.tags[i]
+			tag: g.tags[i],
+			icon: faces.get(`File:${name}.png`)
 		})),
 		pulls: 0,
 		source: "api"
@@ -24659,8 +24661,24 @@ var imageOf = (r) => r.image?.startsWith("http") ? r.image : r.image_path ? `${B
 /** Campañas pequeñas y repetitivas (recompensas por carrera, misiones sueltas). */
 var MINOR = /(training|breeding) reward|celebration missions|missions,? part/i;
 var clean = (s) => s?.replace(/<br\s*\/?>/gi, " · ").replace(/<[^>]+>/g, "").trim() || void 0;
+/** Clave para emparejar nombres: sin variantes "(…)", espacios, puntos ni apóstrofos ("K.S. Miracle" = "K.S.Miracle"). */
+var nameKey = (s) => s.replace(/\s*\(.*?\)/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+/**
+* Retrato oficial de cada Uma (las fichas de personaje de la web oficial), por nombre, desde la lista pública de umapyoi.net.
+* uma.moe solo da los nombres de los destacados; sin esto la ventana del banner mostraba solo texto. Si falla, se sigue sin retratos.
+*/
+async function portraits() {
+	try {
+		const res = await fetch(viaProxy("https://umapyoi.net/api/v1/character/list"));
+		if (!res.ok) return /* @__PURE__ */ new Map();
+		const list = await res.json();
+		return new Map(list.filter((c) => c.name_en && c.thumb_img?.startsWith("https://")).map((c) => [nameKey(c.name_en), c.thumb_img]));
+	} catch {
+		return /* @__PURE__ */ new Map();
+	}
+}
 async function syncUma(gameId) {
-	const res = await fetch(viaProxy(`${BASE$1}/resources/current/banner_timeline.json`));
+	const [res, faces] = await Promise.all([fetch(viaProxy(`${BASE$1}/resources/current/banner_timeline.json`)), portraits()]);
 	if (!res.ok) throw new Error(`uma.moe → HTTP ${res.status}`);
 	const json = await res.json();
 	const from = Date.now() - 3 * DAY$4;
@@ -24686,7 +24704,8 @@ async function syncUma(gameId) {
 			items: [],
 			featured: kind === "banner" ? uniq.slice(0, 3).map((name) => ({
 				name,
-				rarity: 3
+				rarity: 3,
+				icon: r.card_type === "support" ? void 0 : faces.get(nameKey(name))
 			})) : [],
 			pulls: 0,
 			source: "api",

@@ -19,11 +19,15 @@ export interface SkinDef {
 }
 
 export const SKINS: SkinDef[] = [
-  { id: 'wuwa', game: 'wuwa', name: 'Wuthering Waves', fonts: 'family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600',
+  { id: 'wuwa', game: 'wuwa', name: 'Wuthering Waves', fonts: 'family=Sora:wght@400;500;600;700&family=Barlow:wght@400;500;600;700',
     // Vídeo de la portada de la web oficial, sin las bandas negras, a 960 px y sin audio (24 MB → 2,3 MB).
     live: { video: '/skins/wuwa/live.mp4', poster: '/skins/wuwa/live.jpg' } },
   // Prueba local con piezas de interfaz del Drive "UI Assets" (genshin.css); sin vídeo ni arte de personajes.
   { id: 'genshin', game: 'genshin', name: 'Genshin Impact', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800' },
+  // Prueba local (zzz.css) con assets oficiales de skowt.cc en public/skins/zzz/ y cursor propio (ver README).
+  { id: 'zzz', game: 'zzz', name: 'Zenless Zone Zero', fonts: 'family=Rubik:wght@500;600;700;800;900' },
+  // Prueba local (hsr.css) con fondo y estrella de skowt.cc en public/skins/hsr/ y cursor propio (ver README).
+  { id: 'hsr', game: 'hsr', name: 'Honkai: Star Rail', fonts: 'family=Barlow:wght@400;500;600;700' },
 ]
 
 const KEY = 'whengacha:skin'

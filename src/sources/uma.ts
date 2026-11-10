@@ -36,8 +36,24 @@ const MINOR = /(training|breeding) reward|celebration missions|missions,? part/i
 
 const clean = (s?: string) => s?.replace(/<br\s*\/?>/gi, ' · ').replace(/<[^>]+>/g, '').trim() || undefined
 
+/** Clave para emparejar nombres: sin variantes "(…)", espacios, puntos ni apóstrofos ("K.S. Miracle" = "K.S.Miracle"). */
+const nameKey = (s: string) => s.replace(/\s*\(.*?\)/g, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+/**
+ * Retrato oficial de cada Uma (las fichas de personaje de la web oficial), por nombre, desde la lista pública de umapyoi.net.
+ * uma.moe solo da los nombres de los destacados; sin esto la ventana del banner mostraba solo texto. Si falla, se sigue sin retratos.
+ */
+async function portraits(): Promise<Map<string, string>> {
+  try {
+    const res = await fetch(viaProxy('https://umapyoi.net/api/v1/character/list'))
+    if (!res.ok) return new Map()
+    const list = (await res.json()) as { name_en?: string; thumb_img?: string }[]
+    return new Map(list.filter(c => c.name_en && c.thumb_img?.startsWith('https://')).map(c => [nameKey(c.name_en!), c.thumb_img!]))
+  } catch { return new Map() }
+}
+
 export async function syncUma(gameId: string): Promise<GameSync> {
-  const res = await fetch(viaProxy(`${BASE}/resources/current/banner_timeline.json`))
+  const [res, faces] = await Promise.all([fetch(viaProxy(`${BASE}/resources/current/banner_timeline.json`)), portraits()])
   if (!res.ok) throw new Error(`uma.moe → HTTP ${res.status}`)
   const json = (await res.json()) as { events?: Raw[] }
   const from = Date.now() - 3 * DAY
@@ -62,7 +78,8 @@ export async function syncUma(gameId: string): Promise<GameSync> {
       start: r.global_release_date,
       end: r.estimated_end_date,
       items: [],
-      featured: kind === 'banner' ? uniq.slice(0, 3).map(name => ({ name, rarity: 3 })) : [],
+      // Cartas de apoyo: los nombres son títulos de carta, no personajes; esos no llevan retrato.
+      featured: kind === 'banner' ? uniq.slice(0, 3).map(name => ({ name, rarity: 3, icon: r.card_type === 'support' ? undefined : faces.get(nameKey(name)) })) : [],
       pulls: 0,
       source: 'api',
       minor: kind === 'event' && MINOR.test(r.title) ? true : undefined,

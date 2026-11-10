@@ -130,6 +130,8 @@ function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: nu
  * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
  */
 const noise = (s: string) => s.replace(/<?https?:\/\/\S+>?/g, '')
+  // Emojis propios del servidor ("<:3_:801450203134689291>"): quedaban en el título del aviso.
+  .replace(/<a?:[\w~]+:\d+>/g, '')
   .replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, '')
   .replace(/^\s*a new (tweet|post) has been posted!?\s*/i, '')
 /** Saludos que no son el nombre de nada ("Dear Commander,", "Sensei,"). */
@@ -138,6 +140,8 @@ const GREETING = /^(dear\s+)?(commanders?|doctors?|sensei|managers?|captains?|tr
 function sentenceName(c: string): string | undefined {
   const m = /\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c)
     ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c)
+    // "Limited collab gear skins will be available between 11/12 - 11/26…" (Azur Lane): sin esto el título era la frase entera cortada.
+    ?? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c)
   return m?.[1].trim()
 }
 
@@ -195,7 +199,8 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       // Avisos de mantenimiento ("the service will be unavailable during … through …"): ya se usaron para `maintEnd`, no son eventos.
       if (/maintenance|unavailable/i.test(c) && !/after (the )?(maintenance|update)/i.test(c)) continue
       // "Bounty / Scrimmage Triple Rewards: 11/9 (Mon) 19:00 ~ …" → el nombre va en la misma línea.
-      const inline = /^(.{3,80}?):\s*\S/.exec(c)?.[1]
+      // (Los dos puntos de una hora, "11:59", no cuentan: con ellos el nombre era la frase entera hasta la hora.)
+      const inline = /^(.{3,80}?)(?<!\d):(?!\d)\s*\S/.exec(c)?.[1]
       // Sin emojis al final ("… On-Time Gift 🎁").
       const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
       if (!name) continue
@@ -206,7 +211,8 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
         else approx = true
       }
       if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY) continue
-      const kind: Kind = /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? 'banner' : 'event'
+      // "200 FREE RECRUITMENTS" (Blue Archive, 10 nov 2026) es un evento de inicio de sesión que regala tiradas, no un banner.
+      const kind: Kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(name) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? 'banner' : 'event'
       const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
       if (seen.has(id)) continue
       seen.add(id)

@@ -50,6 +50,13 @@ Reglas que no se rompen:
 - `src/sources/discord.ts` lee los canales de un servidor propio que "sigue" los anuncios oficiales. Solo con `DISCORD_TOKEN` y `DISCORD_CHANNELS` en el servidor
   (guía en `docs/discord-bot.md`). El token nunca va al repositorio ni al navegador: la fuente `discord` del proxy es interna.
 
+## Skins: legibilidad revisada en cada una
+
+Toda skin nueva (o cambio grande de una) se valida con `scripts/skin-contrast.js` en todas las pantallas, escritorio y móvil,
+más capturas de pantalla, hasta que no quede ningún texto por debajo de 4.5:1. Además, cada skin da estilo propio a los retratos de
+los destacados y a las cabeceras de sección de la ventana del evento (como Genshin y WuWa). Procedimiento y trampas conocidas en
+**`src/skins/README.md`** ("Regla: toda skin se revisa campo por campo").
+
 ## Otros detalles útiles
 
 - Los finales de línea dan avisos "LF will be replaced by CRLF": es ruido de Windows, no hay cambios de contenido.

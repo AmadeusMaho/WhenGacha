@@ -164,9 +164,9 @@ export function splashOf(gameId: string, f?: Featured): string | undefined {
   return f && SPLASH_GAMES.has(gameId) ? mem[`s:${gameId}:${f.name}`]?.u || undefined : undefined
 }
 
-/** Cara/retrato pequeño: el icono oficial o, si no hay, el splash art recortado por CSS. */
+/** Cara/retrato pequeño: el icono oficial; si no hay, el splash art recortado por CSS; si tampoco, la imagen de su página en la wiki. */
 export function faceOf(gameId: string, f: Featured): string | undefined {
-  return f.icon || splashOf(gameId, f)
+  return f.icon || splashOf(gameId, f) || mem[`f:${gameId}:${f.name}`]?.u || undefined
 }
 
 /** Arte principal de un banner: splash del personaje destacado, o la imagen del propio banner. */
@@ -232,6 +232,12 @@ export function useImages(state: AppState): number {
     if (e.kind === 'banner') {
       for (const f of SPLASH_GAMES.has(e.gameId) ? e.featured.slice(0, 3) : []) {
         want(`s:${e.gameId}:${f.name}`, async () => (await firstFile(g.wiki.host, splashCandidates(e.gameId, f), 900)) || searchImage(g.wiki.host, f.name, 700))
+      }
+      // Resto de juegos: si la fuente no trae el icono del destacado, la imagen principal de SU página en la wiki (título exacto, sin
+      // búsqueda, para no traer a otro personaje). Así la ventana del banner muestra a quién trae en vez de solo el nombre (10 nov 2026).
+      // Sale en Arknights, NIKKE, NTE, Reverse: 1999, WuWa y PGR; CZN, Epic Seven, Limbus e Infinity Nikki no tienen esas páginas.
+      if (!SPLASH_GAMES.has(e.gameId) && g.wiki.host) {
+        for (const f of e.featured.slice(0, 3)) if (!f.icon) want(`f:${e.gameId}:${f.name}`, () => pageImage(g.wiki.host, f.full ?? f.name, 300))
       }
       if (!e.image && !e.featured.length) want(`e:${e.id}`, () => eventSearchImage(g.wiki.host, cleanTitle(e.title)))
     }

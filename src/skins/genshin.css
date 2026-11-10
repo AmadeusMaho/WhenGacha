@@ -11,7 +11,7 @@ html[data-skin="genshin"] {
   --gi-cream2: #f6f2e9;
   --gi-rowline: #dcd1bd;
   --gi-ink: #495366;
-  --gi-ink2: #7b808c;
+  --gi-ink2: #5c6270; /* ≥ 4.5:1 sobre crema (antes #7b808c, 3.2:1) */
   --gi-gold: #d3bc8e;
   --gi-tan: #e3d4b4;
   --gi-yellow1: #f8de97;
@@ -29,7 +29,14 @@ html[data-skin="genshin"] {
   --acc2: #f2e2bb;
   color-scheme: dark;
 }
-html[data-skin="genshin"] body { font-family: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 500; }
+/* Fuente del juego: HYWenHei-85W (汉仪文黑, © Beijing Hanyi Keyin), el zhcn.ttf del cliente que aportó el dueño (10 nov 2026).
+   public/skins/genshin/genshin-font.woff2 es un recorte solo latino (16,7 KB; el original pesa 7,2 MB) con «…», «→», «≈» y las comillas
+   pasados de ancho completo a ancho normal (scripts/skin-font.py). Lo que no cubre (chino, emojis) cae en M PLUS Rounded 1c.
+   Tiene un solo peso (Heavy): sin negrita sintética. */
+@font-face { font-family: 'Genshin UI'; font-display: swap; src: url(/skins/genshin/genshin-font.woff2) format('woff2');
+  unicode-range: U+0020-007E, U+00A0-024F, U+2010-2027, U+2030-203A, U+2190-2193, U+2212, U+2248, U+00D7, U+2605, U+2713, U+20AC; }
+html[data-skin="genshin"] { font-synthesis: none; }
+html[data-skin="genshin"] body { font-family: 'Genshin UI', 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 500; }
 html[data-skin="genshin"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
 html[data-skin="genshin"] ::selection { background: rgba(211, 188, 142, .45); }
 html[data-skin="genshin"] * { scrollbar-color: rgba(236, 229, 216, .45) transparent; }
@@ -106,12 +113,27 @@ html[data-skin="genshin"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .
 html[data-skin="genshin"] :is(.gcard-body, .modal-body, .grid.even .codes[open] > ul) { background: var(--gi-cream); }
 html[data-skin="genshin"] :is(.gcard-hero, .ecard-img) { background-color: var(--gi-slate); }
 html[data-skin="genshin"] .gcard-hero .fade { background: linear-gradient(transparent 35%, rgba(59, 66, 85, .9)); }
-html[data-skin="genshin"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 40%, var(--gi-cream)); }
 html[data-skin="genshin"] .modal-title h2 { color: #fff; text-shadow: 0 2px 8px rgba(0, 0, 0, .6); }
 html[data-skin="genshin"] :is(.gcard, .up-card, .soon-card, .plist li):hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, .4), 0 8px 22px rgba(0, 0, 0, .4); transform: translateY(-2px); }
 /* Dentro de los paneles crema, los títulos son la cabecera pizarra de sección y ocupan todo el ancho. */
-html[data-skin="genshin"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 { margin-left: -16px; margin-right: -16px; border-radius: 0; padding-left: 16px; }
-html[data-skin="genshin"] .lang-menu button, html[data-skin="genshin"] .skin-panel button { color: var(--gi-ink); }
+/* Dentro de los paneles crema, la cabecera de sección sale del borde izquierdo y se DIFUMINA hacia la derecha (antes era un bloque
+   rectangular de lado a lado), con una línea dorada fina debajo que también se desvanece. */
+html[data-skin="genshin"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 {
+  position: relative; margin-left: -16px; margin-right: -16px; border-radius: 0; padding: 7px 16px;
+  background: linear-gradient(90deg, rgba(59, 66, 85, .95) 0, rgba(59, 66, 85, .88) 35%, rgba(59, 66, 85, .45) 70%, rgba(59, 66, 85, 0) 100%);
+}
+html[data-skin="genshin"] :is(.gcard-body, .modal-body, .psec, .gsec) h3::after {
+  content: ""; position: absolute; left: 0; right: 15%; bottom: -1px; height: 1px; background: linear-gradient(90deg, rgba(211, 188, 142, .9), transparent);
+}
+/* Destacados de la ventana del evento: ficha de objeto del inventario (fondo naranja de rareza + franja crema con el nombre). */
+html[data-skin="genshin"] .featured { gap: 10px; }
+html[data-skin="genshin"] .portrait { width: 92px; gap: 0; border-radius: 6px; overflow: hidden; background: #e9e5dc; box-shadow: 0 2px 6px rgba(0, 0, 0, .25); }
+html[data-skin="genshin"] .portrait img { width: 92px; height: 100px; border: 0; border-radius: 0; background: linear-gradient(160deg, var(--gi-orange1), var(--gi-orange2)); object-position: 50% 8%; }
+html[data-skin="genshin"] .portrait:hover img { transform: none; }
+html[data-skin="genshin"] .portrait:hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, .7), 0 4px 10px rgba(0, 0, 0, .3); }
+html[data-skin="genshin"] .portrait span { padding: 4px 4px 5px; color: var(--gi-ink); font-weight: 700; font-size: .74rem; line-height: 1.2; }
+html[data-skin="genshin"] .portrait small { padding: 0 4px 5px; color: var(--gi-ink2); font-size: .68rem; }
+html[data-skin="genshin"] .lang-menu button, html[data-skin="genshin"] .skin-panel button { color: #3a4254; }
 html[data-skin="genshin"] :is(.lang-menu, .skin-panel) button:hover { background: rgba(73, 83, 102, .1); }
 html[data-skin="genshin"] :is(.lang-menu, .skin-panel) button.on { background: rgba(211, 188, 142, .35); }
 
@@ -151,7 +173,7 @@ html[data-skin="genshin"] :is(.ecard, .bcard) { border-radius: 6px; border: 0; o
 html[data-skin="genshin"] .ecard-img { background: linear-gradient(160deg, var(--gi-orange1), var(--gi-orange2)); }
 html[data-skin="genshin"] :is(.ecard-img .fade, .ecard.bnr .fade) { background: linear-gradient(transparent 60%, rgba(0, 0, 0, .25)); }
 html[data-skin="genshin"] .ecard-body { background: var(--gi-cream); }
-html[data-skin="genshin"] .ecard-body small { color: #9b6a3e; }
+html[data-skin="genshin"] .ecard-body small { color: #7f5428; }
 html[data-skin="genshin"] :is(.ecard, .bcard):hover { box-shadow: 0 0 0 3px rgba(255, 255, 255, .55), 0 8px 20px rgba(0, 0, 0, .35); transform: translateY(-2px); }
 
 /* ===== Línea de tiempo: marco pizarra oscuro (como el del pase de batalla) con los eventos como filas crema encima ===== */
@@ -168,8 +190,11 @@ html[data-skin="genshin"] .bar-clip { border-radius: 3px; }
 /* La hoja base oscurece la barra (bar-clip::after) para leer texto blanco sobre el arte; aquí, crema que se desvanece hacia la derecha. */
 /* Crema sólido bajo el texto (izquierda) que se abre hacia la derecha para que se vea el arte del evento. */
 html[data-skin="genshin"] .bar-clip::after { background: linear-gradient(90deg, rgba(236, 229, 216, 1) 0, rgba(236, 229, 216, .92) 170px, rgba(236, 229, 216, .35) 300px, transparent 420px); }
-/* Las barras ya pasadas, apagadas pero legibles sobre el marco oscuro. */
-html[data-skin="genshin"] .bar.past { opacity: .55; }
+/* Las barras ya pasadas, apagadas pero legibles: se oscurecen y desaturan (con opacity el texto bajaba a 2.7:1 sobre el marco). */
+html[data-skin="genshin"] .bar.past { opacity: 1; filter: grayscale(.7) brightness(.8); }
+/* El texto lleva su propio fondo crema que se desvanece a la derecha: los títulos y fechas largos ya no pisan el arte del evento. */
+html[data-skin="genshin"] .bar .bar-txt { padding-right: 26px; margin-right: -12px;
+  background: linear-gradient(90deg, rgba(236, 229, 216, .97) calc(100% - 26px), rgba(236, 229, 216, 0)); }
 html[data-skin="genshin"] .bar-prog { background: #d9a84e; opacity: 1; }
 html[data-skin="genshin"] .bar .bar-bg { --o: .22; filter: saturate(.8); -webkit-mask: linear-gradient(90deg, transparent 30%, #000 85%); mask: linear-gradient(90deg, transparent 30%, #000 85%); }
 html[data-skin="genshin"] .bar:hover .bar-bg { --o: .4; }
@@ -193,7 +218,7 @@ html[data-skin="genshin"] .bar .bar-txt b { color: #3a4254 !important; font-weig
 html[data-skin="genshin"] .bar .bar-txt small { color: #5f6676 !important; text-shadow: none !important; font-weight: 600; }
 html[data-skin="genshin"] .bar .bar-txt .when { color: #3f5f8f !important; font-weight: 800; }
 html[data-skin="genshin"] .bar .bar-txt .when.upcoming { color: #3f5f8f !important; }
-html[data-skin="genshin"] .bar .bar-txt .when.soon { color: #9a6410 !important; }
+html[data-skin="genshin"] .bar .bar-txt .when.soon { color: #7f5208 !important; }
 html[data-skin="genshin"] .bar .bar-txt .when.urgent { color: #b23a2a !important; }
 html[data-skin="genshin"] .when.ended { color: var(--gi-ink2); }
 /* El arte de cada evento, bien visible a la derecha (el texto queda a la izquierda sobre crema). */
@@ -203,7 +228,7 @@ html[data-skin="genshin"] .bar:hover .bar-bg { --o: 1 !important; }
 html[data-skin="genshin"] .soon-card em { background: var(--gi-tan); color: #5b4a1e; }
 html[data-skin="genshin"] .soon-card.urgent em { background: #e7b6a6; color: #7a2f22; }
 html[data-skin="genshin"] .soon-card :is(.soon-txt b, .soon-txt strong) { color: #3a4254; }
-html[data-skin="genshin"] .soon-card .soon-txt small { color: #6b7181; }
+html[data-skin="genshin"] .soon-card .soon-txt small { color: #555b69; }
 html[data-skin="genshin"] .today-flag { background: var(--gi-yellow1); color: #5b4a1e; box-shadow: 0 1px 4px rgba(0, 0, 0, .3); }
 html[data-skin="genshin"] .soon-card .soon-t, html[data-skin="genshin"] .soon-card b { color: var(--gi-ink); }
 
@@ -212,6 +237,46 @@ html[data-skin="genshin"] .progress i { background: linear-gradient(90deg, #e2a6
 html[data-skin="genshin"] :is(input, select):focus { box-shadow: 0 0 0 2px var(--gi-gold); outline: none; }
 html[data-skin="genshin"] :is(input[type="checkbox"], input[type="range"]) { accent-color: #c99c4f; }
 html[data-skin="genshin"] .site-foot { color: var(--muted); }
+
+/* ===== Legibilidad (revisión 10 nov 2026): textos con color claro FIJO en la hoja base que desaparecían sobre crema ===== */
+/* Cabecera de cada juego en "Parches" y en la cuadrícula: es un <header>, así que hereda la barra pizarra; su texto, crema. */
+html[data-skin="genshin"] .gsec-head { --text: var(--gi-cream); --muted: rgba(236, 229, 216, .88); color: var(--gi-cream); }
+html[data-skin="genshin"] .gsec-head h2 { color: var(--gi-cream); text-shadow: none; }
+html[data-skin="genshin"] .gsec-head .fold { color: var(--gi-cream); border-color: rgba(236, 229, 216, .35); background: rgba(236, 229, 216, .1); }
+html[data-skin="genshin"] .gsec-head .fold:hover { background: var(--gi-cream); color: var(--gi-ink); }
+html[data-skin="genshin"] .gsec-head .stats > div { background: rgba(236, 229, 216, .1); }
+html[data-skin="genshin"] .gsec-head .stats b { color: #ecd08f; }
+/* Dentro de los paneles crema. */
+html[data-skin="genshin"] :is(.hist .pname, .cur-name, .next-top em) { color: var(--gi-ink); }
+html[data-skin="genshin"] .desc { color: var(--gi-ink); }
+html[data-skin="genshin"] .link-btn { color: var(--acc2); font-weight: 700; }
+html[data-skin="genshin"] :is(.psec, .gsec, .modal-body, .gcard-body, .current, .next-patch) .link-btn { color: #2f5f9a; }
+html[data-skin="genshin"] .up-ver { color: #74511a; }
+html[data-skin="genshin"] .code-until { color: #8a5a0e; font-weight: 700; }
+html[data-skin="genshin"] .cc-new { background: var(--gi-yellow1); color: #5b4a1e; }
+html[data-skin="genshin"] .prec { color: #8a5a0e; }
+html[data-skin="genshin"] :is(.prog span, .bcard .prog span) { color: var(--gi-ink); text-shadow: none; }
+html[data-skin="genshin"] .prog.urgent span { color: #a3311f; }
+html[data-skin="genshin"] .stars { color: #9a6a0c; text-shadow: none; }
+html[data-skin="genshin"] .kind-head { color: var(--gi-cream); border-color: rgba(236, 229, 216, .2); }
+html[data-skin="genshin"] .kind-head small { color: rgba(236, 229, 216, .75); }
+html[data-skin="genshin"] .bport .p-name small { color: var(--gi-ink2); opacity: 1; }
+/* Campos y botones normales DENTRO de un panel crema: crema sobre crema no se distinguía; aquí van en blanco/arena con borde. */
+html[data-skin="genshin"] :is(.skin-panel, .support-dialog, .modal-body, .lang-menu, .consent, .psec, .gsec) :is(select, input:not([type="checkbox"]):not([type="range"])) {
+  background: #fff; border: 1px solid var(--gi-rowline); color: var(--gi-ink); }
+html[data-skin="genshin"] :is(input, textarea)::placeholder { color: var(--gi-ink2); opacity: 1; }
+html[data-skin="genshin"] :is(.skin-panel, .support-dialog, .modal-body, .consent, .psec, .gsec) .btn:not(.primary):not(.donate) { background: var(--gi-tan); color: #3f4656; }
+html[data-skin="genshin"] :is(.skin-panel, .support-dialog, .modal-body, .consent, .psec, .gsec) .btn:disabled { opacity: 1; background: #e4dccb; color: var(--gi-ink2); }
+/* Selector de skins: "Vista previa", ✓ y candado usaban el dorado claro del acento. */
+html[data-skin="genshin"] .skin-panel :is(.skin-try, i, .skin-lock) { color: #6a4a17; border-color: rgba(116, 81, 26, .4); opacity: 1; }
+html[data-skin="genshin"] .lang-menu i { color: #74511a; }
+html[data-skin="genshin"] h3 small { color: rgba(236, 229, 216, .88); }
+/* Línea de tiempo: marcas de parche (la base las pone al 70 %) y meses. */
+html[data-skin="genshin"] .patch-mark { opacity: 1; color: #ecd08f; }
+html[data-skin="genshin"] .month b { color: var(--gi-cream); }
+/* Ventana del evento: el título va en blanco sobre el arte, así que el arte funde a pizarra (no a crema) bajo el título. */
+html[data-skin="genshin"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(59, 66, 85, .92)); }
+html[data-skin="genshin"] .modal-title :is(p, small, span) { color: rgba(236, 229, 216, .9); text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
 
 /* --- Cursor del juego (32 px; 64 px en pantallas de alta densidad). Punta en (2, 2). --- */
 html[data-skin="genshin"], html[data-skin="genshin"] body {

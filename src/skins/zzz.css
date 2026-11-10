@@ -1,0 +1,250 @@
+/* ===== Skin "Zenless Zone Zero" (prueba local, 10 nov 2026) =====
+   Lenguaje visual de los menús del juego dibujado SOLO con CSS (sin imágenes del juego): fondo negro con tramado de puntos, paneles
+   carbón de esquinas muy redondeadas con borde grueso, amarillo como acento (y naranja como segundo color), botones píldora,
+   títulos en cursiva tipo pegatina, franjas de precaución en los desafíos y fichas de agente en los destacados.
+   Assets oficiales de ZZZ desde skowt.cc (public/skins/zzz/, decisión del dueño del 10 nov 2026 pese al aviso "Non-commercial fan use only"):
+   scene.webp = Scene OVA00_03_03_01 (fondo), live.webp = IconEmoji01 (carita amarilla). cursor.svg está redibujado a partir de una captura del cursor del juego (skowt no lo tiene).
+   Las pegatinas chibi se probaron y se quitaron (10 nov 2026, no gustaron).
+   Solo aplica con <html data-skin="zzz">. */
+
+html[data-skin="zzz"] {
+  --zz-yellow: #ffdd00; /* amarillo de ZZZ, muestreado de sus imágenes (#FFDD00) */
+  --zz-yellow2: #e6c200;
+  --zz-orange: #ff8a2b;
+  --zz-ink: #0d0d0d;
+  --zz-panel: #161616;
+  --zz-panel2: #1f1f1f;
+  --zz-edge: #333;
+  --zz-dots: radial-gradient(circle, rgba(255, 255, 255, .055) 1px, transparent 1.6px) 0 0 / 7px 7px;
+  --bg: #0b0b0b;
+  --panel: var(--zz-panel);
+  --panel2: var(--zz-panel2);
+  --line: rgba(255, 255, 255, .1);
+  --text: #f3f3f0;
+  --muted: #b0b0aa;
+  --acc: var(--zz-yellow);
+  --acc2: var(--zz-yellow);
+  color-scheme: dark;
+}
+/* Fuente de la interfaz del juego: 印品鸿蒙体 (inpin hongmengti, © 上海萌言文化创意有限公司 / 印品字库), archivo aportado por el dueño
+   (10 nov 2026). public/skins/zzz/zzz-font.woff2 es un recorte solo con los caracteres latinos (215 glifos, 8,9 KB; el original pesa
+   1,9 MB con 7.700 caracteres chinos). En el original las letras con tilde, la ñ, «…», «→» y «≈» tienen ancho
+   completo (como un carácter chino) y se veían separadas («L í nea»): el recorte les pone el ancho de su letra base y centra el dibujo
+   (scripts/skin-font.py). Lo que no cubre (chino, emojis) cae en Rubik. Tiene un solo peso, ya muy grueso: sin negrita
+   sintética, para que el navegador no la engorde más. */
+@font-face { font-family: 'ZZZ UI'; font-display: swap;
+  src: url(/skins/zzz/zzz-font.woff2) format('woff2'); /* sin local(): la instalada tiene las tildes a ancho completo */
+  unicode-range: U+0020-007E, U+00A0-024F, U+2010-2027, U+2030-203A, U+2190-2193, U+2212, U+2248, U+00D7, U+2605, U+2713, U+20AC; }
+html[data-skin="zzz"] { font-synthesis: none; }
+html[data-skin="zzz"] { --zz-font: 'ZZZ UI', 'Rubik', 'Segoe UI', system-ui, sans-serif; }
+html[data-skin="zzz"] body { font-family: var(--zz-font); font-weight: 500; }
+html[data-skin="zzz"] :is(h1, h2, h3, h4, b, strong, header nav button, .btn, .sec-title, .tag, .today-flag, .chip, .seg button) { font-family: var(--zz-font); }
+html[data-skin="zzz"] :is(h1, h2) { font-weight: 800; letter-spacing: -.01em; }
+html[data-skin="zzz"] ::selection { background: var(--zz-yellow); color: #000; }
+html[data-skin="zzz"] * { scrollbar-color: #444 transparent; }
+
+/* --- Fondo: negro con tramado de puntos y un brillo amarillo muy suave abajo --- */
+html[data-skin="zzz"] .aurora { background: radial-gradient(900px 500px at 85% 110%, rgba(255, 221, 0, .07), transparent 70%),
+  radial-gradient(700px 420px at 0% -10%, rgba(255, 138, 43, .06), transparent 70%), #0b0b0b; }
+/* Fondo: una viñeta de cómic de la historia (Scene OVA00_03_03_01) a pantalla completa, oscurecida y con el tramado encima;
+   a la izquierda más oscura (donde va el contenido), a la derecha deja ver más la escena. */
+html[data-skin="zzz"] .aurora::after { display: block; content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: var(--zz-dots),
+    linear-gradient(118deg, transparent 0 7%, rgba(255, 221, 0, .5) 7% 12%, transparent 12% 88%, rgba(255, 221, 0, .5) 88% 93%, transparent 93%),
+    linear-gradient(90deg, rgba(8, 8, 8, .78) 0, rgba(8, 8, 8, .62) 50%, rgba(8, 8, 8, .45) 100%),
+    linear-gradient(180deg, rgba(8, 8, 8, .1), rgba(8, 8, 8, .6)),
+    url(/skins/zzz/scene.webp) 70% center / cover no-repeat; }
+html[data-skin="zzz"] .skin-live { filter: brightness(.35) saturate(.9); }
+
+/* --- Cabecera: barra negra; pestaña activa con subrayado amarillo grueso --- */
+html[data-skin="zzz"] header { background: rgba(8, 8, 8, .92); border-bottom: 2px solid #222; box-shadow: none; }
+html[data-skin="zzz"] .brand h1 { font-weight: 800; color: #fff; }
+html[data-skin="zzz"] header nav { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow-y: hidden; }
+html[data-skin="zzz"] header nav button { font-weight: 800; text-transform: uppercase; letter-spacing: .02em; color: #9d9d98 !important; }
+html[data-skin="zzz"] header nav button.on { color: #fff !important; }
+html[data-skin="zzz"] header nav button:focus-visible { outline: none; color: var(--zz-yellow) !important; }
+html[data-skin="zzz"] header nav .nav-ind { top: auto; bottom: 0; height: 4px; border-radius: 2px; background: var(--zz-yellow); box-shadow: 0 0 10px rgba(255, 221, 0, .45); }
+html[data-skin="zzz"] header nav .nav-ind::after { display: none; }
+
+/* --- Botones: píldora negra con borde; el principal, amarillo con texto negro en cursiva --- */
+html[data-skin="zzz"] .btn { border-radius: 999px; border: 2px solid #3a3a3a; background: #111; color: #f3f3f0; box-shadow: none; font-weight: 700; text-shadow: none; }
+html[data-skin="zzz"] .btn::after { display: none; }
+html[data-skin="zzz"] .btn:hover:not(:disabled) { border-color: var(--zz-yellow); background: #1a1a1a !important; color: #fff; transform: none; box-shadow: none; }
+html[data-skin="zzz"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="zzz"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  border-color: var(--zz-yellow); background: var(--zz-yellow) !important; color: #000; font-weight: 800; filter: none; }
+html[data-skin="zzz"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { box-shadow: 0 0 0 3px rgba(255, 221, 0, .3); }
+html[data-skin="zzz"] .btn.mark .spark { color: #000; }
+html[data-skin="zzz"] .btn.mark:not(.primary) { background: #2a2a2a !important; border-color: #444; color: #cfcfca; }
+html[data-skin="zzz"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 2px solid var(--zz-yellow); outline-offset: 2px; }
+html[data-skin="zzz"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 999px; border: 2px solid #3a3a3a; background: #0f0f0f; color: #f3f3f0; }
+html[data-skin="zzz"] :is(input, select):focus { border-color: var(--zz-yellow); box-shadow: 0 0 0 2px rgba(255, 221, 0, .25); outline: none; }
+html[data-skin="zzz"] :is(input, textarea)::placeholder { color: #8e8e88; opacity: 1; }
+html[data-skin="zzz"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--zz-yellow); }
+
+/* --- Chips, segmentos y filtros: píldoras; la activa, amarilla --- */
+html[data-skin="zzz"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
+  border-radius: 999px; border: 2px solid #333; background: #121212; color: #ecece8; box-shadow: none; }
+html[data-skin="zzz"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: var(--zz-yellow); background: #1a1a1a !important; transform: none; }
+html[data-skin="zzz"] .seg button { border-radius: 999px; }
+html[data-skin="zzz"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="zzz"] :is(.chip.on, .seg button.on):hover { background: var(--zz-yellow) !important; color: #000; border-color: var(--zz-yellow); box-shadow: none; font-weight: 700; }
+html[data-skin="zzz"] :is(.up-chip .up-chip-t, .up-chip b, .codes-chip *) { color: #ecece8; text-shadow: none; }
+
+/* --- Etiquetas: pegatinas en cursiva (contadores, "nuevo", "urgente") --- */
+html[data-skin="zzz"] .tag { border-radius: 6px; border: 0; background: #2b2b2b; color: #f3f3f0; font-weight: 800; }
+html[data-skin="zzz"] .tag.great { background: var(--zz-yellow); color: #000; }
+html[data-skin="zzz"] .tag.good { background: #20301a; color: #b9f07a; }
+html[data-skin="zzz"] .tag.mid { background: #3a2a12; color: #ffc27a; }
+html[data-skin="zzz"] .tag.bad { background: #3e1a16; color: #ffab9c; }
+html[data-skin="zzz"] .pill { border-radius: 6px; }
+html[data-skin="zzz"] .pill.hot { background: #3e1a16; color: #ffab9c; }
+html[data-skin="zzz"] .pill.new { background: var(--zz-yellow); color: #000; }
+html[data-skin="zzz"] .today-flag { border-radius: 6px; background: var(--zz-yellow); color: #000; font-weight: 800; transform: translateX(-50%) skewX(-8deg); box-shadow: 0 2px 0 #000; }
+html[data-skin="zzz"] .soon-card em { border-radius: 6px; background: #3a2a12; color: #ffc27a; }
+html[data-skin="zzz"] .soon-card.urgent em { background: #3e1a16; color: #ffab9c; }
+
+/* --- Títulos de sección: cursiva en mayúsculas con una pestaña amarilla; dentro de paneles, la franja se difumina a la derecha --- */
+html[data-skin="zzz"] h3 { color: #f3f3f0; font-weight: 800; letter-spacing: .03em; }
+html[data-skin="zzz"] h3::before { content: ""; flex: none; width: 5px; height: 14px; border-radius: 2px; background: var(--zz-yellow); transform: skewX(-12deg); }
+html[data-skin="zzz"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 {
+  margin-left: -16px; margin-right: -16px; padding: 7px 16px; border-radius: 0;
+  background: linear-gradient(90deg, rgba(255, 221, 0, .16) 0, rgba(255, 221, 0, .06) 45%, rgba(255, 221, 0, 0) 85%), var(--zz-dots);
+}
+html[data-skin="zzz"] h3 small { color: #c4c4be; }
+
+/* --- Paneles: carbón, esquinas muy redondeadas, borde grueso y tramado --- */
+html[data-skin="zzz"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 18px; border: 2px solid var(--zz-edge); background-color: var(--zz-panel); box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+html[data-skin="zzz"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: var(--zz-panel); }
+html[data-skin="zzz"] :is(.gcard-hero, .ecard-img) { background-color: #101010; }
+html[data-skin="zzz"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 25%, var(--zz-panel)); }
+html[data-skin="zzz"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, var(--zz-panel)); }
+html[data-skin="zzz"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, var(--zz-panel)); }
+html[data-skin="zzz"] .modal-hero { background: linear-gradient(135deg, #2a2a2a, #111); }
+html[data-skin="zzz"] .modal-title h2 { color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, .8); }
+html[data-skin="zzz"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { border-color: var(--zz-yellow); box-shadow: 0 10px 28px rgba(0, 0, 0, .6); transform: translateY(-2px); }
+html[data-skin="zzz"] .gsec-head { background: rgba(14, 14, 14, .92); border-radius: 14px; }
+html[data-skin="zzz"] :is(.lang-menu, .skin-panel) button.on { background: rgba(255, 221, 0, .14); box-shadow: inset 3px 0 0 var(--zz-yellow); }
+html[data-skin="zzz"] :is(.lang-menu, .skin-panel) button:hover { background: rgba(255, 255, 255, .06); }
+html[data-skin="zzz"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--zz-yellow); border-color: rgba(255, 221, 0, .4); opacity: 1; }
+
+/* Filas de las listas: cápsulas oscuras; al pasar, borde amarillo. */
+html[data-skin="zzz"] :is(.list li, .hist li, .pull-list li, .plist li) { border-radius: 12px; }
+html[data-skin="zzz"] :is(.list li, .hist li) { margin: 0 0 5px; padding: 7px 10px; background: #1b1b1b; border: 2px solid #262626; }
+html[data-skin="zzz"] :is(.list li, .hist li):hover { border-color: var(--zz-yellow); background: #202020; }
+html[data-skin="zzz"] .progress { background: #262626; }
+html[data-skin="zzz"] .progress i { background: var(--zz-yellow); box-shadow: none; }
+html[data-skin="zzz"] .stats > div { border-radius: 12px; background: #1b1b1b; }
+html[data-skin="zzz"] .gsec-head .stats b { color: var(--zz-yellow); }
+
+/* ===== Línea de tiempo: carriles negros; barras carbón con el color de su tipo a la izquierda ===== */
+html[data-skin="zzz"] [style*="--c:"] { --c: #ffdd00 !important; --c2: #1d1d1d !important; }
+html[data-skin="zzz"] .tl.tl { background: #0f0f0f; }
+html[data-skin="zzz"] :is(.tl-corner, .tl-label, .tl-axis) { background: #141414; }
+html[data-skin="zzz"] .tl-lane { border-color: rgba(255, 255, 255, .06); }
+html[data-skin="zzz"] .grid-line { background: rgba(255, 255, 255, .05); }
+html[data-skin="zzz"] .tick { color: #b0b0aa; }
+html[data-skin="zzz"] .month b { color: #f3f3f0; }
+html[data-skin="zzz"] .bar { border-radius: 10px; border: 2px solid #2e2e2e; background: #1b1b1b !important; }
+html[data-skin="zzz"] .bar-clip { border-radius: 8px; }
+html[data-skin="zzz"] .bar.banner { border-left: 5px solid var(--zz-yellow); }
+html[data-skin="zzz"] .bar.event { border-left: 5px solid #e8e8e2; }
+html[data-skin="zzz"] .bar.challenge { border-left: 5px solid var(--zz-orange); }
+/* Desafíos: franja de precaución fina abajo, como las cintas del juego. */
+html[data-skin="zzz"] .bar.challenge::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, var(--zz-orange) 0 6px, #111 6px 12px); border-radius: 0 0 8px 8px; }
+html[data-skin="zzz"] .bar.live { box-shadow: 0 0 0 2px rgba(255, 221, 0, .35); }
+html[data-skin="zzz"] .bar:hover { border-color: var(--zz-yellow); box-shadow: 0 6px 18px rgba(0, 0, 0, .6); }
+html[data-skin="zzz"] .bar-prog { background: var(--zz-yellow); opacity: .9; }
+html[data-skin="zzz"] .bar.past { opacity: 1; filter: grayscale(.85) brightness(.75); }
+html[data-skin="zzz"] .bar .bar-txt .when.soon { color: #ffc27a !important; }
+html[data-skin="zzz"] .bar .bar-txt .when.urgent { color: #ff9c8a !important; }
+html[data-skin="zzz"] .bar .bar-txt .when.upcoming { color: var(--zz-yellow) !important; }
+html[data-skin="zzz"] .sec-title { color: #f3f3f0 !important; font-weight: 800; }
+html[data-skin="zzz"] .sec-band.banner .sec-title { color: var(--zz-yellow) !important; }
+html[data-skin="zzz"] .sec-band.challenge .sec-title { color: var(--zz-orange) !important; }
+html[data-skin="zzz"] .patch-mark { opacity: 1; color: var(--zz-yellow); }
+
+/* ===== Retratos de "Mis gachas" y destacados: fichas de agente =====
+   Tarjeta negra con tramado y un leve sesgo, franja inferior con el nombre en blanco sobre línea amarilla. */
+html[data-skin="zzz"] .bport { border-radius: 14px; border: 2px solid #2e2e2e; }
+html[data-skin="zzz"] .bport:hover { border-color: var(--zz-yellow); transform: translateY(-2px); }
+html[data-skin="zzz"] .bport .p-time { border-radius: 6px; background: var(--zz-yellow); color: #000; font-weight: 800; border: 0; backdrop-filter: none; }
+html[data-skin="zzz"] .bport .p-time.hot { background: #ff9c8a; color: #000; }
+html[data-skin="zzz"] .featured { gap: 10px; }
+html[data-skin="zzz"] .portrait { width: 92px; gap: 0; overflow: hidden; border-radius: 12px; border: 2px solid #2e2e2e; background: #111; }
+html[data-skin="zzz"] .portrait img { width: 100%; height: 104px; border: 0; border-radius: 0; object-position: 50% 8%;
+  background: radial-gradient(110% 70% at 50% 100%, rgba(255, 221, 0, .35), transparent 70%), var(--zz-dots), #1a1a1a; }
+html[data-skin="zzz"] .portrait:hover { border-color: var(--zz-yellow); }
+html[data-skin="zzz"] .portrait:hover img { transform: none; }
+html[data-skin="zzz"] .portrait span { padding: 5px 4px 6px; background: #0d0d0d; border-top: 3px solid var(--zz-yellow);
+  color: #fff; font-weight: 800; font-size: .76rem; line-height: 1.15; }
+html[data-skin="zzz"] .portrait small { padding: 0 4px 6px; background: #0d0d0d; color: #c4c4be; font-size: .68rem; }
+
+/* Textos con color claro fijo de la hoja base: aquí el fondo también es oscuro, solo se ajusta el amarillo y el celeste. */
+html[data-skin="zzz"] :is(.code-until, .prec) { color: #ffc27a; }
+html[data-skin="zzz"] .link-btn { color: var(--zz-yellow); font-weight: 700; }
+html[data-skin="zzz"] .stars { color: var(--zz-yellow); text-shadow: none; }
+html[data-skin="zzz"] .site-foot { border-top: 2px solid #1e1e1e; }
+
+/* ===== Assets del juego ===== */
+/* Eventos en curso: la carita amarilla del juego a la izquierda de la barra. */
+html[data-skin="zzz"] .bar.live::before { content: ""; position: absolute; left: -9px; top: 50%; width: 18px; height: 18px; z-index: 2; transform: translateY(-50%);
+  background: url(/skins/zzz/live.webp) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(0, 0, 0, .9)); }
+
+
+/* --- Cursor al estilo del juego (cursor.svg, redibujado a partir de una captura del cursor del juego): punta de flecha blanca con relieve gris. Punta en (3, 3). --- */
+html[data-skin="zzz"], html[data-skin="zzz"] body { cursor: url(/skins/zzz/cursor.svg) 3 3, auto; }
+html[data-skin="zzz"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) { cursor: url(/skins/zzz/cursor.svg) 3 3, pointer !important; }
+html[data-skin="zzz"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* ===== Estilo "callejero" de los menús del juego (capturas del dueño, 10 nov 2026) =====
+   Paneles negros con borde gris GRUESO y esquinas muy redondas, pestañas en una cápsula negra con la activa en amarillo y su borde
+   derecho inclinado, etiquetas oscuras con el texto de color ("INQUIRY", "POST", "INTEL"), texto blanco muy grueso y franjas diagonales
+   amarillas en el fondo. Manda sobre lo anterior. */
+html[data-skin="zzz"] { --zz-edge: #3c3c3c; --zz-panel: #141414; --zz-panel2: #1e1e1e; }
+/* Fondo: la escena del juego + dos franjas diagonales amarillas, como el marco de sus pantallas. */
+html[data-skin="zzz"] .aurora { background: #0b0b0b; } /* las franjas van en ::after, encima de la escena */
+/* Paneles: borde de 3 px gris claro sobre negro, esquinas de 20 px. */
+html[data-skin="zzz"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border: 3px solid var(--zz-edge); border-radius: 20px; background-color: var(--zz-panel); }
+html[data-skin="zzz"] :is(.list li, .hist li) { border: 2px solid #2f2f2f; border-radius: 14px; background: #1c1c1c; }
+/* Cabecera y pestañas: cápsula negra con borde; la pestaña activa, amarilla con texto negro y el lado derecho en diagonal. */
+html[data-skin="zzz"] header nav { padding: 3px; border: 3px solid var(--zz-edge); border-radius: 999px; background: #0d0d0d; }
+html[data-skin="zzz"] header nav button { text-transform: none; font-weight: 800; letter-spacing: 0; color: #f3f3f0 !important; }
+html[data-skin="zzz"] header nav button.on { color: #000 !important; }
+html[data-skin="zzz"] header nav .nav-ind { top: 3px; bottom: 3px; height: auto; border-radius: 999px 6px 6px 999px; background: var(--zz-yellow); box-shadow: none;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%); }
+html[data-skin="zzz"] .seg { border: 3px solid var(--zz-edge); background: #0d0d0d; padding: 2px; }
+html[data-skin="zzz"] .seg button.on { clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%); border-radius: 999px 6px 6px 999px; }
+/* Botones: cápsula negra con borde gris grueso y texto blanco muy grueso; el principal, amarillo. */
+html[data-skin="zzz"] .btn { border: 3px solid var(--zz-edge); background: #0d0d0d; font-weight: 800; }
+html[data-skin="zzz"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip) { border-width: 2px; border-color: var(--zz-edge); font-weight: 700; }
+/* Etiquetas: cápsula oscura con el texto de color en mayúsculas (como INQUIRY / POST / INTEL). */
+html[data-skin="zzz"] .tag { background: #262626; border-radius: 6px; text-transform: uppercase; letter-spacing: .03em; font-size: .7rem; font-weight: 800; color: #f3f3f0; }
+html[data-skin="zzz"] .tag.great { background: #262626; color: var(--zz-yellow); }
+html[data-skin="zzz"] .tag.good { background: #262626; color: #8ee86a; }
+html[data-skin="zzz"] .tag.mid { background: #262626; color: #ffc04d; }
+html[data-skin="zzz"] .tag.bad { background: #262626; color: #ff6b6b; }
+html[data-skin="zzz"] :is(.pill.hot, .soon-card.urgent em, .bport .p-time.hot) { background: #262626; color: #ff6b6b; }
+html[data-skin="zzz"] :is(.pill.new, .soon-card em) { background: #262626; color: var(--zz-yellow); }
+/* Títulos de sección: blanco muy grueso, con un punto delante (".FUNCTIONS"). Dentro de los paneles, centrados entre guiones como
+   "-FREQUENT-" y sin franja de fondo. */
+html[data-skin="zzz"] h3 { color: #fff; font-weight: 900; text-transform: uppercase; letter-spacing: .02em; }
+html[data-skin="zzz"] h3::before { content: "."; width: auto; height: auto; background: none; transform: none; color: var(--zz-yellow); font-weight: 900; margin-right: -6px; }
+html[data-skin="zzz"] :is(.gcard-body, .modal-body, .psec, .gsec) h3 { background: none; justify-content: center; color: #cfcfca; font-size: .74rem; letter-spacing: .08em; }
+html[data-skin="zzz"] :is(.gcard-body, .modal-body, .psec, .gsec) h3::before { content: "-"; color: #cfcfca; margin-right: -4px; }
+html[data-skin="zzz"] :is(.gcard-body, .modal-body, .psec, .gsec) h3::after { content: "-"; color: #cfcfca; margin-left: -4px; }
+/* Retratos: ficha con borde gris grueso, nombre en blanco grueso sobre negro (franja amarilla fina). */
+html[data-skin="zzz"] .portrait { border: 3px solid var(--zz-edge); border-radius: 14px; }
+html[data-skin="zzz"] .portrait span { border-top-width: 3px; font-weight: 800; }
+html[data-skin="zzz"] .bport { border: 3px solid var(--zz-edge); border-radius: 14px; }
+
+/* Móvil: la fuente del juego es más ancha que la original; sin esto "Parches" quedaba cortado y "Línea / Cuadrícula" se partía en dos líneas. */
+@media (max-width: 560px) {
+  html[data-skin="zzz"] header nav button { font-size: .8rem; padding-left: 9px; padding-right: 9px; }
+  html[data-skin="zzz"] :is(.seg button, .chip, .btn.sm) { font-size: .76rem; white-space: nowrap; }
+  html[data-skin="zzz"] .brand h1 { font-size: 1.05rem; }
+  html[data-skin="zzz"] .mbar .seg button { padding-left: 9px; padding-right: 9px; }
+}

@@ -37,6 +37,9 @@ const HOUR = 60 * MIN
 const SOURCES = [
   { name: 'ennead', ttl: 10 * MIN, test: u => u.hostname === 'api.ennead.cc' && u.pathname.startsWith('/mihoyo/') },
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
+  // Umamusume: lista de personajes de umapyoi.net (API pública, robots.txt "Allow: /") para poner el retrato de cada destacado.
+  // Una sola ruta y caché de un día: la lista apenas cambia.
+  { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && u.pathname === '/api/v1/character/list' && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509)$/.test(u.pathname) },

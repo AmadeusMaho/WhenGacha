@@ -41,6 +41,8 @@ async function blueArchiveBanners(gameId: string): Promise<GameEvent[]> {
     if (row.getAttribute('data-release') !== 'rerun') g.rerun = false
     groups.set(key, g)
   }
+  // Retrato de cada alumna destacada: la wiki guarda uno por alumna con su nombre ("Makoto.png", "Ako (Dress).png"). Una sola petición.
+  const faces = await fileThumbs([...groups.values()].flatMap(g => g.names.slice(0, 3).map(n => `File:${n}.png`)), 300).catch(() => new Map<string, string>())
   return [...groups.entries()].map(([key, g]) => ({
     id: `${gameId}:banner:${key}`,
     gameId,
@@ -51,7 +53,7 @@ async function blueArchiveBanners(gameId: string): Promise<GameEvent[]> {
     start: new Date(g.s).toISOString(),
     end: new Date(g.e).toISOString(),
     items: [],
-    featured: g.names.slice(0, 3).map((name, i) => ({ name, rarity: 3, tag: g.tags[i] })),
+    featured: g.names.slice(0, 3).map((name, i) => ({ name, rarity: 3, tag: g.tags[i], icon: faces.get(`File:${name}.png`) })),
     pulls: 0,
     source: 'api' as const,
   }))
