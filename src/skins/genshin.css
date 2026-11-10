@@ -41,13 +41,16 @@ html[data-skin="genshin"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
 html[data-skin="genshin"] ::selection { background: rgba(211, 188, 142, .45); }
 html[data-skin="genshin"] * { scrollbar-color: rgba(236, 229, 216, .45) transparent; }
 
-/* --- Fondo: pizarra con brillo (si la skin tiene vídeo, va encima; ver skins.ts) --- */
+/* --- Fondo: el de los menús del juego (public/skins/genshin/bg.webp, Backgrounds de skowt.cc, asset oficial "Non-commercial fan use
+   only"; el dueño decidió usarlo, 10 nov 2026), oscurecido para que se lea el texto crema, con el brillo y las motas de luz encima. --- */
 html[data-skin="genshin"] .aurora {
   background: radial-gradient(1200px 600px at 50% -10%, rgba(120, 160, 190, .22), transparent 60%),
-              radial-gradient(900px 600px at 100% 100%, rgba(211, 188, 142, .12), transparent 60%), #262b3a;
+              radial-gradient(900px 600px at 100% 100%, rgba(211, 188, 142, .12), transparent 60%),
+              linear-gradient(180deg, rgba(24, 28, 40, .55), rgba(24, 28, 40, .78) 55%, rgba(24, 28, 40, .9)),
+              url(/skins/genshin/bg.webp) center top / cover no-repeat, #262b3a;
 }
-/* Fondo animado propio (sin vídeo ni arte del juego): el brillo se desplaza despacio y motas de luz doradas suben, como en los menús. */
-html[data-skin="genshin"] .aurora { background-size: 140% 140%, 140% 140%, auto; animation: gi-glow 26s ease-in-out infinite alternate; }
+/* El brillo se desplaza despacio y motas de luz doradas suben, como en los menús (el fondo y su capa oscura no se mueven). */
+html[data-skin="genshin"] .aurora { background-size: 140% 140%, 140% 140%, auto, cover; animation: gi-glow 26s ease-in-out infinite alternate; }
 html[data-skin="genshin"] .aurora::after {
   display: block; content: ""; position: absolute; inset: -100% 0 0; pointer-events: none; opacity: .75;
   background-image:
@@ -59,7 +62,7 @@ html[data-skin="genshin"] .aurora::after {
     radial-gradient(1px 1px at 46% 92%, rgba(255, 255, 255, .7), transparent 60%);
   background-size: 520px 520px; animation: gi-motes 60s linear infinite;
 }
-@keyframes gi-glow { from { background-position: 30% 0%, 100% 100%, 0 0; } to { background-position: 70% 20%, 60% 80%, 0 0; } }
+@keyframes gi-glow { from { background-position: 30% 0%, 100% 100%, 0 0, center top; } to { background-position: 70% 20%, 60% 80%, 0 0, center top; } }
 @keyframes gi-motes { to { transform: translateY(50%); background-position: 40px -520px; } }
 @media (prefers-reduced-motion: reduce) { html[data-skin="genshin"] .aurora, html[data-skin="genshin"] .aurora::after { animation: none; } }
 html[data-skin="genshin"] .skin-live { filter: brightness(.55) saturate(1.05) blur(1.5px); }

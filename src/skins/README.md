@@ -11,7 +11,8 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
 - `genshin.css` (prueba): la skin **Genshin Impact**, con el estilo de los menús del juego (barras pizarra, paneles y filas crema con texto
   gris azulado, tarjetas tipo objeto con fondo naranja y franja crema, contadores arena, botón principal amarillo). Fondo animado propio en
   CSS (motas de luz y brillo), sin vídeo. `public/skins/genshin/`: cursor, destello y fondo de ranura, de la carpeta de Drive "UI Assets" que
-  aportó el dueño; sin arte de personajes.
+  aportó el dueño; sin arte de personajes. `bg.webp`: el fondo de los menús del juego (Backgrounds de skowt.cc, asset oficial
+  "Non-commercial fan use only"; añadido el 10 nov 2026 por decisión del dueño), oscurecido bajo el brillo y las motas.
 - `zzz.css` (prueba, 10 nov 2026): la skin **Zenless Zone Zero**, con el estilo "callejero" de los menús del juego (capturas del dueño):
   paneles negros con borde gris grueso, pestañas en cápsula con la activa amarilla y el borde inclinado, etiquetas oscuras con el texto
   de color (como INQUIRY / POST / INTEL), títulos blancos muy gruesos (".TÍTULO" fuera de los paneles, "- TÍTULO -" dentro), franjas
@@ -23,7 +24,7 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
     El chino y lo que no cubre caen en Rubik (Google Fonts). En móvil, la fuente es más ancha: hay un bloque `@media` al final de `zzz.css`.
   - `public/skins/zzz/`: `scene.webp` = viñeta de cómic Scene OVA00_03_03_01 de skowt.cc (fondo, oscurecida) y `live.webp` = IconEmoji01
     (carita en los eventos en curso), assets oficiales marcados "Non-commercial fan use only" (derechos de miHoYo); el dueño decidió usarlos.
-    `cursor.svg` está redibujado a partir de una captura del cursor del juego que aportó el dueño (no está en skowt.cc ni en `leotorrez/ZZ-Model-Importer-assets`).
+    `cursor.png` (32 px) y `cursor@2x.png` (64 px) = el cursor del juego, recortado del `.cur` que aportó el dueño (traía 3×3 copias sobre fondo de cuadros: se tomó una, sin fondo y con contorno oscuro). Punta en (2, 2).
   - Las pegatinas chibi se probaron y se quitaron (no gustaron).
 - `hsr.css` (prueba, 10 nov 2026, rehecha con capturas del juego): la skin **Honkai: Star Rail**, como sus menús de teléfono y misiones:
   paneles carbón con borde gris fino, dorado ámbar de acento, fila seleccionada clara con franja dorada, botón principal en píldora gris

@@ -3,7 +3,7 @@
    carbón de esquinas muy redondeadas con borde grueso, amarillo como acento (y naranja como segundo color), botones píldora,
    títulos en cursiva tipo pegatina, franjas de precaución en los desafíos y fichas de agente en los destacados.
    Assets oficiales de ZZZ desde skowt.cc (public/skins/zzz/, decisión del dueño del 10 nov 2026 pese al aviso "Non-commercial fan use only"):
-   scene.webp = Scene OVA00_03_03_01 (fondo), live.webp = IconEmoji01 (carita amarilla). cursor.svg está redibujado a partir de una captura del cursor del juego (skowt no lo tiene).
+   scene.webp = Scene OVA00_03_03_01 (fondo), live.webp = IconEmoji01 (carita amarilla). cursor.png / cursor@2x.png = el cursor del juego, recortado del .cur que aportó el dueño.
    Las pegatinas chibi se probaron y se quitaron (10 nov 2026, no gustaron).
    Solo aplica con <html data-skin="zzz">. */
 
@@ -194,9 +194,16 @@ html[data-skin="zzz"] .bar.live::before { content: ""; position: absolute; left:
   background: url(/skins/zzz/live.webp) center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(0, 0, 0, .9)); }
 
 
-/* --- Cursor al estilo del juego (cursor.svg, redibujado a partir de una captura del cursor del juego): punta de flecha blanca con relieve gris. Punta en (3, 3). --- */
-html[data-skin="zzz"], html[data-skin="zzz"] body { cursor: url(/skins/zzz/cursor.svg) 3 3, auto; }
-html[data-skin="zzz"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) { cursor: url(/skins/zzz/cursor.svg) 3 3, pointer !important; }
+/* --- Cursor del juego (cursor.png 32 px / cursor@2x.png 64 px): recortado del .cur que aportó el dueño (traía 3×3 copias sobre un fondo
+   de cuadros: se tomó una, se le quitó el fondo y se le añadió un contorno oscuro fino). Punta en (2, 2). --- */
+html[data-skin="zzz"], html[data-skin="zzz"] body {
+  cursor: url(/skins/zzz/cursor.png) 2 2, auto;
+  cursor: image-set(url(/skins/zzz/cursor.png) 1x, url(/skins/zzz/cursor@2x.png) 2x) 2 2, auto;
+}
+html[data-skin="zzz"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) {
+  cursor: url(/skins/zzz/cursor.png) 2 2, pointer !important;
+  cursor: image-set(url(/skins/zzz/cursor.png) 1x, url(/skins/zzz/cursor@2x.png) 2x) 2 2, pointer !important;
+}
 html[data-skin="zzz"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
 
 /* ===== Estilo "callejero" de los menús del juego (capturas del dueño, 10 nov 2026) =====
