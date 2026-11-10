@@ -16,6 +16,7 @@ import { getSkinLive, startSkinLive } from './skin-live.mjs'
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
+const PUBLIC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../public')
 // El puerto lo asigna el host (PORT); algunos paneles usan SERVER_PORT. En local, 3000.
 const PORT = Number(process.env.PORT || process.env.SERVER_PORT || process.env.APP_PORT) || 3000
 const HOST = process.env.HOST || '0.0.0.0'
@@ -53,6 +54,12 @@ async function handleStatic(req, res, pathname) {
 
   let file = path.join(ROOT, rel)
   let info = await stat(file).catch(() => null)
+  // Imágenes y vídeos de las skins: no se suben en dist/ (son ~12 MB y Botkeep rechaza proyectos de más de 20 MB comprimidos);
+  // se sirven directamente desde public/skins/, que es de donde los copia la compilación.
+  if (!info?.isFile() && rel.startsWith('/skins/')) {
+    file = path.join(PUBLIC, rel)
+    info = await stat(file).catch(() => null)
+  }
   if (!info?.isFile()) {
     if (path.extname(rel) && rel !== '/index.html') return send(res, 404, {}, 'No encontrado') // un archivo que no existe no cae al index
     rel = '/index.html'

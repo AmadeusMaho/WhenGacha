@@ -9,6 +9,9 @@ lerna-debug.log*
 
 node_modules
 # dist/ se versiona a propósito: hosts como Botkeep ejecutan "npm start" sin compilar.
+# Salvo dist/skins/: es una copia de public/skins/ (~12 MB de vídeos e imágenes) y el servidor ya la sirve desde public/
+# (Botkeep rechaza proyectos de más de 20 MB comprimidos).
+dist/skins/
 dist-ssr
 *.local
 
