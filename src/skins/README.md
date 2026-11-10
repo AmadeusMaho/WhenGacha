@@ -7,7 +7,15 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
 - `SkinPicker.tsx` + `skins.css`: el botón y su menú.
 - `SupporterBadge.tsx`: insignia dorada **"Premium"** junto al nombre de la web, solo con el desbloqueo de apoyo (mismo estado que las skins).
   En `App.tsx` va dentro de `.brand`, marcada con `{/* skins */}`.
-- `wuwa.css`: la skin **Wuthering Waves**. Solo aplica con `<html data-skin="wuwa">`.
+- `wuwa.css` (2.ª versión, 10 nov 2026): la skin **Wuthering Waves**. Solo aplica con `<html data-skin="wuwa">`. La 1.ª era carbón y
+  dorado con las piezas negras de la interfaz antigua; esta sigue la interfaz ACTUAL del juego (capturas del dueño: "Upgraded", formación
+  de equipo, Cadena de Resonancia): fondo de noche azul petróleo con niebla dibujado en CSS (estrellas tenues, rombos fantasma y la línea
+  de horizonte con brillo), paneles de pizarra translúcida con borde blanco fino, texto blanco y el dorado pálido solo en destellos
+  (estrella de cuatro puntas con halo en títulos, pestaña activa, "hoy", eventos en curso y pie), títulos con separador punteado,
+  cápsulas de cristal como botones (el principal sigue siendo `ui/btn-main.png`), chip activo blanco con texto oscuro, lo seleccionado
+  con contorno blanco, barras de pizarra con el canto de su tipo (banner dorado, evento agua, desafío blanco) y retratos de destacados en
+  **arco** como los huecos del equipo. El nombre "WhenGacha" va sin mayúsculas (se confundía con las pestañas). Ya no usa `ui/btn.png`,
+  `chip*.png`, `row.png`, `title.png`, `emblem.png` ni `star.png` (se dejan en `public/` por si se vuelve atrás).
 - `genshin.css` (prueba): la skin **Genshin Impact**, con el estilo de los menús del juego (barras pizarra, paneles y filas crema con texto
   gris azulado, tarjetas tipo objeto con fondo naranja y franja crema, contadores arena, botón principal amarillo). Fondo animado propio en
   CSS (motas de luz y brillo), sin vídeo. `public/skins/genshin/`: cursor, destello y fondo de ranura, de la carpeta de Drive "UI Assets" que
@@ -113,8 +121,10 @@ Antes hubo temas ("Negro OLED", "Colores") y opciones de fondo/acento/cursor; se
 ## Fondos de la línea de tiempo (rotan en cada visita)
 
 Todas las skins traen una lista de fondos en `live` (`skins.ts`); cada visita a la línea de tiempo muestra el siguiente (se recuerda en
-`whengacha:live:<skin>`). Un fondo con `video` se reproduce en bucle; uno con solo `poster` (fondo fijo, `still-*.webp`) se acerca y se
-desplaza muy despacio (clase `kb`, en `skins.css`). En móvil, "ahorro de datos" o "reducir movimiento", fotograma fijo sin movimiento.
+`whengacha:live:<skin>`). Un fondo con `video` se reproduce en bucle; uno con solo `poster` (fondo fijo, `still-*.webp`) hace un
+recorrido de cámara de 36 s (clase `kb`) y lleva encima la capa `.skin-live-fx` (motas de luz que suben y un haz que cruza cada 16 s,
+con el color de la skin en `--live-fx`/`--live-sweep`), todo en `skins.css`. Antes solo se acercaba un 7 % en 48 s y en producción
+parecía una imagen quieta (10 nov 2026); solo NIKKE, con todo vídeos, se veía animada. En móvil, "ahorro de datos" o "reducir movimiento", fotograma fijo sin movimiento.
 Los marcos de la línea de tiempo son algo transparentes para que se vea el fondo; el eje de meses y la columna de juegos siguen OPACOS
 (se quedan fijos al hacer scroll y, transparentes, dejaban ver los eventos por debajo; pasó en NIKKE).
 

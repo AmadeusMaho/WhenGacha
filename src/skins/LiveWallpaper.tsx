@@ -72,9 +72,14 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
     return () => document.removeEventListener('visibilitychange', sync)
   }, [still, clip])
 
+  // Fondo fijo animado: la imagen hace un recorrido de cámara (clase `kb`) y encima va una capa de luz (`skin-live-fx`: motas que suben
+  // y un haz que la cruza; color por skin con --live-fx). Antes solo había un acercamiento del 7 % en 48 s y parecía una imagen quieta.
   return createPortal(
     still || !clip.video
-      ? <div key={clip.poster} className={`skin-live${still ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
+      ? <>
+          <div key={clip.poster} className={`skin-live${still ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
+          {!still && <div className="skin-live-fx" aria-hidden />}
+        </>
       : <video key={clip.video} ref={video} className="skin-live" src={clip.video} poster={clip.poster} autoPlay muted loop playsInline preload="auto"
           onError={remote(clip) ? fallback : undefined} aria-hidden />,
     document.body,

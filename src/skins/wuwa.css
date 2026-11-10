@@ -1,227 +1,261 @@
-/* ===== Skin "Wuthering Waves" (prototipo, 9 nov 2026) =====
-   Recursos de la web oficial (wutheringwaves.kurogames.com, copiados en public/skins/wuwa/): botón dorado (btn.png),
-   fondo de noticias (bg.jpg) y brillo (glow.png). Cursor: el del juego (cursor.png / cursor@2x.png, de los archivos del cliente que aportó
-   el dueño). Los rombos están dibujados aquí. Solo aplica con <html data-skin="wuwa">. Para quitarla: src/skins/README.md */
+/* ===== Skin "Wuthering Waves" (2.ª versión, 10 nov 2026) =====
+   La 1.ª (9 nov) era carbón y dorado con las piezas negras de la interfaz antigua. Esta sigue la interfaz ACTUAL del juego
+   (capturas del dueño: "Upgraded", formación de equipo, Cadena de Resonancia):
+   - Fondo: cielo nocturno azul petróleo con niebla, estrellas tenues, rombos fantasma y la línea de horizonte con brillo de "Upgraded".
+   - Paneles de pizarra translúcida (cristal con desenfoque), borde blanco muy fino; lo seleccionado lleva contorno blanco.
+   - Texto blanco; el dorado pálido solo en destellos (estrella de cuatro puntas con halo, como los nodos de la Cadena de Resonancia).
+   - Títulos: destello dorado + texto blanco + separador punteado que se desvanece (como el de "Tap anywhere to close").
+   - Botones: cápsulas de cristal; el principal, el blanco con olas del juego (ui/btn-main.png).
+   - Filas como las de la lista de mejoras: franja de pizarra con un "▸" fino; al pasar, contorno blanco.
+   - Destacados: retrato en ARCO (cápsula alta con el fondo de niebla), como los huecos de la formación de equipo.
+   Recursos en public/skins/wuwa/ (ver README). Solo aplica con <html data-skin="wuwa">. */
 
 html[data-skin="wuwa"] {
-  --bg: #0b0c0f;
-  --panel: rgba(17, 18, 22, .82);
-  --panel2: rgba(28, 28, 32, .9);
-  --line: rgba(214, 186, 128, .16);
-  --text: #ece6d6;
-  --muted: #a39b88;
-  --acc: #d6b47a;
-  --acc2: #f0dcaa;
-  --ww-gold: #d6b47a;
-  --ww-gold-soft: rgba(214, 180, 122, .35);
-  --ww-dark: #121316;
-  --ww-cut: 9px;
+  --ww-gold: #f1dc9b;
+  --ww-gold2: #e0c36f;
+  --ww-aqua: #9fd8d6;
+  --ww-ink: #0b161b;
+  --ww-glass: rgba(24, 38, 46, .74);
+  --ww-glass2: rgba(34, 51, 60, .84);
+  --ww-solid: #14232a;
+  --ww-edge: rgba(222, 238, 242, .16);
+  --ww-edge2: rgba(240, 248, 250, .55);
+  --bg: #0b161b;
+  --panel: var(--ww-glass);
+  --panel2: var(--ww-glass2);
+  --line: rgba(222, 238, 242, .12);
+  --text: #f1f5f5;
+  --muted: #b3c3c8;
+  --acc: var(--ww-gold);
+  --acc2: #fff0c4;
   color-scheme: dark;
+  /* Destello de cuatro puntas (los nodos de la Cadena de Resonancia y el estallido de "Upgraded"). */
+  --ww-spark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M10 0 Q11 9 20 10 Q11 11 10 20 Q9 11 0 10 Q9 9 10 0Z' fill='%23fff3cf'/%3E%3Cpath d='M10 5 Q10.5 9.5 15 10 Q10.5 10.5 10 15 Q9.5 10.5 5 10 Q9.5 9.5 10 5Z' fill='%23f1dc9b'/%3E%3C/svg%3E");
+  /* Rombos fantasma del fondo de "Upgraded" (contorno blanco casi invisible). */
+  --ww-diamonds: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='420' viewBox='0 0 520 420'%3E%3Cg fill='none' stroke='%23e6f2f4' stroke-opacity='.07'%3E%3Cpath d='M90 60 L130 100 L90 140 L50 100Z'/%3E%3Cpath d='M400 250 L450 300 L400 350 L350 300Z'/%3E%3Cpath d='M300 40 L318 58 L300 76 L282 58Z'/%3E%3C/g%3E%3Cg fill='%23e6f2f4' fill-opacity='.035'%3E%3Cpath d='M180 300 L215 335 L180 370 L145 335Z'/%3E%3C/g%3E%3C/svg%3E");
 }
 /* Fuente: Sora (Google Fonts, OFL), la libre más parecida a Cocogoose Pro (Zetafonts), comparadas una al lado de la otra (10 nov 2026).
    Cocogoose no se usa: el archivo aportado es la versión de prueba, cuya licencia prohíbe usarla como fuente web, y además trae los
    números sustituidos por un bloque de relleno. Si se compra la versión completa con licencia web: scripts/skin-font.py y un @font-face. */
-html[data-skin="wuwa"] body { font-family: 'Sora', 'Barlow', 'Segoe UI', system-ui, sans-serif; letter-spacing: 0; }
-html[data-skin="wuwa"] h1, html[data-skin="wuwa"] h2, html[data-skin="wuwa"] h3,
-html[data-skin="wuwa"] header nav button { font-family: 'Sora', 'Barlow', sans-serif; }
-html[data-skin="wuwa"] ::selection { background: rgba(214, 180, 122, .4); }
-html[data-skin="wuwa"] * { scrollbar-color: var(--ww-gold-soft) transparent; }
+html[data-skin="wuwa"] body { background: var(--bg); font-family: 'Sora', 'Barlow', 'Segoe UI', system-ui, sans-serif; letter-spacing: 0; }
+html[data-skin="wuwa"] :is(h1, h2, h3, header nav button) { font-family: 'Sora', 'Barlow', sans-serif; }
+html[data-skin="wuwa"] ::selection { background: rgba(159, 216, 214, .4); color: #fff; }
+html[data-skin="wuwa"] * { scrollbar-color: rgba(222, 238, 242, .3) transparent; }
 
-/* --- Fondo: el de las noticias de la web, oscurecido, con el brillo dorado abajo --- */
-html[data-skin="wuwa"] .aurora { background: #0b0c0f url(/skins/wuwa/bg.jpg) center / cover no-repeat; }
-html[data-skin="wuwa"] .aurora::after { background: linear-gradient(180deg, rgba(8, 9, 12, .55), rgba(8, 9, 12, .82) 55%, rgba(8, 9, 12, .9)),
-  url(/skins/wuwa/glow.png) center bottom / 70% 40% no-repeat; }
+/* ===== Fondo: noche azul petróleo con niebla (dibujado en CSS) ===== */
+html[data-skin="wuwa"] .aurora {
+  background:
+    radial-gradient(70% 38% at 50% 0%, rgba(150, 190, 200, .22), transparent 70%),
+    radial-gradient(55% 40% at 8% 60%, rgba(70, 120, 130, .22), transparent 70%),
+    radial-gradient(50% 45% at 95% 85%, rgba(90, 130, 150, .2), transparent 70%),
+    linear-gradient(180deg, #1c3038 0%, #12222a 35%, #0b161b 75%, #091318);
+}
+html[data-skin="wuwa"] .aurora::before, html[data-skin="wuwa"] .aurora::after { content: ""; position: absolute; inset: 0; pointer-events: none; display: block; }
+/* Estrellas tenues + rombos fantasma. */
+html[data-skin="wuwa"] .aurora::before {
+  background:
+    radial-gradient(1.1px 1.1px at 31px 47px, rgba(255, 255, 255, .75), transparent 60%),
+    radial-gradient(1px 1px at 157px 113px, rgba(210, 235, 240, .6), transparent 60%),
+    radial-gradient(1.3px 1.3px at 97px 181px, rgba(255, 245, 215, .7), transparent 60%),
+    radial-gradient(1px 1px at 211px 23px, rgba(220, 240, 245, .55), transparent 60%),
+    var(--ww-diamonds);
+  background-size: 241px 203px, 241px 203px, 241px 203px, 241px 203px, 520px 420px;
+  animation: ww-twinkle 9s ease-in-out infinite alternate;
+}
+/* Niebla baja y la línea de horizonte con su brillo (la de la ventana "Upgraded"). */
+html[data-skin="wuwa"] .aurora::after {
+  background:
+    radial-gradient(30% 1.2% at 50% 22%, rgba(255, 244, 210, .55), transparent 100%),
+    linear-gradient(90deg, transparent 8%, rgba(230, 242, 244, .22) 35%, rgba(255, 246, 220, .4) 50%, rgba(230, 242, 244, .22) 65%, transparent 92%) center 22% / 100% 1px no-repeat,
+    radial-gradient(80% 30% at 50% 100%, rgba(150, 185, 195, .16), transparent 70%);
+}
+@keyframes ww-twinkle { from { opacity: .5; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { html[data-skin="wuwa"] .aurora::before { animation: none; } }
 
-/* Fondo animado (solo en la línea de tiempo, LiveWallpaper.tsx): encima del fondo fijo y debajo del contenido, oscurecido para que se lea. */
+/* Fondo animado (solo en la línea de tiempo, LiveWallpaper.tsx): encima del fondo fijo y debajo del contenido, apagado y un poco frío. */
 html[data-skin="wuwa"] .skin-live { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; pointer-events: none;
-  background: center / cover no-repeat; filter: brightness(.34) saturate(.85) contrast(1.05); animation: ww-live-in 1.2s ease both; }
+  background: center / cover no-repeat; filter: brightness(.42) saturate(.8) contrast(1.05) hue-rotate(-6deg); animation: ww-live-in 1.2s ease both; }
 @keyframes ww-live-in { from { opacity: 0; } }
+html[data-skin="wuwa"] main { position: relative; }
 
-/* --- Cabecera: oscura, con el separador dorado de la web debajo --- */
-/* Línea dorada fina abajo (antes era line.png de la web oficial, pero estirada a todo el ancho se veía como una banda rara). */
-html[data-skin="wuwa"] header { background: rgba(10, 11, 14, .78); border-bottom: 0;
-  box-shadow: inset 0 -1px 0 rgba(214, 180, 122, .22); }
+/* ===== Cabecera: cristal petróleo, la línea de horizonte debajo ===== */
+html[data-skin="wuwa"] header { background: linear-gradient(180deg, rgba(14, 26, 32, .9), rgba(16, 30, 37, .78)); border-bottom: 0;
+  box-shadow: 0 8px 24px rgba(3, 10, 14, .4); backdrop-filter: blur(12px) saturate(1.15); }
 html[data-skin="wuwa"] header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
-  background: linear-gradient(90deg, transparent, rgba(214, 180, 122, .55) 30%, rgba(214, 180, 122, .55) 70%, transparent); }
-html[data-skin="wuwa"] .brand h1 { text-transform: uppercase; letter-spacing: .12em; font-weight: 600; color: #f1e6c8; }
+  background: linear-gradient(90deg, transparent, rgba(230, 242, 244, .35) 30%, rgba(255, 244, 210, .55) 50%, rgba(230, 242, 244, .35) 70%, transparent); }
+/* El nombre va tal cual ("WhenGacha"): en mayúsculas se confundía con las pestañas. */
+html[data-skin="wuwa"] .brand h1 { letter-spacing: .02em; font-weight: 600; color: #fff; }
 html[data-skin="wuwa"] header nav { background: transparent; border: 0; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; overflow-y: hidden; }
-html[data-skin="wuwa"] header nav button { text-transform: uppercase; letter-spacing: .12em; font-size: .92rem; color: var(--muted) !important; }
-html[data-skin="wuwa"] header nav button.on { color: #f6ecd2 !important; }
-html[data-skin="wuwa"] header nav .nav-ind { top: auto; bottom: 0; height: 2px; border-radius: 0; background: linear-gradient(90deg, transparent, var(--ww-gold), transparent);
-  box-shadow: 0 0 10px var(--ww-gold-soft); }
-html[data-skin="wuwa"] header nav .nav-ind::after { content: ""; position: absolute; left: 50%; top: -3px; width: 8px; height: 8px; transform: translateX(-50%) rotate(45deg); background: var(--ww-gold); }
+html[data-skin="wuwa"] header nav button { text-transform: uppercase; letter-spacing: .12em; font-size: .92rem; color: #a9bbc0 !important; }
+html[data-skin="wuwa"] header nav button.on { color: #fff !important; text-shadow: 0 0 12px rgba(255, 244, 210, .35); }
+html[data-skin="wuwa"] header nav button:hover:not(.on) { color: #e4eef0 !important; }
+html[data-skin="wuwa"] header nav button:focus-visible { outline: none; color: #fff !important; text-shadow: 0 0 10px rgba(255, 244, 210, .6); }
+/* Pestaña activa: la línea de luz con el destello encima (el estallido de "Upgraded", en pequeño). */
+html[data-skin="wuwa"] header nav .nav-ind { top: auto; bottom: 0; height: 1px; border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 244, 210, .9) 25%, #fff 50%, rgba(255, 244, 210, .9) 75%, transparent);
+  box-shadow: 0 0 10px rgba(255, 236, 180, .6); }
+html[data-skin="wuwa"] header nav .nav-ind::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; transform: translate(-50%, -50%);
+  background: var(--ww-spark) center / contain no-repeat; filter: drop-shadow(0 0 5px rgba(255, 236, 180, .95)); }
 
-/* --- Botones: esquinas cortadas; el principal con el botón dorado de la web --- */
-html[data-skin="wuwa"] .btn {
-  border-radius: 0; border: 1px solid var(--ww-gold-soft); background: linear-gradient(180deg, rgba(40, 38, 34, .85), rgba(20, 20, 22, .9));
-  clip-path: polygon(var(--ww-cut) 0, 100% 0, 100% calc(100% - var(--ww-cut)), calc(100% - var(--ww-cut)) 100%, 0 100%, 0 var(--ww-cut));
-  color: #efe4c6; box-shadow: none; letter-spacing: .04em;
-}
-html[data-skin="wuwa"] .btn::after { background: linear-gradient(105deg, transparent 25%, rgba(240, 220, 170, .25) 50%, transparent 75%); }
-html[data-skin="wuwa"] .btn:hover:not(:disabled) { border-color: var(--ww-gold); color: #fff6dc; box-shadow: inset 0 0 18px rgba(214, 180, 122, .18); transform: none; }
-html[data-skin="wuwa"] .btn.primary, html[data-skin="wuwa"] .btn.primary:hover:not(:disabled) {
-  clip-path: none; border: 12px solid transparent; border-image: url(/skins/wuwa/btn.png) 12 fill / 12px stretch; background: none;
-  padding: 0 16px; min-height: 36px; color: #f7e9c4; text-shadow: 0 1px 2px #000;
-}
-html[data-skin="wuwa"] .btn.primary:hover:not(:disabled) { filter: brightness(1.25); }
-html[data-skin="wuwa"] .btn.sm { --ww-cut: 6px; }
-
-/* --- Chips, segmentos y filtros --- */
-html[data-skin="wuwa"] :is(.chip, .ichip, .seg) { border-radius: 0; border-color: var(--ww-gold-soft); background: rgba(18, 18, 22, .75); }
-html[data-skin="wuwa"] .seg button { border-radius: 0; }
-html[data-skin="wuwa"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge)) {
-  background: linear-gradient(180deg, rgba(214, 180, 122, .32), rgba(214, 180, 122, .12)); color: #fff4d6; box-shadow: inset 0 -2px 0 var(--ww-gold);
-}
-html[data-skin="wuwa"] .pill { border-radius: 2px; }
-
-/* --- Paneles: línea de tiempo, tarjetas de "Mis gachas", ventana del evento --- */
-html[data-skin="wuwa"] :is(.tl, .gcard, .up-card) {
-  border-radius: 0; border: 1px solid var(--line); background: var(--panel);
-  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
-}
-html[data-skin="wuwa"] .gcard:hover { border-color: var(--ww-gold-soft); box-shadow: none; }
-html[data-skin="wuwa"] :is(.tl-corner, .tl-label, .tl-axis) { background: var(--ww-dark); }
-html[data-skin="wuwa"] .tl-label { border-left-width: 2px; }
-html[data-skin="wuwa"] .today-flag { border-radius: 0; background: var(--ww-gold); color: #17140e; box-shadow: 0 0 14px var(--ww-gold-soft);
-  clip-path: polygon(6px 0, calc(100% - 6px) 0, 100% 50%, calc(100% - 6px) 100%, 6px 100%, 0 50%); padding: 1px 14px; }
-html[data-skin="wuwa"] .modal { border-radius: 0; background: #131418; border-color: var(--ww-gold-soft);
-  clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px); }
-html[data-skin="wuwa"] .modal-hero-fade { background: linear-gradient(transparent 30%, #131418); }
-html[data-skin="wuwa"] .modal-hero { background: linear-gradient(135deg, var(--c), #131418); }
-
-/* Barras: rectas, con un rombo a la izquierda en vez de esquinas redondas. */
-html[data-skin="wuwa"] .bar, html[data-skin="wuwa"] .bar-clip { border-radius: 2px; }
-html[data-skin="wuwa"] .bar.live::before { content: ""; position: absolute; left: -5px; top: 50%; width: 8px; height: 8px; z-index: 2;
-  transform: translateY(-50%) rotate(45deg); background: var(--ww-gold); box-shadow: 0 0 8px var(--ww-gold); }
-html[data-skin="wuwa"] .bport, html[data-skin="wuwa"] .bport .p-time { border-radius: 0; }
-
-/* Títulos de sección: dorados, con rombo. */
-html[data-skin="wuwa"] h3 { color: var(--ww-gold); letter-spacing: .14em; }
-html[data-skin="wuwa"] h3::before { content: ""; flex: none; width: 6px; height: 6px; transform: rotate(45deg); background: var(--ww-gold); }
-
-/* Menús desplegables (idioma, skin). */
-html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) { border-radius: 0; background: rgba(16, 16, 20, .97); border-color: var(--ww-gold-soft); }
-html[data-skin="wuwa"] .site-foot { border-top: 1px solid var(--line); }
-html[data-skin="wuwa"] .site-foot a.btn.donate { clip-path: none; border: 12px solid transparent; border-image: url(/skins/wuwa/btn.png) 12 fill / 12px stretch;
-  background: none; padding: 0 14px; min-height: 34px; color: #f7e9c4; }
-
-/* --- Color de los juegos → paleta de la skin ---
-   Tarjetas, carriles, barras y secciones se tiñen con el color de cada gacha (--c/--c2, puestos en línea con cssVar()); en la skin
-   todo usa el dorado y el carbón de WuWa (el !important de la hoja gana al estilo en línea). Cada juego sigue identificado por su icono y nombre. */
-html[data-skin="wuwa"] [style*="--c:"] { --c: #c9a464 !important; --c2: #2b2519 !important; }
-html[data-skin="wuwa"] .gcard-hero { background: linear-gradient(135deg, #3a3224, #121316); }
-/* El azul marino fijo de la hoja base (#151a2e en tarjetas, #181826 en la ventana del evento) → carbón. */
-html[data-skin="wuwa"] :is(.gcard, .gcard-body, .ecard, .ecard-body, .grid.even .codes[open] > ul) { background: #141418; }
-html[data-skin="wuwa"] :is(.gcard-hero, .ecard-img) { background-color: #141418; }
-html[data-skin="wuwa"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 20%, #141418); }
-html[data-skin="wuwa"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, #141418); }
-html[data-skin="wuwa"] .modal-body { background: #131418; }
-html[data-skin="wuwa"] :is(.modal-hero.bnr, .modal-hero.wide-art) .modal-hero-fade { background: linear-gradient(transparent 30%, #131418); }
-html[data-skin="wuwa"] .bar.banner { background: linear-gradient(120deg, rgba(58, 48, 32, .95), rgba(22, 21, 20, .95)); }
-html[data-skin="wuwa"] .bar.event { background: linear-gradient(120deg, rgba(36, 36, 40, .95), rgba(20, 20, 23, .95)); }
-html[data-skin="wuwa"] .bar.challenge { background: repeating-linear-gradient(135deg, rgba(40, 36, 30, .95) 0 8px, rgba(28, 26, 24, .95) 8px 16px); }
-html[data-skin="wuwa"] .bar { border-color: var(--ww-gold-soft); }
-html[data-skin="wuwa"] .bar.live { box-shadow: 0 0 0 1px rgba(214, 180, 122, .55), 0 4px 18px rgba(214, 180, 122, .14); }
-html[data-skin="wuwa"] .bar:hover { box-shadow: 0 8px 22px rgba(214, 180, 122, .22); }
-html[data-skin="wuwa"] :is(.ecard, .bcard, .soon-card, .up-card, .gcard):hover { border-color: rgba(214, 180, 122, .55); box-shadow: 0 10px 28px rgba(0, 0, 0, .5); }
-
-/* --- Pulido: nada redondeado salvo las caras de personajes y avatares (circulares a propósito) --- */
-html[data-skin="wuwa"] :is(.banner-err, .hist li, .lang-menu button, .skin-panel button, .reorder-grip, .current-art, .phase, .pull-list li, .reorder-btns button,
-  .soon-img, select, input, .pick, .fopt, .next-patch, .reorder li, .stats div, .list li, .plist li, .gsec-head, .x, code, .bar .thumb, .ev-thumb,
-  .brand .logo, .logo, .p-time, .progress, .prog-bar, .bar-wrap, .phase-units .bart, ::-webkit-scrollbar-thumb) { border-radius: 2px; }
-/* Paneles grandes (Parches, cuadrícula, hojas en móvil, avisos): esquinas cortadas como las tarjetas. */
-html[data-skin="wuwa"] :is(.gsec, .psec, .bcard, .ecard, .sheet, .current, .soon-card, .form, .consent, .reorder, .next-patch) {
-  border-radius: 0; border-color: var(--line);
-  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
-}
-/* Píldoras y chips (cuenta atrás, recompensas, códigos, próximos…): rectángulos con dos esquinas cortadas. */
-html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .up-chip, .codes-chip, .jump-chip, .cc-new, .patch-mark, .soon-toggle, .soon-card em,
-  .pick-search, .fbtn .badge, .phase-units .unit, .today-flag) { border-radius: 0; }
-html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .up-chip, .codes-chip, .jump-chip, .cc-new, .soon-toggle, .pick-search, .phase-units .unit) {
-  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
-}
-html[data-skin="wuwa"] :is(.codes-chip, .up-chip, .jump-chip, .soon-toggle) { border-color: var(--ww-gold-soft); background: rgba(24, 23, 22, .8); }
-html[data-skin="wuwa"] :is(.codes-chip, .up-chip, .jump-chip, .soon-toggle):hover { border-color: var(--ww-gold); color: #fff4d6; }
-/* Filas de listas ("Terminan pronto", códigos, parches): sin fondo redondeado, con una línea dorada al pasar. */
-html[data-skin="wuwa"] :is(.list li, .plist li, .hist li, .pull-list li):hover { box-shadow: inset 2px 0 0 var(--ww-gold); }
-/* Barra de progreso general en dorado (las de cada evento conservan el color del juego y el rojo de "urgente"). */
-html[data-skin="wuwa"] .progress i { background: linear-gradient(90deg, #a8864f, var(--ww-gold)); box-shadow: 0 0 10px var(--ww-gold-soft); }
-/* Restos del rosa/celeste original. */
-html[data-skin="wuwa"] :is(.seg button.on:hover, .chip.on:hover, header nav button.on:hover) { background: linear-gradient(180deg, rgba(214, 180, 122, .4), rgba(214, 180, 122, .16)); }
-html[data-skin="wuwa"] .lang-menu button.on, html[data-skin="wuwa"] .skin-panel button.on { background: rgba(214, 180, 122, .16); box-shadow: inset 2px 0 0 var(--ww-gold); }
-html[data-skin="wuwa"] :is(input, select):focus { border-color: var(--ww-gold); box-shadow: 0 0 0 2px var(--ww-gold-soft); outline: none; }
-html[data-skin="wuwa"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ww-gold); }
-/* Aro de foco del teclado: dorado (el original es celeste). */
-html[data-skin="wuwa"] :is(.bar, .btn, .chip, .ichip, .seg button, .pick):focus-visible { outline: 1px solid var(--ww-gold); outline-offset: 2px; }
-/* Pestañas: sin recuadro; la marca es la barra dorada de abajo (y con el teclado, el texto se ilumina). */
-html[data-skin="wuwa"] header nav button:focus-visible { outline: none; color: #fff6dc !important; text-shadow: 0 0 10px rgba(214, 180, 122, .6); }
-html[data-skin="wuwa"] header nav .nav-ind { height: 2px; background: linear-gradient(90deg, transparent, var(--ww-gold) 20%, #f3dfae 50%, var(--ww-gold) 80%, transparent);
-  box-shadow: 0 0 12px rgba(214, 180, 122, .55), 0 0 2px rgba(243, 223, 174, .9); }
-
-/* ===== Piezas de la interfaz del juego (public/skins/wuwa/ui/, del repo TomyJan/WutheringWaves-UIResources, Common) =====
-   Sustituyen a las formas inventadas de arriba (esquinas cortadas, rombos). Se dibujan con border-image: las píldoras se cortan por la
-   mitad de su altura, así los extremos redondos no se deforman al estirar el botón. Para volver a lo anterior, borra este bloque. */
-
-/* Botones: píldora negra con borde (T_BtnStyleA2), más clara al pasar el ratón. */
-html[data-skin="wuwa"] .btn {
-  clip-path: none; border: 0; border-radius: 0; background: none; box-shadow: none;
-  border-image: url(/skins/wuwa/ui/btn.png) 36 fill / 17px / 2px stretch; padding: 9px 20px;
-}
-html[data-skin="wuwa"] .btn.sm { border-image-width: 15px; padding: 6px 16px; }
-/* Al pasar el ratón solo cambia la píldora: las reglas base (App.css, botones.css) ponen un fondo y un borde rectangulares que asomaban
-   detrás y hacían el botón "cuadrado"; aquí se anulan. */
-html[data-skin="wuwa"] .btn:hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-hold.png); box-shadow: none; color: #fff;
-  background: none !important; border-color: transparent; transform: none; }
+/* ===== Botones: cápsulas de cristal; el principal, el blanco con olas del juego ===== */
+html[data-skin="wuwa"] .btn { clip-path: none; border-radius: 999px; border: 1px solid var(--ww-edge2); border-image: none;
+  background: rgba(30, 46, 54, .78); color: #f1f5f5; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); text-shadow: none; letter-spacing: .02em; }
 html[data-skin="wuwa"] .btn::after { display: none; }
-/* Botón principal: el de confirmar del juego (T_BtnStyleA1), blanco con olas; texto oscuro. */
+html[data-skin="wuwa"] .btn:hover:not(:disabled) { border-color: #fff; background: rgba(52, 72, 82, .9) !important; color: #fff; transform: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 14px rgba(200, 230, 235, .18); }
 html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate),
 html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
-  border: 0; border-image: url(/skins/wuwa/ui/btn-main.png) 50 fill / 18px / 2px stretch; background: none;
-  padding: 9px 22px; min-height: 0; color: #1b1a17; text-shadow: none; font-weight: 700; filter: none;
-}
-html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-main-hold.png); }
+  border: 0; border-radius: 0; border-image: url(/skins/wuwa/ui/btn-main.png) 50 fill / 18px / 2px stretch; background: none !important;
+  padding: 9px 22px; min-height: 0; color: #16211f; text-shadow: none; font-weight: 700; filter: none; box-shadow: none; }
+html[data-skin="wuwa"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { border-image-source: url(/skins/wuwa/ui/btn-main-hold.png);
+  filter: drop-shadow(0 0 8px rgba(255, 244, 210, .35)); }
 html[data-skin="wuwa"] .btn.primary.sm, html[data-skin="wuwa"] .site-foot a.btn.donate { border-image-width: 16px; padding: 6px 18px; }
-/* "Marcar como completado" ya marcado ("✓ Completado (deshacer)"): pierde .primary y pasaba a la píldora negra. Se queda en la píldora
-   clara del botón principal, apagada en gris, para que se lea como "hecho" sin volverse negra; al pasar el ratón se aclara un poco. */
-html[data-skin="wuwa"] .btn.mark:not(.primary), html[data-skin="wuwa"] .btn.mark:not(.primary):hover:not(:disabled) {
-  border-image: url(/skins/wuwa/ui/btn-main.png) 50 fill / 18px / 2px stretch; background: none !important;
-  padding: 9px 22px; color: #3a3833; font-weight: 700; filter: grayscale(1) brightness(.78);
-}
-html[data-skin="wuwa"] .btn.mark:not(.primary):hover:not(:disabled) { filter: grayscale(1) brightness(.9); }
+/* "✓ Completado (deshacer)": pierde .primary; se queda en cápsula de cristal con texto dorado pálido para que se lea "hecho". */
+html[data-skin="wuwa"] .btn.mark:not(.primary) { background: rgba(40, 58, 66, .88) !important; color: var(--ww-gold); border-color: rgba(241, 220, 155, .45); }
+html[data-skin="wuwa"] .btn.mark .spark { color: #6b5414; }
+html[data-skin="wuwa"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 1px solid #fff; outline-offset: 2px; }
+html[data-skin="wuwa"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 999px; border: 1px solid var(--ww-edge);
+  background: rgba(10, 20, 25, .82); color: #f1f5f5; }
+html[data-skin="wuwa"] :is(input, select):focus { border-color: #fff; box-shadow: 0 0 0 2px rgba(159, 216, 214, .25); outline: none; }
+html[data-skin="wuwa"] :is(input, textarea)::placeholder { color: #93a7ad; opacity: 1; }
+html[data-skin="wuwa"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ww-gold); }
 
-/* Chips, filtros y etiquetas: píldora pequeña (T_BtnStyleC). */
-html[data-skin="wuwa"] :is(.chip, .up-chip, .codes-chip, .jump-chip, .soon-toggle, .fopt, .pick-search) {
-  clip-path: none; border: 0; border-radius: 0; background: none; box-shadow: none;
-  border-image: url(/skins/wuwa/ui/chip.png) 32 fill / 13px / 1px stretch;
-}
-html[data-skin="wuwa"] :is(.chip, .up-chip, .codes-chip, .jump-chip, .soon-toggle, .fopt):hover { border-image-source: url(/skins/wuwa/ui/chip-hold.png);
-  background: none !important; border-color: transparent; box-shadow: none; transform: none; }
-html[data-skin="wuwa"] .ichip:hover { border-color: var(--ww-gold-soft); }
+/* ===== Chips y filtros: cápsulas de cristal; el activo, blanco con texto oscuro (como el interruptor del juego) ===== */
+html[data-skin="wuwa"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
+  clip-path: none; border-image: none; border-radius: 999px; border: 1px solid var(--ww-edge); background: rgba(20, 33, 40, .8); color: #e7eff0; box-shadow: none; }
+html[data-skin="wuwa"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: var(--ww-edge2); background: rgba(44, 63, 72, .92) !important; transform: none; }
+html[data-skin="wuwa"] .seg button { border-radius: 999px; }
+html[data-skin="wuwa"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="wuwa"] :is(.chip.on, .seg button.on):hover { background: linear-gradient(180deg, #ffffff, #dbe6e8) !important; color: #13211f; border-color: #fff;
+  box-shadow: 0 0 12px rgba(220, 240, 245, .25); }
+
+/* ===== Etiquetas ===== */
 html[data-skin="wuwa"] :is(.pill, .tag, .ztag, .reward, .cc-new, .phase-units .unit) { clip-path: none; border-radius: 999px; }
-/* Segmentos (Línea / Cuadrícula) y filtros de tipo: la misma píldora; el activo, en dorado. */
-html[data-skin="wuwa"] .seg { border: 0; background: none; border-image: url(/skins/wuwa/ui/btn.png) 36 fill / 16px / 2px stretch; }
-html[data-skin="wuwa"] .seg button, html[data-skin="wuwa"] .ichip { border-radius: 999px; }
+html[data-skin="wuwa"] .tag { border: 1px solid var(--ww-edge); background: rgba(10, 20, 25, .9); color: #e7eff0; font-weight: 600; }
+html[data-skin="wuwa"] .tag.great { background: var(--ww-gold); color: #2a2108; border-color: #fff3cf; text-shadow: none; }
+html[data-skin="wuwa"] .tag.good { color: #a8f0d0; }
+html[data-skin="wuwa"] .tag.mid { color: #f6dc9e; }
+html[data-skin="wuwa"] .tag.bad { color: #ffa9b4; }
+html[data-skin="wuwa"] .pill.hot { background: rgba(10, 20, 25, .9); color: #ffa9b4; }
+html[data-skin="wuwa"] .pill.new { background: rgba(10, 20, 25, .9); color: var(--ww-gold); }
+html[data-skin="wuwa"] .today-flag { border-radius: 999px; background: #fff; color: #13211f; box-shadow: 0 0 14px rgba(255, 244, 210, .45); padding: 1px 12px; }
+html[data-skin="wuwa"] .today-flag::before { content: ""; display: inline-block; width: 9px; height: 9px; margin-right: 5px; vertical-align: -1px;
+  background: var(--ww-spark) center / contain no-repeat; filter: brightness(.55) sepia(1) saturate(3); }
+html[data-skin="wuwa"] .soon-card em { border-radius: 999px; background: rgba(10, 20, 25, .9); color: #f6dc9e; }
+html[data-skin="wuwa"] .soon-card.urgent em { color: #ffa9b4; }
 
-/* Filas de las listas ("Terminan pronto", códigos, historial): la fila del juego (T_TogListNor), con su trama a la izquierda. */
-html[data-skin="wuwa"] :is(.list li, .pull-list li) {
-  border-radius: 0; background: none; border: 0; border-image: url(/skins/wuwa/ui/row.png) 12 fill / 6px stretch; margin-bottom: 3px;
-}
-html[data-skin="wuwa"] :is(.list li, .pull-list li):hover { box-shadow: none; filter: brightness(1.35); }
+/* ===== Títulos de sección: destello + texto blanco + separador punteado ===== */
+html[data-skin="wuwa"] h3 { color: #f4f7f7; letter-spacing: .08em; font-weight: 600; background: none; padding: 0; width: auto; }
+html[data-skin="wuwa"] h3::before { content: ""; flex: none; width: 15px; height: 15px; transform: none; background: var(--ww-spark) center / contain no-repeat;
+  filter: drop-shadow(0 0 4px rgba(255, 236, 180, .8)); }
+html[data-skin="wuwa"] h3:not(:has(> button, > .btn, > a))::after { content: ""; flex: 1 1 0; min-width: 0; height: 1px; margin-left: 6px;
+  background: linear-gradient(90deg, rgba(230, 242, 244, .5) 50%, transparent 0) left center / 6px 1px repeat-x;
+  -webkit-mask: linear-gradient(90deg, #000, transparent); mask: linear-gradient(90deg, #000, transparent); }
+html[data-skin="wuwa"] h3 small { color: #c2d0d4; }
+html[data-skin="wuwa"] h3:has(> .sec-ico)::before { display: none; }
+html[data-skin="wuwa"] h3 > .sec-ico { color: var(--ww-gold); filter: drop-shadow(0 0 4px rgba(255, 236, 180, .5)); }
 
-/* Títulos de sección: emblema dorado del juego y su barra de título (T_ShopTitleBg). */
-/* El título mide lo que su texto: la barra está pensada para títulos cortos y, estirada a todo el ancho ("Ajustes", "Añadir o quitar gachas"),
-   se veía como una cuña larga. */
-html[data-skin="wuwa"] h3 { width: fit-content; max-width: 100%; padding: 3px 34px 3px 4px; background: url(/skins/wuwa/ui/title.png) left center / 100% 100% no-repeat; }
-/* Títulos con un botón a la derecha ("Ver todos"): ancho completo para no moverlo; la barra cubre solo la zona del texto. */
-html[data-skin="wuwa"] h3:has(> button) { width: auto; padding-right: 4px; background-size: min(100%, 400px) 100%; }
-html[data-skin="wuwa"] h3::before { width: 15px; height: 15px; transform: none; background: url(/skins/wuwa/ui/emblem.png) center / contain no-repeat; }
+/* ===== Paneles: pizarra translúcida con borde blanco fino ===== */
+html[data-skin="wuwa"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard, .form, .reorder) {
+  clip-path: none; border-radius: 6px; border: 1px solid var(--ww-edge); background-color: var(--ww-glass);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 12px 32px rgba(2, 8, 12, .5); }
+html[data-skin="wuwa"] :is(.psec, .gsec, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .current, .next-patch) { backdrop-filter: blur(14px) saturate(1.15); }
+/* Paneles grandes: el rótulo fino de la interfaz del juego arriba a la derecha (las rayitas de "Cadena de Resonancia"), en un ::after
+   para que la auditoría de contraste no lo tome por el fondo. */
+html[data-skin="wuwa"] :is(.psec, .gsec, .current, .next-patch) { position: relative; }
+html[data-skin="wuwa"] :is(.psec, .gsec, .current, .next-patch)::after { content: ""; position: absolute; top: 8px; right: 10px; width: 46px; height: 7px; pointer-events: none; z-index: 0;
+  background: linear-gradient(rgba(230, 242, 244, .4), rgba(230, 242, 244, .4)) left top / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, rgba(230, 242, 244, .35) 0 1px, transparent 1px 5px) left bottom / 100% 4px no-repeat; }
+html[data-skin="wuwa"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: rgba(18, 31, 38, .95); }
+html[data-skin="wuwa"] :is(.gcard-hero, .ecard-img) { background-color: var(--ww-solid); }
+html[data-skin="wuwa"] .gcard-hero { background: linear-gradient(135deg, #2a434c, #12212a); }
+html[data-skin="wuwa"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 25%, rgba(18, 31, 38, .97)); }
+html[data-skin="wuwa"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, rgba(18, 31, 38, .97)); }
+html[data-skin="wuwa"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(18, 31, 38, .98)); }
+html[data-skin="wuwa"] .modal { background: rgba(18, 31, 38, .97); }
+html[data-skin="wuwa"] .modal-hero { background: linear-gradient(160deg, #3b5a63, #12212a); }
+html[data-skin="wuwa"] .modal-title small { color: var(--ww-gold); }
+html[data-skin="wuwa"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { border-color: var(--ww-edge2); transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px rgba(240, 248, 250, .25), 0 14px 34px rgba(2, 8, 12, .55); }
+html[data-skin="wuwa"] .gsec-head { background: rgba(14, 25, 31, .9); border-radius: 4px; }
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) { background-color: rgba(18, 31, 38, .97); }
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) button { border-radius: 4px; }
+/* Seleccionado: contorno blanco fino, como la fila elegida en el juego. */
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) button.on { background: rgba(230, 242, 244, .1); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .75); }
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) button.on i { color: var(--ww-gold); }
+html[data-skin="wuwa"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: rgba(230, 242, 244, .08); }
+html[data-skin="wuwa"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--ww-gold); border-color: rgba(241, 220, 155, .5); opacity: 1; }
 
-/* Destello de cuatro puntas del juego (T_PcStarB) en vez de los rombos: pestaña activa, "hoy" y eventos en curso. */
-html[data-skin="wuwa"] header nav .nav-ind::after { top: -9px; width: 9px; height: 20px; transform: translateX(-50%); background: url(/skins/wuwa/ui/star.png) center / contain no-repeat; }
-html[data-skin="wuwa"] .bar.live::before { left: -6px; width: 10px; height: 24px; transform: translateY(-50%); background: url(/skins/wuwa/ui/star.png) center / contain no-repeat;
-  box-shadow: none; filter: sepia(1) saturate(2.2) hue-rotate(-8deg) drop-shadow(0 0 4px rgba(214, 180, 122, .8)); }
-html[data-skin="wuwa"] .today-flag::before { content: ""; display: inline-block; width: 6px; height: 13px; margin-right: 5px; vertical-align: -2px;
-  background: url(/skins/wuwa/ui/star.png) center / contain no-repeat; filter: brightness(0) opacity(.75); }
+/* Filas de listas: franjas de pizarra como las de la lista de mejoras, con el "▸" fino a la derecha; al pasar, contorno blanco. */
+html[data-skin="wuwa"] :is(.list li, .hist li, .pull-list li) { position: relative; margin: 0 0 4px; border-image: none; border-radius: 3px;
+  background: linear-gradient(90deg, rgba(40, 60, 69, .9), rgba(28, 44, 52, .82)); border: 1px solid rgba(230, 242, 244, .08); box-shadow: none; filter: none; }
+html[data-skin="wuwa"] :is(.list li, .hist li, .pull-list li):hover { border-color: rgba(255, 255, 255, .75); background: linear-gradient(90deg, rgba(52, 74, 84, .95), rgba(36, 54, 63, .9)); filter: none; }
+html[data-skin="wuwa"] .plist li:hover { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .6); }
+html[data-skin="wuwa"] .progress { background: rgba(230, 242, 244, .14); border-radius: 999px; }
+html[data-skin="wuwa"] .progress i { background: linear-gradient(90deg, var(--ww-aqua), var(--ww-gold)); box-shadow: 0 0 6px rgba(255, 236, 180, .4); }
+html[data-skin="wuwa"] .stats > div { border-radius: 4px; background: rgba(32, 49, 57, .88); border: 1px solid rgba(230, 242, 244, .1); }
+html[data-skin="wuwa"] .gsec-head .stats b { color: var(--ww-gold); }
+html[data-skin="wuwa"] :is(.ev-loc, .gcard-head p) { color: var(--ww-gold); }
+html[data-skin="wuwa"] :is(.hist li, .lang-menu button, .skin-panel button, .reorder-grip, .current-art, .phase, .reorder-btns button, .soon-img, .pick,
+  .reorder li, .x, code, .bar .thumb, .ev-thumb, .p-time, .prog-bar, .bar-wrap, .phase-units .bart) { border-radius: 4px; }
+
+/* ===== Línea de tiempo ===== */
+html[data-skin="wuwa"] [style*="--c:"] { --c: #f1dc9b !important; --c2: #1d313a !important; }
+html[data-skin="wuwa"] .tl.tl { background: rgba(12, 22, 28, .7); backdrop-filter: blur(3px); }
+html[data-skin="wuwa"] :is(.tl-corner, .tl-label, .tl-axis) { background: #13232b; }
+html[data-skin="wuwa"] .tl-label { border-left-width: 2px; }
+html[data-skin="wuwa"] .tl-lane { border-color: rgba(230, 242, 244, .07); }
+html[data-skin="wuwa"] .grid-line { background: rgba(230, 242, 244, .06); }
+html[data-skin="wuwa"] .tick { color: #b3c3c8; }
+html[data-skin="wuwa"] .month b { color: #f4f7f7; }
+/* Barras de pizarra con el canto del color de su tipo (banner dorado, evento agua, desafío blanco). */
+html[data-skin="wuwa"] .bar { border-radius: 4px; border: 1px solid rgba(230, 242, 244, .16); background: linear-gradient(90deg, #2a424c, #1b2e37) !important; }
+html[data-skin="wuwa"] .bar-clip { border-radius: 3px; }
+html[data-skin="wuwa"] .bar.banner { border-left: 3px solid var(--ww-gold); }
+html[data-skin="wuwa"] .bar.event { border-left: 3px solid var(--ww-aqua); }
+html[data-skin="wuwa"] .bar.challenge { border-left: 3px solid #e6eef0; }
+html[data-skin="wuwa"] .bar.live { box-shadow: 0 0 0 1px rgba(255, 244, 210, .35), 0 0 14px rgba(255, 236, 180, .14); }
+html[data-skin="wuwa"] .bar:hover { border-color: var(--ww-edge2); box-shadow: 0 0 0 1px rgba(255, 255, 255, .3), 0 8px 20px rgba(2, 8, 12, .5); }
+html[data-skin="wuwa"] .bar.live::before { content: ""; position: absolute; left: -8px; top: 50%; width: 16px; height: 16px; z-index: 2; transform: translateY(-50%);
+  background: var(--ww-spark) center / contain no-repeat; box-shadow: none; filter: drop-shadow(0 0 5px rgba(255, 236, 180, .95)); }
+html[data-skin="wuwa"] .bar-prog { background: linear-gradient(90deg, rgba(159, 216, 214, .85), var(--ww-gold)); opacity: .85; }
+html[data-skin="wuwa"] .bar.past { opacity: 1; filter: grayscale(.8) brightness(.7); }
+html[data-skin="wuwa"] .bar .bar-txt .when.upcoming { color: #cfe6ea !important; }
+/* El rojo de la base (#f87171) se queda en 3,8:1 sobre la pizarra de las barras: uno más claro. */
+html[data-skin="wuwa"] .when.urgent { color: #ffadb6 !important; }
+html[data-skin="wuwa"] .sec-title { color: #f4f7f7 !important; }
+html[data-skin="wuwa"] .sec-band.banner .sec-title { color: var(--ww-gold) !important; }
+html[data-skin="wuwa"] .sec-band.event .sec-title { color: var(--ww-aqua) !important; }
+html[data-skin="wuwa"] .sec-band.challenge .sec-title { color: #e6eef0 !important; }
+html[data-skin="wuwa"] .patch-mark { opacity: 1; color: var(--ww-gold); border-radius: 999px; }
+
+/* ===== Destacados: retrato en ARCO, como los huecos de la formación de equipo ===== */
+html[data-skin="wuwa"] .bport { border-radius: 6px; border: 1px solid var(--ww-edge); }
+html[data-skin="wuwa"] .bport:hover { border-color: var(--ww-edge2); transform: translateY(-2px); }
+html[data-skin="wuwa"] .bport .p-time { border-radius: 999px; background: rgba(10, 20, 25, .9); color: var(--ww-gold); border: 1px solid rgba(241, 220, 155, .5); backdrop-filter: none; }
+html[data-skin="wuwa"] .bport .p-time.hot { color: #ffa9b4; border-color: rgba(255, 169, 180, .45); }
+html[data-skin="wuwa"] .featured { gap: 12px; }
+html[data-skin="wuwa"] .portrait { position: relative; width: 84px; gap: 0; overflow: visible; background: none; clip-path: none; box-shadow: none; }
+html[data-skin="wuwa"] .portrait img { width: 84px; height: 118px; border-radius: 42px; border: 1px solid rgba(240, 248, 250, .55); object-position: 50% 8%;
+  background: radial-gradient(90% 45% at 50% 100%, rgba(255, 236, 180, .55), transparent 70%), linear-gradient(180deg, #c9d6da 0%, #7f97a0 45%, #2d4650 100%);
+  box-shadow: 0 6px 18px rgba(2, 8, 12, .5); transition: box-shadow .2s, transform .2s; }
+html[data-skin="wuwa"] .portrait:hover img { transform: translateY(-2px); box-shadow: 0 0 0 1px #fff, 0 0 18px rgba(255, 236, 180, .35); }
+html[data-skin="wuwa"] .portrait span { position: relative; padding: 6px 2px 1px; background: none; border: 0; color: #f4f7f7; font-family: 'Sora', 'Barlow', sans-serif;
+  font-weight: 600; font-size: .74rem; letter-spacing: 0; line-height: 1.15; text-align: center; }
+html[data-skin="wuwa"] .portrait small { padding: 0 2px; background: none; color: #c2d0d4; font-size: .68rem; text-align: center; }
+
+/* Textos con color fijo de la hoja base. */
+html[data-skin="wuwa"] :is(.code-until, .prec) { color: #f6dc9e; }
+html[data-skin="wuwa"] .link-btn { color: var(--ww-gold); }
+html[data-skin="wuwa"] .stars { color: var(--ww-gold); text-shadow: none; }
+
+/* Pie: separador punteado con un destello en el centro (el de "Tap anywhere to close"). */
+html[data-skin="wuwa"] .site-foot { border-top: 0; position: relative; }
+html[data-skin="wuwa"] .site-foot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(230, 242, 244, .45) 50%, transparent 0) left center / 6px 1px repeat-x;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); mask: linear-gradient(90deg, transparent, #000 25%, #000 75%, transparent); }
+html[data-skin="wuwa"] .site-foot::after { content: ""; position: absolute; left: 50%; top: 0; width: 12px; height: 12px; transform: translate(-50%, -50%);
+  background: var(--ww-spark) center / contain no-repeat; filter: drop-shadow(0 0 4px rgba(255, 236, 180, .9)); pointer-events: none; }
 
 /* --- Cursor del juego (48 px; 96 px en pantallas de alta densidad). Punta en (3, 3).
    El juego usa la misma imagen para normal, resaltado y pulsado, así que también va en botones y enlaces. --- */
@@ -234,37 +268,15 @@ html[data-skin="wuwa"] :is(a, button, [role="button"], [role="link"], [role="rad
   cursor: url(/skins/wuwa/cursor.png) 3 3, pointer !important;
   cursor: image-set(url(/skins/wuwa/cursor.png) 1x, url(/skins/wuwa/cursor@2x.png) 2x) 3 3, pointer !important;
 }
-html[data-skin="wuwa"] :is(input[type="text"], input[type="search"], textarea) { cursor: text !important; }
+html[data-skin="wuwa"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
 
-/* ===== Destacados de la ventana del evento: ficha de resonador (como la lista de personajes del juego) =====
-   Tarjeta oscura con la esquina superior derecha cortada, brillo dorado de rareza desde abajo y franja con el nombre sobre una línea dorada. */
-html[data-skin="wuwa"] .featured { gap: 10px; }
-html[data-skin="wuwa"] .portrait { position: relative; width: 92px; gap: 0; overflow: hidden; background: #1a1b20;
-  clip-path: polygon(0 0, calc(100% - var(--ww-cut)) 0, 100% var(--ww-cut), 100% 100%, 0 100%); box-shadow: inset 0 0 0 1px rgba(214, 180, 122, .28); }
-html[data-skin="wuwa"] .portrait img { width: 92px; height: 104px; border: 0; border-radius: 0; object-position: 50% 8%;
-  background: radial-gradient(120% 70% at 50% 100%, rgba(214, 180, 122, .55), transparent 70%), linear-gradient(180deg, #23252c, #15161a); }
-html[data-skin="wuwa"] .portrait:hover img { transform: scale(1.04); }
-html[data-skin="wuwa"] .portrait:hover { box-shadow: inset 0 0 0 1px var(--ww-gold); }
-html[data-skin="wuwa"] .portrait span { position: relative; padding: 5px 4px 6px; background: #0f1013; border-top: 2px solid var(--ww-gold);
-  color: #ece6d6; font-family: 'Sora', 'Barlow', sans-serif; font-weight: 600; font-size: .74rem; letter-spacing: 0; line-height: 1.15; }
-html[data-skin="wuwa"] .portrait small { padding: 0 4px 6px; background: #0f1013; color: #c9bfa8; font-size: .68rem; }
-html[data-skin="wuwa"] .patch-mark { opacity: 1; } /* al 70 % de la base quedaba en 4.5:1 justo */
-/* Etiqueta destacada ("En curso", "Activo", "Imperdible"): la base la pone con texto blanco sobre el degradado naranja-rosa (2,15:1). */
-html[data-skin="wuwa"] .tag.great { background: var(--ww-gold); color: #17140e; text-shadow: none; }
-/* Móvil: Sora es más ancha que la Barlow Condensed de antes; en mayúsculas con espaciado, "Parches" quedaba fuera de la barra. */
+/* Móvil: Sora es ancha; en mayúsculas con espaciado, "Parches" quedaba fuera de la barra. */
 @media (max-width: 560px) {
   html[data-skin="wuwa"] header nav button { font-size: .74rem; letter-spacing: .02em; padding-left: 9px; padding-right: 9px; }
 }
 
-/* Selector de skins: skins.css quita el border-image a los botones del panel (!important), y sin él los de WuWa se quedaban sin forma
-   ("Apoyar y desbloquear" con texto oscuro sobre el panel oscuro, "Enviar enlace" como texto suelto). Aquí llevan píldora propia. */
-html[data-skin="wuwa"] .skin-panel .skin-unlock .btn {
-  background: rgba(30, 29, 27, .95) !important; border: 1px solid var(--ww-gold-soft) !important; border-radius: 999px !important;
-  color: #efe4c6; text-shadow: none;
-}
-html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:hover:not(:disabled) { background: rgba(214, 180, 122, .16) !important; border-color: var(--ww-gold) !important; color: #fff6dc; }
-html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:disabled { opacity: .55; }
+/* Selector de skins: skins.css quita el border-image a los botones del panel (!important); el principal lleva aquí su cápsula blanca. */
 html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary {
-  background: linear-gradient(180deg, #ecd39e, #c9a464) !important; border-color: #f2dfb0 !important; color: #17140e; font-weight: 600;
-}
-html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #f6e2b6, #d6b47a) !important; color: #17140e; filter: none; }
+  background: linear-gradient(180deg, #ffffff, #d9e4e6) !important; border: 1px solid #fff !important; border-radius: 999px !important; color: #13211f; font-weight: 600; }
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #fff, #e8eff0) !important; color: #13211f; filter: none; }
+html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:disabled { opacity: .55; }
