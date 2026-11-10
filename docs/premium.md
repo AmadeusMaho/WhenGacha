@@ -1,31 +1,38 @@
 # WhenGacha Premium: configuración
 
-Premium desbloquea las skins y la insignia "Premium". Se consigue apoyando con PayPal y se entra con el correo
+Premium desbloquea las skins y la insignia "Premium". Se consigue apoyando en **Ko-fi** y se entra con el correo
 (enlace de un solo uso). No hay códigos que se puedan publicar. Código: `server/supporter.mjs` + `server/support/`
 (servidor) y `src/skins/premium.ts`, `SupportDialog.tsx`, `SkinPicker.tsx` (navegador).
 
 ## Cómo funciona
 
-1. En el pincel, **Apoyar y desbloquear** abre la ventana de apoyo: importe (mínimo `SUPPORT_MIN`) y botón de PayPal.
-2. El servidor crea el pedido, lo cobra y comprueba con PayPal que está `COMPLETED` y que el importe y la moneda son correctos.
-3. La persona da su correo (rellenado con el de PayPal). Se añade a la lista **solo la huella** del correo (HMAC con
-   `SUPPORTER_SECRET`) y el id del pedido. Un pedido no puede dar acceso dos veces.
-4. Ese navegador queda desbloqueado al momento y le llega un correo con el enlace para entrar desde otros dispositivos.
-5. En otro dispositivo, escribe su correo en el pincel y le llega un enlace (30 min, un solo uso). La respuesta es la
-   misma sea o no donante, así que nadie puede averiguar quién apoyó.
+1. En el pincel, **Apoyar y desbloquear** abre la ventana de apoyo: pasos y botón **Apoyar en Ko-fi** (abre tu página de Ko-fi).
+2. La persona paga en Ko-fi (PayPal o tarjeta). Ko-fi avisa al servidor con un webhook (`POST /api/support/kofi`) con el correo,
+   el importe, la moneda, el id de la transacción y el *Verification Token* secreto. Sin ese token, el aviso se rechaza.
+3. Si el importe llega a `SUPPORT_MIN` en la moneda `SUPPORT_CURRENCY`, se añade a la lista **solo la huella** del correo (HMAC con
+   `SUPPORTER_SECRET`) y el id de la transacción (`kofi:<id>`). Una transacción no puede dar acceso dos veces (Ko-fi puede repetir avisos).
+   Las suscripciones mensuales de Ko-fi mandan un aviso cada mes: cada uno se apunta como otro apoyo.
+4. Le llega un correo (al que usó en Ko-fi) con el enlace para activar Premium en su navegador.
+5. En otro dispositivo, o si el correo se perdió, escribe ese correo en el pincel y le llega un enlace (30 min, un solo uso). La
+   respuesta es la misma sea o no donante, así que nadie puede averiguar quién apoyó.
 6. La sesión dura 60 días y se renueva sola cada vez que la persona entra (revalidación cada 12 h): quien visite al menos una vez
    cada dos meses no vuelve a pedir el enlace. Si anulas a alguien, pierde el acceso en ≤ 12 h.
 
-Si se cierra la ventana después de pagar y antes de dar el correo, el pago pendiente queda guardado en el navegador
-y el pincel ofrece **Terminar de activar Premium**.
+Los avisos que no dan Premium (importe bajo, otra moneda, sin correo, el botón de prueba de Ko-fi) se responden con 200 y se
+apuntan en el registro del servidor con el prefijo `[kofi]`. Si alguien pagó y no le llegó nada, búscalo ahí y, si hace falta,
+dale el acceso a mano con `npm run premium -- add correo`.
 
 ## Lo que tienes que crear
 
-### 1. PayPal (cobros)
-1. Entra en https://developer.paypal.com → **Apps & Credentials**.
-2. Primero en **Sandbox**: crea una app y copia su *Client ID* y *Secret*. Con eso pruebas sin dinero real
-   (PayPal da cuentas de comprador de prueba en **Sandbox accounts**).
-3. Cuando funcione, haz lo mismo en **Live** y pon `PAYPAL_ENV=live`.
+### 1. Ko-fi (cobros)
+1. Crea tu página en https://ko-fi.com y conecta tu PayPal (vale una cuenta **personal**) o Stripe en *Settings → Payments*.
+   Con PayPal personal, quien apoya ve tu nombre legal en el recibo de PayPal.
+2. Pon en Ko-fi la misma moneda que `SUPPORT_CURRENCY`.
+3. *More → API → Webhooks*: en **Webhook URL** pon `https://tudominio/api/support/kofi` (el mismo dominio que `PUBLIC_URL`).
+4. En *Advanced* copia el **Verification Token**: va en `KOFI_TOKEN`.
+5. Con el servidor ya configurado, pulsa **Send Test**: en el registro del servidor debe salir
+   `[kofi] aviso 00000000-… sin Premium: prueba` (el aviso de prueba se reconoce y no da de alta a nadie).
+6. Antes de anunciarlo, haz un apoyo real pequeño con tu propio correo y comprueba que te llega el enlace.
 
 ### 2. Resend (correos)
 1. Crea una cuenta en https://resend.com (el plan gratuito sobra).
@@ -44,15 +51,15 @@ y el pincel ofrece **Terminar de activar Premium**.
 | Variable | Ejemplo | Para qué |
 |---|---|---|
 | `SUPPORTER_SECRET` | (ya está en tu `.env.local`) | Firma sesiones y enlaces, y la huella de los correos. **La misma en todos lados**; si cambia, se pierden todas las sesiones y las huellas dejan de coincidir. |
-| `PAYPAL_CLIENT_ID` / `PAYPAL_SECRET` | de la app de PayPal | Cobros. |
-| `PAYPAL_ENV` | `sandbox` o `live` | Cualquier valor que no sea `live` es de pruebas. |
-| `SUPPORT_MIN` / `SUPPORT_CURRENCY` | `2` / `USD` | Importe mínimo para Premium y moneda. |
+| `KOFI_TOKEN` | el *Verification Token* de Ko-fi | Comprueba que los avisos del webhook son de Ko-fi. Secreto. |
+| `KOFI_URL` | `https://ko-fi.com/tuusuario` | Tu página de Ko-fi (botón de la ventana de apoyo y botón de donar del pie). |
+| `SUPPORT_MIN` / `SUPPORT_CURRENCY` | `2` / `USD` | Importe mínimo para Premium y moneda (la misma que en Ko-fi). |
 | `DONORS_REPO` / `DONORS_TOKEN` | `tuusuario/whengacha-donantes` / el token | Lista de donantes. |
 | `DONORS_PATH` / `DONORS_BRANCH` | `donors.json` / (vacío) | Opcionales. |
 | `RESEND_API_KEY` / `MAIL_FROM` | la clave / `WhenGacha <no-reply@tudominio>` | Envío de correos. |
 | `PUBLIC_URL` | `https://tudominio` (sin barra final) | Base del enlace del correo. Obligatoria: no se usa la cabecera Host. |
 
-Mientras falte alguna, el pincel dice que el apoyo con Premium todavía no está activo y ofrece donar igualmente.
+Mientras falte alguna (salvo las opcionales), el pincel dice que el apoyo con Premium todavía no está activo y ofrece donar igualmente.
 
 ## Gestión
 
@@ -64,9 +71,11 @@ npm run premium -- check correo@ejemplo.com    # ver si lo tiene
 
 ## Pendiente / a tener en cuenta
 
-- **Reembolsos y disputas de PayPal**: por ahora se anulan a mano con `npm run premium -- revoke`. Se puede automatizar con un
-  webhook de PayPal (`PAYMENT.CAPTURE.REFUNDED`).
-- El botón **Apoyar el proyecto** del pie sigue siendo la donación de PayPal de siempre, **sin** Premium. Para Premium hay que
-  usar el pincel.
-- Con ventajas a cambio, PayPal lo trata como venta, no como donación. Por eso se usa el botón de pago normal y no el de "Donar".
-- Los códigos `WG-…` anteriores ya no sirven; `server/supporter.mjs` los sustituye.
+- **Reembolsos y disputas**: Ko-fi no avisa de ellos por el webhook; se anulan a mano con `npm run premium -- revoke`.
+- El botón **Apoyar el proyecto** del pie también lleva a Ko-fi (sale de `KOFI_URL`; con `KOFI_URL` pero sin el resto, ya enlaza a
+  Ko-fi aunque Premium no esté activo). Un apoyo desde ahí da Premium igual que desde el pincel si llega al mínimo. Si el servidor
+  no tiene `KOFI_URL`, el botón vuelve a la donación de PayPal de `DONATE_URL` en `src/App.tsx`.
+- Si alguien paga en Ko-fi con un correo distinto del que luego escribe en el pincel, no le llegará el enlace: tiene que usar
+  el de Ko-fi (o darle el acceso a mano con el otro correo).
+- Los códigos `WG-…` y el cobro directo con la API de PayPal (`server/support/paypal.mjs`) ya no existen; las variables `PAYPAL_*`
+  se pueden borrar de Botkeep.

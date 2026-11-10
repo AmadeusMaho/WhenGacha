@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CATALOG } from '../catalog'
 import { useLang, type Lang } from '../i18n'
 import LiveWallpaper from './LiveWallpaper'
-import { clearNotice, logout, pendingClaim, requestLink, useNotice, type ApiResult } from './premium'
+import { clearNotice, logout, requestLink, useNotice, type ApiResult } from './premium'
 import { SKINS, applySkin, endPreview, setSkin, startPreview, usePreview, useSkin, useSupporter } from './skins'
 import SupportDialog from './SupportDialog'
 import './skins.css'
@@ -13,22 +13,22 @@ import './hsr.css'
 
 /** Textos propios (no van en locales.ts para que quitar las skins no toque nada más). */
 const TXT: Record<Lang, Record<string, string>> = {
-  es: { title: 'Skin del sitio', none: 'Original', locked: 'Las skins son parte de WhenGacha Premium, un pequeño extra para quienes apoyan el proyecto 💛',
-    support: 'Apoyar y desbloquear', finish: 'Terminar de activar Premium', have: 'Escribe el correo que usaste al apoyar y te mando un enlace para activar Premium aquí. Solo llega a correos de quienes apoyaron.',
+  es: { title: 'Skin del sitio', none: 'Original', locked: 'Las skins vienen con WhenGacha Premium. Apoyas una vez y son tuyas para siempre 💛',
+    support: 'Apoyar y desbloquear', have: 'Escribe el correo que usaste al apoyar y te mando un enlace para activar Premium aquí. Solo llega a correos de quienes apoyaron.',
     email: 'Tu correo', send: 'Enviar enlace', busy: 'Enviando…', sent: 'Si ese correo apoyó el proyecto, te llegará en unos minutos un enlace de un solo uso, válido 30 minutos (mira también en spam). Si no, no se envía nada.',
     active: 'Premium activo en este dispositivo 💛', logout: 'Cerrar sesión aquí', loginOk: '¡Listo! Premium activado en este dispositivo 💛',
     loginBad: 'Ese enlace caducó o ya se usó. Pide otro con tu correo.', invalid: 'Revisa el correo.',
     'too-many': 'Muchos intentos seguidos, espera unos minutos.', unavailable: 'Ahora mismo no se puede, prueba más tarde.',
     try: 'Vista previa', haveLink: '¿Ya apoyaste? Entra con tu correo →', back: '← Volver', loginTitle: 'Entrar a Premium' },
-  en: { title: 'Site skin', none: 'Original', locked: 'Skins are part of WhenGacha Premium, a little extra for people who support the project 💛',
-    support: 'Support and unlock', finish: 'Finish turning on Premium', have: "Enter the email you used to support and I will send you a link to turn on Premium here. It only goes to supporters' emails.",
+  en: { title: 'Site skin', none: 'Original', locked: "Skins come with WhenGacha Premium. Support once and they're yours forever 💛",
+    support: 'Support and unlock', have: "Enter the email you used to support and I will send you a link to turn on Premium here. It only goes to supporters' emails.",
     email: 'Your email', send: 'Send link', busy: 'Sending…', sent: 'If that email supported the project, a one-time link valid for 30 minutes will arrive in a few minutes (check spam too). Otherwise nothing is sent.',
     active: 'Premium is on for this device 💛', logout: 'Sign out here', loginOk: 'Done! Premium is on for this device 💛',
     loginBad: 'That link expired or was already used. Ask for a new one with your email.', invalid: 'Check the email.',
     'too-many': 'Too many tries in a row, wait a few minutes.', unavailable: "Can't do it right now, try again later.",
     try: 'Preview', haveLink: 'Already supported? Sign in with your email →', back: '← Back', loginTitle: 'Sign in to Premium' },
-  zh: { title: '网站皮肤', none: '原版', locked: '皮肤属于 WhenGacha 高级版，是给支持者的小福利 💛',
-    support: '支持并解锁', finish: '完成开启高级版', have: '输入支持时使用的邮箱，我会发给你在此设备开启高级版的链接。只会发给支持者的邮箱。',
+  zh: { title: '网站皮肤', none: '原版', locked: '皮肤包含在 WhenGacha 高级版中。支持一次，永久拥有 💛',
+    support: '支持并解锁', have: '输入支持时使用的邮箱，我会发给你在此设备开启高级版的链接。只会发给支持者的邮箱。',
     email: '你的邮箱', send: '发送链接', busy: '发送中…', sent: '如果该邮箱支持过本项目，几分钟内会收到一次性链接，30 分钟内有效（也请查看垃圾邮件）。否则不会发送任何内容。',
     active: '此设备已开启高级版 💛', logout: '在此设备退出', loginOk: '好了！此设备已开启高级版 💛',
     loginBad: '链接已过期或已使用，请用邮箱重新获取。', invalid: '请检查邮箱。',
@@ -66,7 +66,6 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
     setPos(!o && r && window.matchMedia('(min-width: 601px)').matches ? { top: r.bottom + 8, right: document.documentElement.clientWidth - r.right } : null)
     return !o
   })
-  const pending = !supporter && !!pendingClaim()
 
   useEffect(() => { applySkin(active) }, [active])
   // La vista previa solo vive con el menú abierto: al cerrarlo (o en móvil, al tocar fuera) vuelve la vista de siempre.
@@ -144,14 +143,15 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
           ) : (
             <li className="skin-unlock">
               <p>{s.locked}</p>
-              <button className="btn sm primary support-open" onClick={() => { setDialog(true); setOpen(false) }}>{pending ? s.finish : s.support}</button>
+              <button className="btn sm primary support-open" onClick={() => { setDialog(true); setOpen(false) }}>{s.support}</button>
               <button className="linkbtn skin-have" onClick={() => setView('login')}>{s.haveLink}</button>
             </li>
           )}
           </>}
         </ul>
       )}
-      {dialog && <SupportDialog donateUrl={donateUrl} onClose={() => setDialog(false)} />}
+      {dialog && <SupportDialog donateUrl={donateUrl} onClose={() => setDialog(false)}
+        onLogin={() => { setDialog(false); toggle(); setView('login') }} />}
       {live && <LiveWallpaper key={active} live={live} />}
     </div>
   )

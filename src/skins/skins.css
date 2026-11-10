@@ -55,13 +55,12 @@
 .support-dialog h2 { font-size: 1.2rem; padding-right: 28px; }
 .support-dialog p { margin: 0; line-height: 1.5; }
 .support-dialog form { display: grid; gap: 10px; }
-.support-dialog input[type="email"], .support-custom input { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05); color: var(--text); font: inherit; }
+.support-dialog input[type="email"] { width: 100%; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, .05); color: var(--text); font: inherit; }
 .support-x { position: absolute; top: 12px; right: 12px; }
-.support-amounts { display: flex; flex-wrap: wrap; gap: 8px; align-items: end; }
-.support-custom { display: grid; gap: 4px; font-size: .75rem; color: var(--muted); width: 120px; }
-.support-pay { font-size: .85rem; color: var(--muted); }
-.support-paypal { min-height: 50px; padding: 6px; border-radius: 12px; background: #fff; }
-.support-paypal.busy { opacity: .4; pointer-events: none; }
+.support-forever { font-weight: 700; }
+.support-steps { margin: 0; padding-left: 20px; display: grid; gap: 6px; line-height: 1.5; }
+.support-kofi { justify-self: start; border-radius: 999px; padding: 9px 20px; text-decoration: none; }
+.support-dialog .linkbtn { justify-self: start; }
 .support-error { color: var(--bad); font-size: .85rem; }
 html[data-skin="wuwa"] .support-dialog { border-radius: 0; background: #131418; border-color: var(--ww-gold-soft);
   clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px); }

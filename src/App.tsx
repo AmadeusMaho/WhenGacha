@@ -10,6 +10,7 @@ import { useImages } from './images'
 import LangSwitch from './LangSwitch'
 import SkinPicker from './skins/SkinPicker' // skins (prueba): para quitarlas, ver src/skins/README.md
 import SupporterBadge from './skins/SupporterBadge' // skins
+import { useKofiUrl } from './skins/premium' // skins
 import { fireDue, mirrorAlerts } from './notify'
 import { useAutoSync, useStore } from './store'
 import TimelineTab from './Timeline'
@@ -17,7 +18,7 @@ import type { GameEvent } from './types'
 import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
 
-/** Enlace de donaciones de PayPal. Déjalo vacío para ocultar el botón. */
+/** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
 const DONATE_URL = 'https://www.paypal.com/donate/?business=amadeusmaho45%40gmail.com&item_name=WhenGacha&currency_code=USD'
 
 type Tab = 'timeline' | 'mine' | 'patches'
@@ -36,6 +37,7 @@ export default function App() {
   const [state, setState] = useStore()
   const { status, sync } = useAutoSync(state, setState)
   useImages(state)
+  const donateUrl = useKofiUrl() || DONATE_URL // skins: sin ellas, deja solo DONATE_URL
   const [tab, setTab] = useState<Tab>(() => (state.tracked.length ? 'timeline' : 'mine'))
   const navRef = useRef<HTMLElement>(null)
   // Coloca el indicador bajo la pestaña activa; se recalcula al cambiar de pestaña, de idioma (otro ancho) o de tamaño de ventana.
@@ -119,7 +121,7 @@ export default function App() {
           {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{t(label)}</button>)}
         </nav>
         <div className="head-actions">
-          <SkinPicker timeline={tab === 'timeline'} donateUrl={DONATE_URL} /> {/* skins */}
+          <SkinPicker timeline={tab === 'timeline'} donateUrl={donateUrl} /> {/* skins */}
           <LangSwitch />
           <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
             <span className={status.busy ? 'spin on' : 'spin'}>⟳</span> <span className="sync-t">{status.busy ? t('sync.busy') : ago(Math.max(0, ...Object.values(state.synced)))}</span>
@@ -138,8 +140,8 @@ export default function App() {
         <a href="/acerca.html">{t('footer.about')}</a>
         <a href="/privacidad.html">{t('footer.privacy')}</a>
         {consentEnabled && <button className="linkbtn" onClick={reopenConsent}>{t('consent.settings')}</button>}
-        {DONATE_URL && <a className="btn sm donate" href={DONATE_URL} title={t('footer.donateTip')} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
-        {DONATE_URL && <span className="donate-note">{t('footer.donateNote')}</span>}
+        {donateUrl && <a className="btn sm donate" href={donateUrl} title={t('footer.donateTip')} target="_blank" rel="noopener noreferrer">{t('footer.donate')}</a>}
+        {donateUrl && <span className="donate-note">{t('footer.donateNote')}</span>}
       </footer>
       <ConsentBanner />
       {current && <EventModal {...ctx} event={current} closing={closing} onClose={close} />}

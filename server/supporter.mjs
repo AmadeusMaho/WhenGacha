@@ -1,29 +1,28 @@
-// WhenGacha Premium: apoyo con PayPal y acceso por correo (sustituye a los códigos de apoyo "WG-…", que se podían publicar).
+// WhenGacha Premium: apoyo con Ko-fi y acceso por correo (sustituye a los códigos de apoyo "WG-…", que se podían publicar).
 //
-//  1. Pago: el navegador muestra el botón de PayPal; el servidor crea y cobra el pedido (support/paypal.mjs) y comprueba que se completó.
-//  2. Correo: con el pago verificado, la persona da su correo; se guarda solo su huella en la lista de donantes (support/donors.mjs,
-//     repo privado de GitHub) y se le envía un enlace de acceso (support/mail.mjs). Ese navegador queda desbloqueado al momento.
-//  3. Otro dispositivo: escribe su correo y le llega otro enlace (un solo uso, 30 min). Solo entra quien lee ese buzón.
+//  1. Pago: la ventana de apoyo enlaza a la página de Ko-fi. Ko-fi cobra y avisa al servidor con un webhook (support/kofi.mjs) que
+//     trae el correo de quien pagó, el importe y nuestro token secreto.
+//  2. Alta: con el aviso verificado se guarda solo la huella del correo en la lista de donantes (support/donors.mjs, repo privado de
+//     GitHub) y se le envía un enlace de acceso (support/mail.mjs). Un mismo pago de Ko-fi no da acceso dos veces.
+//  3. Otro dispositivo (o si el correo se perdió): escribe su correo en el pincel y le llega otro enlace (un solo uso, 30 min).
 //  4. Sesión: token firmado de 60 días que el navegador revalida cada 12 h (cada revalidación da otro de 60); si se anula al donante, pierde el acceso.
 //
-// Rutas (todas POST con JSON salvo la primera):
-//   GET  /api/support/config   → { enabled, paypalClientId, currency, min, max }
-//   POST /api/support/order    { amount }                → { id }                 (pedido de PayPal)
-//   POST /api/support/capture  { orderID }               → { claim, email }       (pago cobrado y verificado)
-//   POST /api/support/claim    { claim, email, lang }    → { session, mailed }    (alta y primer correo)
+// Rutas (todas POST con JSON salvo config y el webhook):
+//   GET  /api/support/config   → { enabled, login, kofiUrl, currency, min }
+//   POST /api/support/kofi     data=<JSON de Ko-fi>      → 200 (webhook de Ko-fi; lo llama Ko-fi, no el navegador)
 //   POST /api/login            { email, lang }           → { ok: true }           (siempre igual: no revela si el correo es donante)
 //   POST /api/login/verify     { token }                 → { session } | 403
 //   POST /api/session          { session }               → { session } | 401
 import { OrderUsed, addDonor, donorsConfigured, isDonor } from './support/donors.mjs'
+import { currency, kofiConfigured, kofiUrl, minAmount, parseWebhook } from './support/kofi.mjs'
 import { mailConfigured, publicUrl, sendAccessLink } from './support/mail.mjs'
-import { MAX_AMOUNT, captureOrder, cleanAmount, createOrder, currency, minAmount, paypalConfigured } from './support/paypal.mjs'
 import { emailHash, normEmail, secretConfigured, sign, validEmail, verify } from './support/tokens.mjs'
 
 const MIN = 60_000, HOUR = 60 * MIN, DAY = 24 * HOUR
-const TTL = { claim: 7 * DAY, login: 30 * MIN, session: 60 * DAY }
+const TTL = { login: 30 * MIN, session: 60 * DAY }
 const LANGS = new Set(['es', 'en', 'zh'])
 
-export const supportEnabled = () => secretConfigured() && paypalConfigured() && donorsConfigured() && mailConfigured()
+export const supportEnabled = () => secretConfigured() && kofiConfigured() && donorsConfigured() && mailConfigured()
 const loginEnabled = () => secretConfigured() && donorsConfigured() && mailConfigured()
 
 /* Límites por IP (y por correo para los enlaces), en memoria. */
@@ -47,10 +46,32 @@ function firstUse(n) {
 
 const json = (res, status, body) => { res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(body)) }
 
-async function readJson(req) {
+async function readBody(req, max) {
   let body = ''
-  for await (const chunk of req) { body += chunk; if (body.length > 4096) throw Object.assign(new Error('too-large'), { status: 413 }) }
+  for await (const chunk of req) { body += chunk; if (body.length > max) throw Object.assign(new Error('too-large'), { status: 413 }) }
+  return body
+}
+
+async function readJson(req) {
+  const body = await readBody(req, 4096)
   try { return JSON.parse(body || '{}') } catch { throw Object.assign(new Error('bad-json'), { status: 400 }) }
+}
+
+/** Webhook de Ko-fi. Responde 200 a todo aviso auténtico (aunque no dé Premium) para que Ko-fi no lo reintente; 5xx si falló guardarlo. */
+async function kofiWebhook(req, res) {
+  if (!supportEnabled()) return json(res, 503, { error: 'not-configured' })
+  const r = parseWebhook(await readBody(req, 64 * 1024))
+  if (!r.ok) { console.warn('[kofi] aviso rechazado:', r.why); return json(res, r.why === 'token' ? 401 : 400, { error: r.why }) }
+  if (!r.grant) { console.log(`[kofi] aviso ${r.tx || '?'} sin Premium: ${r.why}`); return json(res, 200, { ok: true }) }
+  const email = normEmail(r.email)
+  if (!validEmail(email)) { console.warn(`[kofi] aviso ${r.tx}: correo no válido, dalo de alta a mano`); return json(res, 200, { ok: true }) }
+  const h = emailHash(email)
+  try { await addDonor(h, { id: `kofi:${r.tx}`, amount: r.amount.toFixed(2), currency: r.currency }) }
+  catch (e) { if (e instanceof OrderUsed) return json(res, 200, { ok: true, repeated: true }); throw e }
+  console.log(`[kofi] Premium dado (${r.amount.toFixed(2)} ${r.currency})`)
+  sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), 'es', true)
+    .catch(e => console.error('[kofi] correo de bienvenida:', e.message))
+  return json(res, 200, { ok: true })
 }
 
 const ipOf = req => String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket.remoteAddress || '?'
@@ -63,42 +84,16 @@ export async function handleApi(req, res, url) {
   const ip = ipOf(req)
   try {
     if (route === '/api/support/config' && req.method === 'GET') {
-      return json(res, 200, { enabled: supportEnabled(), login: loginEnabled(), paypalClientId: process.env.PAYPAL_CLIENT_ID ?? '',
-        currency: currency(), min: minAmount(), max: MAX_AMOUNT, sandbox: process.env.PAYPAL_ENV !== 'live' })
+      return json(res, 200, { enabled: supportEnabled(), login: loginEnabled(), kofiUrl: kofiUrl(),
+        currency: currency(), min: minAmount() })
     }
     if (req.method !== 'POST') return json(res, 405, { error: 'method' })
+    // Antes del límite general por IP: lo llama Ko-fi (siempre desde sus servidores) y solo vale con el token secreto.
+    if (route === '/api/support/kofi') return await kofiWebhook(req, res)
     if (limited(`all:${ip}`, 60, 10 * MIN)) return json(res, 429, { error: 'too-many' })
     const body = await readJson(req)
 
     switch (route) {
-      case '/api/support/order': {
-        if (!supportEnabled()) return json(res, 503, { error: 'not-configured' })
-        const amount = cleanAmount(body.amount)
-        if (!amount) return json(res, 400, { error: 'amount' })
-        if (limited(`order:${ip}`, 15, HOUR)) return json(res, 429, { error: 'too-many' })
-        return json(res, 200, { id: await createOrder(amount) })
-      }
-      case '/api/support/capture': {
-        if (!supportEnabled()) return json(res, 503, { error: 'not-configured' })
-        if (!/^[A-Z0-9-]{6,40}$/i.test(String(body.orderID ?? ''))) return json(res, 400, { error: 'order' })
-        const r = await captureOrder(body.orderID)
-        if (!r.completed || r.currency !== currency() || r.amount < minAmount()) return json(res, 402, { error: 'payment' })
-        return json(res, 200, { claim: sign('claim', { o: r.id, a: r.amount.toFixed(2), c: r.currency }, TTL.claim), email: r.email })
-      }
-      case '/api/support/claim': {
-        if (!supportEnabled()) return json(res, 503, { error: 'not-configured' })
-        const claim = verify('claim', body.claim)
-        const email = normEmail(body.email)
-        if (!claim) return json(res, 400, { error: 'claim' })
-        if (!validEmail(email)) return json(res, 400, { error: 'email' })
-        const h = emailHash(email)
-        try { await addDonor(h, { id: claim.o, amount: claim.a, currency: claim.c }) }
-        catch (e) { if (e instanceof OrderUsed) return json(res, 409, { error: 'used' }); throw e }
-        let mailed = true
-        try { await sendAccessLink(email, accessLink(sign('login', { h }, TTL.login)), langOf(body.lang), true) }
-        catch (e) { mailed = false; console.error('[support] correo de bienvenida:', e.message) }
-        return json(res, 200, { session: newSession(h), mailed })
-      }
       case '/api/login': {
         if (!loginEnabled()) return json(res, 503, { error: 'not-configured' })
         const email = normEmail(body.email)

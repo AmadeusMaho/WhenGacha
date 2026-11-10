@@ -63,12 +63,12 @@ Antes hubo temas ("Negro OLED", "Colores") y opciones de fondo/acento/cursor; se
 
 ## Solo para WhenGacha Premium
 
-Las skins (y la insignia) son de **WhenGacha Premium**: se consigue apoyando con PayPal desde el pincel y se entra con el correo
+Las skins (y la insignia) son de **WhenGacha Premium**: se consigue apoyando en Ko-fi (enlazado desde el pincel) y se entra con el correo
 (enlace de un solo uso), así que no hay nada que se pueda publicar. "Original" siempre está disponible. Configuración, variables y
 gestión (`npm run premium -- add|revoke|check correo`): **`docs/premium.md`**.
 
-- `premium.ts`: sesión (token firmado por el servidor, `whengacha:session`, revalidada cada 12 h), enlace del correo (`?acceso=…`) y pago.
-- `SupportDialog.tsx`: ventana de apoyo (importe, botón de PayPal, correo).
+- `premium.ts`: sesión (token firmado por el servidor, `whengacha:session`, revalidada cada 12 h), enlace del correo (`?acceso=…`) y configuración del apoyo.
+- `SupportDialog.tsx`: ventana de apoyo (pasos y enlace a Ko-fi; el pago y el alta los hace el webhook de Ko-fi).
 - Sigue siendo posible activar una skin a mano tocando el código de la web (el CSS y las imágenes siempre se pueden descargar); lo que
   ya no se puede es compartir un acceso.
 - Los códigos `WG-…` anteriores ya no existen.

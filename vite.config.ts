@@ -8,7 +8,7 @@ import { handleApi } from './server/supporter.mjs'
  * Monta /proxy (el mismo proxy con caché del servidor de producción) en `npm run dev` y `npm run preview`,
  * para que la app consulte las fuentes igual en todos los entornos. Algunas fuentes (p. ej. gachafocus)
  * no permiten peticiones desde el navegador (CORS), y el proxy las hace desde el servidor.
- * También /api/* (WhenGacha Premium: apoyo con PayPal, acceso por correo y sesión), con sus variables de .env.local.
+ * También /api/* (WhenGacha Premium: apoyo con Ko-fi, acceso por correo y sesión), con sus variables de .env.local.
  */
 const proxyMiddleware: Connect.NextHandleFunction = (req, res) => {
   void handleProxy(req, res, new URL(req.url ?? '/', 'http://localhost'))
@@ -19,7 +19,7 @@ const apiMiddleware: Connect.NextHandleFunction = (req, res) => {
 }
 
 /** Variables del servidor para Premium. Sin prefijo VITE_: nunca entran en el código del navegador. */
-const SERVER_ENV = ['SUPPORTER_', 'PAYPAL_', 'DONORS_', 'RESEND_', 'MAIL_', 'PUBLIC_URL', 'SUPPORT_']
+const SERVER_ENV = ['SUPPORTER_', 'KOFI_', 'DONORS_', 'RESEND_', 'MAIL_', 'PUBLIC_URL', 'SUPPORT_']
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {

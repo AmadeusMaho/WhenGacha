@@ -1,12 +1,13 @@
-import { useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 
 /**
- * WhenGacha Premium en el navegador: sesión (token firmado por el servidor, server/supporter.mjs), enlace de acceso del correo y pago.
+ * WhenGacha Premium en el navegador: sesión (token firmado por el servidor, server/supporter.mjs), enlace de acceso del correo y
+ * configuración del apoyo (el pago se hace en Ko-fi, que avisa al servidor; el navegador no interviene).
  * Nada de esto es secreto en el navegador: la sesión solo vale porque el servidor la firmó y la revalida cada 12 h.
  */
 const SESSION_KEY = 'whengacha:session'
-/** Pago ya cobrado al que le falta el correo (si se cierra la ventana a medias, no se pierde). */
-const CLAIM_KEY = 'whengacha:claim'
+/** Pago pendiente de correo del antiguo flujo con PayPal: ya no se usa, se borra si quedó guardado. */
+const OLD_CLAIM_KEY = 'whengacha:claim'
 const RECHECK_MS = 12 * 3_600_000
 
 interface Session { t: string; exp: number; checked: number }
@@ -59,19 +60,18 @@ export async function revalidate(force = false) {
   } catch { /* sin conexión: se vuelve a intentar en la próxima visita */ }
 }
 
-export type ApiResult = 'ok' | 'invalid' | 'too-many' | 'unavailable' | 'used' | 'payment'
+export type ApiResult = 'ok' | 'invalid' | 'too-many' | 'unavailable'
 
 const resultOf = (status: number): ApiResult =>
-  status === 200 ? 'ok' : status === 429 ? 'too-many' : status === 409 ? 'used' : status === 402 ? 'payment'
-    : status === 400 || status === 403 ? 'invalid' : 'unavailable'
+  status === 200 ? 'ok' : status === 429 ? 'too-many' : status === 400 || status === 403 ? 'invalid' : 'unavailable'
 
 /** Pide un enlace de acceso para otro dispositivo. El servidor responde igual sea o no donante. */
 export async function requestLink(email: string, lang: string): Promise<ApiResult> {
   try { const { status } = await post('/api/login', { email: email.trim(), lang }); return resultOf(status) } catch { return 'unavailable' }
 }
 
-/* ----- Pago ----- */
-export interface SupportConfig { enabled: boolean; login: boolean; paypalClientId: string; currency: string; min: number; max: number; sandbox: boolean }
+/* ----- Apoyo ----- */
+export interface SupportConfig { enabled: boolean; login: boolean; kofiUrl: string; currency: string; min: number }
 
 let config: Promise<SupportConfig | null> | null = null
 export function supportConfig(): Promise<SupportConfig | null> {
@@ -79,39 +79,11 @@ export function supportConfig(): Promise<SupportConfig | null> {
   return config
 }
 
-export async function createOrder(amount: number): Promise<string> {
-  const { status, data } = await post('/api/support/order', { amount })
-  if (status !== 200 || typeof data.id !== 'string') throw new Error(resultOf(status))
-  return data.id
-}
-
-export interface Claim { claim: string; email: string }
-
-/** Cobra el pedido aprobado en PayPal. Si sale bien, guarda el pago pendiente de correo (por si se cierra la ventana). */
-export async function capture(orderID: string): Promise<Claim> {
-  const { status, data } = await post('/api/support/capture', { orderID })
-  if (status !== 200 || typeof data.claim !== 'string') throw new Error(resultOf(status))
-  const c = { claim: data.claim, email: String(data.email ?? '') }
-  store.set(CLAIM_KEY, JSON.stringify(c))
-  return c
-}
-
-export function pendingClaim(): Claim | null {
-  try { const c = JSON.parse(store.get(CLAIM_KEY) ?? 'null') as Claim | null; return c?.claim && expOf(c.claim) > Date.now() ? c : null } catch { return null }
-}
-
-/** Asocia el pago al correo: alta en la lista, sesión en este navegador y correo con el enlace para otros dispositivos. */
-export async function claim(c: Claim, email: string, lang: string): Promise<{ result: ApiResult; mailed?: boolean }> {
-  try {
-    const { status, data } = await post('/api/support/claim', { claim: c.claim, email: email.trim(), lang })
-    if (status === 200 && typeof data.session === 'string') {
-      saveSession(data.session)
-      store.set(CLAIM_KEY, null)
-      return { result: 'ok', mailed: data.mailed !== false }
-    }
-    if (status === 409) store.set(CLAIM_KEY, null) // ese pago ya se usó
-    return { result: resultOf(status) }
-  } catch { return { result: 'unavailable' } }
+/** Página de Ko-fi configurada en el servidor (KOFI_URL), o '' si no hay (sin servidor o sin configurar). La usa el botón de donar del pie. */
+export function useKofiUrl(): string {
+  const [url, setUrl] = useState('')
+  useEffect(() => { void supportConfig().then(c => setUrl(c?.kofiUrl ?? '')) }, [])
+  return url
 }
 
 /* ----- Enlace del correo (?acceso=…) ----- */
@@ -120,6 +92,7 @@ export const useNotice = () => useSyncExternalStore(subscribe, () => notice)
 export const clearNotice = () => { notice = null; emit() }
 
 async function init() {
+  store.set(OLD_CLAIM_KEY, null)
   const params = new URLSearchParams(location.search)
   const token = params.get('acceso')
   if (!token) return revalidate()
