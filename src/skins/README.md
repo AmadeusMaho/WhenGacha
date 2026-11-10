@@ -62,6 +62,8 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
     paneles van en gris claro (`#e2e7ed`) con bordes más marcados para que contrasten con las tarjetas blancas.
   - **Fuente**: la del juego, **Futura Condensed Bold** (© Adobe 1987, marca de Neufville; licencia comercial), el `.otf` que aportó el
     dueño, pasado a `public/skins/nikke/nikke-font.woff2` sin recortar (12 KB, ya es solo latina). Lo que no cubre cae en Saira Semi Condensed.
+    Sus contornos son CFF sin hinting y en Windows se ven borrosos a tamaño pequeño: desde el 10 nov 2026 va solo en títulos, pestañas,
+    cabeceras y cifras; el resto del texto, en Saira Semi Condensed.
   - `public/skins/nikke/` (web oficial nikke-en.com, página Art, © SHIFT UP / Proxima Beta; el dueño decidió usarlos): `bg.webp` /
     `bg-m.webp` = wallpaper "KEEP OUT" (fondo fijo, versión de 960 px en móvil); `live-<n>.mp4` + `live-<n>.webp` = **siete live
     wallpapers** (Sin Editor, Coins in Rush, Phantom Thief vs Detective, Enter Heaven, Absolute, Unbreakable Sphere, Arcane Archive),
@@ -88,6 +90,7 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
     iconos de arriba. `cursor.png` (32 px) / `cursor@2x.png` (64 px) = el cursor del juego, convertido del `.cur` que aportó el dueño
     (24 bits con máscara AND; Pillow lo abría sin transparencia, así que se leyó a mano). Punta en (10, 6).
   - Sin fondo animado. Fuente: M PLUS Rounded 1c (Google Fonts, OFL); la del juego (FOT-Rodin) es de pago y no se aportó.
+    Texto normal en peso 500 (en 700 se empastaba) y títulos de tarjeta con interlineado 1,34 (se cortaban la g y la y).
   - Las tarjetas de banner (`.bcard`) y la cabecera de "Mis gachas" (`.gcard-hero`) llevan el texto sobre el arte: ahí se vuelve a blanco.
 - **Vista previa de skins** (`SkinPicker.tsx`): cambia al MOVER el ratón por una fila y se quita al salir del menú entero. El menú tiene
   posición fija (medida al abrirlo) y las mismas medidas y fuente con cualquier skin (bloque final de `skins.css`): antes cambiaba de tamaño

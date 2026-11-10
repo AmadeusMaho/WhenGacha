@@ -987,3 +987,7 @@ img.plan-ico { object-fit: contain; }
 .bar .bar-left.soon { color: #ffe3a3; }
 .bar.has-chip .bar-in { padding-right: 42px; }
 .bar.has-chip .bar-txt b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Títulos de las tarjetas: recortan a dos líneas (overflow: hidden) y con el interlineado justo se comían la cola de la g/y ("Mitya",
+   "Suoming"); 2 px de margen interior abajo para que quepa. */
+.bcard h3, .ecard h3 { padding-bottom: 2px; }

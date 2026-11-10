@@ -40,7 +40,9 @@ html[data-skin="uma"] {
   --bad: #b3261e;
   color-scheme: light;
 }
-html[data-skin="uma"] body { font-family: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 700; color: var(--um-ink); }
+/* Texto normal en peso 500: en 700 la fuente redondeada se empastaba a tamaño pequeño ("se difumina", 10 nov 2026). La negrita queda
+   para títulos, cifras y botones. */
+html[data-skin="uma"] body { font-family: 'M PLUS Rounded 1c', 'Segoe UI', system-ui, sans-serif; font-weight: 500; color: var(--um-ink); }
 html[data-skin="uma"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
 html[data-skin="uma"] ::selection { background: rgba(126, 204, 8, .35); }
 html[data-skin="uma"] * { scrollbar-color: rgba(126, 204, 8, .7) transparent; }
@@ -303,3 +305,7 @@ html[data-skin="uma"] :is(input[type="text"], input[type="search"], input[type="
 html[data-skin="uma"] .plan .plan-total b { color: var(--um-green-d); }
 /* Iconos de los títulos de la calculadora: en blanco, como el texto de la barra verde (en verde no se veían). */
 html[data-skin="uma"] .plan h3 .plan-ico { color: #fff; }
+
+/* Títulos de las tarjetas (banners y eventos): con el interlineado de la base (1,12) se cortaban las letras que bajan de M PLUS Rounded
+   ("Suomin_g_", "L_y_nae"). */
+html[data-skin="uma"] :is(.bcard, .ecard) h3 { line-height: 1.34; }

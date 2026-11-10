@@ -44,7 +44,12 @@ html[data-skin="nikke"] {
   unicode-range: U+0020-007E, U+00A1-00AC, U+00AE-00FF, U+0131, U+0141-0142, U+0152-0153, U+0160-0161, U+0178, U+017D-017E, U+0192,
     U+02C6-02C7, U+02D8-02DD, U+2013-2014, U+2018-201A, U+201C-201E, U+2020-2022, U+2026, U+2030, U+2039-203A, U+2044, U+2122, U+2212; }
 html[data-skin="nikke"] { font-synthesis: none; }
-html[data-skin="nikke"] body { font-family: 'NIKKE UI', 'Saira Semi Condensed', 'Segoe UI', system-ui, sans-serif; font-weight: 500; letter-spacing: .02em; }
+/* La fuente del juego tiene contornos CFF sin hinting: en Windows, a tamaño pequeño, se pinta borrosa ("se difumina", 10 nov 2026). Va
+   solo en lo grande (títulos, pestañas, cabeceras, cifras); el resto del texto, en Saira Semi Condensed (Google Fonts, con hinting),
+   que también es condensada y mantiene el aire del juego. */
+html[data-skin="nikke"] body { font-family: 'Saira Semi Condensed', 'Segoe UI', system-ui, sans-serif; font-weight: 500; letter-spacing: .01em; }
+html[data-skin="nikke"] :is(h1, h2, h3, header nav button, .kind-head, .sec-title, .stats b, .plan-total b, .modal-title h2) {
+  font-family: 'NIKKE UI', 'Saira Semi Condensed', 'Segoe UI', system-ui, sans-serif; letter-spacing: .02em; }
 html[data-skin="nikke"] :is(h1, h2, h3, h4, b, strong) { font-weight: 700; }
 html[data-skin="nikke"] ::selection { background: rgba(26, 163, 240, .4); }
 html[data-skin="nikke"] * { scrollbar-color: rgba(26, 163, 240, .6) transparent; }
@@ -345,3 +350,8 @@ html[data-skin="nikke"] .bcard.bcard .ev-loc { color: #7fcbff; }
 html[data-skin="nikke"] .plan .plan-total b { color: var(--nk-blue3); }
 /* Iconos de los títulos de la calculadora, sobre el panel claro: el azul de texto. */
 html[data-skin="nikke"] .plan h3 .plan-ico { color: var(--nk-blue3); }
+
+/* "+1" (más personajes) en las fichas de banner de "Mis gachas": la ficha es oscura dentro del panel claro y heredaba su gris (1,8:1). */
+html[data-skin="nikke"] .bport .p-n small { color: #c9d3de; }
+/* "v3.8 · 12 nov" sobre el arte del juego en "Mis gachas": iba en el azul de los paneles claros y no se leía sobre artes claros. */
+html[data-skin="nikke"] .gcard-hero .head-meta > span:not(.pill) { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .6); }
