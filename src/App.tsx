@@ -18,14 +18,15 @@ import TimelineTab from './Timeline'
 import type { GameEvent } from './types'
 import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
+import { Planner } from './Planner'
 
 /** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
 /** Servidor de Discord de la comunidad (botón del pie). */
 const DISCORD_URL = 'https://discord.gg/zz3XtbTrqP'
 const DONATE_URL = 'https://www.paypal.com/donate/?business=amadeusmaho45%40gmail.com&item_name=WhenGacha&currency_code=USD'
 
-type Tab = 'timeline' | 'mine' | 'patches'
-const TABS: [Tab, 'tab.timeline' | 'tab.mine' | 'tab.patches'][] = [['timeline', 'tab.timeline'], ['mine', 'tab.mine'], ['patches', 'tab.patches']]
+type Tab = 'timeline' | 'mine' | 'patches' | 'pulls'
+const TABS: [Tab, 'tab.timeline' | 'tab.mine' | 'tab.patches' | 'tab.pulls'][] = [['timeline', 'tab.timeline'], ['mine', 'tab.mine'], ['patches', 'tab.patches'], ['pulls', 'tab.pulls']]
 
 const ago = (ts?: number) => {
   if (!ts) return t('ago.never')
@@ -112,7 +113,10 @@ export default function App() {
         <nav ref={navRef}>
           {/* Indicador que se desliza bajo la pestaña activa (posición medida en useLayoutEffect). */}
           <span className="nav-ind" aria-hidden />
-          {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>{t(label)}</button>)}
+          {/* Con cuatro pestañas, en móvil "Línea de tiempo" se acorta a "Línea" (App.css, .tab-short) para que quepan con cualquier skin. */}
+          {TABS.map(([id, label]) => <button key={id} className={tab === id ? 'on' : ''} onClick={() => transition(() => setTab(id))}>
+            {id === 'timeline' ? <><span className="tab-full">{t(label)}</span><span className="tab-short">{t('tab.timelineShort')}</span></> : t(label)}
+          </button>)}
         </nav>
         <div className="head-actions">
           <SkinPicker timeline={tab === 'timeline'} donateUrl={donateUrl} /> {/* skins */}
@@ -127,6 +131,7 @@ export default function App() {
         {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} focusGame={focusGame} onFocused={() => setFocusGame(undefined)} />}
         {tab === 'mine' && <MyGachas ctx={ctx} goGame={goGame} />}
         {tab === 'patches' && <Patches {...ctx} goMine={goMine} />}
+        {tab === 'pulls' && <Planner {...ctx} goMine={goMine} />}
       </main>
       <footer className="site-foot">
         <span>© WhenGacha</span>

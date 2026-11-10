@@ -291,3 +291,13 @@ html[data-skin="genshin"] :is(a, button, [role="button"], [role="link"], [role="
   cursor: image-set(url(/skins/genshin/cursor.png) 1x, url(/skins/genshin/cursor@2x.png) 2x) 2 2, pointer !important;
 }
 html[data-skin="genshin"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* Pestaña "Tiradas" (Planner.tsx): en los paneles crema, el total y las tiradas de cada evento en ámbar oscuro (el dorado de la base
+   se quedaba en 1,4–1,7:1). */
+html[data-skin="genshin"] .plan :is(.plan-total b, .pull-list li em) { color: #8a5600; }
+/* "Que empiece / Que termine": el segmento de la skin está pensado para el fondo oscuro (texto blanco); en el panel crema va sobre la barra pizarra. */
+html[data-skin="genshin"] .plan .seg { background: var(--gi-slate); border-color: transparent; }
+/* "¡Llegas!": el verde de la base no se lee sobre crema (1,5:1). */
+html[data-skin="genshin"] .plan .plan-goal.ok p { color: #2f6b34; }
+/* Títulos de la calculadora: ya llevan su icono; sin la estrella de la skin delante (salían dos). */
+html[data-skin="genshin"] .plan h3:has(> .plan-ico)::before { display: none; }

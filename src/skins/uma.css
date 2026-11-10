@@ -70,13 +70,17 @@ html[data-skin="uma"] header nav button::before { content: ""; position: absolut
 html[data-skin="uma"] header nav button:nth-of-type(1)::before { background-image: url(/skins/uma/nav-timeline.webp); }
 html[data-skin="uma"] header nav button:nth-of-type(2)::before { background-image: url(/skins/uma/nav-mine.webp); }
 html[data-skin="uma"] header nav button:nth-of-type(3)::before { background-image: url(/skins/uma/nav-patches.webp); }
+/* "Tiradas": utx_ico_home_umamusume_06 del mismo zip (la chica con la Carat, la gema de las tiradas). Activa en naranja. */
+html[data-skin="uma"] header nav button:nth-of-type(4)::before { background-image: url(/skins/uma/nav-pulls.webp); }
+html[data-skin="uma"] header nav button:nth-of-type(4).on { border-color: #7a3500 !important; background: linear-gradient(90deg, #9c4400, #b04e00 60%, #bd5800) !important; box-shadow: 0 2px 0 #7a3500, inset 0 1px 0 rgba(255, 255, 255, .35); }
 html[data-skin="uma"] header nav button:is(:hover, .on)::before { transform: translateY(-3px) scale(1.06); }
 html[data-skin="uma"] header nav button:nth-of-type(2).on { border-color: #8f1546 !important; background: linear-gradient(90deg, var(--um-pink-bar), #d84078 60%, #e8558c) !important; box-shadow: 0 2px 0 #8f1546, inset 0 1px 0 rgba(255, 255, 255, .35); }
 html[data-skin="uma"] header nav button:nth-of-type(3).on { border-color: #0b4f8f !important; background: linear-gradient(90deg, #1565b8, #1f7fd6 60%, #3fa0ec) !important; box-shadow: 0 2px 0 #0b4f8f, inset 0 1px 0 rgba(255, 255, 255, .35); }
 @media (max-width: 700px) {
   html[data-skin="uma"] header nav { gap: 4px; }
-  html[data-skin="uma"] header nav button { padding: 6px 8px 6px 32px !important; font-size: .82rem; }
-  html[data-skin="uma"] header nav button::before { left: 1px; width: 30px; height: 34px; } }
+  html[data-skin="uma"] header nav button { padding: 6px 6px 6px 29px !important; font-size: .76rem; }
+  html[data-skin="uma"] header nav button::before { left: 0; width: 28px; height: 32px; }
+ }
 /* Sincronizar: las flechas naranjas del juego (utx_ico_charachange_00) en lugar de ⟳. */
 html[data-skin="uma"] header .btn .spin { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -.2em; font-size: inherit; color: transparent; background: url(/skins/uma/ico-sync.webp) center / contain no-repeat; }
 
@@ -294,3 +298,8 @@ html[data-skin="uma"] :is(a, button, [role="button"], [role="link"], [role="radi
   cursor: url(/skins/uma/cursor.png) 10 6, pointer !important;
   cursor: image-set(url(/skins/uma/cursor.png) 1x, url(/skins/uma/cursor@2x.png) 2x) 10 6, pointer !important; }
 html[data-skin="uma"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* Pestaña "Tiradas" (Planner.tsx): el total, en el verde oscuro de las cifras (el lima de la base se quedaba en 1,8:1). */
+html[data-skin="uma"] .plan .plan-total b { color: var(--um-green-d); }
+/* Iconos de los títulos de la calculadora: en blanco, como el texto de la barra verde (en verde no se veían). */
+html[data-skin="uma"] .plan h3 .plan-ico { color: #fff; }

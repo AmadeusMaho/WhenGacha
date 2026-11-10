@@ -122,9 +122,11 @@ Antes hubo temas ("Negro OLED", "Colores") y opciones de fondo/acento/cursor; se
 
 Todas las skins traen una lista de fondos en `live` (`skins.ts`); cada visita a la línea de tiempo muestra el siguiente (se recuerda en
 `whengacha:live:<skin>`). Un fondo con `video` se reproduce en bucle; uno con solo `poster` (fondo fijo, `still-*.webp`) hace un
-recorrido de cámara de 36 s (clase `kb`) y lleva encima la capa `.skin-live-fx` (motas de luz que suben y un haz que cruza cada 16 s,
-con el color de la skin en `--live-fx`/`--live-sweep`), todo en `skins.css`. Antes solo se acercaba un 7 % en 48 s y en producción
-parecía una imagen quieta (10 nov 2026); solo NIKKE, con todo vídeos, se veía animada. En móvil, "ahorro de datos" o "reducir movimiento", fotograma fijo sin movimiento.
+recorrido de cámara suave de 60 s (clase `kb`) y lleva encima la capa `.skin-live-fx` (motas de luz tenues que suben despacio, con el
+color de la skin en `--live-fx`), todo en `skins.css`. Antes solo se acercaba un 7 % en 48 s y en producción parecía una imagen quieta
+(10 nov 2026); solo NIKKE, con todo vídeos, se veía animada. Hubo también un haz de luz que cruzaba: se quitó por raro.
+Con el fondo de la skin puesto se oculta el arte del juego de la vista Cuadrícula (`.wall`): con el fondo semitransparente de Uma se veía
+a través (el arte de Lynae de WuWa detrás de Uma). En móvil, "ahorro de datos" o "reducir movimiento", fotograma fijo sin movimiento.
 Los marcos de la línea de tiempo son algo transparentes para que se vea el fondo; el eje de meses y la columna de juegos siguen OPACOS
 (se quedan fijos al hacer scroll y, transparentes, dejaban ver los eventos por debajo; pasó en NIKKE).
 
@@ -143,6 +145,17 @@ Origen (webs oficiales, 10 nov 2026; arte de cada estudio, el dueño decidió us
 los fondos de la skin, por su campo `official`, no se repite). El vídeo se reproduce desde el CDN oficial y solo si pesa ≤ 12 MB; si no
 (WuWa, 23 MB), se usa su imagen de portada como fondo fijo. Si ese fondo falla (el vídeo da error o no arranca en 10 s, o su imagen no carga), `LiveWallpaper.tsx` lo cambia por uno de los de la skin (un vídeo si lo hay). Sin servidor propio no hay fondo de versión. Detalles: `docs/fuentes-y-proxy.md`.
 Cuando salga una versión nueva y se quiera su vídeo comprimido en la skin (más ligero), se convierte y se añade a la lista con su `official`.
+
+## Pestaña "Tiradas" (calculadora, `src/Planner.tsx` + `src/pullPlan.ts`, 10 nov 2026)
+
+Usa las clases de siempre (`.psec`, `.gsec-head`, `.stats`, `.list`, `.progress`, `.seg`, `.pull-list`), así que cada skin la pinta sola.
+Lo que hubo que tocar por skin, en un bloque "Pestaña Tiradas" al final de su CSS:
+- **Genshin**: total, "~N✦" y "¡Llegas!" en colores oscuros (en el crema no se leían) y el segmento "Que empiece / Que termine" sobre
+  la barra pizarra (su texto es blanco).
+- **NIKKE** y **Uma**: el total en su color de texto (azul / verde oscuro).
+- **Pestaña nueva en la barra**: NIKKE lleva una gema blanca dibujada (el zip de retratos ya no está en el equipo); Uma, el sticker
+  `nav-pulls.webp` = `utx_ico_home_umamusume_06` del zip "Umamusume UI sprites" (la chica con la Carat), activa en naranja.
+- En móvil, "Línea de tiempo" se acorta a "Línea" (`.tab-short`, App.css) para que quepan las cuatro pestañas con cualquier skin.
 
 ## Solo para WhenGacha Premium
 

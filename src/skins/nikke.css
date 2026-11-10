@@ -103,6 +103,8 @@ html[data-skin="nikke"] header nav button::before { content: ""; position: absol
 html[data-skin="nikke"] header nav button:nth-of-type(1)::before { background-image: url(/skins/nikke/nav-timeline.webp); }
 html[data-skin="nikke"] header nav button:nth-of-type(2)::before { background-image: url(/skins/nikke/nav-mine.webp); }
 html[data-skin="nikke"] header nav button:nth-of-type(3)::before { background-image: url(/skins/nikke/nav-patches.webp); }
+/* "Tiradas": sin retrato del zip (no está en el equipo); de momento, una gema blanca (las Gems del juego) sobre el azul de los botones. */
+html[data-skin="nikke"] header nav button:nth-of-type(4)::before { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 4h10l4 5-9 11L3 9z' fill='%23fff'/%3E%3Cpath d='M3 9h18M9 4l3 16M15 4l-3 16M7 4l2 5 3-5 3 5 2-5' fill='none' stroke='%230b72c4' stroke-width='1.1' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat, linear-gradient(160deg, #1fa3f2, #0b5fa8); }
 html[data-skin="nikke"] header nav button:is(.on, :hover)::before { border-color: #fff; filter: none; }
 html[data-skin="nikke"] header nav button.on::before { box-shadow: 0 0 8px rgba(150, 210, 255, .8); }
 @media (max-width: 700px) {
@@ -338,3 +340,8 @@ html[data-skin="nikke"] .bcard.bcard { --text: #fff; --muted: #d6dbe1; --warn: #
 html[data-skin="nikke"] .bcard.bcard :is(.prog span, h3, b, strong) { color: #fff; }
 html[data-skin="nikke"] .bcard.bcard :is(small, .muted) { color: #d6dbe1; }
 html[data-skin="nikke"] .bcard.bcard .ev-loc { color: #7fcbff; }
+
+/* Pestaña "Tiradas" (Planner.tsx): el total, en el azul de texto de los paneles claros (el de adorno se quedaba en 2,8:1). */
+html[data-skin="nikke"] .plan .plan-total b { color: var(--nk-blue3); }
+/* Iconos de los títulos de la calculadora, sobre el panel claro: el azul de texto. */
+html[data-skin="nikke"] .plan h3 .plan-ico { color: var(--nk-blue3); }

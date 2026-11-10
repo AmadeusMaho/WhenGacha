@@ -249,3 +249,7 @@ html[data-skin="hsr"] .site-foot::before { content: ""; position: absolute; left
 html[data-skin="hsr"], html[data-skin="hsr"] body { cursor: url(/skins/hsr/cursor.png) 4 4, auto; }
 html[data-skin="hsr"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) { cursor: url(/skins/hsr/cursor.png) 4 4, pointer !important; }
 html[data-skin="hsr"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* Pestaña "Tiradas": las filas del desglose ya llevan su icono; sin el punto de estación de la skin (quedaba recargado). */
+html[data-skin="hsr"] .plan-break li { padding-left: 10px; }
+html[data-skin="hsr"] .plan-break li::before { display: none; }

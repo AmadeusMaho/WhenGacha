@@ -87,6 +87,35 @@ export interface PromoCode {
   rewards: string[]
 }
 
+/** Ajustes de un juego en la pestaña "Tiradas" (pullPlan.ts). La moneda va en la unidad del juego (Astrite, Primogems…). */
+export interface PlanCfg {
+  /** Moneda premium que tienes ahora. */
+  cur: number
+  /** Billetes de tirada que tienes ahora (cada uno = 1). */
+  tickets: number
+  /** Moneda por día de las misiones diarias. */
+  daily: number
+  /** Pase mensual activo, y cuánto da al día. */
+  pass: boolean
+  passDaily: number
+  /** Moneda extra por semana (modos de fin de semana, tienda semanal…). */
+  weekly: number
+  /** Moneda que cuesta una tirada. */
+  per: number
+  /** Meta de tiradas (el pity del juego, por defecto). 0 = sin meta. */
+  goal: number
+  /** Banner objetivo (id) o 'date' para una fecha propia; vacío = el próximo. */
+  target?: string
+  /** Fecha propia (YYYY-MM-DD), si `target` es 'date'. */
+  date?: string
+  /** Contar hasta que empieza el banner o hasta que termina. */
+  at: 'start' | 'end'
+  /** Sumar las tiradas de los eventos pendientes. */
+  events: boolean
+  /** Contar los modos de dificultad (Abismo, Shiyu, Torre…) al máximo. */
+  endgame: boolean
+}
+
 export interface AppState {
   tracked: string[]
   customGames: Game[]
@@ -104,4 +133,6 @@ export interface AppState {
   notify: boolean
   /** horas antes del fin del evento para avisar */
   leadHours: number
+  /** Pestaña "Tiradas": ajustes por juego (id → solo lo que cambiaste; el resto sale de pullPlan.ts). */
+  planner: Record<string, Partial<PlanCfg>>
 }

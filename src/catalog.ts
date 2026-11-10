@@ -89,4 +89,5 @@ export const initialState = (): AppState => ({
   synced: {},
   notify: false,
   leadHours: 24,
+  planner: {},
 })

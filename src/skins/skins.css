@@ -100,26 +100,29 @@ html .skin-panel .skin-unlock .btn { border-width: 1px !important; border-image:
 /* Fondo de la línea de tiempo (LiveWallpaper.tsx), para todas las skins: encima del fondo fijo y debajo del contenido. Cada skin le
    pone su filtro (oscurecer, aclarar).
    Fondos sin vídeo (clase "kb"): antes solo se acercaban un 7 % en 48 s y en producción parecían imágenes quietas (10 nov 2026).
-   Ahora hacen un recorrido de cámara (acercar, desplazarse y volver, 36 s) y llevan encima la capa .skin-live-fx: motas de luz que
-   suben y titilan y un haz que cruza la imagen cada 16 s. El color de la capa va por skin (--live-fx), abajo. */
+   Ahora hacen un recorrido de cámara suave (acercar, desplazarse y volver, 60 s) y llevan encima la capa .skin-live-fx: motas de luz
+   tenues que suben despacio. El color va por skin (--live-fx), abajo. (Hubo también un haz de luz que cruzaba la imagen: se quitó,
+   el dueño lo encontró raro; se dejó todo más ligero.) */
+/* Con el fondo de la skin puesto, fuera el arte del juego de la vista Cuadrícula (.wall, Timeline.tsx): quedaba debajo y en las skins
+   con el fondo semitransparente (Uma, opacity .45) se veía a través (p. ej. el arte de Lynae de WuWa detrás de Uma). */
+body:has(> .skin-live) .wall { display: none; }
 html[data-skin] .skin-live { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; object-fit: cover; pointer-events: none; background: center / cover no-repeat; }
 /* Sobra un 8 % por cada lado para que el recorrido nunca deje ver el borde de la imagen. */
-html[data-skin] .skin-live.kb { inset: -8%; width: 116%; height: 116%; animation: skin-kb 36s ease-in-out infinite !important; will-change: transform; }
+html[data-skin] .skin-live.kb { inset: -5%; width: 110%; height: 110%; animation: skin-kb 60s ease-in-out infinite !important; will-change: transform; }
 @keyframes skin-kb {
-  0%, 100% { transform: scale(1.02) translate(0, 0); }
-  25% { transform: scale(1.09) translate(-3%, -1.5%); }
-  50% { transform: scale(1.13) translate(2%, -3%); }
-  75% { transform: scale(1.07) translate(3%, 1.2%); }
+  0%, 100% { transform: scale(1.03) translate(0, 0); }
+  33% { transform: scale(1.07) translate(-1.6%, -.8%); }
+  66% { transform: scale(1.06) translate(1.4%, -1.2%); }
 }
-html[data-skin] { --live-fx: rgba(255, 255, 255, .6); --live-sweep: rgba(255, 255, 255, .07); }
-html[data-skin="wuwa"] { --live-fx: rgba(255, 240, 205, .65); --live-sweep: rgba(255, 244, 215, .08); }
-html[data-skin="hsr"] { --live-fx: rgba(222, 212, 255, .7); --live-sweep: rgba(200, 190, 255, .08); }
-html[data-skin="genshin"] { --live-fx: rgba(255, 238, 185, .7); --live-sweep: rgba(255, 236, 190, .08); }
-html[data-skin="zzz"] { --live-fx: rgba(255, 221, 0, .5); --live-sweep: rgba(255, 221, 0, .05); }
-html[data-skin="nikke"] { --live-fx: rgba(170, 220, 255, .6); --live-sweep: rgba(170, 220, 255, .07); }
-html[data-skin="uma"] { --live-fx: rgba(255, 255, 255, .9); --live-sweep: rgba(255, 255, 255, .18); }
+html[data-skin] { --live-fx: rgba(255, 255, 255, .6); }
+html[data-skin="wuwa"] { --live-fx: rgba(255, 240, 205, .65); }
+html[data-skin="hsr"] { --live-fx: rgba(222, 212, 255, .7); }
+html[data-skin="genshin"] { --live-fx: rgba(255, 238, 185, .7); }
+html[data-skin="zzz"] { --live-fx: rgba(255, 221, 0, .5); }
+html[data-skin="nikke"] { --live-fx: rgba(170, 220, 255, .6); }
+html[data-skin="uma"] { --live-fx: rgba(255, 255, 255, .9); }
 html[data-skin] .skin-live-fx { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-html[data-skin] .skin-live-fx::before, html[data-skin] .skin-live-fx::after { content: ""; position: absolute; pointer-events: none; }
+html[data-skin] .skin-live-fx::before { content: ""; position: absolute; pointer-events: none; }
 /* Motas: dos rejillas (220 y 330 px de alto) que suben 660 px por vuelta, múltiplo de las dos, así el bucle no salta. */
 html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(100% + 660px);
   background:
@@ -129,14 +132,9 @@ html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(
     radial-gradient(1.5px 1.5px at 260px 60px, var(--live-fx), transparent 70%),
     radial-gradient(3px 3px at 200px 250px, var(--live-fx), transparent 70%);
   background-size: 180px 220px, 180px 220px, 180px 220px, 310px 330px, 310px 330px;
-  animation: skin-fx-rise 40s linear infinite, skin-fx-twinkle 4.5s ease-in-out infinite alternate; will-change: transform; }
+  opacity: .45; animation: skin-fx-rise 70s linear infinite, skin-fx-twinkle 6s ease-in-out infinite alternate; will-change: transform; }
 @keyframes skin-fx-rise { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-40px, -660px, 0); } }
-@keyframes skin-fx-twinkle { from { opacity: .35; } to { opacity: 1; } }
-/* Haz de luz que cruza en diagonal y luego descansa. */
-html[data-skin] .skin-live-fx::after { top: -20%; bottom: -20%; left: 0; width: 60%;
-  background: linear-gradient(105deg, transparent 30%, var(--live-sweep) 50%, transparent 70%);
-  transform: translateX(-120%); animation: skin-fx-sweep 16s ease-in-out infinite; }
-@keyframes skin-fx-sweep { 0% { transform: translateX(-120%); } 45%, 100% { transform: translateX(260%); } }
+@keyframes skin-fx-twinkle { from { opacity: .2; } to { opacity: .5; } }
 @media (prefers-reduced-motion: reduce) {
   html[data-skin] .skin-live.kb { animation: none !important; }
   html[data-skin] .skin-live-fx { display: none; }
