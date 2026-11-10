@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { CATALOG } from './catalog'
 import { viaProxy } from './net'
+import { econOf } from './pullPlan'
 import type { AppState, Featured, Game, GameEvent } from './types'
 
 /**
@@ -225,6 +226,21 @@ export function useImages(state: AppState): number {
     }, `${ver ?? ''}|${cur?.name ?? ''}|${g.wallpaper ?? ''}${NO_WALL_SEARCH.has(id) ? '|oficial' : ''}`) // si cambia el fondo del catálogo, se vuelve a buscar
   }
 
+  // Iconos de la moneda y del billete promocional de cada juego para la calculadora de tiradas (Planner.tsx): la imagen de su página en la
+  // wiki, solo si ningún evento trae ya el icono oficial (itemIcon). Una consulta por moneda y juego, guardada como las demás.
+  for (const id of state.tracked) {
+    const g = games.get(id)
+    if (!g?.wiki.host) continue
+    const econ = econOf(g)
+    for (const name of [econ.icon, econ.ticket]) {
+      if (!name) continue
+      // Página de la moneda; si no tiene imagen, el archivo "Item <nombre>.png" (la convención de Fandom) o variantes en singular.
+      const one = name.replace(/s$/, '')
+      if (!eventItemIcon(state, id, name)) want(`c:${id}:${name}`, async () => (await pageImage(g.wiki.host, name, 64).catch(() => ''))
+        || firstFile(g.wiki.host, [...new Set([`Item ${name}.png`, `Item ${one}.png`, `${name}.png`, `${one}.png`, `${name} icon.png`, `${name} Icon.png`, `Icon ${name}.png`])], 64), '3')
+    }
+  }
+
   for (const e of state.events) {
     const g = games.get(e.gameId)
     if (!g || !state.tracked.includes(e.gameId)) continue
@@ -248,4 +264,21 @@ export function useImages(state: AppState): number {
     cb => { listeners.add(cb); return () => { listeners.delete(cb) } },
     () => version,
   )
+}
+
+/** Icono oficial de una recompensa ("Primogem", "Stellar Jade"…) si algún evento del juego lo trae. Admite el plural ("Astrites"). */
+function eventItemIcon(state: AppState, gameId: string, name: string): string | undefined {
+  const n = name.toLowerCase()
+  for (const e of state.events) {
+    if (e.gameId !== gameId) continue
+    const it = e.items.find(i => i.icon && (i.name.toLowerCase() === n || i.name.toLowerCase() === `${n}s`))
+    if (it) return it.icon
+  }
+  return undefined
+}
+
+/** Icono de una moneda o billete para la calculadora: el oficial de los eventos o el de su página en la wiki (vacío si no hay). */
+export function itemIcon(state: AppState, gameId: string, name?: string): string | undefined {
+  if (!name) return undefined
+  return eventItemIcon(state, gameId, name) || mem[`c:${gameId}:${name}`]?.u || undefined
 }

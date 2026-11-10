@@ -24,6 +24,20 @@ import type { Game, GameEvent, Patch, PlanCfg } from './types'
  * 4 Wisdom Cubes, BD2 60 Dia, Infinity Nikki 90 Diamonds; AFK Journey 100 Diamonds + 1 Invite Letter al día (lo demás de sus diarias
  * —oro, esencias, piedras de alma— no son tiradas); FGO 3 Saint Quartz semanales, 4 SQ + 1 billete por cada 7 días de inicio de
  * sesión y 5 billetes al mes en la tienda. Limbus: las diarias dan módulos de Enkephalin, no Lunacy (sin ingresos automáticos).
+ * Uma (10 nov 2026, tablas de umacaratcalculator.com, /api/calculator-data, la calculadora que recomendó el dueño): diarias 75, bonificación
+ *   semanal 150, recompensa mensual 500, 150 cada 50 días de inicio de sesión, 4 tickets de personaje en la tienda mensual (se repone el
+ *   día 2; hasta 9 comprando más) y Team Trials 375/semana en la Clase 6 (de 0 a 375 según la clase: se cuenta como modo de dificultad).
+ *   No se cuentan el rango de club (225–4500/mes), Champions Meeting (1000–3300), League of Heroes ni sus "ingresos varios" (90/día de
+ *   media): dependen de tu puesto o son una media, y la calculadora da un mínimo.
+ * Más modos (10 nov 2026, a petición del dueño de que estén todos):
+ * - Stella Sora (stelladb.pages.dev, "Pull Income"): semanales 500, check-in mensual 100 (días 5/13/20/25; se cuenta el 25),
+ *   mantenimiento de versión 450, y Boss Blitz por temporada según el puesto (700 de las estrellas + 300–600 del puesto).
+ * - Honkai Impact 3rd (guías de la comunidad): Elysian Realm 500/semana en Corruption o más; Memorial Arena hasta 140/semana (SSS).
+ *   Superstring Abyss paga según el puesto y no hay tabla fiable: no se cuenta.
+ * - NTE (Icy Veins, GameWith): Beyond the Rails, ruta especial 700 por versión.
+ * - Uma: Team Trials, rango de club y Champions Meeting son elecciones (`choices`) que cada uno rellena con su puesto.
+ * Sin datos fiables todavía: CZN (Basin of Hyperspace se reinicia cada mes, sin cifra publicada), Endfield (Umbral Monument es
+ * permanente; su extra es por evento), Epic Seven y AFK Journey (Arena según el puesto, sin tabla actual), BD2.
  * Ingresos con `tickets: true` son billetes de tirada (cada uno = 1 tirada), no moneda.
  * Billetes promocionales de la tienda (10 nov 2026, a petición del dueño: "5 promocionales y 5 del permanente al mes"): Genshin
  * (Paimon's Bargains), HSR (Embers) y ZZZ (Residual Signal) 5 al mes, el día 1; WuWa, 7 Radiant Tides por versión (su tienda de Coral se
@@ -32,7 +46,7 @@ import type { Game, GameEvent, Patch, PlanCfg } from './types'
  * Los modos de dificultad cuentan al máximo (todo con todas las estrellas); se pueden quitar del cálculo. No se cuentan los inicios
  * de sesión especiales ni los logros sueltos.
  */
-export type SourceKey = 'daily' | 'weekly' | 'maint' | 'live' | 'shop' | 'login' | 'dailyTicket' | 'ticketShop' | 'ticketShopPatch'
+export type SourceKey = 'daily' | 'weekly' | 'maint' | 'live' | 'shop' | 'login' | 'dailyTicket' | 'ticketShop' | 'ticketShopPatch' | 'monthly' | 'login50'
 export interface Source {
   /** Nombre del modo (se deja tal cual, en inglés como en el juego) o clave de texto genérico (plan.src.<key>). */
   name?: string
@@ -46,9 +60,35 @@ export interface Source {
   endgame?: boolean
   /** `amount` son billetes de tirada (1 = 1 tirada), no moneda. */
   tickets?: boolean
+  /** Fila que sale de una elección de rango (`choices`). */
+  rank?: boolean
+  /** Nombres con que el modo sale entre los eventos de la app (por defecto, `name`): esos eventos se cuentan en esta fila y no aparte. */
+  aliases?: string[]
+  /** Este modo son los desafíos del juego que no coinciden con otro (HSR: las temporadas de MoC / Pure Fiction / Apocalyptic Shadow
+   *  salen con su nombre temático, "Survival of the Fittest"…). */
+  matchChallenges?: boolean
 }
 
-export interface Econ { currency: string; per: number; pass: number; pity: number; sources: Source[]; /** Nota propia en lugar de la genérica. */ note?: 'limbus' }
+/** Opción de un modo que paga según tu puesto (rango de club, Champions Meeting…): moneda y tickets por cada vez. */
+export interface RankOption { label: string; amount: number; tickets?: number }
+/** Modo que paga según tu puesto: cada uno elige el suyo en la ficha (cfg.ranks[id] = índice; 0 = no participo / sin elegir). */
+export interface RankChoice { id: string; name: string; per: Source['per']; day?: number; every?: number; options: RankOption[] }
+
+export interface Econ {
+  currency: string; per: number; pass: number; pity: number; sources: Source[]
+  /** Modos cuya recompensa depende de tu puesto: se rellenan en la ficha. */
+  choices?: RankChoice[]
+  /** Nota propia en lugar de la genérica. */
+  note?: 'limbus'
+  /** Página de la wiki del juego con el icono de la moneda y del billete promocional (images.ts, `itemIcon`). */
+  icon?: string
+  ticket?: string
+  /** Calculadora dedicada que recomendamos para este juego (enlace en la ficha). Uma: umacaratcalculator.com, la que recomendó el dueño. */
+  more?: { name: string; url: string }
+  /** Icono propio de la moneda cuando la wiki no lo tiene (Uma: la wiki no guarda iconos; public/icons/uma-carat.webp = utx_ico_menu_23
+   *  del zip "Umamusume UI sprites" que aportó el dueño, la Carat del juego). */
+  iconUrl?: string
+}
 
 const daily = (amount: number): Source => ({ key: 'daily', amount, per: 'day' })
 const tickets = (key: SourceKey, amount: number, per: Source['per'], day?: number): Source => ({ key, amount, per, day, tickets: true })
@@ -56,27 +96,27 @@ const weekly = (amount: number): Source => ({ key: 'weekly', amount, per: 'week'
 const version = (maint: number, live: number): Source[] => [{ key: 'maint', amount: maint, per: 'patch' }, { key: 'live', amount: live, per: 'patch' }]
 
 const ECON: Record<string, Econ> = {
-  genshin: { currency: 'Primogems', per: 160, pass: 90, pity: 90, sources: [
+  genshin: { currency: 'Primogems', icon: 'Primogem', ticket: 'Intertwined Fate', per: 160, pass: 90, pity: 90, sources: [
     daily(60),
-    { name: 'Spiral Abyss', amount: 800, per: 'month', day: 16, endgame: true },
+    { name: 'Spiral Abyss', amount: 800, per: 'month', day: 16, endgame: true, aliases: ['spiral abyss', 'abyssal moon spire'] },
     { name: 'Imaginarium Theater', amount: 800, per: 'month', day: 1, endgame: true },
     tickets('ticketShop', 5, 'month', 1),
     ...version(600, 300)] },
-  starrail: { currency: 'Stellar Jade', per: 160, pass: 90, pity: 90, sources: [
+  starrail: { currency: 'Stellar Jade', icon: 'Stellar Jade', ticket: 'Star Rail Special Pass', per: 160, pass: 90, pity: 90, sources: [
     daily(60),
-    { name: 'Simulated Universe / Currency Wars', amount: 225, per: 'week' },
-    { name: 'Memory of Chaos · Pure Fiction · Apocalyptic Shadow', amount: 800, per: 'every', every: 14, endgame: true },
+    { name: 'Simulated Universe / Currency Wars', amount: 225, per: 'week', aliases: ['simulated universe', 'currency wars', 'divergent universe'] },
+    { name: 'Memory of Chaos · Pure Fiction · Apocalyptic Shadow', amount: 800, per: 'every', every: 14, endgame: true, matchChallenges: true },
     tickets('ticketShop', 5, 'month', 1),
     ...version(600, 300)] },
-  zenless: { currency: 'Polychrome', per: 160, pass: 90, pity: 90, sources: [
+  zenless: { currency: 'Polychrome', icon: 'Polychrome', ticket: 'Encrypted Master Tape', per: 160, pass: 90, pity: 90, sources: [
     daily(60),
-    { name: 'Hollow Zero', amount: 160, per: 'week' },
+    { name: 'Hollow Zero', amount: 160, per: 'week', aliases: ['hollow zero', 'lost void'] },
     { name: 'Ridu Weekly', amount: 60, per: 'week' },
     { name: 'Shiyu Defense', amount: 780, per: 'every', every: 14, endgame: true },
     { name: 'Deadly Assault', amount: 300, per: 'every', every: 14, endgame: true },
     tickets('ticketShop', 5, 'month', 1),
     ...version(600, 300)] },
-  wuwa: { currency: 'Astrite', per: 160, pass: 90, pity: 80, sources: [
+  wuwa: { currency: 'Astrite', icon: 'Astrite', ticket: 'Radiant Tide', per: 160, pass: 90, pity: 80, sources: [
     daily(60),
     { name: 'Thousand Gateways', amount: 160, per: 'week' },
     { name: 'Tower of Adversity', amount: 800, per: 'patch', endgame: true },
@@ -85,29 +125,49 @@ const ECON: Record<string, Econ> = {
     { name: 'Endstate Matrix', amount: 150, per: 'patch', endgame: true },
     tickets('ticketShopPatch', 7, 'patch'),
     ...version(600, 300)] },
-  arknights: { currency: 'Orundum', per: 600, pass: 0, pity: 0, sources: [
+  arknights: { currency: 'Orundum', icon: 'Orundum', ticket: 'Headhunting Permit', per: 600, pass: 0, pity: 0, sources: [
     daily(100), weekly(500),
     { name: 'Annihilation', amount: 1800, per: 'week', endgame: true },
     { key: 'shop', amount: 600, per: 'month', day: 1 }] },
-  reverse1999: { currency: 'Clear Drop', per: 180, pass: 0, pity: 70, sources: [
+  reverse1999: { currency: 'Clear Drop', icon: 'Clear Drop', ticket: 'Unilog', per: 180, pass: 0, pity: 70, sources: [
     daily(90), weekly(100),
     { name: 'Limbo', amount: 600, per: 'patch', endgame: true }] },
-  bluearchive: { currency: 'Pyroxene', per: 120, pass: 0, pity: 200, sources: [daily(20), weekly(120)] },
-  nikke: { currency: 'Gems', per: 300, pass: 0, pity: 200, sources: [daily(100), weekly(100)] },
-  endfield: { currency: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200)] },
-  uma: { currency: 'Carats', per: 150, pass: 0, pity: 200, sources: [daily(75)] },
-  czn: { currency: 'Crystals', per: 160, pass: 0, pity: 0, sources: [daily(60)] },
-  nte: { currency: 'Annulith', per: 160, pass: 0, pity: 0, sources: [daily(60)] },
-  fgo: { currency: 'Saint Quartz', per: 3, pass: 0, pity: 0, sources: [weekly(3), { key: 'login', amount: 4, per: 'week' }, tickets('login', 1, 'week'), tickets('ticketShop', 5, 'month', 1)] },
-  limbus: { currency: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [], note: 'limbus' },
-  epic7: { currency: 'Skystones', per: 100, pass: 0, pity: 0, sources: [daily(50)] },
-  stellasora: { currency: 'Stellanite Dust', per: 300, pass: 0, pity: 0, sources: [daily(100)] },
-  pgr: { currency: 'Black Cards', per: 250, pass: 0, pity: 0, sources: [daily(30)] },
-  honkai3: { currency: 'Crystals', per: 280, pass: 0, pity: 0, sources: [daily(40)] },
-  azurlane: { currency: 'Wisdom Cubes', per: 2, pass: 0, pity: 0, sources: [daily(4)] },
-  bd2: { currency: 'Dia', per: 200, pass: 0, pity: 0, sources: [daily(60)] },
-  afkjourney: { currency: 'Diamonds', per: 300, pass: 0, pity: 0, sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
-  infinitynikki: { currency: 'Diamonds', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
+  bluearchive: { currency: 'Pyroxene', icon: 'Pyroxene', per: 120, pass: 0, pity: 200, sources: [daily(20), weekly(120)] },
+  nikke: { currency: 'Gems', icon: 'Gem', ticket: 'Advanced Recruit Voucher', per: 300, pass: 0, pity: 200, sources: [daily(100), weekly(100)] },
+  endfield: { currency: 'Oroberyl', icon: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200)] },
+  uma: { currency: 'Carats', more: { name: 'Uma Carat Calculator', url: 'https://umacaratcalculator.com/app' }, icon: 'Carat', iconUrl: '/icons/uma-carat.webp', per: 150, pass: 0, pity: 200, sources: [
+    daily(75), weekly(150),
+    { key: 'monthly', amount: 500, per: 'month', day: 1 },
+    { key: 'login50', amount: 150, per: 'every', every: 50 },
+    tickets('ticketShop', 4, 'month', 2)],
+    choices: [
+      { id: 'tt', name: 'Team Trials', per: 'week', options: [['—', 0], ['Class 1', 0], ['Class 2', 35], ['Class 3', 75], ['Class 4', 150], ['Class 5', 225], ['Class 5.5', 262], ['Class 6', 375]].map(([label, amount]) => ({ label: String(label), amount: Number(amount) })) },
+      { id: 'club', name: 'Club', per: 'month', day: 1, options: [['—', 0], ['D+', 225], ['C', 450], ['C+', 900], ['B', 1350], ['B+', 1800], ['A', 2250], ['A+', 2700], ['S', 3150], ['S+', 3600], ['SS', 4500]].map(([label, amount]) => ({ label: String(label), amount: Number(amount) })) },
+      // Champions Meeting: uno al mes, con la final hacia el final del mes (21–27 nov, 19–25 dic 2026): se cuenta el día 25. Además de
+      // Carats da tickets de personaje.
+      { id: 'cm', name: 'Champions Meeting', per: 'month', day: 25, options: [
+        { label: '—', amount: 0 }, { label: 'Open League 3rd', amount: 1000, tickets: 1 }, { label: 'Open League 2nd', amount: 1250, tickets: 2 }, { label: 'Open League 1st', amount: 1500, tickets: 3 },
+        { label: 'Group B 3rd', amount: 1000, tickets: 1 }, { label: 'Group B 2nd', amount: 1250, tickets: 2 }, { label: 'Group B 1st', amount: 1800, tickets: 3 },
+        { label: 'Group A 3rd', amount: 1600, tickets: 3 }, { label: 'Group A 2nd', amount: 2400, tickets: 4 }, { label: 'Champion', amount: 3300, tickets: 5 }] },
+    ] },
+  czn: { currency: 'Crystals', icon: 'Crystal', per: 160, pass: 0, pity: 0, sources: [daily(60)] },
+  nte: { currency: 'Annulith', icon: 'Annulith', per: 160, pass: 0, pity: 0, sources: [daily(60),
+    { name: 'Beyond the Rails', amount: 700, per: 'patch', endgame: true }] },
+  fgo: { currency: 'Saint Quartz', icon: 'Saint Quartz', ticket: 'Summon Ticket', per: 3, pass: 0, pity: 0, sources: [weekly(3), { key: 'login', amount: 4, per: 'week' }, tickets('login', 1, 'week'), tickets('ticketShop', 5, 'month', 1)] },
+  limbus: { currency: 'Lunacy', icon: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [], note: 'limbus' },
+  epic7: { currency: 'Skystones', icon: 'Skystone', per: 100, pass: 0, pity: 0, sources: [daily(50)] },
+  stellasora: { currency: 'Stellanite Dust', icon: 'Stellanite Dust', per: 300, pass: 0, pity: 0, sources: [daily(100), weekly(500),
+    { key: 'monthly', amount: 100, per: 'month', day: 25 },
+    { key: 'maint', amount: 450, per: 'patch' }],
+    choices: [{ id: 'blitz', name: 'Boss Blitz', per: 'patch', options: [{ label: '—', amount: 0 }, { label: 'Top 50 %+', amount: 1000 }, { label: 'Top 20–50 %', amount: 1100 }, { label: 'Top 10–20 %', amount: 1200 }, { label: 'Top 10 %', amount: 1300 }] }] },
+  pgr: { currency: 'Black Cards', icon: 'Black Card', per: 250, pass: 0, pity: 0, sources: [daily(30)] },
+  honkai3: { currency: 'Crystals', icon: 'Crystal', per: 280, pass: 0, pity: 0, sources: [daily(40),
+    { name: 'Elysian Realm', amount: 500, per: 'week', endgame: true },
+    { name: 'Memorial Arena', amount: 140, per: 'week', endgame: true }] },
+  azurlane: { currency: 'Wisdom Cubes', icon: 'Wisdom Cube', per: 2, pass: 0, pity: 0, sources: [daily(4)] },
+  bd2: { currency: 'Dia', icon: 'Dia', per: 200, pass: 0, pity: 0, sources: [daily(60)] },
+  afkjourney: { currency: 'Diamonds', icon: 'Diamonds', ticket: 'Invite Letter', per: 300, pass: 0, pity: 0, sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
+  infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
 }
 
 /** Juegos sin economía conocida (los que añades a mano): moneda genérica a 160 por tirada, que se puede cambiar. */
@@ -190,15 +250,51 @@ export function planPulls(cfg: PlanCfg, until: number, game: Game, state: { even
   const span = Math.max(0, until - nowMs)
   const days = until ? Math.floor(span / DAY) : 0
   const per = Math.max(1, cfg.per || 1)
-  const timesOf = (s: Source) => !until ? 0
-    : s.per === 'day' ? days
-    : s.per === 'week' ? mondays(nowMs, until)
-    : s.per === 'month' ? monthDays(nowMs, until, s.day ?? 1)
-    : s.per === 'every' ? Math.floor(days / (s.every || 1))
-    : patchesBetween(state.patches, game, nowMs, until)
-  const rows = econ.sources.filter(s => cfg.endgame || !s.endgame).map(src => { const times = timesOf(src); return { src, times, amount: times * src.amount } })
+  const between = (s: Source, from: number) => !until || from >= until ? 0
+    : s.per === 'day' ? Math.floor((until - from) / DAY)
+    : s.per === 'week' ? mondays(from, until)
+    : s.per === 'month' ? monthDays(from, until, s.day ?? 1)
+    : s.per === 'every' ? Math.floor((until - from) / DAY / (s.every || 1))
+    : patchesBetween(state.patches, game, from, until)
+  const timesOf = (s: Source) => between(s, nowMs)
+  // Modos que la app ya tiene como desafíos con fecha (Abismo, Shiyu, Torre…): los reinicios conocidos se cuentan con su dato real y la
+  // cifra fija solo para los reinicios posteriores al último conocido. Así no se cuentan dos veces (10 nov 2026: en WuWa y Genshin pasaba).
+  const claimed = new Set<string>()
+  const named = (s: Source) => (s.aliases ?? (s.name ? [s.name.toLowerCase()] : []))
+  const matchesOf = (s: Source) => state.events.filter(e => e.gameId === game.id && e.kind !== 'banner' && !claimed.has(e.id)
+    && (s.matchChallenges ? e.kind === 'challenge' : named(s).some(a => e.title.toLowerCase().includes(a))))
+  const ordered = [...econ.sources.filter(s => !s.matchChallenges), ...econ.sources.filter(s => s.matchChallenges)]
+  const known = new Map<Source, { pending: GameEvent[]; from: number }>()
+  for (const src of ordered) {
+    if (!src.name) continue
+    const m = matchesOf(src)
+    if (!m.length) continue
+    m.forEach(e => claimed.add(e.id))
+    const pending = until ? m.filter(e => e.pulls > 0 && !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until) : []
+    known.set(src, { pending, from: Math.max(...m.map(e => +new Date(e.start))) })
+  }
+  const rows = econ.sources.filter(s => cfg.endgame || !s.endgame).map(src => {
+    const k = known.get(src)
+    if (!k) { const times = timesOf(src); return { src, times, amount: times * src.amount } }
+    // Reinicios después de la última temporada conocida (`k.from`, su inicio). Cada N días: anclados a ese inicio (HSR escalona sus tres
+    // modos cada 14 días). El resto: desde 2 días después de ese inicio, para no volver a contar la misma temporada (Endstate Matrix de
+    // WuWa empieza el mismo día que la versión).
+    const fixed = src.per === 'every'
+      ? Math.max(0, Math.floor((until - k.from) / DAY / (src.every || 1)) - Math.floor(Math.max(0, nowMs - k.from) / DAY / (src.every || 1)))
+      : between(src, Math.max(nowMs, k.from + 2 * DAY))
+    return { src, times: k.pending.length + fixed, amount: k.pending.reduce((n, e) => n + e.pulls * per, 0) + fixed * src.amount }
+  })
+  // Modos según tu puesto: cada elección hecha se convierte en una fila (y otra con sus tickets, si da).
+  for (const ch of econ.choices ?? []) {
+    const opt = ch.options[cfg.ranks?.[ch.id] ?? 0]
+    if (!opt || (!opt.amount && !opt.tickets)) continue
+    const base: Source = { name: `${ch.name} · ${opt.label}`, amount: opt.amount, per: ch.per, day: ch.day, every: ch.every, rank: true }
+    const times = timesOf(base)
+    if (opt.amount) rows.push({ src: base, times, amount: times * opt.amount })
+    if (opt.tickets) rows.push({ src: { ...base, amount: opt.tickets, tickets: true }, times, amount: times * opt.tickets })
+  }
   const eventList = until && cfg.events
-    ? state.events.filter(e => e.gameId === game.id && e.kind !== 'banner' && e.pulls > 0 && !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until)
+    ? state.events.filter(e => e.gameId === game.id && e.kind !== 'banner' && !claimed.has(e.id) && e.pulls > 0 && !state.done[e.id] && eventStatus(e, nowMs) !== 'ended' && +new Date(e.start) < until)
       .sort((a, b) => +new Date(a.end) - +new Date(b.end))
     : []
   const pass = cfg.pass ? days * Math.max(0, cfg.passDaily) : 0

@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { t } from './i18n'
 import { detailsPulls, partialPulls, trackedGames } from './logic'
 import { bannersOf, cfgOf, econOf, planPulls, type Source, type SourceRow } from './pullPlan'
 import type { Game, PlanCfg } from './types'
+import { itemIcon } from './images'
 import { GameAvatar, cssVar, fmtDate, type Ctx } from './ui'
 import { Ico, type IconName } from './PlanIcons'
 
@@ -59,11 +60,24 @@ function sourceIcon(s: Source): IconName {
     case 'live': return 'live'
     case 'shop': return 'shop'
     case 'login': return 'login'
+    case 'login50': return 'login'
+    case 'monthly': return 'calendar'
   }
   return s.endgame ? 'trophy' : 'repeat'
 }
 
 const fmt = (n: number) => (Math.round(n * 10) / 10).toLocaleString()
+const fmtN = (n: number) => Math.round(n).toLocaleString()
+
+/** Valor de una fila del desglose: la moneda (o los tickets) que da con su icono, en pequeño, y lo que suma en tiradas. */
+function Val({ icon, cur, pulls, ticket }: { icon?: string; cur: string; pulls: string; ticket?: boolean }) {
+  return (
+    <span className="plan-val">
+      <small className="plan-cur">{cur && <>{icon ? <img src={icon} alt="" loading="lazy" /> : <Ico name={ticket ? 'ticket' : 'gem'} />}{cur}</>}</small>
+      <b>{pulls}</b>
+    </span>
+  )
+}
 
 /** Nombre de una fila de ingresos: el del modo, o el texto genérico ("Misiones diarias"…). */
 const rowName = (r: SourceRow) => r.src.name ?? t(`plan.src.${r.src.key}` as 'plan.src.daily')
@@ -75,7 +89,6 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
   const set = (patch: Partial<PlanCfg>) => setState(s => ({ ...s, planner: { ...s.planner, [g.id]: { ...s.planner?.[g.id], ...patch } } }))
   const cur = econ.currency || t('plan.currency')
   const auto = econ.sources.length > 0
-  const hasEndgame = econ.sources.some(s => s.endgame)
 
   const banners = bannersOf(state.events, g.id, now)
   const useDate = cfg.target === 'date' || (!banners.length && !!cfg.date)
@@ -90,7 +103,26 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
   const per = Math.max(1, cfg.per)
   const diff = r.total - cfg.goal
   const pct = cfg.goal > 0 ? Math.min(100, (r.total / cfg.goal) * 100) : 0
-  const p = (amount: number) => `+${fmt(amount / per)}`
+  const curIcon = econ.iconUrl ?? itemIcon(state, g.id, econ.icon)
+  const ticketIcon = itemIcon(state, g.id, econ.ticket)
+  type Row = { ico: IconName; name: string; times?: number; amount: number; tickets?: boolean }
+  const groupOf = (s: Source) => (s.endgame ? 'endgame' : s.per === 'day' || s.per === 'week' ? 'routine' : 'version')
+  type GroupId = 'routine' | 'endgame' | 'rank' | 'version'
+  const groups: { id: GroupId; rows: Row[] }[] = (['routine', 'endgame', 'rank', 'version'] as const).map(id => ({ id, rows: [] }))
+  const add = (id: GroupId, row: Row) => groups.find(x => x.id === id)!.rows.push(row)
+  const [evOpen, setEvOpen] = useState(false)
+  // Los modos de dificultad se listan aunque estén quitados del cálculo (para poder volver a marcarlos): se cuentan aparte.
+  for (const src of econ.sources) {
+    const row = r.rows.find(x => x.src === src)
+    const times = row?.times ?? 0
+    if (src.endgame && !cfg.endgame) { add('endgame', { ico: sourceIcon(src), name: src.name ?? '', times, amount: 0 }); continue }
+    if (!times) continue
+    add(groupOf(src), { ico: sourceIcon(src), name: rowName(row!), times, amount: row!.amount, tickets: src.tickets })
+  }
+  // Lo que pagan los modos según tu puesto (lo que elegiste en "Tu puesto").
+  for (const x of r.rows) if (x.src.rank && x.times) add('rank', { ico: x.src.tickets ? 'ticket' : 'trophy', name: x.src.name ?? '', times: x.times, amount: x.amount, tickets: x.src.tickets })
+  if (cfg.pass) add('routine', { ico: 'card', name: t('plan.rowPass'), times: r.days, amount: r.pass })
+  if (r.manual > 0) add('routine', { ico: 'pencil', name: t('plan.rowManual'), amount: r.manual })
 
   return (
     <section className="psec plan" style={{ ...cssVar(g), '--i': i } as React.CSSProperties}>
@@ -108,8 +140,8 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
         <div className="plan-col">
           <h3><Ico name="wallet" title />{t('plan.have')}</h3>
           <div className="plan-fields">
-            <Num label={<><Ico name="gem" />{cur}</>} value={cfg.cur} onChange={n => set({ cur: n })} />
-            <Num label={<><Ico name="ticket" />{t('plan.tickets')}</>} value={cfg.tickets} onChange={n => set({ tickets: n })} />
+            <Num label={<>{curIcon ? <img className="plan-ico" src={curIcon} alt="" /> : <Ico name="gem" />}{cur}</>} value={cfg.cur} onChange={n => set({ cur: n })} />
+            <Num label={<>{ticketIcon ? <img className="plan-ico" src={ticketIcon} alt="" /> : <Ico name="ticket" />}{t('plan.tickets')}</>} value={cfg.tickets} onChange={n => set({ tickets: n })} />
             <label className="plan-field plan-pass wide">
               <span><input type="checkbox" checked={cfg.pass} onChange={e => set({ pass: e.target.checked })} /><Ico name="card" />{t('plan.pass')}</span>
               <span className="plan-input">
@@ -119,6 +151,20 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
               </span>
             </label>
           </div>
+
+          {econ.choices && econ.choices.length > 0 && <>
+            <h3><Ico name="trophy" title />{t('plan.ranks')}</h3>
+            <div className="plan-fields">
+              {econ.choices.map(ch => (
+                <label key={ch.id} className="plan-field">
+                  <span><Ico name="trophy" />{ch.name}</span>
+                  <select value={cfg.ranks?.[ch.id] ?? 0} onChange={e => set({ ranks: { ...cfg.ranks, [ch.id]: Number(e.target.value) } })}>
+                    {ch.options.map((o, k) => <option key={k} value={k}>{k === 0 ? t('plan.noRank') : `${o.label} · ${o.amount.toLocaleString()} ${cur}${o.tickets ? ` + ${o.tickets} ${t('plan.ticketsShort')}` : ''}`}</option>)}
+                  </select>
+                </label>
+              ))}
+            </div>
+          </>}
 
           <h3><Ico name="target" title />{t('plan.target')}</h3>
           <div className="plan-fields">
@@ -158,17 +204,34 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
             <>
               <h3><Ico name="chart" title />{t('plan.forecast')}</h3>
               <p className="plan-when muted">{t('plan.until', { date: fmtDate(until), n: r.days })}</p>
+              {/* Desglose por grupos (diario y semanal, modos de dificultad, versión y tiendas, eventos) en tres columnas: nombre con
+                  sus veces, la moneda con su icono (o los tickets) y lo que suma en tiradas. */}
               <ul className="list plan-break">
-                <li><span><Ico name="wallet" />{t('plan.rowNow')}</span><b>{fmt(r.now)}</b></li>
-                {r.rows.filter(x => x.times > 0).map((x, k) => (
-                  <li key={k}><span><Ico name={sourceIcon(x.src)} />{rowName(x)}{x.src.tickets && <> · {t('plan.ticketsShort')}</>} <small className="muted">× {x.times}</small></span>
-                    <b>{x.src.tickets ? `+${fmt(x.amount)}` : p(x.amount)}</b></li>
+                <li><span className="plan-name"><Ico name="wallet" />{t('plan.rowNow')}</span>
+                  <Val icon={curIcon} cur={cfg.cur > 0 ? fmtN(cfg.cur) : ''} pulls={fmt(r.now)} /></li>
+                {groups.map(grp => grp.rows.length > 0 && (
+                  <Fragment key={grp.id}>
+                    <li className="plan-group">{grp.id === 'endgame'
+                      ? <label><input type="checkbox" checked={cfg.endgame} onChange={e => set({ endgame: e.target.checked })} /><span className="plan-grp-t">{t('plan.grpEndgame')}</span><small>{t('plan.endgameHint')}</small></label>
+                      : <span>{t(`plan.grp.${grp.id}` as 'plan.grp.routine')}</span>}</li>
+                    {(grp.id !== 'endgame' || cfg.endgame) && grp.rows.map((x, k) => (
+                      <li key={k}><span className="plan-name"><Ico name={x.ico} /><span>{x.name} {x.times !== undefined && <small className="muted">× {x.times}</small>}</span></span>
+                        <Val icon={x.tickets ? ticketIcon : curIcon} ticket={x.tickets} cur={fmtN(x.amount)} pulls={`+${fmt(x.tickets ? x.amount : x.amount / per)}`} /></li>
+                    ))}
+                  </Fragment>
                 ))}
-                {cfg.pass && <li><span><Ico name="card" />{t('plan.rowPass')} <small className="muted">× {r.days}</small></span><b>{p(r.pass)}</b></li>}
-                {r.manual > 0 && <li><span><Ico name="pencil" />{t('plan.rowManual')}</span><b>{p(r.manual)}</b></li>}
-                {hasEvents && <li><label><input type="checkbox" checked={cfg.events} onChange={e => set({ events: e.target.checked })} /><Ico name="flag" />{t('plan.rowEvents', { n: r.eventList.length })}</label><b>+{fmt(r.events)}</b></li>}
-                {hasEndgame && <li className="plan-opt"><label><input type="checkbox" checked={cfg.endgame} onChange={e => set({ endgame: e.target.checked })} /><Ico name="trophy" />{t('plan.endgame')}</label></li>}
-                <li className="plan-total"><span><Ico name="sum" />{t('plan.total')}</span><b>{r.total}</b></li>
+                {hasEvents && <li className="plan-group plan-group-row">
+                  <label><input type="checkbox" checked={cfg.events} onChange={e => set({ events: e.target.checked })} />{t('plan.rowEvents', { n: r.eventList.length })}</label>
+                  {cfg.events && r.eventList.length > 0 && <button className="plan-ev-toggle" aria-expanded={evOpen} onClick={() => setEvOpen(o => !o)}>{evOpen ? t('plan.hideEvents') : t('plan.showEvents')} <span aria-hidden>▾</span></button>}
+                  <b>+{fmt(r.events)}</b></li>}
+                {/* Cada evento pendiente con lo que da en tiradas y cuándo termina; al pulsarlo se abre su ventana. */}
+                {hasEvents && cfg.events && evOpen && r.eventList.map(e => (
+                  <li key={e.id} className="clickable plan-ev" onClick={() => open(e)}>
+                    <span className="plan-name"><Ico name="flag" /><span>{e.title} <small className="muted">{t('plan.evEnds', { date: fmtDate(e.end) })}</small></span></span>
+                    <span className="plan-val"><small className="plan-cur" /><b>+{fmt(e.pulls)}</b></span>
+                  </li>
+                ))}
+                <li className="plan-total"><span className="plan-name"><Ico name="sum" />{t('plan.total')}</span><b>{r.total}</b></li>
               </ul>
               {cfg.goal > 0 && (
                 <div className={`plan-goal ${diff >= 0 ? 'ok' : 'short'}`}>
@@ -176,18 +239,7 @@ function PlanCard({ g, ctx, i }: { g: Game; ctx: Ctx; i: number }) {
                   <p>{diff >= 0 ? t('plan.reach', { n: diff }) : t('plan.short', { n: -diff, cur: fmt(Math.max(0, -diff * per - r.rest)), c: cur })}</p>
                 </div>
               )}
-              {cfg.events && r.eventList.length > 0 && (
-                <details className="plan-events">
-                  <summary>{t('plan.seeEvents', { n: r.eventList.length })}</summary>
-                  <ul className="pull-list">
-                    {r.eventList.map(e => (
-                      <li key={e.id} className="clickable" onClick={() => open(e)}>
-                        <span>{e.title}</span><em>~{e.pulls}✦</em>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              )}
+              {econ.more && <p className="plan-more"><Ico name="chart" />{t('plan.more')} <a href={econ.more.url} target="_blank" rel="noopener noreferrer">{econ.more.name} ↗</a></p>}
               <small className="muted plan-hint">{auto ? t('plan.noteAuto') : econ.note === 'limbus' ? t('plan.noteLimbus') : t('plan.noDefaults')}</small>
             </>
           ) : <p className="muted">{banners.length ? t('plan.pickDate') : t('plan.noBanners')}</p>}

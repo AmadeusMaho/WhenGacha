@@ -943,3 +943,38 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .plan-adjust > summary::after { content: "▸"; font-size: .8em; transition: transform .2s; }
 .plan-adjust[open] > summary::after { transform: rotate(90deg); }
 .plan-break li small { white-space: nowrap; }
+
+/* Desglose: la moneda de cada fila ("600 Astrite") en pequeño, a la izquierda de las tiradas. */
+.plan-val { display: inline-flex; align-items: baseline; gap: 10px; flex: none; }
+.plan-val small { color: var(--muted); font-size: .76rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.plan-val b { min-width: 3.2em; text-align: right; }
+@media (max-width: 420px) { .plan-val { gap: 6px; } .plan-val small { font-size: .7rem; } }
+.plan-break li > span:first-child { flex: 1; min-width: 0; }
+.plan-name { min-width: 0; }
+/* Desglose por grupos: cabeceras ("Diario y semanal", "Modos de dificultad"…) sin la caja de fila que les pone cada skin; filas en tres
+   columnas alineadas (nombre × veces | moneda con su icono | tiradas). */
+.plan .plan-break li.plan-group, .plan .plan-break li.plan-group:hover { margin: 12px 0 2px; padding: 0 2px; min-height: 0; background: none; border: 0; box-shadow: none;
+  filter: none; transform: none; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.plan .plan-break li.plan-group::before { display: none; }
+.plan .plan-break li.plan-group small { text-transform: none; letter-spacing: 0; font-weight: 500; }
+.plan .plan-break li.plan-group-row { margin-top: 12px; }
+.plan .plan-break li.plan-group-row b { font-size: .9rem; letter-spacing: 0; color: var(--text); }
+.plan-break .plan-name { display: inline-flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.plan-cur { display: inline-flex; align-items: center; justify-content: flex-end; gap: 5px; min-width: 6.5em; }
+.plan-cur img, .plan-cur .plan-ico { width: 16px; height: 16px; object-fit: contain; flex: none; }
+img.plan-ico { object-fit: contain; }
+.plan .plan-break li.plan-group > label { flex-wrap: wrap; gap: 2px 8px; }
+.plan-grp-t { white-space: nowrap; }
+/* Eventos pendientes desplegables dentro del desglose (Ver / Ocultar): cada uno con sus tiradas y cuándo termina. */
+.plan .plan-break li.plan-group-row > label { flex: 1; }
+.plan-ev-toggle { background: none; border: 0; padding: 2px 6px; margin-right: 8px; cursor: pointer; font: inherit; font-size: .74rem; font-weight: 600;
+  letter-spacing: 0; text-transform: none; color: var(--text); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--muted); }
+.plan-ev-toggle span { display: inline-block; transition: transform .2s; }
+.plan-ev-toggle[aria-expanded="true"] span { transform: rotate(180deg); }
+.plan-ev-toggle:hover { text-decoration-color: currentColor; }
+.plan-ev-toggle:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.plan-break li.plan-ev { font-size: .84rem; }
+.plan-break li.plan-ev .plan-name > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+/* Calculadora dedicada recomendada para el juego (p. ej. Uma). */
+.plan-more { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 12px 0 0; font-size: .84rem; color: var(--text); }
+.plan-more a { color: var(--text); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }

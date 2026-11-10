@@ -114,6 +114,8 @@ export interface PlanCfg {
   events: boolean
   /** Contar los modos de dificultad (Abismo, Shiyu, Torre…) al máximo. */
   endgame: boolean
+  /** Puesto elegido en los modos que pagan según tu rango (pullPlan.ts, `choices`): id → índice de la opción (0 = no participo). */
+  ranks?: Record<string, number>
 }
 
 export interface AppState {
