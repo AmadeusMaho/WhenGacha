@@ -213,7 +213,7 @@ export const es = {
   // mis gachas
   'mine.addTitle': 'Añadir o quitar gachas',
   'mine.askTitle': '¿A qué gachas juegas?',
-  'mine.askLead': 'Elige tus juegos y todo se carga solo.',
+  'mine.askLead': 'Elige tus juegos',
   'mine.soon': 'Próximamente ({n}) · sin fuente de datos abierta todavía',
   'mine.yours': 'Tus gachas',
   'time.open': 'Indefinido',
@@ -519,7 +519,7 @@ export const en: Record<Key, string> = {
 
   'mine.addTitle': 'Add or remove gachas',
   'mine.askTitle': 'Which gachas do you play?',
-  'mine.askLead': 'Pick your games and everything loads by itself.',
+  'mine.askLead': 'Pick your games',
   'mine.soon': 'Coming soon ({n}) · no open data source yet',
   'mine.yours': 'Your gachas',
   'time.open': 'Open-ended',
@@ -820,7 +820,7 @@ export const zh: Record<Key, string> = {
 
   'mine.addTitle': '添加或移除游戏',
   'mine.askTitle': '你玩哪些游戏？',
-  'mine.askLead': '选择你的游戏，内容会自动加载。',
+  'mine.askLead': '选择你的游戏',
   'mine.soon': '即将支持（{n}）· 暂无开放数据来源',
   'mine.yours': '你的游戏',
   'time.open': '无期限',
