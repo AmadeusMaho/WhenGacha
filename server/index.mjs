@@ -14,6 +14,7 @@ import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
 import { handleApi, supportProblems } from './supporter.mjs'
 import { getSkinLive, startSkinLive } from './skin-live.mjs'
+import { countVisit } from './visits.mjs' // contador de visitas en el log (sin guardar IPs)
 
 const gzip = promisify(gzipCb)
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../dist')
@@ -67,6 +68,10 @@ async function handleStatic(req, res, pathname) {
     file = path.join(ROOT, rel)
     info = await stat(file).catch(() => null)
     if (!info) return send(res, 503, {}, 'La app no está compilada (falta dist/)')
+  }
+
+  if (rel === '/index.html' && req.method === 'GET') {
+    countVisit(req, String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.socket.remoteAddress || '?')
   }
 
   const type = MIME[path.extname(file)] ?? 'application/octet-stream'

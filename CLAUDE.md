@@ -71,4 +71,6 @@ los destacados y a las cabeceras de sección de la ventana del evento (como Gens
 - El recolector sustituye `globalThis.fetch` por el del proxy (lista cerrada, sin cabeceras). Todo lo que el servidor pida por su cuenta
   (GitHub, Resend…) usa `nativeFetch` de `server/native-fetch.mjs`; con `fetch` a secas responde "Fuente no permitida" (403).
 - Botkeep no pasa las variables del panel al proceso: las deja en un `.env` que carga `server/env.mjs` (importado el primero).
+- `server/visits.mjs`: contador de visitas en el log (`[visitas] …` por cada carga de la página y resumen diario, GMT-3). No guarda IPs;
+  descarta bots y monitores. Cada servidor cuenta lo suyo y se reinicia en cada deploy; las cifras históricas están en Cloudflare → Analytics.
 - `server/skin-live.mjs`: cada 12 h mira el vídeo/imagen de portada de las webs de Genshin, ZZZ y WuWa (fuentes `internal` del proxy) para el fondo de las skins (`/data/skin-live.json`). No descarga vídeos; ver "Fondos de las skins según la versión" en `docs/fuentes-y-proxy.md`.
