@@ -152,8 +152,17 @@ Cuando salga una versión nueva y se quiera su vídeo comprimido en la skin (má
 
 ### Fondos en R2 (11 nov 2026)
 
+**App de fondos (lo más cómodo; solo en el equipo del dueño, no se sube a GitHub: `scripts/fondos/` está en `.git/info/exclude`):**
+doble clic en `scripts/fondos/abrir.cmd`, o `node scripts/fondos/server.mjs` → http://localhost:5199 (solo en este
+equipo). Muestra los fondos de cada skin (pasando el ratón se ve el vídeo), deja reordenarlos (el orden es el de la rotación) y quitarlos,
+y añade uno nuevo en tres pasos: el vídeo (post de MoeWalls, que rellena solo el título y el autor de Steam; archivo del PC; o enlace
+directo), convertir (con vista previa y peso) y publicar (sube a R2, copia el póster, lo añade a `FONDOS` y su crédito a `acerca.html`).
+"Subir a la web" compila, hace commit de esas rutas y push. Código: `scripts/fondos/server.mjs` (Node, sin dependencias; usa el ffmpeg
+de `imageio-ffmpeg` y `npx wrangler`) e `index.html`. Edita solo el bloque `// <fondos>` de `skins.ts` y las líneas `<li data-fondo="…">`
+de los créditos; si se tocan a mano, hay que mantener ese formato.
+
 El despliegue tiene un **límite de 20 MB**, así que **ningún vídeo de fondo va en `public/`**: todos se sirven desde **Cloudflare R2**,
-bucket `whengacha-fondos` de la cuenta del dueño, con su URL pública `r2.dev` (`LIVE_CDN` en `skins.ts`, sin `/` al final).
+bucket `whengacha-fondos` de la cuenta del dueño, con su URL pública `r2.dev` (`LIVE_CDN` en `skins.ts`, sin `/` al final). La lista de qué vídeo va en cada skin es `FONDOS`, en el mismo archivo.
 `r2.dev` tiene un límite de velocidad y Cloudflare lo presenta como algo para pruebas; si hace falta, se conecta un dominio propio al bucket
 (exige pasar los DNS del dominio de Namecheap a Cloudflare) y solo cambia `LIVE_CDN`.
 - **Copia local de lo que hay en el bucket**: `../fondos-skins/r2/<skin>/live-<n>.mp4` (65 vídeos, ~128 MB). El bucket tiene las mismas
