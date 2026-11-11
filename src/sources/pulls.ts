@@ -36,7 +36,8 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Blue Archive: 120 Pyroxene por reclutamiento (bluearchive.wiki, FAQ: "A 1 ticket = 120 pyroxene"; pity = 24.000 = 200 tiradas).
   // Billetes (confirmado por el dueño, 9 nov 2026): "1-Recruitment Ticket" = 1 tirada y "10-Recruitment Ticket" = 10 (un billete que tira 10).
   // `pullsIn` los reescribe antes como "Single/Ten Recruitment Ticket", porque el lector de "Nombre xN" no admite la cifra pegada al nombre.
-  bluearchive: [{ item: /^pyroxenes?$/i, per: 120 }, { item: /^single recruitment tickets?$/i, per: 1 }, { item: /^ten recruitment tickets?$/i, per: 0.1 }],
+  // "up to 200 FREE recruitments!" (5.º aniversario, nov 2026): reclutamientos gratis diarios = 1 tirada cada uno.
+  bluearchive: [{ item: /^pyroxenes?$/i, per: 120 }, { item: /^single recruitment tickets?$/i, per: 1 }, { item: /^ten recruitment tickets?$/i, per: 0.1 }, { item: /^free recruitments?$/i, per: 1 }],
   // Limbus Company: extracción simple = 130 Lunacy (limbuscompany.wiki.gg, página "Lunacy").
   limbus: [{ item: /^lunacy$/i, per: 130 }],
   // Fate/Grand Order: 3 Saint Quartz por invocación (fategrandorder.fandom.com, "Saint Quartz"); Summon Ticket = 1.
@@ -87,7 +88,7 @@ export function pullsIn(game: string, lines: string[]): { pulls: number; items: 
     // Compensaciones de mantenimiento y precios no son recompensas del evento.
     if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue
     for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)\s*[x×]\s?(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
-    for (const m of l.matchAll(/\b(\d[\d,]*)\s+([A-Z][A-Za-z' ]*?)(?=[,.;:)]|\s+(?:and|to|from|in|for)\b|$)/g)) add(m[2], num(m[1]))
+    for (const m of l.matchAll(/\b(\d[\d,]*)\s+([A-Z][A-Za-z' ]*?)(?=[,.;:)!]|\s+(?:and|to|from|in|for)\b|$)/g)) add(m[2], num(m[1]))
   }
   let pulls = 0
   const items: RewardItem[] = []

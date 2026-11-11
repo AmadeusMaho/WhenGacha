@@ -64,6 +64,8 @@ function itemsOf(r: Raw): RewardItem[] {
     const prev = byName.get(name)
     byName.set(name, prev ? { ...prev, amount: prev.amount + x.amount } : { name, icon: x.icon, amount: x.amount })
   }
+  // ZZZ: ennead da el Polychrome en un campo aparte (`polychrome`), que ya cuenta en las tiradas; sin esto el evento salía con tiradas y sin recompensas.
+  if (r.polychrome && ![...byName.keys()].some(n => /polychrome/i.test(n))) byName.set('Polychrome', { name: 'Polychrome', amount: r.polychrome })
   return [...byName.values()]
 }
 

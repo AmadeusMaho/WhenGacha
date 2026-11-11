@@ -15,7 +15,8 @@ import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
 import { syncHonkai3 } from './honkai3'
-import { syncHoyoWiki } from './hoyowiki'
+import { eventRewards, syncHoyoWiki } from './hoyowiki'
+import { pullsIn, type PullGame } from './pulls'
 import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
 import { syncNikkeGg } from './nikkegg'
@@ -160,6 +161,22 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
   return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes }
 }
 
+/**
+ * HoYoverse: eventos que llegan sin recompensas (los de ennead que la lista de la wiki no trae; en HSR la "Event List" de la wiki está vacía para los
+ * eventos en curso, nov 2026) → se busca la página del evento por su título y se lee su {{Event Rewards}} ("Magic Invitation": Tracks of Destiny…).
+ * Una sola consulta (máx. 50 páginas) por ciclo; los que no tienen página o plantilla (p. ej. "Planar Fissure", de bonificación) se quedan igual.
+ */
+async function withWikiEventRewards(s: GameSync, host: string, game: PullGame): Promise<GameSync> {
+  const need = s.events.filter(e => e.kind === 'event' && !e.items.length && +new Date(e.end) > Date.now())
+  if (!need.length) return s
+  const found = await eventRewards(host, need.map(e => e.title)).catch(() => new Map<string, { name: string; amount: number }[]>())
+  if (!found.size) return s
+  return { ...s, events: s.events.map(e => {
+    const items = need.includes(e) ? found.get(e.title) : undefined
+    return items ? { ...e, items, pulls: e.pulls || pullsIn(game, items.map(i => `${i.name} x${i.amount}`)).pulls } : e
+  }) }
+}
+
 /** "Virtual Tactical Simulation: Rossweisse" usa el arte del banner de ese combatiente en vez de la imagen genérica del aviso. */
 function withBannerArt(s: GameSync): GameSync {
   const art = (name: string) => s.events.find(b => b.kind === 'banner' && b.image && b.featured.some(f => f.name.toLowerCase() === name.toLowerCase()))?.image
@@ -256,7 +273,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
       // ennead da 07:00 UTC+8 (en pleno mantenimiento) y cierres redondos. ennead aporta las recompensas y tiradas, sus banners y desafíos, y lo que la wiki no tenga.
       const [s0, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])])
       // ennead no trae recompensas para los desafíos de ZZZ: el total por ciclo sale de la wiki.
-      const s = CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]!) : s0
+      const s1 = CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]!) : s0
+      const s = await withWikiEventRewards(s1, game.wiki.host, game.api)
       return { ...s, patches: buildPatches(id, s.patches, history, game.patchCycleDays) }
     }
     // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa).

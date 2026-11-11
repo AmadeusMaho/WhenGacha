@@ -34,7 +34,7 @@ async function get<T>(file: string): Promise<T> {
 /** Corrige las horas de la wiki con las del cliente y añade lo que la wiki no lista (logins…). */
 export async function withClientData(gameId: string, wiki: GameSync): Promise<GameSync> {
   const [acts, gacha, names] = await Promise.all([
-    get<{ basicInfo?: Record<string, Act> }>('activity_table.json'),
+    get<{ basicInfo?: Record<string, Act>; rewards?: Record<string, { name: string; amount: number }[]> }>('activity_table.json'),
     get<{ gachaPoolClient?: Pool[] }>('gacha_table.json').catch(() => ({ gachaPoolClient: [] as Pool[] })),
     get<Record<string, string>>('character_table.json').catch(() => ({} as Record<string, string>)),
   ])
@@ -43,6 +43,14 @@ export async function withClientData(gameId: string, wiki: GameSync): Promise<Ga
   const used = new Set<number>()
   const extra: GameEvent[] = []
 
+  // Lo que reparten los eventos de inicio de sesión (el proxy lo suma por actividad; ver `akCheckinRewards` en server/proxy.mjs): Orundum,
+  // Headhunting Permits, vales de 6★… Tiradas: 600 Orundum = 1, permiso = 1, permiso de 10 = 10 (pulls.ts). No con `pullsIn`: leería
+  // "Ten-roll/Kernel Headhunting Permit" como un permiso normal. Los de Kernel son de otro banner y no cuentan.
+  const PER: Record<string, number> = { Orundum: 1 / 600, 'Headhunting Permit': 1, 'Ten-roll Headhunting Permit': 10 }
+  const rewardsOf = (id: string) => {
+    const items = acts.rewards?.[id] ?? []
+    return items.length ? { items, pulls: Math.round(items.reduce((n, i) => n + i.amount * (PER[i.name] ?? 0), 0) * 10) / 10 } : null
+  }
   for (const a of Object.values(acts.basicInfo ?? {})) {
     const s = a.startTime * 1000, e = a.endTime * 1000
     if (SKIP_TYPES.has(a.type) || !a.name || !(e > s) || e < from || s > to || e - s > 150 * DAY) continue
@@ -50,7 +58,8 @@ export async function withClientData(gameId: string, wiki: GameSync): Promise<Ga
     const i = events.findIndex((w, j) => !used.has(j) && w.kind === 'event' && key(w.title) === k && Math.abs(+new Date(w.start) - s) <= 3 * DAY)
     if (i >= 0) {
       used.add(i)
-      events[i] = { ...events[i], start: iso(a.startTime), end: iso(a.endTime), precision: undefined, official: true }
+      const r = events[i].items.length ? null : rewardsOf(a.id)
+      events[i] = { ...events[i], start: iso(a.startTime), end: iso(a.endTime), precision: undefined, official: true, ...(r ?? {}) }
       continue
     }
     const rerun = a.isReplicate || /-\s*rerun$/i.test(a.name)
@@ -60,6 +69,7 @@ export async function withClientData(gameId: string, wiki: GameSync): Promise<Ga
       description: '⟦d.akServer⟧',
       start: iso(a.startTime), end: iso(a.endTime),
       items: [], featured: [], pulls: 0, official: true, source: 'api',
+      ...(rewardsOf(a.id) ?? {}),
     })
   }
 

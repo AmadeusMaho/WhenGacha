@@ -26,7 +26,7 @@ const at = (s: string) => {
 type Reward = { name: string; amount: number }
 
 /** Recompensas de cada página (`{{Event Rewards |Primogem = 60 |sort = …}}`), en una sola consulta (máx. 50 páginas). Título pedido → recompensas. */
-async function eventRewards(host: string, pages: string[]): Promise<Map<string, Reward[]>> {
+export async function eventRewards(host: string, pages: string[]): Promise<Map<string, Reward[]>> {
   const out = new Map<string, Reward[]>()
   const titles = [...new Set(pages)].slice(0, 50)
   if (!titles.length) return out

@@ -32,6 +32,34 @@ const MIN = 60_000
 const HOUR = 60 * MIN
 
 /**
+ * Arknights: lo que reparten los eventos de inicio de sesión del cliente (`dynActs`, `activity.CHECKIN_ONLY`/`LOGIN_ONLY`: `checkInList[].itemList` o
+ * `itemList`), sumado por tipo y solo lo que sirve para tirar (el resto son materiales). Por actividad: [{ name, amount }]. Ver akdata.ts.
+ */
+const AK_REWARD = {
+  DIAMOND_SHD: 'Orundum', DIAMOND: 'Originite Prime', TKT_GACHA: 'Headhunting Permit', TKT_GACHA_10: 'Ten-roll Headhunting Permit',
+  LIMITED_TKT_GACHA_10: 'Ten-roll Headhunting Permit', CLASSIC_TKT_GACHA: 'Kernel Headhunting Permit',
+}
+function akCheckinRewards(j) {
+  const out = {}
+  const add = (id, list) => {
+    for (const it of Array.isArray(list) ? list : []) {
+      const name = AK_REWARD[it?.type] ?? (it?.type === 'VOUCHER_PICK' && /recruitR6/i.test(it.id ?? '') ? '6★ Operator Selection Voucher' : null)
+      if (!name || !(it.count > 0)) continue
+      const row = (out[id] ??= []).find(r => r.name === name)
+      if (row) row.amount += it.count
+      else out[id].push({ name, amount: it.count })
+    }
+  }
+  for (const src of [j.dynActs, j.activity?.CHECKIN_ONLY, j.activity?.LOGIN_ONLY]) {
+    for (const [id, v] of Object.entries(src ?? {})) {
+      if (Array.isArray(v?.itemList)) add(id, v.itemList)
+      for (const d of Object.values(v?.checkInList ?? {})) add(id, d?.itemList)
+    }
+  }
+  return out
+}
+
+/**
  * Solo estas fuentes (y estas rutas) se pueden consultar a través del proxy: no es un relé abierto.
  * No se piden rutas que el robots.txt de cada sitio prohíbe (p. ej. /api/ o /img/ de gachafocus).
  */
@@ -68,7 +96,8 @@ const SOURCES = [
   // activity_table pesa ~18 MB: se descarga cada 6 h y el proxy guarda solo el calendario (`shrink`, unos KB), que es lo que reciben recolector y navegadores.
   { name: 'akgamedata', ttl: 6 * HOUR, maxBody: 48 * 1024 * 1024, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/ArknightsAssets\/ArknightsGamedata\/master\/en\/gamedata\/excel\/(activity|gacha|character|campaign|stage)_table\.json$/.test(u.pathname),
     shrink: j => j.basicInfo
-      ? { basicInfo: Object.fromEntries(Object.entries(j.basicInfo).map(([k, v]) => [k, { id: v.id, type: v.type, name: v.name, startTime: v.startTime, endTime: v.endTime, isReplicate: v.isReplicate }])) }
+      ? { basicInfo: Object.fromEntries(Object.entries(j.basicInfo).map(([k, v]) => [k, { id: v.id, type: v.type, name: v.name, startTime: v.startTime, endTime: v.endTime, isReplicate: v.isReplicate }])),
+          rewards: akCheckinRewards(j) }
       : j.gachaPoolClient
         ? { gachaPoolClient: j.gachaPoolClient.map(p => ({ gachaPoolId: p.gachaPoolId, gachaRuleType: p.gachaRuleType, gachaPoolName: p.gachaPoolName, openTime: p.openTime, endTime: p.endTime,
             dynMeta: p.dynMeta && { main6RarityCharId: p.dynMeta.main6RarityCharId, sub6RarityCharId: p.dynMeta.sub6RarityCharId, rare5CharList: p.dynMeta.rare5CharList } })) }
