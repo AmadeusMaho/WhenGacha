@@ -416,7 +416,15 @@ Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Aren
   (banner limitado); Blue Archive "1-Recruitment Ticket" = 1 y "10-Recruitment Ticket" = 10 (`pullsIn` los reescribe como "Single/Ten Recruitment Ticket" para leerlos).
   Epic Seven lee las recompensas de sus avisos (tablas aplanadas "Covenant Bookmark 50"), salvo los de recompensas por compras. BrownDust2: 200 Dia = 1 (dato del dueño). Azur Lane: 2 Wisdom Cubes = 1 (construcción limitada: 2 cubos + 1500 monedas, wiki koumakan "Building"; los grupos permanentes cuestan 1).
 - **Recompensas en el texto**: ahora se leen en CZN (secciones de los avisos de STOVE, y cada sub-evento con lo suyo), NTE (apartado "●" de neverness.gg) y en
-  cualquier juego con canal de Discord (apartado del evento en el mensaje). Uma, FGO, Limbus, HI3, Endfield y BA (wiki) no traen recompensas en sus fuentes: siguen en 0.
+  cualquier juego con canal de Discord (apartado del evento en el mensaje). Uma, FGO, Limbus, Endfield y BA (wiki) no traen recompensas en sus fuentes: siguen en 0.
+  - **HI3** (11 nov 2026, `honkai3.ts`): de la página de cada evento, `{{currency|Nombre|N}}` y `{{item|Nombre|quantity=N}}`. Por objeto, el MAYOR entre
+    el resumen de arriba y la suma del desglose (no se suman los dos); "Choose one of the following" = una opción (la que más tiradas vale) × los días
+    citados ("3/5/7 days" = 3); fuera las notas de Ai-chan, las secciones de contenido/botín de suministros, las líneas de gasto o precio y los eventos
+    de pago (Battle Pass, Spend Bonuses, rebajas, Time Capsule).
+  - **HoYoverse**: los eventos sin recompensas buscan su página en la wiki por título (`{{Event Rewards}}`); en ZZZ, el `polychrome` de ennead se muestra.
+  - **Arknights**: el proxy suma lo que reparten los logins del cliente (`akCheckinRewards` en proxy.mjs) y akdata lo pone en el evento.
+  - **Blue Archive**: "up to 200 FREE recruitments" = 200 tiradas.
+  - Epic Seven: sus tablas de recompensas son iconos sin nombre en el texto; no se pueden leer.
 - **Discord** (`discord.ts`): quita la mención del rol ("@News Feed", "@Schale news"), los enlaces y "A new tweet has been posted!"; salta saludos ("Dear Commander,");
   saca el nombre de frases ("The collab event, X, will be available…"); entiende "11:59 P.M."; descarta los avisos de mantenimiento como eventos.
   Azur Lane (que sigue `#game-news`, tuits reenviados) ya da su primer evento bien: antes salía "@News Feed https://…" y cerraba 5 h antes.
