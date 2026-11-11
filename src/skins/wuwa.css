@@ -85,7 +85,9 @@ html[data-skin="wuwa"] header::after { content: ""; position: absolute; left: 0;
   background: linear-gradient(90deg, transparent, rgba(230, 242, 244, .35) 30%, rgba(255, 244, 210, .55) 50%, rgba(230, 242, 244, .35) 70%, transparent); }
 /* El nombre va tal cual ("WhenGacha"): en mayúsculas se confundía con las pestañas. */
 html[data-skin="wuwa"] .brand h1 { letter-spacing: .02em; font-weight: 600; color: #fff; }
-html[data-skin="wuwa"] header nav { background: transparent; border: 0; box-shadow: none; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none; overflow-y: hidden; }
+html[data-skin="wuwa"] header nav { background: transparent; border: 0; box-shadow: none; border-radius: 0; backdrop-filter: none; overflow-y: hidden; }
+/* Solo "backdrop-filter: none": con "-webkit-backdrop-filter: none" escrito a mano, la minificación se quedaba solo con el prefijado y en
+   producción la nav conservaba el desenfoque de la base (un bloque rectangular sobre el fondo). El prefijo lo añade la compilación. */
 html[data-skin="wuwa"] header nav button { text-transform: uppercase; letter-spacing: .12em; font-size: .92rem; color: #a9bbc0 !important; }
 html[data-skin="wuwa"] header nav button.on { color: #fff !important; text-shadow: 0 0 12px rgba(255, 244, 210, .35); }
 html[data-skin="wuwa"] header nav button:hover:not(.on) { color: #e4eef0 !important; }

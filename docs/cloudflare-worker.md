@@ -66,6 +66,15 @@ Para evitarlo, el servidor pone la cabecera `x-served-by` en todas sus respuesta
 ella cuenta como caída. **Actívalo solo cuando Botkeep ya tenga desplegada esta versión del servidor**; antes, todo iría a Render.
 Comprobación: `https://<dirección de Botkeep>/healthz` debe traer `x-served-by` en las cabeceras.
 
+## Estado (2026-11-11)
+
+- Montado y probado: `@` y `www` en *Proxied*, Worker `whengacha-failover` con rutas en los dos. Con `PRIMARY` roto a propósito,
+  todo (web, `/data`, `/api/support/config`, POST `/api/session`, `www`) salió por Render (`x-whengacha-via: backup`).
+- DNS en Cloudflare (nameservers `jerome`/`sue`); se copió a mano el CNAME `send` → `send.forge.rmta.net` que el escaneo no vio.
+- **Render no recibe los push solo** (los deploys salen como "Manual"). Tras un push que deba llegar a Render:
+  Render → Blueprints → WhenGacha → **Manual sync** → *Approve*, o el servicio → *Manual Deploy* → *Deploy latest commit*.
+- Pendiente: `REQUIRE_MARKER=1` cuando Botkeep tenga la versión con `x-served-by` (commit `3d4d395` o posterior).
+
 ## Límites
 
 - El respaldo puede ir hasta ~3 h por detrás en eventos (usa las copias publicadas, no recolecta).
