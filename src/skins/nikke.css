@@ -67,55 +67,55 @@ html[data-skin="nikke"] .skin-live { position: fixed; inset: 0; z-index: -1; wid
 
 /* ===== Botones, como los del juego (capturas del dueño: Squad, Outpost Defense, barra de recursos) =====
    - Barra de arriba: botones oscuros translúcidos con borde fino (los de recursos, correo y menú del juego).
-   - Pestañas: como "01 02 03" de Squad: gris oscuro plano con el texto claro; la activa, azul lleno con el texto blanco. Llevan un giro
-     3D suave (abanico: la primera inclinada a la izquierda, la del medio recta, la última a la derecha).
+   - Pestañas: como las de los menús del juego ("Reward / Mission"): tira clara; la activa, azul con la esquina cortada (ver abajo).
    - Dentro de las ventanas: rectángulos planos de esquina casi recta: "Claim" = azul lleno; "Wipe Out" = blanco con borde azul fino.
    El azul del juego (#1fa3f2) se queda en 2.8:1 con texto blanco: los botones con texto usan #0f77c2, el más claro que llega a 4.5:1.
    (Antes eran paneles de cristal con brillo y todos giraban; se veían raros en botones pequeños.) ===== */
 html[data-skin="nikke"] { --nk-btn: #0f77c2; --nk-btn-hi: #0b67ab; }
 
-/* Giro 3D suave, solo en las pestañas. */
-html[data-skin="nikke"] header nav button { --nk-turn: 0deg; transform: perspective(600px) rotateY(var(--nk-turn)); transform-origin: 50% 50%; backface-visibility: hidden;
-  transition: transform .3s cubic-bezier(.2, .7, .2, 1), background-color .15s, border-color .15s, color .15s; }
-html[data-skin="nikke"] header nav button:first-of-type { --nk-turn: 8deg; }
-html[data-skin="nikke"] header nav button:last-of-type { --nk-turn: -8deg; }
-html[data-skin="nikke"] header nav button:is(:hover, :focus-visible) { transform: perspective(600px) rotateY(0deg); }
-html[data-skin="nikke"] header nav button:active { transform: perspective(600px) rotateY(0deg) scale(.97); transition-duration: .1s; }
-@media (max-width: 700px) { html[data-skin="nikke"] header nav button { transform: perspective(1000px) rotateY(var(--nk-turn)); } }
-@media (prefers-reduced-motion: reduce) { html[data-skin="nikke"] header nav button { transition: none; } }
-
 /* --- Barra superior: negra como la de recursos --- */
 html[data-skin="nikke"] header { background: var(--nk-top); border-bottom: 1px solid rgba(255, 255, 255, .12); box-shadow: 0 2px 14px rgba(0, 0, 0, .5); backdrop-filter: blur(8px); }
 html[data-skin="nikke"] .brand h1 { color: #fff; letter-spacing: .04em; text-transform: uppercase; }
-html[data-skin="nikke"] header nav { gap: 6px; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow: visible; }
-/* Pestañas como la barra inferior del lobby (NIKKE · SQUAD · HALL · INVENTORY · RECRUIT): sin caja, mayúsculas claras separadas por una
-   línea fina; la activa ("HALL") en blanco, con la línea brillante arriba y un resplandor que baja desde ella. */
-html[data-skin="nikke"] header nav { gap: 0; }
-html[data-skin="nikke"] header nav button { border-radius: 0 !important; color: #b9bfc8 !important; text-transform: uppercase; letter-spacing: .06em;
-  background: transparent !important; border: 0 !important; box-shadow: none; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
-html[data-skin="nikke"] header nav button + button { box-shadow: inset 1px 0 0 rgba(255, 255, 255, .12); }
-html[data-skin="nikke"] header nav button.on { color: #fff !important; box-shadow: inset 0 3px 0 #fff, inset 0 3px 14px rgba(150, 210, 255, .35);
-  background: linear-gradient(180deg, rgba(150, 210, 255, .28), rgba(150, 210, 255, .06) 70%, transparent) !important; }
-html[data-skin="nikke"] header nav button + button.on { box-shadow: inset 0 3px 0 #fff, inset 0 3px 14px rgba(150, 210, 255, .35), inset 1px 0 0 rgba(255, 255, 255, .12); }
-html[data-skin="nikke"] header nav button:not(.on):hover { color: #fff !important; background: rgba(255, 255, 255, .06) !important; }
+/* Pestañas (2.ª versión, 11 nov 2026; la 1.ª, en abanico 3D sobre negro, al dueño le pareció fea): como las pestañas de los menús del
+   juego ("Reward / Mission" del pase, "Recruit"): tira gris clara con el texto gris oscuro; la activa, rellena de azul con trama de
+   puntos, texto blanco en negrita y la esquina superior derecha cortada en diagonal; una línea azul corre bajo todo el grupo.
+   Contraste: #3d4650 sobre #e3e7eb = 8:1; blanco sobre #0f77c2 = 4.6:1. */
+html[data-skin="nikke"] header nav { gap: 0; padding: 0; background: #e3e7eb; border: 0; border-bottom: 2px solid var(--nk-btn);
+  border-radius: 0; box-shadow: 0 2px 8px rgba(0, 0, 0, .45); backdrop-filter: none; overflow: visible;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+html[data-skin="nikke"] header nav button { position: relative; border-radius: 0 !important; border: 0 !important; box-shadow: none !important;
+  background: transparent !important; color: #3d4650 !important; text-shadow: none; text-transform: uppercase; letter-spacing: .05em; font-weight: 700;
+  padding: 7px 16px 7px 44px !important; transition: background-color .15s, color .15s; }
+html[data-skin="nikke"] header nav button + button::after { content: ""; position: absolute; left: 0; top: 22%; bottom: 22%; width: 1px; background: #c2c9d1; }
+html[data-skin="nikke"] header nav button:not(.on):hover { background: #d3d9df !important; color: #11161d !important; }
+html[data-skin="nikke"] header nav button.on { color: #fff !important; background: linear-gradient(100deg, var(--nk-btn), var(--nk-btn-hi)) !important;
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%); }
+/* La trama de puntos va en ::after (encima del azul, debajo del texto) para no aclarar el fondo del texto. */
+html[data-skin="nikke"] header nav button.on::after { content: ""; position: absolute; inset: 0; top: 0; bottom: 0; width: auto; z-index: -1; pointer-events: none;
+  background: radial-gradient(rgba(255, 255, 255, .14) 1px, transparent 1.5px) 0 0 / 5px 5px;
+  -webkit-mask: linear-gradient(90deg, transparent 30%, #000); mask: linear-gradient(90deg, transparent 30%, #000); }
+html[data-skin="nikke"] header nav button.on { isolation: isolate; }
+html[data-skin="nikke"] header nav button.on + button::after { display: none; }
+html[data-skin="nikke"] header nav button:focus-visible { outline: 2px solid #11161d; outline-offset: -3px; }
 html[data-skin="nikke"] header nav .nav-ind { display: none; }
-/* Retrato de una NIKKE en cada pestaña, como las fichas de Squad (marco claro, retrato cuadrado), dentro del mismo plano 3D.
-   Del zip "goddess-of-victory-nikke-icons" que aportó el dueño (iconos si-cXXX del juego): nav-timeline = si-c010 (Rapi),
-   nav-mine = si-c012, nav-patches = si-c013. */
-html[data-skin="nikke"] header nav button { position: relative; padding-left: 42px !important; }
-html[data-skin="nikke"] header nav button::before { content: ""; position: absolute; left: 5px; top: 50%; width: 28px; height: 28px; transform: translateY(-50%); pointer-events: none;
-  border: 1px solid rgba(255, 255, 255, .35); border-radius: 2px; background: #c8d0d9 center / cover no-repeat; filter: grayscale(.55) brightness(.8); transition: filter .2s; }
+/* Retrato de una NIKKE en cada pestaña, como las fichas de Squad (cuadrado con la esquina cortada). Del zip
+   "goddess-of-victory-nikke-icons" que aportó el dueño: nav-timeline = si-c010 (Rapi), nav-mine = si-c012, nav-patches = si-c013.
+   "Tiradas" = el Advanced Recruit Voucher del juego (nav-pulls.webp, icono 5200 de static.dotgg.gg), sin marco. */
+html[data-skin="nikke"] header nav button::before { content: ""; position: absolute; left: 9px; top: 50%; width: 28px; height: 28px; transform: translateY(-50%);
+  pointer-events: none; background: #9aa4ae center / cover no-repeat; box-shadow: inset 0 0 0 1px rgba(17, 22, 29, .35);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); filter: saturate(.75); transition: filter .15s; }
 html[data-skin="nikke"] header nav button:nth-of-type(1)::before { background-image: url(/skins/nikke/nav-timeline.webp); }
 html[data-skin="nikke"] header nav button:nth-of-type(2)::before { background-image: url(/skins/nikke/nav-mine.webp); }
 html[data-skin="nikke"] header nav button:nth-of-type(3)::before { background-image: url(/skins/nikke/nav-patches.webp); }
-/* "Tiradas": sin retrato del zip (no está en el equipo); de momento, una gema blanca (las Gems del juego) sobre el azul de los botones. */
-html[data-skin="nikke"] header nav button:nth-of-type(4)::before { background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 4h10l4 5-9 11L3 9z' fill='%23fff'/%3E%3Cpath d='M3 9h18M9 4l3 16M15 4l-3 16M7 4l2 5 3-5 3 5 2-5' fill='none' stroke='%230b72c4' stroke-width='1.1' stroke-linejoin='round'/%3E%3C/svg%3E") center / 20px no-repeat, linear-gradient(160deg, #1fa3f2, #0b5fa8); }
-html[data-skin="nikke"] header nav button:is(.on, :hover)::before { border-color: #fff; filter: none; }
-html[data-skin="nikke"] header nav button.on::before { box-shadow: 0 0 8px rgba(150, 210, 255, .8); }
+html[data-skin="nikke"] header nav button:nth-of-type(4)::before { left: 6px; width: 34px; height: 30px; background: url(/skins/nikke/nav-pulls.webp) center / contain no-repeat;
+  box-shadow: none; clip-path: none; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .35)); }
+html[data-skin="nikke"] header nav button:is(.on, :hover)::before { filter: none; }
+html[data-skin="nikke"] header nav button.on:not(:nth-of-type(4))::before { box-shadow: inset 0 0 0 2px #fff; }
+html[data-skin="nikke"] header nav button.on:nth-of-type(4)::before { filter: drop-shadow(0 0 4px rgba(255, 255, 255, .7)); }
 @media (max-width: 700px) {
-  html[data-skin="nikke"] header nav { gap: 5px; }
-  html[data-skin="nikke"] header nav button { padding: 6px 7px 6px 31px !important; font-size: .78rem; letter-spacing: .02em; }
-  html[data-skin="nikke"] header nav button::before { left: 4px; width: 22px; height: 22px; } }
+  html[data-skin="nikke"] header nav button { padding: 6px 8px 6px 32px !important; font-size: .76rem; letter-spacing: .02em; }
+  html[data-skin="nikke"] header nav button::before { left: 5px; width: 22px; height: 22px; }
+  html[data-skin="nikke"] header nav button:nth-of-type(4)::before { left: 3px; width: 27px; height: 24px; } }
 /* Botones de la barra: oscuros translúcidos con borde fino, como el contador de recursos y los de correo y menú. */
 html[data-skin="nikke"] header .btn { border-radius: 4px; border: 1px solid rgba(255, 255, 255, .22); color: #f2f4f7; background: rgba(28, 30, 35, .85); box-shadow: none; }
 html[data-skin="nikke"] header .btn:hover:not(:disabled) { background: #393c43 !important; color: #fff; border-color: rgba(255, 255, 255, .4); }

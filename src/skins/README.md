@@ -52,9 +52,10 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
   Dentro de los paneles claros se redefinen `--text/--muted/--warn/--good/--bad`; las tarjetas de banner (`.bcard`, texto sobre el arte)
   los vuelven a poner claros con clase doble (la regla de paneles incluye `.plist li` y pesa más).
   - **Botones como los del juego** (rehechos el 10 nov 2026; antes eran paneles de cristal que giraban todos y se veían raros):
-    pestañas como la barra inferior del lobby (NIKKE · SQUAD · HALL…): sin caja, mayúsculas claras separadas por una línea fina, y la
-    activa en blanco con la línea brillante arriba y un resplandor, como "HALL"; los retratos de las inactivas van apagados. Es lo único
-    que gira en 3D, muy suave (`perspective(600px)`, 8°, en abanico). Botones de la barra = oscuros translúcidos con borde fino (los de
+    pestañas (2.ª versión, 11 nov 2026; la 1.ª, en abanico 3D sobre negro, al dueño le pareció fea) como las de los menús del juego
+    ("Reward / Mission" del pase): tira gris clara (`#e3e7eb`, texto `#3d4650`) con una línea azul debajo y la esquina superior derecha
+    cortada; la activa, rellena de azul (`#0f77c2` → `#0b67ab`) con trama de puntos (en `::after`, para no aclarar el fondo del texto),
+    texto blanco en negrita y su propia esquina cortada; retratos en cuadrado con esquinas cortadas, como las fichas. Botones de la barra = oscuros translúcidos con borde fino (los de
     recursos, correo y menú); Filtros y "Ver todos" = como "CAMPAIGN"; en las ventanas, planos: "Claim" en azul lleno (`#0f77c2`, el azul
     más claro que llega a 4.5:1 con texto blanco; el del juego, `#1fa3f2`, se queda en 2.8:1) y "Wipe Out" blanco con borde azul fino.
     Chips como "I / II / III": gris oscuro, el activo azul.
@@ -189,7 +190,8 @@ Lo que hubo que tocar por skin, en un bloque "Pestaña Tiradas" al final de su C
 - **Genshin**: total, "~N✦" y "¡Llegas!" en colores oscuros (en el crema no se leían) y el segmento "Que empiece / Que termine" sobre
   la barra pizarra (su texto es blanco).
 - **NIKKE** y **Uma**: el total en su color de texto (azul / verde oscuro).
-- **Pestaña nueva en la barra**: NIKKE lleva una gema blanca dibujada (el zip de retratos ya no está en el equipo); Uma, el sticker
+- **Pestaña nueva en la barra**: NIKKE lleva el **Advanced Recruit Voucher** del juego (`nikke/nav-pulls.webp`, icono `5200` de
+  static.dotgg.gg, recortado a 96 px; antes, una gema dibujada); Uma, el sticker
   `nav-pulls.webp` = `utx_ico_home_umamusume_06` del zip "Umamusume UI sprites" (la chica con la Carat), activa en naranja.
 - En móvil, "Línea de tiempo" se acorta a "Línea" (`.tab-short`, App.css) para que quepan las cuatro pestañas con cualquier skin.
 
