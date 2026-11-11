@@ -20201,18 +20201,28 @@ var BASE$4 = "https://api.ennead.cc/mihoyo";
 var PER_PULL = 160;
 var PULL_ITEM = /intertwined fate|acquaint fate|tracks of destiny|special pass|master tape|encrypted/i;
 var PREMIUM = /primogem|stellar jade|polychrome|oneiric/i;
+/**
+* Recompensas del evento. En Star Rail, `special_reward` (la destacada) es una COPIA de una de `rewards` ("Aha Reckons You Need This":
+* 20 Special Pass en las dos → salía 40); en Genshin es una recompensa aparte que no está en la lista. Solo se suma si no está ya.
+*/
+function rewardsOf$2(r) {
+	const list = r.rewards ?? [];
+	const s = r.special_reward;
+	const dup = s && list.some((x) => (x.id != null && x.id === s.id || x.name === s.name) && x.amount === s.amount);
+	return s && !dup ? [s, ...list] : list;
+}
 var iso$2 = (s) => (/* @__PURE__ */ new Date(s * 1e3)).toISOString();
 var valid = (r) => !!r.start_time && !!r.end_time && r.start_time > 86400 && r.end_time > r.start_time;
 function pullsOf(r) {
 	let pulls = 0;
-	const all = [...r.rewards ?? [], ...r.special_reward ? [r.special_reward] : []];
+	const all = rewardsOf$2(r);
 	for (const x of all) if (PREMIUM.test(x.name)) pulls += x.amount / PER_PULL;
 	else if (PULL_ITEM.test(x.name)) pulls += x.amount;
 	if (r.polychrome) pulls += r.polychrome / PER_PULL;
 	return Math.round(pulls * 10) / 10;
 }
 function itemsOf(r) {
-	const all = [...r.special_reward ? [r.special_reward] : [], ...r.rewards ?? []];
+	const all = rewardsOf$2(r);
 	const byName = /* @__PURE__ */ new Map();
 	for (const x of all.filter((x) => x.amount > 0)) {
 		const name = x.name.replace(/<[^>]+>/g, "");
@@ -21053,7 +21063,7 @@ function rangeAt(lines, i, ends) {
 	return parseRange(lines[i], ends) ?? (/^[◆→▸ㄴ*\s-]*(Period|Schedule)\s*:?\s*$/i.test(lines[i]) ? parseRange(lines[i + 1] ?? "", ends) : null);
 }
 /** Secciones que no son eventos (banners, sistema, cambios...). */
-var NOT_EVENT = /Galactic Disaster|Changes|Rate-?Up|Memory|System|Content\b|Combat Training|Improvements|Bug|Package|Card Skin|Crystal|Fragment|Rescue/i;
+var NOT_EVENT = /Galactic Disaster|Changes|\bNotice\b|Rate-?Up|Memory|System|Content\b|Combat Training|Improvements|Bug|Package|Card Skin|Crystal|Fragment|Rescue/i;
 /** Sub-apartados de un evento que no son eventos por sí mismos. */
 var NOT_SUB = /^(Period|Schedule|Rate-?Up|Open Schedule|Unlock|Reward|How to|Information|Precaution|Exchange|Achievement|Limited-Time|Overview|Details|Event Period)/i;
 /** Sub-apartados que sí se muestran aparte y duran lo mismo que el evento. */
@@ -24793,10 +24803,27 @@ async function syncUma(gameId) {
 		});
 	}
 	return {
-		events,
+		events: withRaceNames(events),
 		patches: [],
 		codes: []
 	};
+}
+/** Carrera de una campaña: 'In conjunction with the G1 race "Osaka Cup"…' o 'To celebrate the Arima Kinen G1 race…'. */
+var raceOf = (d) => (d && (/race,?\s*["“]([^"”]+?)[,.]?["”]/i.exec(d)?.[1] ?? /celebrate the (.+?) (?:G[123]|Jpn ?(?:I|1)) race/i.exec(d)?.[1]))?.trim();
+/**
+* Las campañas por carrera se llaman todas igual ('Campaign to add "Training Reward" piece', 'Bonus Star Piece rewards in Career!') y se
+* solapan (una por cada G1): en la línea de tiempo parecían el mismo evento repetido. Si un título se repite, se le añade su carrera.
+*/
+function withRaceNames(events) {
+	const count = /* @__PURE__ */ new Map();
+	for (const e of events) if (e.kind === "event") count.set(e.title, (count.get(e.title) ?? 0) + 1);
+	return events.map((e) => {
+		const race = e.kind === "event" && (count.get(e.title) ?? 0) > 1 ? raceOf(e.description) : void 0;
+		return race ? {
+			...e,
+			title: `${e.title} · ${race}`
+		} : e;
+	});
 }
 // src/sources/versions.ts
 var DAY$3 = 864e5;
@@ -25177,33 +25204,52 @@ async function withClientData(gameId, wiki) {
 }
 /**
 * Annihilation (misión rotatoria): del cliente, `campaign_table.campaignRotateStageOpenTimes` da cada mapa con su inicio y fin exactos y
-* `stage_table` su nombre ("Vermilion Restaurant Yan"). Se muestra el mapa en curso y el siguiente. Recompensas: el Orundum de primera vez del mapa
-* (`breakLadders`, sumado por el proxy); el Orundum semanal tiene un tope que los datos no exponen, así que se menciona sin cifra.
+* `stage_table` su nombre ("Vermilion Restaurant Yan"). El mapa dura ~3 meses, pero el Orundum (hasta 1800, ver pullPlan.ts) se reinicia
+* CADA SEMANA, el lunes a la hora del reinicio del servidor (04:00 UTC-7 = 11:00 UTC, la misma a la que empieza cada mapa). Por eso se
+* muestra una barra por semana (la en curso y la siguiente, como Memorial Arena de HI3) y no una sola de 3 meses: antes juntaba ~13 reinicios.
+* La recompensa de primera vez del mapa (`breakLadders`, sumada por el proxy) va en la primera semana que se muestra de cada mapa.
 */
-async function akAnnihilation(gameId) {
+var WEEKLY_ORUNDUM = 1800;
+async function akAnnihilation(gameId, now = Date.now()) {
 	const [camp, names] = await Promise.all([get("campaign_table.json"), get("stage_table.json").catch(() => ({}))]);
-	const now = Date.now();
-	return (camp.rotate ?? []).filter((r) => r.endTs * 1e3 > now - 3 * DAY$2 && r.startTs * 1e3 < now + 120 * DAY$2).sort((a, b) => a.startTs - b.startTs).slice(0, 2).map((r) => {
-		const orundum = camp.orundum?.[r.stageId] ?? 0;
-		const name = names[r.stageId];
-		return {
-			id: `${gameId}:challenge:ak:${r.stageId}`,
+	const maps = (camp.rotate ?? []).map((r) => ({
+		...r,
+		s: r.startTs * 1e3,
+		e: r.endTs * 1e3
+	})).sort((a, b) => a.s - b.s);
+	const WEEK = 7 * DAY$2;
+	const d = new Date(now);
+	let week = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - (d.getUTCDay() + 6) % 7, 11);
+	if (week > now) week -= WEEK;
+	const seen = /* @__PURE__ */ new Set();
+	const out = [];
+	for (const s of [week, week + WEEK]) {
+		const map = maps.find((m) => m.s <= s + 1e3 && s < m.e);
+		if (!map) continue;
+		const end = Math.min(s + WEEK, map.e + 1e3) - 1e3;
+		const first = !seen.has(map.stageId) ? camp.orundum?.[map.stageId] ?? 0 : 0;
+		seen.add(map.stageId);
+		const name = names[map.stageId];
+		const items = [{
+			name: "Orundum",
+			amount: WEEKLY_ORUNDUM + first
+		}];
+		out.push({
+			id: `${gameId}:challenge:ak:${map.stageId}:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
 			kind: "challenge",
 			title: name ? `Annihilation: ${name}` : "Annihilation",
-			description: "⟦d.akAnnihilation⟧",
-			start: iso(r.startTs),
-			end: iso(r.endTs),
-			items: orundum ? [{
-				name: "Orundum",
-				amount: orundum
-			}] : [],
+			description: first ? `⟦d.akAnnihilationFirst|${first}⟧` : "⟦d.akAnnihilation⟧",
+			start: new Date(s).toISOString(),
+			end: new Date(end).toISOString(),
+			items,
 			featured: [],
-			pulls: Math.round(orundum / 600 * 10) / 10,
+			pulls: Math.round((WEEKLY_ORUNDUM + first) / 600 * 10) / 10,
 			official: true,
 			source: "api"
-		};
-	});
+		});
+	}
+	return out;
 }
 // src/sources/wiki.ts
 /**
@@ -25680,8 +25726,26 @@ var LAUNCH_UTC_HOUR = {
 	zenless: 3,
 	endfield: 4
 };
+/**
+* Evento "contenedor" que llega junto a sus partes numeradas ("Rekindled! Games of the Summer-Gold Sea" + "… I" + "… II", R:1999: la wiki da el
+* evento entero y los avisos oficiales cada parte). Si no da tiradas ni recompensas y sus partes lo cubren, sobra: se veía solapado con ellas.
+*/
+function withoutPartParents(events) {
+	const PART = /\s+(?:I{1,3}|IV|V|VI{0,3}|Part \d+|Phase \d+)$/i;
+	const drop = /* @__PURE__ */ new Set();
+	for (const e of events) {
+		if (e.kind === "banner" || e.pulls > 0 || e.items.length) continue;
+		const parts = events.filter((x) => x !== e && x.kind === e.kind && PART.test(x.title) && key(x.title.replace(PART, "")) === key(e.title));
+		if (parts.length && parts.some((x) => Math.abs(+new Date(x.start) - +new Date(e.start)) <= DAY)) drop.add(e);
+	}
+	return drop.size ? events.filter((e) => !drop.has(e)) : events;
+}
 async function syncSource(game) {
-	const s = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game);
+	const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game);
+	const s = {
+		...s0,
+		events: withoutPartParents(s0.events)
+	};
 	const aligned = s.patches.length ? {
 		...s,
 		patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ""], game.patchCycleDays)

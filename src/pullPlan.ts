@@ -285,7 +285,7 @@ export function estimatedEvents(game: Game, events: GameEvent[], nowMs: number):
     if (!s.endgame || !s.name || (s.per !== 'every' && s.per !== 'month')) continue
     const known = own.filter(e => !taken.has(e.id) && (s.matchChallenges ? isSeason(e) : named(s).some(a => e.title.toLowerCase().includes(a))))
     known.forEach(e => taken.add(e.id))
-    // Lo que da cada temporada: la media de las que ya trae la app (HSR da ~11,3 por temporada, no los 800 de la cifra fija); si no hay,
+    // Lo que da cada temporada: la media de las que ya trae la app (HSR da ~5,6 por temporada: 900 Stellar Jade; antes salía 11,3 porque ennead repetía la recompensa destacada, ver `rewardsOf` en ennead.ts); si no hay,
     // la cifra fija del modo.
     const seen = known.filter(e => e.pulls > 0)
     const pulls = Math.round((seen.length ? seen.reduce((n, e) => n + e.pulls, 0) / seen.length : s.amount / Math.max(1, econ.per)) * 10) / 10

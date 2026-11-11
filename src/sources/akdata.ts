@@ -94,28 +94,41 @@ export async function withClientData(gameId: string, wiki: GameSync): Promise<Ga
 
 /**
  * Annihilation (misión rotatoria): del cliente, `campaign_table.campaignRotateStageOpenTimes` da cada mapa con su inicio y fin exactos y
- * `stage_table` su nombre ("Vermilion Restaurant Yan"). Se muestra el mapa en curso y el siguiente. Recompensas: el Orundum de primera vez del mapa
- * (`breakLadders`, sumado por el proxy); el Orundum semanal tiene un tope que los datos no exponen, así que se menciona sin cifra.
+ * `stage_table` su nombre ("Vermilion Restaurant Yan"). El mapa dura ~3 meses, pero el Orundum (hasta 1800, ver pullPlan.ts) se reinicia
+ * CADA SEMANA, el lunes a la hora del reinicio del servidor (04:00 UTC-7 = 11:00 UTC, la misma a la que empieza cada mapa). Por eso se
+ * muestra una barra por semana (la en curso y la siguiente, como Memorial Arena de HI3) y no una sola de 3 meses: antes juntaba ~13 reinicios.
+ * La recompensa de primera vez del mapa (`breakLadders`, sumada por el proxy) va en la primera semana que se muestra de cada mapa.
  */
-export async function akAnnihilation(gameId: string): Promise<GameEvent[]> {
+const WEEKLY_ORUNDUM = 1800
+export async function akAnnihilation(gameId: string, now = Date.now()): Promise<GameEvent[]> {
   const [camp, names] = await Promise.all([
     get<{ rotate?: { stageId: string; startTs: number; endTs: number }[]; orundum?: Record<string, number> }>('campaign_table.json'),
     get<Record<string, string>>('stage_table.json').catch(() => ({} as Record<string, string>)),
   ])
-  const now = Date.now()
-  return (camp.rotate ?? [])
-    .filter(r => r.endTs * 1000 > now - 3 * DAY && r.startTs * 1000 < now + 120 * DAY)
-    .sort((a, b) => a.startTs - b.startTs).slice(0, 2)
-    .map(r => {
-      const orundum = camp.orundum?.[r.stageId] ?? 0
-      const name = names[r.stageId]
-      return {
-        id: `${gameId}:challenge:ak:${r.stageId}`, gameId, kind: 'challenge' as const,
-        title: name ? `Annihilation: ${name}` : 'Annihilation',
-        description: '⟦d.akAnnihilation⟧',
-        start: iso(r.startTs), end: iso(r.endTs),
-        items: orundum ? [{ name: 'Orundum', amount: orundum }] : [], featured: [],
-        pulls: Math.round((orundum / 600) * 10) / 10, official: true, source: 'api' as const,
-      }
+  const maps = (camp.rotate ?? []).map(r => ({ ...r, s: r.startTs * 1000, e: r.endTs * 1000 })).sort((a, b) => a.s - b.s)
+  const WEEK = 7 * DAY
+  // Lunes 11:00 UTC más reciente.
+  const d = new Date(now)
+  let week = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - ((d.getUTCDay() + 6) % 7), 11)
+  if (week > now) week -= WEEK
+  const seen = new Set<string>()
+  const out: GameEvent[] = []
+  for (const s of [week, week + WEEK]) {
+    const map = maps.find(m => m.s <= s + 1000 && s < m.e)
+    if (!map) continue
+    const end = Math.min(s + WEEK, map.e + 1000) - 1000
+    const first = !seen.has(map.stageId) ? camp.orundum?.[map.stageId] ?? 0 : 0
+    seen.add(map.stageId)
+    const name = names[map.stageId]
+    const items = [{ name: 'Orundum', amount: WEEKLY_ORUNDUM + first }]
+    out.push({
+      id: `${gameId}:challenge:ak:${map.stageId}:${new Date(s).toISOString().slice(0, 10)}`, gameId, kind: 'challenge',
+      title: name ? `Annihilation: ${name}` : 'Annihilation',
+      description: first ? `⟦d.akAnnihilationFirst|${first}⟧` : '⟦d.akAnnihilation⟧',
+      start: new Date(s).toISOString(), end: new Date(end).toISOString(),
+      items, featured: [],
+      pulls: Math.round(((WEEKLY_ORUNDUM + first) / 600) * 10) / 10, official: true, source: 'api',
     })
+  }
+  return out
 }

@@ -86,5 +86,21 @@ export async function syncUma(gameId: string): Promise<GameSync> {
       precision: r.is_confirmed === false ? 'estimated' : undefined,
     })
   }
-  return { events, patches: [], codes: [] }
+  return { events: withRaceNames(events), patches: [], codes: [] }
+}
+
+/** Carrera de una campaña: 'In conjunction with the G1 race "Osaka Cup"…' o 'To celebrate the Arima Kinen G1 race…'. */
+const raceOf = (d?: string) => (d && (/race,?\s*["“]([^"”]+?)[,.]?["”]/i.exec(d)?.[1] ?? /celebrate the (.+?) (?:G[123]|Jpn ?(?:I|1)) race/i.exec(d)?.[1]))?.trim()
+
+/**
+ * Las campañas por carrera se llaman todas igual ('Campaign to add "Training Reward" piece', 'Bonus Star Piece rewards in Career!') y se
+ * solapan (una por cada G1): en la línea de tiempo parecían el mismo evento repetido. Si un título se repite, se le añade su carrera.
+ */
+function withRaceNames(events: GameEvent[]): GameEvent[] {
+  const count = new Map<string, number>()
+  for (const e of events) if (e.kind === 'event') count.set(e.title, (count.get(e.title) ?? 0) + 1)
+  return events.map(e => {
+    const race = e.kind === 'event' && (count.get(e.title) ?? 0) > 1 ? raceOf(e.description) : undefined
+    return race ? { ...e, title: `${e.title} · ${race}` } : e
+  })
 }

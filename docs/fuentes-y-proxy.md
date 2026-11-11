@@ -372,7 +372,7 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 | ZZZ | Shiyu Defense, Deadly Assault (+ Annihilation Simulacrum) | wiki + ennead | total por ciclo de la wiki (`challenges.ts`, tabla "Total Rewards") |
 | WuWa | Tower of Adversity, Whimpering Wastes, Endstate Matrix | ciclo fijo de 28 días / fases = versiones (`kuro.ts`) | wiki: solo lo que se reinicia (Hazard Zone, Respawning Waters) y total del ciclo de la Matrix |
 | NIKKE | Union Raid, Solo Raid, Coordinated Operation | notas oficiales (nikke.gg) | según ranking: descripción sin cifras |
-| Arknights | Annihilation (mapa rotatorio), Contingency Contract | datos del cliente (`campaign_table`, `stage_table`) | Orundum de primera vez; el tope semanal no está en los datos |
+| Arknights | Annihilation (una barra por semana: el tope de 1800 Orundum se reinicia los lunes a las 11:00 UTC; el mapa rota cada ~3 meses), Contingency Contract | datos del cliente (`campaign_table`, `stage_table`) | 1800 por semana + Orundum de primera vez del mapa en su primera semana |
 | Blue Archive | Total/Grand Assault, Final Restriction Release, Joint Firing Drill | bucket `raids`/`events` de bluearchive.wiki | según rango: descripción |
 | HI3 | Memorial Arena | ciclo fijo documentado (martes 04:00 – lunes 02:00, UTC+8) en `cycles.ts` | según grupo: descripción |
 | R:1999 | Limbo | ciclo fijo documentado (días 1 y 16, 05:00 UTC+8) en `cycles.ts` | descripción |

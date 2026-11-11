@@ -8,7 +8,7 @@ const PER_PULL = 160
 const PULL_ITEM = /intertwined fate|acquaint fate|tracks of destiny|special pass|master tape|encrypted/i
 const PREMIUM = /primogem|stellar jade|polychrome|oneiric/i
 
-interface RawReward { name: string; icon?: string; amount: number }
+interface RawReward { id?: number | string; name: string; icon?: string; amount: number }
 interface RawChar { name: string; full_name?: string; icon?: string; rarity?: number | string; element?: string; profession?: string }
 interface Raw {
   id: number | string
@@ -30,12 +30,23 @@ interface Raw {
   w_engines?: RawChar[]
 }
 
+/**
+ * Recompensas del evento. En Star Rail, `special_reward` (la destacada) es una COPIA de una de `rewards` ("Aha Reckons You Need This":
+ * 20 Special Pass en las dos → salía 40); en Genshin es una recompensa aparte que no está en la lista. Solo se suma si no está ya.
+ */
+function rewardsOf(r: Raw): RawReward[] {
+  const list = r.rewards ?? []
+  const s = r.special_reward
+  const dup = s && list.some(x => (x.id != null && x.id === s.id || x.name === s.name) && x.amount === s.amount)
+  return s && !dup ? [s, ...list] : list
+}
+
 const iso = (s: number) => new Date(s * 1000).toISOString()
 const valid = (r: Raw) => !!r.start_time && !!r.end_time && r.start_time > 86_400 && r.end_time > r.start_time
 
 function pullsOf(r: Raw): number {
   let pulls = 0
-  const all = [...(r.rewards ?? []), ...(r.special_reward ? [r.special_reward] : [])]
+  const all = rewardsOf(r)
   for (const x of all) {
     if (PREMIUM.test(x.name)) pulls += x.amount / PER_PULL
     else if (PULL_ITEM.test(x.name)) pulls += x.amount
@@ -45,7 +56,7 @@ function pullsOf(r: Raw): number {
 }
 
 function itemsOf(r: Raw): RewardItem[] {
-  const all = [...(r.special_reward ? [r.special_reward] : []), ...(r.rewards ?? [])]
+  const all = rewardsOf(r)
   // La misma recompensa puede venir dos veces (p. ej. "Stellar Jade ×500" en dos fases): se suman en una sola línea.
   const byName = new Map<string, RewardItem>()
   for (const x of all.filter(x => x.amount > 0)) {

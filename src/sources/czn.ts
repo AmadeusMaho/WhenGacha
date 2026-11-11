@@ -56,7 +56,8 @@ function rangeAt(lines: string[], i: number, ends: Map<string, string>): Period 
 }
 
 /** Secciones que no son eventos (banners, sistema, cambios...). */
-const NOT_EVENT = /Galactic Disaster|Changes|Rate-?Up|Memory|System|Content\b|Combat Training|Improvements|Bug|Package|Card Skin|Crystal|Fragment|Rescue/i
+// "Nightmare Carnival Change Notice" (11 nov 2026): aviso de cambios de un evento, no otro evento (salía encima del de verdad).
+const NOT_EVENT = /Galactic Disaster|Changes|\bNotice\b|Rate-?Up|Memory|System|Content\b|Combat Training|Improvements|Bug|Package|Card Skin|Crystal|Fragment|Rescue/i
 /** Sub-apartados de un evento que no son eventos por sí mismos. */
 const NOT_SUB = /^(Period|Schedule|Rate-?Up|Open Schedule|Unlock|Reward|How to|Information|Precaution|Exchange|Achievement|Limited-Time|Overview|Details|Event Period)/i
 /** Sub-apartados que sí se muestran aparte y duran lo mismo que el evento. */
