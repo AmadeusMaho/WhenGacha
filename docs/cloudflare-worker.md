@@ -73,7 +73,7 @@ Comprobación: `https://<dirección de Botkeep>/healthz` debe traer `x-served-by
 - DNS en Cloudflare (nameservers `jerome`/`sue`); se copió a mano el CNAME `send` → `send.forge.rmta.net` que el escaneo no vio.
 - **Render no recibe los push solo** (los deploys salen como "Manual"). Tras un push que deba llegar a Render:
   Render → Blueprints → WhenGacha → **Manual sync** → *Approve*, o el servicio → *Manual Deploy* → *Deploy latest commit*.
-- Pendiente: `REQUIRE_MARKER=1` cuando Botkeep tenga la versión con `x-served-by` (commit `3d4d395` o posterior).
+- `REQUIRE_MARKER=1` activo desde el 2026-11-11, cuando Botkeep ya tenía `8444b00`. Comprobado: `@` y `www` salen por `primary`.
 
 ## Límites
 

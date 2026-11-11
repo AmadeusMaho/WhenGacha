@@ -14,7 +14,7 @@ routes = [
 PRIMARY = "https://hkrsaw.bot-keep.xyz"   # URL canónica de Botkeep (permanente; NUNCA el dominio propio)
 BACKUP = "https://whengacha.onrender.com"
 TIMEOUT_MS = "8000"
-REQUIRE_MARKER = "0"   # pásalo a "1" cuando Botkeep tenga la versión del servidor que añade x-served-by
+REQUIRE_MARKER = "1"   # activo desde 2026-11-11: Botkeep ya pone x-served-by
 
 [observability]
 enabled = true   # los console.log de los cambios al respaldo se ven en el panel del Worker → Logs
