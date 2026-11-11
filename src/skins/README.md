@@ -149,6 +149,39 @@ los fondos de la skin, por su campo `official`, no se repite). El vídeo se repr
 (WuWa, 23 MB), se usa su imagen de portada como fondo fijo. Si ese fondo falla (el vídeo da error o no arranca en 10 s, o su imagen no carga), `LiveWallpaper.tsx` lo cambia por uno de los de la skin (un vídeo si lo hay). Sin servidor propio no hay fondo de versión. Detalles: `docs/fuentes-y-proxy.md`.
 Cuando salga una versión nueva y se quiera su vídeo comprimido en la skin (más ligero), se convierte y se añade a la lista con su `official`.
 
+### Fondos en R2 (11 nov 2026)
+
+El despliegue tiene un **límite de 20 MB**, así que **ningún vídeo de fondo va en `public/`**: todos se sirven desde **Cloudflare R2**,
+bucket `whengacha-fondos` de la cuenta del dueño, con su URL pública `r2.dev` (`LIVE_CDN` en `skins.ts`, sin `/` al final).
+`r2.dev` tiene un límite de velocidad y Cloudflare lo presenta como algo para pruebas; si hace falta, se conecta un dominio propio al bucket
+(exige pasar los DNS del dominio de Namecheap a Cloudflare) y solo cambia `LIVE_CDN`.
+- **Copia local de lo que hay en el bucket**: `../fondos-skins/r2/<skin>/live-<n>.mp4` (65 vídeos, ~128 MB). El bucket tiene las mismas
+  rutas (`<skin>/live-<n>.mp4`). Los `.webp` (fotograma fijo, ~45 KB) están en `public/skins/<skin>/`, que es de donde se leen
+  (póster, fondo en móvil o con "ahorro de datos", y reserva si R2 falla).
+- **Subir un vídeo** (con `npx wrangler login` hecho en este equipo):
+  `npx wrangler r2 object put whengacha-fondos/<skin>/live-<n>.mp4 --file <ruta> --content-type video/mp4 --cache-control "public, max-age=31536000, immutable" --remote`
+  (sin `--remote`, wrangler 4 lo guarda en local). Como la caché es de un año, un vídeo que cambie lleva **nombre nuevo**.
+- **Calidad** (11 nov 2026, el dueño los vio "low res" a 960 px / CRF 29): H.264, 24 fps, sin audio, `-tune animation`, `+faststart`,
+  con el ffmpeg de `imageio-ffmpeg`. **NIKKE y ZZZ `live-v33`**, desde los originales (1080p–4K): **1920 px, CRF 26** (~2–5 MB;
+  `goninjathief` a CRF 29 por su movimiento). **MoeWalls**: su vista previa ya es de 1280×720, así que **1280 px, CRF 27** (~1–4 MB).
+  Más no se puede sin la descarga completa, que pasa por anuncios. Script: `../fondos-skins/trabajo/conv-hq.sh <entrada> <salida-sin-ext> <ancho> <crf>`.
+  Los de 960 px quedan en `../fondos-skins/r2-960/`. Los pósters `.webp` siguen a 960 px (se ven poco y cuentan en el límite del deploy). Índice de MoeWalls con su número, título y vista previa: `../fondos-skins/trabajo/moe-indice.json`.
+- Qué hay (elegido por el dueño):
+  - **NIKKE**: los 24 live wallpapers oficiales de nikke-en.com/art.html.
+  - **WuWa** (9), **Genshin** (11), **HSR** (11), **ZZZ** (9): de **MoeWalls** (arte de fans, casi nada oficial; se descartaron los
+    que parecían hechos con IA, salvo los que el dueño quiso). Se usa la **vista previa** del post (webm 1280×720, ~15 s, enlace directo
+    `/wp-content/uploads/preview/<año>/<slug>-preview.webm`); la descarga a resolución completa pasa por anuncios y no hace falta.
+    Al repetirse el bucle puede notarse un pequeño salto.
+  - ZZZ conserva `live-v33` (portada oficial de la 3.3, ahora también en R2) y `still-sofa`. **Uma** sigue con sus fondos fijos (el dueño busca vídeos).
+  - Los fondos anteriores (paisajes y fijos de WuWa, Genshin, HSR y ZZZ) se quitaron de `public/` y se guardan en `../fondos-skins/antiguos/`.
+- **Créditos** (petición del dueño): sección "Créditos de los fondos de las skins" al final de `public/acerca.html` (es/en/zh).
+  Salen de `../fondos-skins/trabajo/creditos.json`: el enlace "Source" de cada post de MoeWalls (base64, casi siempre una ficha del
+  Steam Workshop) → `GetPublishedFileDetails` de la API de Steam → nombre del creador. Si la descripción nombra al ilustrador
+  original, se añade. Sin fuente (Astral Express de HSR, Sumeru de Genshin): "autor no indicado" con enlace a MoeWalls.
+  **Todo fondo nuevo de fans lleva su línea ahí.** Ojo: "Bride Furina" (Genshin) lo hizo su autor con ayuda de IA (lo dice en Steam).
+- Los vídeos de R2 son "de fuera" para `LiveWallpaper.tsx`: si uno da error o no arranca en 10 s, se queda su póster local como
+  fondo fijo que se mueve. Para reproducirlos no hace falta CORS (un `<video>` normal).
+
 ## Pestaña "Tiradas" (calculadora, `src/Planner.tsx` + `src/pullPlan.ts`, 10 nov 2026)
 
 Usa las clases de siempre (`.psec`, `.gsec-head`, `.stats`, `.list`, `.progress`, `.seg`, `.pull-list`), así que cada skin la pinta sola.

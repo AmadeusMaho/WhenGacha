@@ -31,27 +31,44 @@ export interface LiveClip {
 const stills = (skin: string, names: string[]): LiveClip[] => names.map(n => ({ poster: `/skins/${skin}/still-${n}.webp` }))
 
 /*
- * Fondos de la línea de tiempo: el vídeo de la web oficial que haya y fondos fijos oficiales (ver README, "Fondos de la línea de tiempo").
- * Cada visita a la pestaña muestra el siguiente.
+ * Fondos animados en Cloudflare R2 (11 nov 2026): el despliegue tiene un límite de 20 MB y los vídeos no caben en public/.
+ * Bucket `whengacha-fondos` (URL pública r2.dev); cada vídeo es `<skin>/live-<n>.mp4` (960 px, 24 fps, sin audio; copia local en
+ * ../fondos-skins/r2/). Su fotograma fijo `live-<n>.webp` (~45 KB) va en public/skins/<skin>/: es el póster, el fondo en móvil y
+ * el de reserva si R2 no responde (LiveWallpaper.tsx). Ver README, "Fondos en R2". Créditos de los de fans: public/acerca.html.
+ */
+export const LIVE_CDN = 'https://pub-f0ae309961c44cf990b8708e645b1aa8.r2.dev'
+const cdn = (skin: string, names: string[]): LiveClip[] =>
+  names.map(n => ({ video: `${LIVE_CDN}/${skin}/live-${n}.mp4`, poster: `/skins/${skin}/live-${n}.webp` }))
+
+/*
+ * Fondos de la línea de tiempo (ver README, "Fondos de la línea de tiempo"). Cada visita a la pestaña muestra el siguiente.
+ * Los de WuWa, Genshin, HSR y ZZZ son animaciones de fans de MoeWalls/Steam Workshop elegidas por el dueño.
  */
 export const SKINS: SkinDef[] = [
   { id: 'wuwa', game: 'wuwa', name: 'Wuthering Waves', fonts: 'family=Sora:wght@400;500;600;700&family=Barlow:wght@400;500;600;700',
-    // Vídeo de la portada de la web oficial, sin las bandas negras, a 960 px y sin audio (24 MB → 2,3 MB).
-    live: [{ video: '/skins/wuwa/live.mp4', poster: '/skins/wuwa/live.jpg', official: 'https://hw-media-cdn-mingchao.kurogame.com/akiwebsite/website2.0/video/1785686400000/5yc48bs9y6at2nxg1h-1785753011124.mp4' },
-      ...stills('wuwa', ['kv']), { poster: '/skins/wuwa/still-land.webp', official: 'https://hw-media-cdn-mingchao.kurogame.com/akiwebsite/website2.0/images/1785686400000/2si3153aj66b20t4be-1785753005811.png' }, { poster: '/skins/wuwa/bg.jpg' }] },
-  // Prueba local con piezas de interfaz del Drive "UI Assets" (genshin.css); sin vídeo ni arte de personajes.
+    live: cdn('wuwa', ['iuno-moonlight-lantern', 'suisui-yangyang-xuanling-lotus-lanterns', 'suoming', 'hiyuki-entrust-your-wishes-to-me',
+      'qingxiao-sword-riding', 'changli-autumn-umbrella', 'mornye-sofa-chilling', 'aemeath-cherry-blossom', 'aemeath-neon-rain']) },
+  // Prueba local con piezas de interfaz del Drive "UI Assets" (genshin.css).
   { id: 'genshin', game: 'genshin', name: 'Genshin Impact', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800',
-    live: [{ video: '/skins/genshin/live-hour.mp4', poster: '/skins/genshin/live-hour.webp', official: 'https://act-webstatic.hoyoverse.com/puzzle/hk4e/pz_c6XZYm0GKS/resource/puzzle/2026/10/19/d138d1ad3bf6f5240eb726ed2ac3d4b0_1292059728731863742.mp4' }, ...stills('genshin', ['mond', 'liyue', 'inazuma', 'mond-dusk', 'sumeru'])] },
+    live: cdn('genshin', ['columbina-blue-flower-fields', 'arlecchino-crimson-moon', 'bride-furina', 'hu-tao-mid-autumn-festival',
+      'sea-of-flowers', 'yae-miko-sakura-cherry-blossoms', 'yae-miko-sakura-sunset', 'aether-vs-ronova-boss-fight',
+      'columbina-luminous-moon', 'lonely-ganyu-in-the-rain', 'sumeru']) },
   // Prueba local (zzz.css) con assets oficiales de skowt.cc en public/skins/zzz/ y cursor propio (ver README).
+  // De los fondos de antes se quedan el vídeo de la 3.3 (portada oficial) y `still-sofa` (el dueño: "calzan").
   { id: 'zzz', game: 'zzz', name: 'Zenless Zone Zero', fonts: 'family=Rubik:wght@500;600;700;800;900',
-    live: [{ video: '/skins/zzz/live-v33.mp4', poster: '/skins/zzz/live-v33.webp', official: 'https://act-webstatic.hoyoverse.com/puzzle/zzz/pz_ZYBGoSIMEV/resource/puzzle/2026/10/14/ef6f80c3ae7410ca14fd4d77571450ec_1154396356221499835.mp4' }, ...stills('zzz', ['agents', 'shards', 'sofa', 'party'])] },
+    live: [{ ...cdn('zzz', ['v33'])[0], official: 'https://act-webstatic.hoyoverse.com/puzzle/zzz/pz_ZYBGoSIMEV/resource/puzzle/2026/10/14/ef6f80c3ae7410ca14fd4d77571450ec_1154396356221499835.mp4' },
+      ...cdn('zzz', ['claret-and-roxy', 'miyabi-fox', 'remielle-dan', 'yuzuha-x-alice', 'yixuan', 'yidhari', 'hoshimi-miyabi', 'ye-shunguang', 'vivian-x-hugo']),
+      ...stills('zzz', ['sofa'])] },
   // hsr.css (3.ª versión): galaxia en CSS, paneles de cristal y el motivo de la vía; cursor del juego (ver README).
   { id: 'hsr', game: 'hsr', name: 'Honkai: Star Rail', fonts: 'family=Barlow:wght@400;500;600;700',
-    live: stills('hsr', ['v46', 'pink', 'radio', 'pool']) },
+    live: cdn('hsr', ['chibi-stelle-black-hole', 'evanescia', 'acheron-crimson-lotus', 'acheron-black-hole', 'sparkle-trash-can-dance',
+      'sparxie-yao-guang', 'galaxy-ranger-acheron', 'castorice-river-flower', 'honkai-star-rail-phainon', 'astral-express', 'cyrene-the-starry-muse']) },
   // Prueba local (nikke.css) con fondo y galones de la web oficial en public/skins/nikke/ (ver README); sin cursor propio.
+  // Los 24 live wallpapers oficiales de la página Art (nikke-en.com/art.html).
   { id: 'nikke', game: 'nikke', name: 'NIKKE', fonts: 'family=Saira+Semi+Condensed:wght@400;500;600;700',
-    // Siete live wallpapers de la página Art de la web oficial: uno distinto en cada visita a la línea de tiempo (LiveWallpaper.tsx).
-    live: ['sin', 'coins', 'phantom', 'heaven', 'absolute', 'sphere', 'arcane'].map(n => ({ video: `/skins/nikke/live-${n}.mp4`, poster: `/skins/nikke/live-${n}.webp` })) },
+    live: cdn('nikke', ['sin', 'coins', 'phantom', 'heaven', 'absolute', 'sphere', 'arcane', 'blankticket', 'boomtheghost', 'colorless', 'for-rest',
+      'goddessfall', 'goninjathief', 'ice-dragon-saga', 'jinx-player', 'juvenile-days', 'lifeagain', 'new-flavor', 'old-tales', 'romantic-valentine',
+      'secret-garden', 'summer', 'terminusticket', 'wisdom-spring']) },
   // Prueba local (uma.css) con piezas de interfaz del zip "Umamusume UI sprites" y el cursor del juego en public/skins/uma/ (ver README).
   { id: 'uma', game: 'uma', name: 'Umamusume', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800',
     live: stills('uma', ['kv', 'stadium', 'race']) },

@@ -17,7 +17,7 @@ function nextClip(skin: string, n: number): number {
   return i
 }
 
-/** Fondo que viene de fuera (el de la versión actual, desde el CDN oficial; ver liveFeed.ts). */
+/** Fondo que viene de fuera: los vídeos de R2 (skins.ts, LIVE_CDN) y el de la versión actual, desde el CDN oficial (liveFeed.ts). */
 const remote = (c: LiveClip) => /^https?:/.test(c.video ?? c.poster)
 /** Tiempo máximo para que un vídeo de fuera empiece a reproducirse antes de cambiarlo por uno propio. */
 const STALL_MS = 10_000
@@ -44,7 +44,9 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
     setClip(cur => {
       if (!remote(cur)) return cur
       const own = clips.filter(c => !remote(c))
-      return own.find(c => !!c.video === !!cur.video) ?? own[0] ?? cur
+      // Los vídeos de R2 traen su póster en public/: si el vídeo falla, se queda ese mismo fondo como imagen que se mueve.
+      const still: LiveClip | undefined = cur.video && !/^https?:/.test(cur.poster) ? { poster: cur.poster } : undefined
+      return own.find(c => !!c.video && !!cur.video) ?? still ?? own[0] ?? cur
     })
   }, [clips])
 
