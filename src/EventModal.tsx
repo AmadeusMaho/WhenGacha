@@ -115,7 +115,7 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
               <h3>{t('modal.rewards')}</h3>
               <div className="rewards">
                 {e.items.map(r => (
-                  <span key={r.name} className="reward"><Img src={r.icon} />{r.name}<b>×{r.amount.toLocaleString()}</b></span>
+                  <span key={r.name} className="reward"><Img src={r.icon} />{r.name}{r.amount > 0 && <b>×{r.amount.toLocaleString()}</b>}</span>
                 ))}
               </div>
             </>

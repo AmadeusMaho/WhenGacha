@@ -24273,7 +24273,7 @@ function lines(html) {
 /** "October 26, 05:00" / "September 30, 2026, 06:00" en UTC+off; sin año, el del aviso (o el siguiente si cae antes). */
 function when(s, off, year, after) {
 	const m = /([A-Z][a-z]+) (\d{1,2})(?:, (\d{4}))?(?:,? (\d{1,2}):(\d{2}))?/.exec(s);
-	const mo = m ? MONTHS$3.indexOf(m[1].toLowerCase()) : -1;
+	const mo = m && m[1].length >= 3 ? MONTHS$3.findIndex((x) => x.startsWith(m[1].toLowerCase().slice(0, 3))) : -1;
 	if (!m || mo < 0) return NaN;
 	let y = m[3] ? +m[3] : year;
 	let t = Date.UTC(y, mo, +m[2], (m[4] ? +m[4] : 0) - off, m[5] ? +m[5] : 0);
@@ -24283,7 +24283,7 @@ function when(s, off, year, after) {
 function parse(gameId, post, out, seen) {
 	const ls = lines(post.content?.rendered ?? "");
 	const year = new Date(post.date).getUTCFullYear();
-	const mw = ls.map((l) => /(?:Maintenance Window|● Duration):\s*([A-Z][a-z]+ \d{1,2}, \d{4}), \d{1,2}:\d{2}\s*[–-]\s*(\d{1,2}):(\d{2})\s*\(UTC([+-]\d+)\)/.exec(l)).find(Boolean);
+	const mw = ls.map((l) => /(?:Maintenance (?:Window|Period)|● Duration):\s*([A-Z][a-z]+ \d{1,2}, \d{4}), \d{1,2}:\d{2}\s*[–-]\s*(\d{1,2}):(\d{2})\s*\(UTC([+-]\d+)\)/.exec(l)).find(Boolean);
 	const maintEnd = mw ? when(`${mw[1]}, ${mw[2]}:${mw[3]}`, +mw[4], year) : NaN;
 	const now = Date.now(), from = now - 3 * DAY$9, to = now + 120 * DAY$9;
 	let head = null;
@@ -24292,7 +24292,11 @@ function parse(gameId, post, out, seen) {
 			head = l.replace(/^●\s*/, "");
 			continue;
 		}
-		const m = /^(Duration|Available|Discount Period):\s*(.+?)\s*[–-]\s*(.+?)\s*\((UTC([+-]\d+)|server time)\)/i.exec(l);
+		if (/^\d+\.\s+.*"[^"]+"/.test(l)) {
+			head = l.replace(/^\d+\.\s*/, "");
+			continue;
+		}
+		const m = /^(?:Event )?(Duration|Available|Discount Period):\s*(.+?)\s*[–-]\s*(.+?)\s*\((UTC([+-]\d+)|server time)\)/i.exec(l);
 		if (!m || !head) continue;
 		const h = head;
 		head = null;
@@ -24319,13 +24323,37 @@ function parse(gameId, post, out, seen) {
 			featured: [],
 			official: true,
 			source: "api",
-			minor: /Web Event|Gift Pack/i.test(h) || void 0
+			minor: /Web Event|Gift Pack|Mystery Box/i.test(h) || void 0
 		});
 	}
 }
+/**
+* Monedas y materiales de NTE que los avisos nombran sin cantidad ("rewards including … Annulith, Fabricated Dice, Fons, and more").
+* Se listan sin cifra (la ficha muestra solo el nombre) y no suman tiradas: solo cuentan las que traen "xN".
+*/
+var NAMED = [
+	[/\bAnnulith\b/i, "Annulith"],
+	[/\bSolid Dice\b/i, "Solid Dice"],
+	[/\bFabricated Dice\b/i, "Fabricated Dice"],
+	[/\bFons\b/i, "Fons"],
+	[/\bFloe Cinema Tickets?\b/i, "Floe Cinema Ticket"],
+	[/\bElite Hunter Guides?\b/i, "Elite Hunter Guide"],
+	[/\bChaotic Dye\b/i, "Chaotic Dye"]
+];
 function rewardsAt(ls, i) {
-	const next = ls.findIndex((l, j) => j > i && l.startsWith("●"));
-	return pullsIn("nte", ls.slice(i, next > 0 ? next : ls.length));
+	const next = ls.findIndex((l, j) => j > i && (l.startsWith("●") || /^\d+\.\s/.test(l)));
+	const sec = ls.slice(i, next > 0 ? next : ls.length).filter((l) => !l.startsWith("※") && !/^Mystery Box Contents/i.test(l));
+	const r = pullsIn("nte", sec);
+	const free = sec.filter((l) => !/purchase|\bcosts?\b|(?:spend|consume)s? (?:Fons|Annulith)/i.test(l)).join(" ");
+	const has = new Set(r.items.map((x) => x.name.toLowerCase()));
+	const extra = NAMED.filter(([re, name]) => re.test(free) && ![...has].some((h) => h.startsWith(name.toLowerCase()))).map(([, name]) => ({
+		name,
+		amount: 0
+	}));
+	return {
+		pulls: r.pulls,
+		items: [...r.items, ...extra].slice(0, 10)
+	};
 }
 async function syncNevernessGg(gameId) {
 	const res = await fetch(viaProxy(`${API$1}?${new URLSearchParams({
@@ -25726,26 +25754,8 @@ var LAUNCH_UTC_HOUR = {
 	zenless: 3,
 	endfield: 4
 };
-/**
-* Evento "contenedor" que llega junto a sus partes numeradas ("Rekindled! Games of the Summer-Gold Sea" + "… I" + "… II", R:1999: la wiki da el
-* evento entero y los avisos oficiales cada parte). Si no da tiradas ni recompensas y sus partes lo cubren, sobra: se veía solapado con ellas.
-*/
-function withoutPartParents(events) {
-	const PART = /\s+(?:I{1,3}|IV|V|VI{0,3}|Part \d+|Phase \d+)$/i;
-	const drop = /* @__PURE__ */ new Set();
-	for (const e of events) {
-		if (e.kind === "banner" || e.pulls > 0 || e.items.length) continue;
-		const parts = events.filter((x) => x !== e && x.kind === e.kind && PART.test(x.title) && key(x.title.replace(PART, "")) === key(e.title));
-		if (parts.length && parts.some((x) => Math.abs(+new Date(x.start) - +new Date(e.start)) <= DAY)) drop.add(e);
-	}
-	return drop.size ? events.filter((e) => !drop.has(e)) : events;
-}
 async function syncSource(game) {
-	const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game);
-	const s = {
-		...s0,
-		events: withoutPartParents(s0.events)
-	};
+	const s = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game);
 	const aligned = s.patches.length ? {
 		...s,
 		patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ""], game.patchCycleDays)
@@ -25775,7 +25785,7 @@ async function syncSourceRaw(game) {
 			events: s.events.map((e) => e.kind === "event" && /Hunter's Crucible/i.test(e.title) ? {
 				...e,
 				kind: "challenge",
-				description: e.description ?? "⟦d.nteCrucible⟧"
+				description: "⟦d.nteCrucible⟧"
 			} : e)
 		}));
 		case "reverse1999": return withGachafocus(id, "reverse1999", officialFirst(syncBluepoch(id), syncReverse1999(id))).then((s) => ({

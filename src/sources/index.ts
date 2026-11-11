@@ -194,25 +194,9 @@ async function cznRecurring(s: GameSync): Promise<GameSync> {
 /** Hora (UTC) a la que suelen salir las versiones: tras el mantenimiento, 11:00 UTC+8 (Endfield, 12:00 UTC+8). Para fechas de la wiki sin hora. */
 const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail: 3, zenless: 3, endfield: 4 }
 
-/**
- * Evento "contenedor" que llega junto a sus partes numeradas ("Rekindled! Games of the Summer-Gold Sea" + "… I" + "… II", R:1999: la wiki da el
- * evento entero y los avisos oficiales cada parte). Si no da tiradas ni recompensas y sus partes lo cubren, sobra: se veía solapado con ellas.
- */
-function withoutPartParents(events: GameEvent[]): GameEvent[] {
-  const PART = /\s+(?:I{1,3}|IV|V|VI{0,3}|Part \d+|Phase \d+)$/i
-  const drop = new Set<GameEvent>()
-  for (const e of events) {
-    if (e.kind === 'banner' || e.pulls > 0 || e.items.length) continue
-    const parts = events.filter(x => x !== e && x.kind === e.kind && PART.test(x.title) && key(x.title.replace(PART, '')) === key(e.title))
-    if (parts.length && parts.some(x => Math.abs(+new Date(x.start) - +new Date(e.start)) <= DAY)) drop.add(e)
-  }
-  return drop.size ? events.filter(e => !drop.has(e)) : events
-}
-
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
-  const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
-  const s = { ...s0, events: withoutPartParents(s0.events) }
+  const s = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
   if (aligned.codes.length || !game.api) return aligned
@@ -238,7 +222,7 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // NTE: banners de Prydwen + avisos oficiales (vía neverness.gg, horas exactas) completados con Game8 (imágenes y eventos aún sin aviso, "≈").
     case 'nte': return withGachafocus(id, game.api, both(syncPrydwen(id, game.api), officialFirst(syncNevernessGg(id), syncGame8(id, game.api))))
       // Hunter's Crucible es el endgame recurrente de NTE (wiki: "recurrent event … end-game combat content"): rotatorio, no evento.
-      .then(s => ({ ...s, events: s.events.map(e => e.kind === 'event' && /Hunter's Crucible/i.test(e.title) ? { ...e, kind: 'challenge' as const, description: e.description ?? '⟦d.nteCrucible⟧' } : e) }))
+      .then(s => ({ ...s, events: s.events.map(e => e.kind === 'event' && /Hunter's Crucible/i.test(e.title) ? { ...e, kind: 'challenge' as const, description: '⟦d.nteCrucible⟧' } : e) }))
     // Avisos oficiales de Bluepoch (eventos y banners con hora exacta e imagen) + la wiki para lo que no traen.
     case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id))).then(s => ({ ...s, events: [...s.events, ...r99Limbo(id)] }))
     // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.

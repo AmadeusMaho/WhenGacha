@@ -29,7 +29,8 @@ function lines(html: string): string[] {
 /** "October 26, 05:00" / "September 30, 2026, 06:00" en UTC+off; sin año, el del aviso (o el siguiente si cae antes). */
 function when(s: string, off: number, year: number, after?: number): number {
   const m = /([A-Z][a-z]+) (\d{1,2})(?:, (\d{4}))?(?:,? (\d{1,2}):(\d{2}))?/.exec(s)
-  const mo = m ? MONTHS.indexOf(m[1].toLowerCase()) : -1
+  // "November 11" y, desde la nota de la 1.5 (9 nov 2026), "Nov 11": se compara por las tres primeras letras.
+  const mo = m && m[1].length >= 3 ? MONTHS.findIndex(x => x.startsWith(m[1].toLowerCase().slice(0, 3))) : -1
   if (!m || mo < 0) return NaN
   let y = m[3] ? +m[3] : year
   let t = Date.UTC(y, mo, +m[2], (m[4] ? +m[4] : 0) - off, m[5] ? +m[5] : 0)
@@ -41,13 +42,15 @@ function parse(gameId: string, post: Post, out: GameEvent[], seen: Set<string>) 
   const ls = lines(post.content?.rendered ?? '')
   const year = new Date(post.date).getUTCFullYear()
   // Fin del mantenimiento de ese aviso (lo que significa "after update").
-  const mw = ls.map(l => /(?:Maintenance Window|● Duration):\s*([A-Z][a-z]+ \d{1,2}, \d{4}), \d{1,2}:\d{2}\s*[–-]\s*(\d{1,2}):(\d{2})\s*\(UTC([+-]\d+)\)/.exec(l)).find(Boolean)
+  const mw = ls.map(l => /(?:Maintenance (?:Window|Period)|● Duration):\s*([A-Z][a-z]+ \d{1,2}, \d{4}), \d{1,2}:\d{2}\s*[–-]\s*(\d{1,2}):(\d{2})\s*\(UTC([+-]\d+)\)/.exec(l)).find(Boolean)
   const maintEnd = mw ? when(`${mw[1]}, ${mw[2]}:${mw[3]}`, +mw[4], year) : NaN
   const now = Date.now(), from = now - 3 * DAY, to = now + 120 * DAY
   let head: string | null = null
   for (const [i, l] of ls.entries()) {
+    // Cabecera: "● "Gold Clash" Limited-Time Event" o un apartado numerado con su propio evento ("5. New Mystery Box Event "Open Roads Ahead"").
     if (l.startsWith('●')) { head = l.replace(/^●\s*/, ''); continue }
-    const m = /^(Duration|Available|Discount Period):\s*(.+?)\s*[–-]\s*(.+?)\s*\((UTC([+-]\d+)|server time)\)/i.exec(l)
+    if (/^\d+\.\s+.*"[^"]+"/.test(l)) { head = l.replace(/^\d+\.\s*/, ''); continue }
+    const m = /^(?:Event )?(Duration|Available|Discount Period):\s*(.+?)\s*[–-]\s*(.+?)\s*\((UTC([+-]\d+)|server time)\)/i.exec(l)
     if (!m || !head) continue
     const h = head
     head = null
@@ -72,14 +75,31 @@ function parse(gameId: string, post: Post, out: GameEvent[], seen: Set<string>) 
       // Recompensas: los "Nombre xN" hasta el siguiente apartado "●"; 160 Annulith = 1 tirada (pulls.ts).
       ...rewardsAt(ls, i),
       featured: banner && /Character/i.test(banner[1]) ? [{ name: title, rarity: 5 }] : [], official: true, source: 'api',
-      minor: /Web Event|Gift Pack/i.test(h) || undefined,
+      minor: /Web Event|Gift Pack|Mystery Box/i.test(h) || undefined,
     })
   }
 }
 
+/**
+ * Monedas y materiales de NTE que los avisos nombran sin cantidad ("rewards including … Annulith, Fabricated Dice, Fons, and more").
+ * Se listan sin cifra (la ficha muestra solo el nombre) y no suman tiradas: solo cuentan las que traen "xN".
+ */
+const NAMED: [RegExp, string][] = [
+  [/\bAnnulith\b/i, 'Annulith'], [/\bSolid Dice\b/i, 'Solid Dice'], [/\bFabricated Dice\b/i, 'Fabricated Dice'], [/\bFons\b/i, 'Fons'],
+  [/\bFloe Cinema Tickets?\b/i, 'Floe Cinema Ticket'], [/\bElite Hunter Guides?\b/i, 'Elite Hunter Guide'], [/\bChaotic Dye\b/i, 'Chaotic Dye'],
+]
+
 function rewardsAt(ls: string[], i: number) {
-  const next = ls.findIndex((l, j) => j > i && l.startsWith('●'))
-  return pullsIn('nte', ls.slice(i, next > 0 ? next : ls.length))
+  const next = ls.findIndex((l, j) => j > i && (l.startsWith('●') || /^\d+\.\s/.test(l)))
+  // Las notas "※" (contenido de cofres de pago: "Fons x2,000,000") y lo que trae una caja misteriosa de pago no son recompensas del evento.
+  const sec = ls.slice(i, next > 0 ? next : ls.length).filter(l => !l.startsWith('※') && !/^Mystery Box Contents/i.test(l))
+  const r = pullsIn('nte', sec)
+  // Lo de pago ("Purchase "Elite Hunter Supplies" to unlock…") y lo que se gasta ("costs Fons x50,000") no es recompensa del evento.
+  // Gastar la moneda del evento ("Spend Kool tokens … to redeem") sí es gratis; gastar Fons o Annulith (cajas misteriosas), no.
+  const free = sec.filter(l => !/purchase|\bcosts?\b|(?:spend|consume)s? (?:Fons|Annulith)/i.test(l)).join(' ')
+  const has = new Set(r.items.map(x => x.name.toLowerCase()))
+  const extra = NAMED.filter(([re, name]) => re.test(free) && ![...has].some(h => h.startsWith(name.toLowerCase()))).map(([, name]) => ({ name, amount: 0 }))
+  return { pulls: r.pulls, items: [...r.items, ...extra].slice(0, 10) }
 }
 
 export async function syncNevernessGg(gameId: string): Promise<GameSync> {

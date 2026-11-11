@@ -196,6 +196,10 @@ los banners de la 3.7. `alignPatches` (`src/sources/versions.ts`, aplicado en `s
   La web oficial (nikke-en.com) solo publica avisos técnicos y blablalink/playerinfinite usa una API firmada (v2): no se replica la firma.
 - **NTE → `src/sources/nevernessgg.ts`**: neverness.gg (DotGG) copia los avisos de Perfect World ("Source: Perfect World"). Última "Patch Notes" + avisos de mantenimiento posteriores
   (actualizaciones a mitad de versión, p. ej. Gold Clash). `● "Nombre" Tipo` + `Duration: … (UTC+8 | server time)`; server time = América (UTC-5). Los banners siguen de Prydwen.
+  Desde la nota de la 1.5 (9 nov 2026) el formato cambió: meses abreviados ("Nov 11"), "Maintenance Period" y "Event Duration", y algún evento bajo un
+  apartado numerado (`5. New Mystery Box Event "…"`); con el formato viejo el lector no sacaba nada y solo quedaba Game8, sin recompensas.
+  Recompensas: las "Nombre xN" cuentan tiradas; las monedas y materiales que el aviso nombra sin cifra (Annulith, Solid/Fabricated Dice, Fons…)
+  se listan sin cantidad (`NAMED`). Se ignoran lo de pago ("Purchase …"), lo que se gasta (Fons/Annulith de las cajas) y las notas "※".
   Ojo: Perfect World prohíbe el scraping de *sus* servicios; neverness.gg es un tercero cuyos robots.txt y Términos (DotGG) lo permiten. Si se prefiere no depender de una copia, quedaría Game8 ("≈").
 - DotGG (nikke.gg, neverness.gg): robots.txt `User-agent: *` sin `Disallow` salvo su buscador `?s=` (no se usa: se filtra por categoría); Términos (`/terms`) sin cláusula contra el acceso automatizado.
   Proxy: fuente `nikkegg` (solo `/wp-json/wp/v2/posts[/id]` con `categories`, `per_page`, `_fields`), pausa 5 s, caché 3 h.
