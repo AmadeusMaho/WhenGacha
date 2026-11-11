@@ -98,7 +98,10 @@ async function handleStatic(req, res, pathname) {
 }
 
 /* ---------- servidor ---------- */
+const SERVED_BY = process.env.SERVER_NAME || 'whengacha'
 const server = http.createServer(async (req, res) => {
+  // Marca de "esto lo respondió WhenGacha y no una página del host": la usa el Worker de respaldo (cloudflare/failover, REQUIRE_MARKER).
+  res.setHeader('x-served-by', SERVED_BY)
   try {
     const url = new URL(req.url ?? '/', 'http://localhost')
     // WhenGacha Premium (apoyo, acceso por correo y sesión): las únicas rutas con POST. server/supporter.mjs

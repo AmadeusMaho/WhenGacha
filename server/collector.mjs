@@ -121,6 +121,9 @@ export async function startCollector() {
   console.log(`[collector] ${games.length} juegos, ${snapshots.size} copias guardadas`)
   setTimeout(pullRemote, 5_000).unref() // primero lo ya publicado: así hay datos desde el arranque aunque una fuente bloquee a este servidor
   setInterval(pullRemote, 20 * MIN).unref()
+  // COLLECTOR_ENABLED=0: servidor de respaldo (Render detrás del Worker de Cloudflare). Solo adopta las copias de la rama `data`
+  // y no consulta las fuentes por su cuenta, para no duplicar las peticiones que ya hace el servidor principal.
+  if (process.env.COLLECTOR_ENABLED === '0') return void console.log('[collector] recolección propia desactivada (COLLECTOR_ENABLED=0): solo copias de GitHub')
   setTimeout(tick, 20_000).unref()
   setInterval(tick, 10 * MIN).unref()
 }

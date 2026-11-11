@@ -54,6 +54,10 @@ También puedes vigilar Botkeep con un segundo monitor en UptimeRobot (`https://
 
 ## 3. Estado actual
 
+> **Plan vigente:** Botkeep principal y Render como respaldo automático detrás de un Worker de Cloudflare
+> (guía en `docs/cloudflare-worker.md`). En Render: `COLLECTOR_ENABLED=0`, `SERVER_NAME=render` y `PUBLIC_URL` = el dominio propio.
+> El apartado 4 (pasar el dominio entero a Render) solo aplica si un día se deja Botkeep.
+
 - Servicio creado y funcionando: https://whengacha.onrender.com (comprobado `/healthz`, eventos, fondos y skins).
 - Es el **respaldo**: Botkeep sigue siendo la web principal con el dominio propio y Ko-fi le avisa a él.
 - Render se actualiza solo con cada push. Si se duerme, tarda ~1 min en despertar y ya está al día.

@@ -17,6 +17,12 @@ services:
         value: "22"
       - key: NODE_ENV
         value: production
+      # Respaldo detrás del Worker de Cloudflare (docs/cloudflare-worker.md): no recolecta por su cuenta, solo adopta las copias
+      # de la rama `data` (así las fuentes no reciben el doble de peticiones). Se marca con x-served-by: render.
+      - key: COLLECTOR_ENABLED
+        value: "0"
+      - key: SERVER_NAME
+        value: render
       # Discord (docs/discord-bot.md)
       - key: DISCORD_TOKEN
         sync: false

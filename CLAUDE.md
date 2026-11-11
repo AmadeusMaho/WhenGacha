@@ -15,6 +15,8 @@ git add -A           # incluye dist/ (assets con hash nuevo, index.html, sw.js)
 Comprueba que `git status` muestre cambios en `dist/` antes de hacer push. Si no hay, no se compiló.
 
 Hay un segundo despliegue en **Render** (`render.yaml`, guía en `docs/render.md`) que compila solo en cada push; no sustituye a Botkeep.
+Render es el **respaldo automático**: un Worker de Cloudflare (`cloudflare/failover/`, guía en `docs/cloudflare-worker.md`) manda las visitas
+a Botkeep y, si falla, a Render. Render corre con `COLLECTOR_ENABLED=0` (no recolecta, solo adopta las copias de la rama `data`).
 `dist/skins/` no se versiona (es copia de `public/skins/`); el servidor sirve las skins desde `public/` si faltan en `dist/`.
 
 `build:prod` también regenera `server/bundle/collector.mjs` (el recolector del servidor, con las fuentes de `src/sources` y `linkedom` ya dentro).

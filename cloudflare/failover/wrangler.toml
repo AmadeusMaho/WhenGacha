@@ -1,0 +1,20 @@
+# Worker de respaldo de WhenGacha. Guía: docs/cloudflare-worker.md
+# Desplegar desde esta carpeta:  npx wrangler deploy
+name = "whengacha-failover"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+# El dominio tiene que estar en Cloudflare, con los registros @ y www en "Proxied" (nube naranja).
+routes = [
+  { pattern = "whengacha.site/*", zone_name = "whengacha.site" },
+  { pattern = "www.whengacha.site/*", zone_name = "whengacha.site" },
+]
+
+[vars]
+PRIMARY = "https://hkrsaw.bot-keep.xyz"   # URL canónica de Botkeep (permanente; NUNCA el dominio propio)
+BACKUP = "https://whengacha.onrender.com"
+TIMEOUT_MS = "8000"
+REQUIRE_MARKER = "0"   # pásalo a "1" cuando Botkeep tenga la versión del servidor que añade x-served-by
+
+[observability]
+enabled = true   # los console.log de los cambios al respaldo se ven en el panel del Worker → Logs
