@@ -21416,14 +21416,71 @@ function rangeIn(line, year, fallbackZone, postedAt) {
 * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
 */
 var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "");
-/** Saludos que no son el nombre de nada ("Dear Commander,", "Sensei,"). */
-var GREETING = /^(dear\s+)?(commanders?|doctors?|sensei|managers?|captains?|trailblazers?|travell?ers?|proxies|trekkers?|everyone|all)\s*[,!]?$/i;
-/** Nombre dentro de una frase: "The collab event, It's Showtime! Angels' Azur Stage, will be available…". */
-function sentenceName(c) {
-	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c))?.[1].trim();
+/**
+* Saludos que no son el nombre de nada: "Dear Commander,", "Dear Tyrant,", "Sensei,", "Hello Doctors!". Cualquier "Dear …" corto o una línea corta
+* que acaba en coma cuenta, para no tener que añadir el apodo de cada juego (Stella Sora, 11 nov 2026: el evento se llamaba "Dear Tyrant,").
+*/
+var GREETING = /^(?:(?:dear|hello|hi|hey|greetings),?\s+[^.!?:]{1,40}|(?:commanders?|doctors?|sensei|managers?|captains?|trailblazers?|travell?ers?|proxies|trekkers?|tyrants?|everyone|all))\s*[,!]?$/i;
+var isGreeting = (c) => GREETING.test(c) || /^[^.!?:\d]{1,30},$/.test(c);
+/**
+* Rótulos de apartado que no son el nombre de nada: "▌ Event Period", "Recruitment Period", "Details", "Rewards". Si se tomaban como cabecera,
+* el evento se llamaba "Event Period".
+*/
+var LABEL$2 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|details?|rewards?|notes?|overview|rules|requirements?|how to (?:join|participate|play))\s*:?$/i;
+/**
+* Nombre dentro de una frase. `loose` añade el patrón "X will be available", que solo vale en la propia línea del periodo (en una frase cualquiera
+* daba nombres como "A new hotfix for Stella Sora").
+*/
+function sentenceName(c, loose = true) {
+	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim();
 }
-var clean$2 = (s) => s.replace(/[*_`#>|]+/g, "").replace(/^[\s■◆●▶◇□・\-–•]+/, "").replace(/[【】]/g, " ").replace(/\s+/g, " ").trim();
-var isHeading = (raw) => /^\s*(\*\*|__|#+\s|[■◆●▶◇□【[])/.test(raw) || /\*\*\s*$/.test(raw);
+/** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
+var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
+/** Viñetas y marcas de apartado al principio de una línea ("▌", "■", "◆", "►"…). */
+var MARKS = "■◆●▶◇□・▌▍▎▐►▷▸▹◢◣✦✧◈❖♦◎";
+var clean$2 = (s) => s.replace(/[*_`#>|]+/g, "").replace(new RegExp(`^[\\s${MARKS}\\-–•]+`), "").replace(/[【】]/g, " ").replace(/\s+/g, " ").trim();
+var isHeading = (raw) => new RegExp(`^\\s*(\\*\\*|__|#+\\s|[${MARKS}【[])`).test(raw) || /\*\*\s*$/.test(raw);
+/**
+* Inicio y fin en líneas separadas ("Start: Nov. 12, 2026 after maintenance" / "End: Dec. 03, 2026 19:59 (UTC-7)", Stella Sora 11 nov 2026)
+* → una sola línea "Period: <inicio> – <fin>" que `rangeIn` entiende; la del fin queda vacía (los índices no cambian). Las de temporada
+* ("Season starts:") se dejan para `seasonFrom`.
+*/
+var START_L = /^(?!season|version)((?:[\w-]+\s+){0,2})(?:start(?:s|ing)?|begins?|beginning|from|opens?)(?:\s+(?:time|date|at|on))?\s*[:：]\s*(.+)$/i;
+var END_L = /^(?!season|version)(?:[\w-]+\s+){0,2}(?:end(?:s|ing)?|until|closes?|to)(?:\s+(?:time|date|at|on))?\s*[:：]\s*(.+)$/i;
+function joinStartEnd(lines) {
+	const out = [...lines];
+	for (let i = 0; i < out.length; i++) {
+		const a = START_L.exec(clean$2(out[i]));
+		if (!a) continue;
+		for (let j = i + 1, seen = 0; j < out.length && seen < 2; j++) {
+			const c = clean$2(out[j]);
+			if (!c) continue;
+			seen++;
+			const b = END_L.exec(c);
+			if (!b) continue;
+			out[i] = `${a[1]}Period: ${a[2]} – ${b[1]}`;
+			out[j] = "";
+			break;
+		}
+	}
+	return out;
+}
+/** "★5 Trekker, Leafia", "★4 Trekkers, Ridge and Amber", "5★ Character: X" → destacados de un banner. */
+function featuredIn(lines) {
+	const out = [];
+	const re = /(?:[★☆]\s*(\d)|(\d)\s*[★☆]|(\d)-star)\s+[A-Z][\w-]*s?\s*[,:：]\s*([A-Z][^.!?\n]{0,60}?)(?=\s+(?:is|are|will|has|have)\b|[.!?]|$)/g;
+	for (const l of lines) for (const m of l.matchAll(re)) {
+		const rarity = +(m[1] ?? m[2] ?? m[3]);
+		for (const n of m[4].split(/\s*,\s*|\s+and\s+|\s*&\s*/)) {
+			const name = n.trim();
+			if (name && name.length <= 40 && !out.some((f) => f.name === name)) out.push({
+				name,
+				rarity
+			});
+		}
+	}
+	return out.sort((a, b) => b.rarity - a.rarity);
+}
 async function syncDiscord(gameId) {
 	const channel = discordChannel(gameId);
 	if (!channel) return {
@@ -21446,7 +21503,7 @@ async function syncDiscord(gameId) {
 		const text = textOf(m);
 		if (!/maintenance/i.test(text)) continue;
 		const year = new Date(m.timestamp).getUTCFullYear();
-		for (const line of text.split("\n")) {
+		for (const line of joinStartEnd(text.split("\n"))) {
 			if (!/maintenance|time|period/i.test(line)) continue;
 			const parts = line.split(SEP);
 			const a = dateIn(parts[0] ?? "", year);
@@ -21463,21 +21520,37 @@ async function syncDiscord(gameId) {
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const m of messages) {
-		const raw = textOf(m).split("\n").map(noise);
+		const raw = joinStartEnd(textOf(m).split("\n").map(noise));
 		const year = new Date(m.timestamp).getUTCFullYear();
 		const msgZone = zoneOf(raw.join(" ")) ?? 0;
 		const image = imageOf(m);
-		const firstLine = raw.findIndex((l) => clean$2(l) && !GREETING.test(clean$2(l)));
-		let heading = firstLine >= 0 ? clean$2(raw[firstLine]) : "";
+		const firstLine = raw.findIndex((l) => clean$2(l) && !isGreeting(clean$2(l)) && !LABEL$2.test(clean$2(l)));
+		let heading = firstLine >= 0 && clean$2(raw[firstLine]).length <= 90 ? clean$2(raw[firstLine]) : "";
 		let headAt = Math.max(firstLine, 0);
+		let fromHead = false;
+		let label = "";
 		for (const [i, line] of raw.entries()) {
 			const c = clean$2(line);
 			if (!c) continue;
 			const r = rangeIn(c, year, msgZone, +new Date(m.timestamp));
 			if (!r) {
-				if (isHeading(line) && c.length <= 90 && !/:$/.test(c) && !GREETING.test(c)) {
-					heading = c;
+				if (LABEL$2.test(c)) {
+					label = c;
+					continue;
+				}
+				if (isHeading(line) && c.length <= 90 && !/:$/.test(c) && !isGreeting(c)) {
+					const p = TYPE_PREFIX.exec(c);
+					heading = p && c.length > p[0].length + 2 ? c.slice(p[0].length) : c;
 					headAt = i;
+					fromHead = true;
+					label = p?.[0] ?? "";
+					continue;
+				}
+				const s = !fromHead && sentenceName(c, false);
+				if (s) {
+					heading = s;
+					headAt = i;
+					label = "";
 				}
 				continue;
 			}
@@ -21492,12 +21565,18 @@ async function syncDiscord(gameId) {
 				else approx = true;
 			}
 			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$23) continue;
-			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(name) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(name) ? "banner" : "event";
+			const ctx = [
+				name,
+				label,
+				name === heading && !fromHead ? clean$2(raw[headAt]).slice(0, 120) : ""
+			].join(" | ");
+			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(ctx) ? "banner" : "event";
 			const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
 			seen.add(id);
-			const nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean$2(l).length <= 90);
-			const { pulls, items } = kind === "event" ? pullsIn(gameId, raw.slice(headAt, nextHead > 0 ? nextHead : raw.length).map(clean$2)) : {
+			const nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean$2(l).length <= 90 && !LABEL$2.test(clean$2(l)));
+			const section = raw.slice(headAt, nextHead > 0 ? nextHead : raw.length).map(clean$2);
+			const { pulls, items } = kind === "event" ? pullsIn(gameId, section) : {
 				pulls: 0,
 				items: []
 			};
@@ -21510,7 +21589,7 @@ async function syncDiscord(gameId) {
 				start: new Date(start).toISOString(),
 				end: new Date(r.end).toISOString(),
 				items,
-				featured: [],
+				featured: kind === "banner" ? featuredIn(section) : [],
 				pulls,
 				official: true,
 				source: "api",

@@ -48,5 +48,8 @@ El resto ya tiene avisos oficiales con hora exacta (Kuro, Bluepoch, STOVE, notas
 - El lector (`syncDiscord`) busca rangos de fechas en el texto, los embeds y sus campos: "Period: Oct. 19, 2026 after maintenance – Nov. 09, 2026 19:59 (UTC-7)",
   "11/9 (Mon) 19:00 ~ 11/16 (Mon) 18:59 (UTC)", "2026/11/03 04:00 - 2026/11/10 02:59". El nombre es el de la misma línea ("Bounty / Scrimmage Triple Rewards: …") o el
   último título en negrita/■/【】. "After maintenance" toma la hora real del aviso de mantenimiento del canal; si no lo hay, queda "≈". Imagen: la adjunta o la del embed.
+- Desde el 11 nov 2026 también entiende, para cualquier juego: inicio y fin en líneas separadas ("Start: …" / "End: …"), cualquier saludo
+  ("Dear Tyrant,", "Hello Sensei!"), rótulos como "▌ Event Period" (no son nombres), el nombre dentro de una frase ("Limited event: X is coming soon"),
+  prefijos de tipo en cabeceras ("Limited Headhunting: X" → banner "X") y destacados "★5 Trekker, Leafia".
 - Probado (6 nov 2026) con mensajes de ejemplo en esos formatos: da las mismas horas que gachafocus (Urgent Bounty, One Starlit Year, Menace Arena, campañas de BA).
   **Con los mensajes reales puede hacer falta ajustar el lector** (cada juego escribe distinto): tras configurarlo, revisar `/data/stellasora.json` y `/data/bluearchive.json`.

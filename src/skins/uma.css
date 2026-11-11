@@ -217,8 +217,17 @@ html[data-skin="uma"] .bport { border-radius: 14px; border: 2px solid #fff; box-
 html[data-skin="uma"] .bport:hover { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--um-green); }
 html[data-skin="uma"] .bport .p-time { border-radius: 999px; border: 0; background: var(--um-green-bar); color: #fff; backdrop-filter: none; }
 html[data-skin="uma"] .bport .p-time.hot { background: var(--um-pink-bar); color: #fff; }
-html[data-skin="uma"] .pick { border-radius: 14px; }
-html[data-skin="uma"] .pick.on { box-shadow: 0 0 0 3px var(--um-green); }
+/* Botones para elegir juegos ("¿A qué gachas juegas?"): el velo de sobrio.css es oscuro y aquí el texto es oscuro (no se leía, 11 nov 2026).
+   Como los paneles del juego: velo BLANCO casi opaco donde van el icono y el nombre, que se abre a la derecha para dejar ver el arte. */
+html[data-skin="uma"] .pick { border-radius: 14px; border: 2px solid var(--um-lilac); background: #fff; color: var(--um-ink); }
+html[data-skin="uma"] .pick-art::after { background: linear-gradient(90deg, rgba(255, 255, 255, .96) 0, rgba(255, 255, 255, .92) 55%, rgba(255, 255, 255, .55) 85%, rgba(255, 255, 255, .3)); }
+html[data-skin="uma"] .pick.on .pick-art::after { background: linear-gradient(90deg, rgba(240, 250, 228, .97) 0, rgba(236, 248, 222, .92) 55%, rgba(236, 248, 222, .55) 85%, rgba(236, 248, 222, .3)); }
+html[data-skin="uma"] .pick-txt strong { color: var(--um-ink); text-shadow: none; }
+html[data-skin="uma"] .pick-txt small { color: var(--um-ink2); }
+html[data-skin="uma"] .pick .check { background: #fff; border: 2px solid var(--um-lilac); color: var(--um-brown); }
+html[data-skin="uma"] .pick.on { border-color: var(--um-green); box-shadow: 0 0 0 2px var(--um-green); }
+html[data-skin="uma"] .pick.on .check { background: var(--um-green-bar); border-color: var(--um-green-bar); color: #fff; }
+html[data-skin="uma"] .pick:hover:not(:disabled) { border-color: var(--um-green); box-shadow: 0 4px 14px rgba(90, 70, 140, .2); }
 html[data-skin="uma"] .pick.wip .pick-txt { opacity: 1; }
 
 /* Tarjetas de banner: el texto va sobre el arte (franja oscura), así que ahí es claro. Clase doble: la regla de paneles pesa más. */
