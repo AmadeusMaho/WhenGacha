@@ -1,7 +1,7 @@
 import { viaProxy } from '../net'
 import type { Featured, GameEvent, PromoCode } from '../types'
 import type { GameSync } from './ennead'
-import { parseNotices, rangeIn, type Message } from './discord'
+import { htmlText, parseNotices, rangeIn, type Message } from './discord'
 import { pullsIn } from './pulls'
 
 /**
@@ -96,13 +96,6 @@ export async function syncTrickcalCodes(): Promise<PromoCode[]> {
  */
 const BILI = 'https://l11-web-api.biligames.com/game/news'
 const BILI_Q = 'game_base_id=113406&show_position=1&client_type=1&lang=en'
-
-/** HTML del aviso → texto con una línea por párrafo. */
-export function htmlText(html: string): string {
-  return html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|h\d|tr)>/gi, '\n').replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
-    .split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n')
-}
 
 export async function syncTrickcalNews(gameId: string): Promise<GameSync> {
   const res = await fetch(viaProxy(`${BILI}/page?${BILI_Q}&type=&page_num=1&page_size=10`))

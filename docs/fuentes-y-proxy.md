@@ -487,9 +487,15 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
 - **Trickcal, web oficial**: "Event Notice" de trickcal.biligames.com/news/en/ (API `l11-web-api.biligames.com/game/news/page|detail`, responde sin la firma;
   servidor 113406, que cuadra con el global). Lector propio (`trickcalNotice`): apartados "1." y "①", periodo del apartado para sus Apóstoles, sin gachas de
   cartas, muebles ni plazos de canje. Mandan sobre lootandwaifus. 1 lista + hasta 3 avisos por ciclo (caché 2 h).
-- **Pendiente**: noticias oficiales de MHO (monsterhunteroutlanders.com carga la lista con un POST a `sg-community.playerinfinite.com` de Level Infinite; las
-  páginas `news-*.html` sí son HTML estático) y de GFL2 (gf2exilium.sunborngame.com, por JS). Mientras tanto, por Discord. BLEACH: la web global
-  (playbleachsr.com) no tiene noticias, solo la del lanzamiento en PC.
+- **GFL2, web oficial** (12 nov 2026): `gf2-web-us-api.sunborngame.com/website/news_list/4` (eventos y banners, sin claves) y `/website/news/<id>`: un aviso
+  por evento o banner ("[Themis' Game]", "Faelynn Rate Up!") con su **imagen** y "[Duration] 2026/10/29 9:00 ~ 2026/11/18 18:59 (UTC-4)". Mandan sobre la
+  IOP Wiki (que completa recompensas, retratos y "Rerun"); corrigen la fecha de los banners (la wiki decía 28 oct; el aviso, 29 oct 09:00 UTC-4).
+- **MHO, web oficial**: la sección Announcements del servicio de noticias de Level Infinite (`sg-community.playerinfinite.com`, POST con JSON y las
+  cabeceras `x-gameid: 30075`, `x-areaid: global`; el proxy arma el cuerpo con `body(u)`). Sus "Update Notice" traen los "Event Preview" con hora exacta
+  (Golden Check-In: 2026/11/05 21:00 – 11/19 20:59 UTC). La sección Events casi no se usa. Imágenes de los rotatorios: las de la Season Guide de GameWith.
+- **Imágenes que faltan**: Trickcal (ni la web ni lootandwaifus ilustran los eventos; llegan con los tuits de Readybot por Discord), BD2 (sus avisos solo
+  tienen tablas "image.png"), algunos menores de GFL2 y FGO. La app muestra el arte del juego en su lugar.
+- BLEACH: la web global (playbleachsr.com) no tiene noticias, solo la del lanzamiento en PC; sigue dependiendo de Discord.
 - Sin selector de servidor en los tres juegos nuevos: MHO avisa en UTC para "All Servers", BLEACH da un horario para EU y NA, GFL2 tiene un único servidor global.
 
 ## Servidor por juego y fichas de Endfield (12 nov 2026)

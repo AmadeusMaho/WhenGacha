@@ -77,6 +77,19 @@ const SOURCES = [
   // Trickcal: avisos oficiales de su web (trickcal.biligames.com/news/en/ pide aquí la lista y cada aviso). Solo el servidor 113406 y estos parámetros.
   { name: 'biligames', ttl: 2 * HOUR, test: u => u.hostname === 'l11-web-api.biligames.com' && /^\/game\/news\/(page|detail)$/.test(u.pathname) && u.searchParams.get('game_base_id') === '113406'
     && [...u.searchParams.keys()].every(k => ['game_base_id', 'show_position', 'client_type', 'lang', 'type', 'page_num', 'page_size', 'news_id'].includes(k)) && Number(u.searchParams.get('page_size') ?? 0) <= 10 },
+  // Monster Hunter Outlanders: avisos oficiales ("Update Notice", con sus "Event Preview") del servicio de noticias de Level Infinite que usa
+  // monsterhunteroutlanders.com/en/news.html (POST con JSON y las cabeceras de juego de su web). Solo la sección Announcements (1653) y sus avisos.
+  { name: 'playerinfinite', ttl: 3 * HOUR, post: true,
+    headers: () => ({ 'x-gameid': '30075', 'x-areaid': 'global', 'x-language': 'en', 'x-source': 'pc_web' }),
+    body: u => JSON.stringify(u.pathname.endsWith('/GetContentInfoById')
+      ? { content_id: u.searchParams.get('content_id'), language: 'en', gameid: '30075' }
+      : { language: ['en'], gameid: '30075', offset: 0, get_num: Number(u.searchParams.get('get_num')), primary_label_id: 1065, secondary_label_id: 1653 }),
+    test: u => u.hostname === 'sg-community.playerinfinite.com' && (
+      (u.pathname === '/api/gpts.information_feeds_svr.InformationFeedsSvr/GetContentByLabel' && /^\d{1,2}$/.test(u.searchParams.get('get_num') ?? '') && Number(u.searchParams.get('get_num')) <= 10 && [...u.searchParams.keys()].every(k => k === 'get_num'))
+      || (u.pathname === '/api/gpts.information_feeds_svr.InformationFeedsSvr/GetContentInfoById' && /^[0-9a-f]{20,64}$/.test(u.searchParams.get('content_id') ?? '') && [...u.searchParams.keys()].every(k => k === 'content_id'))) },
+  // GFL2: avisos oficiales de la web global (la lista de eventos, tipo 4, y cada aviso). Los avisos no cambian: caché larga.
+  { name: 'sunborn', ttl: 6 * HOUR, test: u => u.hostname === 'gf2-web-us-api.sunborngame.com' && (/^\/website\/news\/\d{1,6}$/.test(u.pathname) && !u.search
+    || u.pathname === '/website/news_list/4' && [...u.searchParams.keys()].every(k => ['page', 'limit'].includes(k)) && Number(u.searchParams.get('limit')) <= 10) },
   // BLEACH: Soul Resonance: lista de códigos de game.guide (robots.txt solo cierra /api/). Una sola página.
   { name: 'gameguide', ttl: 6 * HOUR, test: u => u.hostname === 'www.game.guide' && u.pathname === '/bleach-soul-resonance-codes' && !u.search },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
@@ -214,7 +227,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]
@@ -239,7 +252,8 @@ async function fetchUpstream(url, ttl) {
   const src = SOURCES.find(s => s.test(new URL(url)))
   const limit = src?.maxBody ?? MAX_BODY
   // Fuentes con `post`: la URL (con sus parámetros) es la clave de caché; se pide como POST con esos parámetros en JSON.
-  const post = src?.post ? (() => { const u = new URL(url); const body = JSON.stringify(Object.fromEntries(u.searchParams)); u.search = ''; return { url: u.toString(), body } })() : null
+  // `body(u)`: la fuente arma su propio JSON (tipos que no son texto, p. ej. listas y números de Level Infinite).
+  const post = src?.post ? (() => { const u = new URL(url); const body = src.body ? src.body(u) : JSON.stringify(Object.fromEntries(u.searchParams)); u.search = ''; return { url: u.toString(), body } })() : null
   const res = await request(post ? post.url : url, src?.ua ?? ua, limit, post?.body ?? null, src?.headers?.() ?? {})
   if (res.status !== 200) {
     // 202 = desafío de AWS WAF (CloudFront devuelve una prueba en JavaScript en vez de la página): es un bloqueo, no se intenta resolver.

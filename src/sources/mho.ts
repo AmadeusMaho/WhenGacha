@@ -3,6 +3,7 @@ import type { GameEvent, PromoCode, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { syncGame8Codes } from './codes'
 import { pullsIn } from './pulls'
+import { htmlText, parseNotices, type Message } from './discord'
 
 /**
  * Monster Hunter Outlanders (Capcom / TiMi; versión global de Level Infinite, NA/JP/EU, salió el 29 oct 2026). Fuentes revisadas el 12 nov 2026:
@@ -135,19 +136,40 @@ async function challenges(gameId: string): Promise<GameEvent[]> {
   // Celdas pegadas en el texto: "Season bossRuger AidalSeason 0 started…".
   const boss = /Season boss\s*([A-Z][\w' ]+?)(?=\s*Season \d)/.exec(body)?.[1]?.trim()
   const sr = season && mhoRange(`${season[2]} - ${season[3]}`, now)
-  if (season && sr && sr[1] > now - 3 * DAY)
+  // Imagen de cada apartado de la guía: la primera tras su título ("How Seasons Work", "Monster Challenge", "Ruger Aidal Is Confirmed").
+  const heads = doc ? [...doc.querySelectorAll('h2, h3')] : []
+  const imgAfter = (re: RegExp) => {
+    const h = heads.find(x => re.test(text(x)))
+    for (let n = h?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) {
+      const src = (n.tagName === 'IMG' ? n : n.querySelector('img'))?.getAttribute('src')
+      if (src) return src
+    }
+    return undefined
+  }
+  if (season && sr && sr[1] > now - 3 * DAY) {
     out.push({
       id: `${gameId}:challenge:gw:${season[1]}:${new Date(sr[0]).toISOString().slice(0, 10)}`, gameId, kind: 'challenge', title: season[1],
-      description: boss ? `⟦d.mhoSeason|${boss}⟧` : '⟦d.mhoSeason|—⟧', start: new Date(sr[0]).toISOString(), end: new Date(sr[1]).toISOString(),
+      description: boss ? `⟦d.mhoSeason|${boss}⟧` : '⟦d.mhoSeason|—⟧', image: imgAfter(/how seasons work/i) ?? imgAfter(/start and end dates/i),
+      start: new Date(sr[0]).toISOString(), end: new Date(sr[1]).toISOString(),
       items: [{ name: 'Radiant Coin', amount: 4000 }], featured: [], pulls: 0, source: 'api', precision: 'approx',
     })
+    // Apex Challenge (jefe de la temporada): "unlocks on November 7, 2026" hasta el fin de la temporada (aviso oficial: "November 7 – End of Season 0").
+    const apex = /Apex Challenge unlocks on ([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(body)?.[1]
+    const ar = apex && mhoRange(`${apex} - ${season[3]}`, now)
+    if (ar) out.push({
+      id: `${gameId}:challenge:gw:Apex Challenge:${new Date(ar[0]).toISOString().slice(0, 10)}`, gameId, kind: 'challenge', title: 'Apex Challenge',
+      description: boss ? `⟦d.mhoApex|${boss}⟧` : undefined, image: imgAfter(/is confirmed/i) ?? imgAfter(/apex challenge/i),
+      start: new Date(ar[0]).toISOString(), end: new Date(sr[1]).toISOString(), items: [], featured: [], pulls: 0, source: 'api', precision: 'approx',
+    })
+  }
+  const mcImage = imgAfter(/^monster challenge$/i)
   const anchor = dayStart(2026, 10, 3)
   const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY)))
   for (const i of [k, k + 1]) {
     const s = anchor + i * 14 * DAY
     out.push({
       id: `${gameId}:challenge:cycle:Monster Challenge:${new Date(s).toISOString().slice(0, 10)}`, gameId, kind: 'challenge', title: 'Monster Challenge (Master)',
-      description: '⟦d.mhoChallenge⟧', start: new Date(s).toISOString(), end: new Date(s + 14 * DAY - 1000).toISOString(),
+      description: '⟦d.mhoChallenge⟧', image: mcImage, start: new Date(s).toISOString(), end: new Date(s + 14 * DAY - 1000).toISOString(),
       items: [], featured: [], pulls: 0, source: 'api', precision: s > now ? 'estimated' : 'approx',
     })
   }
@@ -185,6 +207,29 @@ export async function mhoIcons(): Promise<Map<string, string>> {
   const out = new Map<string, string>()
   for (const m of html.matchAll(/\\"name\\":\\"([^"\\]{1,80})\\",\\"image\\":\\"(https:\/\/img\.gamewith\.jp\/[^"\\]+)\\"/g)) if (!out.has(m[1].toLowerCase())) out.set(m[1].toLowerCase(), m[2])
   return out
+}
+
+/**
+ * Avisos oficiales: los "Update Notice" de la web (sección Announcements del servicio de noticias de Level Infinite, el que usa
+ * monsterhunteroutlanders.com/en/news.html). Traen los eventos que vienen ("Event Preview / Golden Check-In / Event Period: 2026/11/05 21:00:00 –
+ * 2026/11/19 20:59:59 (UTC)") y se leen con el lector de avisos (`parseNotices`), como los de Discord. 1 lista + hasta 4 avisos por ciclo (caché de 3 h).
+ */
+const PI = 'https://sg-community.playerinfinite.com/api/gpts.information_feeds_svr.InformationFeedsSvr'
+export async function syncMhoNews(gameId: string): Promise<GameSync> {
+  const res = await fetch(viaProxy(`${PI}/GetContentByLabel?get_num=6`))
+  if (!res.ok) throw new Error(`playerinfinite MHO → HTTP ${res.status}`)
+  const list = ((await res.json())?.data?.info_content ?? []) as { content_id: string; title: string; pub_timestamp: string | number }[]
+  const recent = list.filter(n => Date.now() - +n.pub_timestamp * 1000 < 40 * DAY).slice(0, 4)
+  const messages: Message[] = []
+  for (const n of recent) {
+    const d = await fetch(viaProxy(`${PI}/GetContentInfoById?content_id=${n.content_id}`)).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    const html: string = d?.data?.content ?? d?.data?.info_content?.content ?? ''
+    // Sin la hoja de estilos que llevan pegada al principio ("@import url(…)", "@page { … }", "p { … }").
+    const body = htmlText(html.replace(/<style[\s\S]*?<\/style>/gi, '')).split('\n').filter(l => !/^\s*(?:@import|@page|[a-z]+\s*\{)/i.test(l)).join('\n')
+    if (body.trim()) messages.push({ id: n.content_id, content: `${n.title}\n${body}`, timestamp: new Date(+n.pub_timestamp * 1000).toISOString() })
+  }
+  if (!messages.length && !list.length) throw new Error('playerinfinite MHO: sin avisos')
+  return parseNotices(gameId, messages)
 }
 
 export async function syncMho(gameId: string): Promise<GameSync> {

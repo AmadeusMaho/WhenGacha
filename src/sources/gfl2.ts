@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { Featured, GameEvent, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
+import { htmlText, rangeIn } from './discord'
 
 /**
  * Girls' Frontline 2: Exilium (Sunborn / Darkwinter; servidor global, horas en UTC-4). Fuentes revisadas el 12 nov 2026:
@@ -183,6 +184,49 @@ async function banners(gameId: string): Promise<GameEvent[]> {
     })
   }
   return out.filter((b, i) => out.findIndex(o => o.id === b.id) === i)
+}
+
+/**
+ * Avisos oficiales de la web global (gf2exilium.sunborngame.com, que los pide a `gf2-web-us-api.sunborngame.com/website/…`; sin claves). Cada evento y
+ * banner tiene el suyo ("[Themis' Game]", "Faelynn Rate Up!", "[Broker's Rebate] Is Now Open") con su imagen y "[Duration] 2026/10/29 9:00 ~
+ * 2026/11/18 18:59 (UTC-4)". Mandan en horas e imagen; la IOP Wiki completa recompensas, retratos y si es reposición (`officialFirst`, index.ts).
+ * 1 lista (`news_list/4`, los 10 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
+ */
+const SUNBORN = 'https://gf2-web-us-api.sunborngame.com/website'
+
+export function gfl2Notice(gameId: string, title: string, html: string, year: number): GameEvent | null {
+  const text = htmlText(html)
+  const line = text.split('\n').find(l => /\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s*[~～-]/.test(l))
+  const r = line ? rangeIn(line, year, -4) : null
+  if (!r || !(r.end > r.start)) return null
+  const rate = /^(.+?)\s+Rate Up!?$/i.exec(title.trim())
+  const name = (rate?.[1] ?? title).replace(/\s+Is Now (?:Available|Open|Live)$/i, '').replace(/^\[(.+)\]$/, '$1').trim()
+  const kind = rate ? 'banner' as const : 'event' as const
+  const image = /<img[^>]*\bsrc="([^"]+)"/i.exec(html)?.[1]
+  return {
+    id: `${gameId}:${kind}:sb:${name}:${new Date(r.start).toISOString().slice(0, 10)}`, gameId, kind, title: name, image,
+    start: new Date(r.start).toISOString(), end: new Date(r.end).toISOString(),
+    // Los destacados (con retrato y SR) y si es reposición los pone la IOP Wiki al unirse.
+    items: [], featured: [], pulls: 0, official: true, source: 'api',
+    // Pases y tiendas de pago ("Voyage Logs", "Broker's Rebate"): menores.
+    minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || undefined,
+  }
+}
+
+export async function syncGfl2Official(gameId: string): Promise<GameSync> {
+  const res = await fetch(viaProxy(`${SUNBORN}/news_list/4?page=1&limit=10`))
+  if (!res.ok) throw new Error(`sunborn GFL2 → HTTP ${res.status}`)
+  const list = ((await res.json())?.data?.list ?? []) as { Id: number; Title: string; Date: string }[]
+  // "2026-10-29 09:00:00" en UTC-4 (el servidor global).
+  const at = (s: string) => Date.parse(`${s.replace(' ', 'T')}-04:00`)
+  const out: GameEvent[] = []
+  for (const n of list.filter(x => Date.now() - at(x.Date) < 45 * DAY)) {
+    const d = await fetch(viaProxy(`${SUNBORN}/news/${n.Id}`)).then(r => (r.ok ? r.json() : null)).catch(() => null)
+    const e = d?.data?.Content ? gfl2Notice(gameId, n.Title, d.data.Content, new Date(at(n.Date)).getUTCFullYear()) : null
+    if (e && +new Date(e.end) > Date.now() - 3 * DAY && !out.some(o => o.id === e.id)) out.push(e)
+  }
+  if (!out.length && !list.length) throw new Error('sunborn GFL2: sin avisos')
+  return { events: out, patches: [], codes: [] }
 }
 
 export async function syncGfl2(gameId: string): Promise<GameSync> {

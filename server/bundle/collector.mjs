@@ -21312,6 +21312,10 @@ var MONTHS$12 = [
 	"nov",
 	"dec"
 ];
+/** HTML de un aviso de web oficial (Trickcal, GFL2) → texto con una línea por párrafo, para leerlo como un mensaje. */
+function htmlText(html) {
+	return html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#0?39;/g, "'").split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n");
+}
 var env$1 = globalThis.process?.env;
 /** Canal de Discord de un juego, desde DISCORD_CHANNELS ("stellasora:123,bluearchive:456"). Solo en el servidor. */
 function discordChannel(gameId) {
@@ -23122,10 +23126,6 @@ async function syncTrickcalCodes() {
 */
 var BILI = "https://l11-web-api.biligames.com/game/news";
 var BILI_Q = "game_base_id=113406&show_position=1&client_type=1&lang=en";
-/** HTML del aviso → texto con una línea por párrafo. */
-function htmlText(html) {
-	return html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#0?39;/g, "'").split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n");
-}
 async function syncTrickcalNews(gameId) {
 	const res = await fetch(viaProxy(`${BILI}/page?${BILI_Q}&type=&page_num=1&page_size=10`));
 	if (!res.ok) throw new Error(`biligames Trickcal → HTTP ${res.status}`);
@@ -23480,6 +23480,55 @@ async function banners$1(gameId) {
 	}
 	return out.filter((b, i) => out.findIndex((o) => o.id === b.id) === i);
 }
+/**
+* Avisos oficiales de la web global (gf2exilium.sunborngame.com, que los pide a `gf2-web-us-api.sunborngame.com/website/…`; sin claves). Cada evento y
+* banner tiene el suyo ("[Themis' Game]", "Faelynn Rate Up!", "[Broker's Rebate] Is Now Open") con su imagen y "[Duration] 2026/10/29 9:00 ~
+* 2026/11/18 18:59 (UTC-4)". Mandan en horas e imagen; la IOP Wiki completa recompensas, retratos y si es reposición (`officialFirst`, index.ts).
+* 1 lista (`news_list/4`, los 10 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
+*/
+var SUNBORN = "https://gf2-web-us-api.sunborngame.com/website";
+function gfl2Notice(gameId, title, html, year) {
+	const line = htmlText(html).split("\n").find((l) => /\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s*[~～-]/.test(l));
+	const r = line ? rangeIn(line, year, -4) : null;
+	if (!r || !(r.end > r.start)) return null;
+	const rate = /^(.+?)\s+Rate Up!?$/i.exec(title.trim());
+	const name = (rate?.[1] ?? title).replace(/\s+Is Now (?:Available|Open|Live)$/i, "").replace(/^\[(.+)\]$/, "$1").trim();
+	const kind = rate ? "banner" : "event";
+	const image = /<img[^>]*\bsrc="([^"]+)"/i.exec(html)?.[1];
+	return {
+		id: `${gameId}:${kind}:sb:${name}:${new Date(r.start).toISOString().slice(0, 10)}`,
+		gameId,
+		kind,
+		title: name,
+		image,
+		start: new Date(r.start).toISOString(),
+		end: new Date(r.end).toISOString(),
+		items: [],
+		featured: [],
+		pulls: 0,
+		official: true,
+		source: "api",
+		minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || void 0
+	};
+}
+async function syncGfl2Official(gameId) {
+	const res = await fetch(viaProxy(`${SUNBORN}/news_list/4?page=1&limit=10`));
+	if (!res.ok) throw new Error(`sunborn GFL2 → HTTP ${res.status}`);
+	const list = (await res.json())?.data?.list ?? [];
+	const at = (s) => Date.parse(`${s.replace(" ", "T")}-04:00`);
+	const out = [];
+	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$20)) {
+		const d = await fetch(viaProxy(`${SUNBORN}/news/${n.Id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
+		const e = d?.data?.Content ? gfl2Notice(gameId, n.Title, d.data.Content, new Date(at(n.Date)).getUTCFullYear()) : null;
+		if (e && +new Date(e.end) > Date.now() - 3 * DAY$20 && !out.some((o) => o.id === e.id)) out.push(e);
+	}
+	if (!out.length && !list.length) throw new Error("sunborn GFL2: sin avisos");
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
 async function syncGfl2(gameId) {
 	const [ev, bn] = await Promise.allSettled([events$1(gameId), banners$1(gameId)]);
 	if (ev.status === "rejected" && bn.status === "rejected") throw ev.reason;
@@ -23665,23 +23714,52 @@ async function challenges(gameId) {
 	const season = /(Season \d+(?: \([^)]+\))?)[^.]*?runs from ([A-Z][a-z]+ \d{1,2}, \d{4}) to ([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(body);
 	const boss = /Season boss\s*([A-Z][\w' ]+?)(?=\s*Season \d)/.exec(body)?.[1]?.trim();
 	const sr = season && mhoRange(`${season[2]} - ${season[3]}`, now);
-	if (season && sr && sr[1] > now - 3 * DAY$19) out.push({
-		id: `${gameId}:challenge:gw:${season[1]}:${new Date(sr[0]).toISOString().slice(0, 10)}`,
-		gameId,
-		kind: "challenge",
-		title: season[1],
-		description: boss ? `⟦d.mhoSeason|${boss}⟧` : "⟦d.mhoSeason|—⟧",
-		start: new Date(sr[0]).toISOString(),
-		end: new Date(sr[1]).toISOString(),
-		items: [{
-			name: "Radiant Coin",
-			amount: 4e3
-		}],
-		featured: [],
-		pulls: 0,
-		source: "api",
-		precision: "approx"
-	});
+	const heads = doc ? [...doc.querySelectorAll("h2, h3")] : [];
+	const imgAfter = (re) => {
+		const h = heads.find((x) => re.test(text$5(x)));
+		for (let n = h?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) {
+			const src = (n.tagName === "IMG" ? n : n.querySelector("img"))?.getAttribute("src");
+			if (src) return src;
+		}
+	};
+	if (season && sr && sr[1] > now - 3 * DAY$19) {
+		out.push({
+			id: `${gameId}:challenge:gw:${season[1]}:${new Date(sr[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "challenge",
+			title: season[1],
+			description: boss ? `⟦d.mhoSeason|${boss}⟧` : "⟦d.mhoSeason|—⟧",
+			image: imgAfter(/how seasons work/i) ?? imgAfter(/start and end dates/i),
+			start: new Date(sr[0]).toISOString(),
+			end: new Date(sr[1]).toISOString(),
+			items: [{
+				name: "Radiant Coin",
+				amount: 4e3
+			}],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "approx"
+		});
+		const apex = /Apex Challenge unlocks on ([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(body)?.[1];
+		const ar = apex && mhoRange(`${apex} - ${season[3]}`, now);
+		if (ar) out.push({
+			id: `${gameId}:challenge:gw:Apex Challenge:${new Date(ar[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "challenge",
+			title: "Apex Challenge",
+			description: boss ? `⟦d.mhoApex|${boss}⟧` : void 0,
+			image: imgAfter(/is confirmed/i) ?? imgAfter(/apex challenge/i),
+			start: new Date(ar[0]).toISOString(),
+			end: new Date(sr[1]).toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "approx"
+		});
+	}
+	const mcImage = imgAfter(/^monster challenge$/i);
 	const anchor = dayStart(2026, 10, 3);
 	const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY$19)));
 	for (const i of [k, k + 1]) {
@@ -23692,6 +23770,7 @@ async function challenges(gameId) {
 			kind: "challenge",
 			title: "Monster Challenge (Master)",
 			description: "⟦d.mhoChallenge⟧",
+			image: mcImage,
 			start: new Date(s).toISOString(),
 			end: (/* @__PURE__ */ new Date(s + 14 * DAY$19 - 1e3)).toISOString(),
 			items: [],
@@ -23737,6 +23816,30 @@ async function mhoIcons() {
 	const out = /* @__PURE__ */ new Map();
 	for (const m of html.matchAll(/\\"name\\":\\"([^"\\]{1,80})\\",\\"image\\":\\"(https:\/\/img\.gamewith\.jp\/[^"\\]+)\\"/g)) if (!out.has(m[1].toLowerCase())) out.set(m[1].toLowerCase(), m[2]);
 	return out;
+}
+/**
+* Avisos oficiales: los "Update Notice" de la web (sección Announcements del servicio de noticias de Level Infinite, el que usa
+* monsterhunteroutlanders.com/en/news.html). Traen los eventos que vienen ("Event Preview / Golden Check-In / Event Period: 2026/11/05 21:00:00 –
+* 2026/11/19 20:59:59 (UTC)") y se leen con el lector de avisos (`parseNotices`), como los de Discord. 1 lista + hasta 4 avisos por ciclo (caché de 3 h).
+*/
+var PI = "https://sg-community.playerinfinite.com/api/gpts.information_feeds_svr.InformationFeedsSvr";
+async function syncMhoNews(gameId) {
+	const res = await fetch(viaProxy(`${PI}/GetContentByLabel?get_num=6`));
+	if (!res.ok) throw new Error(`playerinfinite MHO → HTTP ${res.status}`);
+	const list = (await res.json())?.data?.info_content ?? [];
+	const recent = list.filter((n) => Date.now() - +n.pub_timestamp * 1e3 < 40 * DAY$19).slice(0, 4);
+	const messages = [];
+	for (const n of recent) {
+		const d = await fetch(viaProxy(`${PI}/GetContentInfoById?content_id=${n.content_id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
+		const body = htmlText((d?.data?.content ?? d?.data?.info_content?.content ?? "").replace(/<style[\s\S]*?<\/style>/gi, "")).split("\n").filter((l) => !/^\s*(?:@import|@page|[a-z]+\s*\{)/i.test(l)).join("\n");
+		if (body.trim()) messages.push({
+			id: n.content_id,
+			content: `${n.title}\n${body}`,
+			timestamp: (/* @__PURE__ */ new Date(+n.pub_timestamp * 1e3)).toISOString()
+		});
+	}
+	if (!messages.length && !list.length) throw new Error("playerinfinite MHO: sin avisos");
+	return parseNotices(gameId, messages);
 }
 async function syncMho(gameId) {
 	const [ev, bn, ch, gw, g8] = await Promise.allSettled([
@@ -27393,8 +27496,8 @@ async function syncSourceRaw(game) {
 			patches: finalize(s.patches, game.patchCycleDays)
 		}));
 		case "trickcal": return officialFirst(syncTrickcalNews(id), syncTrickcal(id));
-		case "gfl2": return syncGfl2(id);
-		case "mho": return syncMho(id);
+		case "gfl2": return officialFirst(syncGfl2Official(id), syncGfl2(id));
+		case "mho": return officialFirst(syncMhoNews(id), syncMho(id));
 		case "bleach": return syncBleach();
 		case "fgo": return syncFgo(id);
 		case "bluearchive": return withGachafocus(id, "bluearchive", syncBlueArchive(id));

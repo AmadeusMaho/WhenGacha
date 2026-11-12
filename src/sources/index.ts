@@ -13,8 +13,8 @@ import { syncInfinityNikki } from './infinitynikki'
 import { syncEpic7 } from './epic7'
 import { syncDna } from './dna'
 import { syncTrickcal, syncTrickcalNews } from './trickcal'
-import { syncGfl2 } from './gfl2'
-import { mhoIcons, syncMho } from './mho'
+import { syncGfl2, syncGfl2Official } from './gfl2'
+import { mhoIcons, syncMho, syncMhoNews } from './mho'
 import { BLEACH_ICONS, syncBleach } from './bleach'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -283,9 +283,11 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // + los "Event Notice" de su web oficial (biligames), con hora exacta: mandan sobre lootandwaifus.
     case 'trickcal': return officialFirst(syncTrickcalNews(id), syncTrickcal(id))
     // Girls' Frontline 2: IOP Wiki (eventos del servidor global con hora exacta y recompensas de su tienda, banners con sus muñecas). Códigos por Discord.
-    case 'gfl2': return syncGfl2(id)
+    // + avisos oficiales de su web (sunborngame), con imagen y hora exacta: mandan.
+    case 'gfl2': return officialFirst(syncGfl2Official(id), syncGfl2(id))
     // Monster Hunter Outlanders: GameWith (eventos con recompensas, banners, temporada, Monster Challenge, códigos) + códigos de Game8.
-    case 'mho': return syncMho(id)
+    // + los "Update Notice" oficiales de su web (Level Infinite), con los eventos que vienen en hora exacta: mandan.
+    case 'mho': return officialFirst(syncMhoNews(id), syncMho(id))
     // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"), sin fuente web permitida.
     case 'bleach': return syncBleach()
     case 'fgo': return syncFgo(id)

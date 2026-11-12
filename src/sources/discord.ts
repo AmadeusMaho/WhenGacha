@@ -18,6 +18,13 @@ const DAY = 24 * HOUR
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 interface Embed { title?: string; description?: string; fields?: { name: string; value: string }[]; image?: { url: string }; thumbnail?: { url: string } }
+/** HTML de un aviso de web oficial (Trickcal, GFL2) → texto con una línea por párrafo, para leerlo como un mensaje. */
+export function htmlText(html: string): string {
+  return html.replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|li|h\d|tr)>/gi, '\n').replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'")
+    .split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n')
+}
+
 export interface Message { id: string; content: string; timestamp: string; embeds?: Embed[]; attachments?: { url: string; content_type?: string }[] }
 
 const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
