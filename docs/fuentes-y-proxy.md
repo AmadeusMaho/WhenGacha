@@ -354,7 +354,8 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
   (`npm run snapshot` / `npm run snapshot:publish`) ejecuta el mismo recolector en ese equipo y publica las copias en la rama **`data`** del repositorio (un solo commit forzado,
   sin historial). El servidor las lee cada 20 min de `raw.githubusercontent.com/AmadeusMaho/WhenGacha/data/snapshots/<juego>.json` (`pullRemote` en `server/collector.mjs`; sin
   claves ni despliegues) y adopta la copia si es más reciente o más completa que la suya; el recolector propio, a su vez, no sustituye una copia reciente por otra con menos del 70 %
-  de elementos. Quién la ejecuta: (1) el flujo **GitHub Actions** `.github/workflows/snapshots.yml` (cada 3 h; usa el token de la ejecución, sin claves propias; sus IP de datacenter
+  de elementos **vigentes o futuros** (`alive`; desde el 12 nov 2026 los ya terminados no cuentan, ni aquí ni al adoptar: en un cambio de versión la copia nueva
+  pierde de golpe los de la anterior y se rechazaba hasta 12 h). Quién la ejecuta: (1) el flujo **GitHub Actions** `.github/workflows/snapshots.yml` (cada 3 h; usa el token de la ejecución, sin claves propias; sus IP de datacenter
   podrían estar bloqueadas por gachafocus, y en ese caso el script conserva la copia anterior más completa) y (2) cualquier equipo que ejecute `npm run snapshot:publish`
   (p. ej. el PC del dueño; una tarea programada de Windows con `scripts/run-snapshot.ps1`, que **hay que crear a mano**: un agente no debe crear tareas persistentes sin permiso). Comandos para crearla, ocultarla, ejecutarla y revisarla: `docs/tarea-copias-pc.md`.
   Las copias remotas solo se adoptan si tienen menos de 48 h (el cliente también rechaza copias de más de 48 h).
@@ -423,6 +424,24 @@ Se había descartado el 7 nov porque su Fandom (`duetnightabyss.fandom.com`) dej
   Pristine = permanente) por tirada; 160 Phoxene / Phoxene Plumule = 1 Hourglass; pity 90 (Game8, "Myriad Gacha Currency").
 - **Calculadora**: sin ingresos diarios fijos (el Phoxene llega de eventos, códigos y Trial Rank, sin tabla fiable); pase mensual 90 Plumule/día (allthings.how).
 - **Recompensas con cantidades**: Game8 solo da un resumen por evento (abrir cada página costaría ~15 consultas por ciclo); las cantidades llegan por Discord.
+
+## Trickcal: Chibi Go (añadido el 12 nov 2026)
+
+Versión global (Epid Games / Bilibili), **un solo servidor en UTC+9**: no tiene selector de servidor. Fuente: `src/sources/trickcal.ts`.
+- **lootandwaifus** (2 páginas por ciclo, caché de 1 h, 3 s entre peticiones; añadidas a la lista del proxy):
+  - Banners: "Banner history" (`/trickcal-chibi-go-banner-history/`, lista GLOBAL, mismo HTML que la de NIKKE). Un banner por Apóstol, con retrato, rol,
+    personalidad, posición y las insignias ELDYNE / RE-RUN. Las fechas son días UTC: el aviso oficial "2026/11/12 04:00 - 2026/11/19 10:59 (UTC+9)" sale como
+    "Nov 11 - Nov 19". Inicio 19:00 UTC y fin 01:59 UTC, marcados "≈" hasta que llega el aviso oficial.
+  - Códigos: "free codes" (`/guides/trickcal-revive-codes/`, tabla "Active codes"; se quitan las fichas emergentes de cada objeto).
+- **Discord** (`trickcal:1570298824088363058` en `DISCORD_CHANNELS`): tuits oficiales de @trickcal_en reenviados por Readybot. Son la **única fuente de
+  eventos** y la de las horas exactas (mandan sobre lootandwaifus con `officialFirst`; el banner conserva el retrato de lootandwaifus si los nombres coinciden).
+  Cambios en el lector, probados con los tuits de Vivi/Rohne y Dreamland: se quita el autor del tuit ("Trickcal:Chibi Go" + "@trickcal_en", y el título
+  "**… (@trickcal_en) on X**"), los emojis delante de la línea ("💜The Dreamland event…" → "Dreamland") y "★3 Vivi,★3 Rohne Limited-Time Rate Up" da un banner
+  por Apóstol. Comparado con los mensajes reales de los otros 9 canales: mismo resultado que antes.
+- **Sin fuente**: lista de eventos en la web (lootandwaifus no la tiene, Prydwen rechaza el `fetch`, Fandom abandonada), rotatorios con calendario fijo (PvP y
+  Yggdrasil Dig Site no publican su ciclo) e ingresos diarios de Crystal Leaf o pase mensual (ninguna guía da cifras).
+- **Tiradas**: 100 Crystal Leaf por reclutamiento, 1000 el x10 (Prydwen; lootandwaifus: "500 gems (5 singles)"); Recruitment Ticket = 1. Sin pity:
+  Devotion canjea el Apóstol a las 200 tiradas (300 si es Eldyne). Los Card Ticket (gacha de cartas) no cuentan.
 
 ## Servidor por juego y fichas de Endfield (12 nov 2026)
 

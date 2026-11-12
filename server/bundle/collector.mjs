@@ -20008,6 +20008,7 @@ var ART = {
 	afkjourney: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/29/ff/d3/29ffd3cb-74af-7408-abf5-2938160186b7/EN_iOS__U6a2a_2688x1242.jpg/1280x1280bb.jpg",
 	bd2: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/87/88/56/87885688-e7ce-96f5-af56-f678d5da8b65/250909_BD2__Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.jpg/1280x1280bb.jpg",
 	dna: "https://static.wikia.nocookie.net/duetnightabyss/images/9/96/Version_CBT1_Full_Wallpaper_1.jpg/revision/latest/scale-to-width-down/1280",
+	trickcal: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7c/ed/42/7ced4226-f461-0b48-2e65-4eac9cad37da/_U4e3b_U56fe2868-1320-EN.jpg/1280x1280bb.jpg",
 	azurlane: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg"
 };
 var def = (id, name, short, publisher, color, color2, patchCycleDays, host, q, api, logo, wallpaper) => ({
@@ -20051,6 +20052,7 @@ var CATALOG = [
 	def("afkjourney", "AFK Journey", "AFKJ", "Farlight", "#e9c46a", "#3d3215", 0, "afk-journey.fandom.com", "AFK Journey", "afkjourney", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/90/d2/2190d26d-73b6-74eb-9986-0eec5d7371bd/AppIcon-Global-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg"),
 	def("infinitynikki", "Infinity Nikki", "IN", "Infold Games", "#f8a5c2", "#5e2a44", 0, "infinity-nikki.fandom.com", "Infinity Nikki", "infinitynikki", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9f/db/73/9fdb7374-823a-a5e8-a9fd-2bd7cee2dd34/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 	def("dna", "Duet Night Abyss", "DNA", "Pan Studio", "#9fa8da", "#232a4d", 42, "duetnightabyss.fandom.com", "Duet Night Abyss", "dna", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3e/81/2f/3e812f32-2d87-8a2e-813e-d43b4e5bf1b4/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg", "Version CBT1 Full Wallpaper 1.jpg"),
+	def("trickcal", "Trickcal: Chibi Go", "TC", "Epid Games", "#ffcc80", "#5a3a1a", 0, "", "Trickcal: Chibi Go", "trickcal", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c4/dc/00/c4dc00ed-ef86-686b-0446-bbd6da0239b9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 	{
 		...def("azurlane", "Azur Lane", "AL", "Yostar", "#90caf9", "#1d3a5f", 0, "", "Azur Lane", "azurlane", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 		wip: true
@@ -20065,7 +20067,7 @@ var viaProxy = (url) => `/proxy?u=${encodeURIComponent(url)}`;
 * Las imágenes se cargan directo desde su sitio en el navegador (como al visitarlo); si fallan, se busca otra.
 */
 var SITE$3 = "https://gachafocus.com.br";
-var DAY$28 = 864e5;
+var DAY$29 = 864e5;
 var GACHAFOCUS = {
 	arknights: {
 		slug: "arknights",
@@ -20099,7 +20101,7 @@ var REGIONS = [
 	"asia"
 ];
 var abs = (src) => !src ? void 0 : src.startsWith("http") ? src : `${SITE$3}${src}`;
-var text$5 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$6 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 async function loadPage(slug, section) {
 	const res = await fetch(viaProxy(`${SITE$3}/en/${slug}/${section}`));
 	if (!res.ok) throw new Error(`gachafocus ${slug}/${section} → HTTP ${res.status}`);
@@ -20125,10 +20127,10 @@ function pickDates(tile) {
 }
 function parseUnits(tile) {
 	return [...tile.querySelectorAll(".strip-list .unit")].map((u) => {
-		const meta = text$5(u.querySelector(".unit-text small"));
+		const meta = text$6(u.querySelector(".unit-text small"));
 		const rank = Number(/(\d)/.exec(meta)?.[1] ?? /rarity-(\d)/.exec(u.className)?.[1] ?? 0);
 		return {
-			name: text$5(u.querySelector(".unit-text strong")),
+			name: text$6(u.querySelector(".unit-text strong")),
 			icon: abs(u.querySelector("img")?.getAttribute("src")),
 			rarity: rank || void 0,
 			tag: meta.split("·")[1]?.trim(),
@@ -20138,13 +20140,13 @@ function parseUnits(tile) {
 }
 function parseTiles(gameId, cfg, doc, section) {
 	const out = [];
-	const from = Date.now() - 3 * DAY$28;
+	const from = Date.now() - 3 * DAY$29;
 	doc.querySelectorAll("main article.tile").forEach((tile) => {
 		const dates = pickDates(tile);
-		const title = text$5(tile.querySelector(".tile-title"));
+		const title = text$6(tile.querySelector(".tile-title"));
 		if (!dates || !title || +new Date(dates.end) < from || +new Date(dates.end) <= +new Date(dates.start)) return;
 		const id = tile.getAttribute("data-card-id") ?? `${title}${dates.start}`;
-		const desc = text$5(tile.querySelector(".tile-desc")) || void 0;
+		const desc = text$6(tile.querySelector(".tile-desc")) || void 0;
 		const image = abs(tile.querySelector(".tile-art img")?.getAttribute("src"));
 		if (section === "banners") {
 			const units = parseUnits(tile);
@@ -20662,6 +20664,13 @@ var RULES = {
 		item: /^phoxene( plumules?)?$/i,
 		per: 160
 	}],
+	trickcal: [{
+		item: /^crystal lea(f|ves|fs)$/i,
+		per: 100
+	}, {
+		item: /^(special |rate-up )?recruitment tickets?$/i,
+		per: 1
+	}],
 	uma: [{
 		item: /^carats?$/i,
 		per: 150
@@ -20757,7 +20766,7 @@ function segments(n, titles, marks) {
 * Los banners ("Time-Limited … Banner") traen los personajes con RATE UP. Los paquetes y trajes de pago se omiten.
 */
 var API$8 = "https://re1999.bluepoch.com/activity/official/websites/information/query";
-var DAY$27 = 864e5;
+var DAY$28 = 864e5;
 var DATE$1 = "(\\d{4}-\\d{2}-\\d{2})";
 var RANGE$2 = new RegExp(`(?:After the version update on ${DATE$1}|${DATE$1} (\\d{1,2}):(\\d{2}))\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`, "i");
 var MAINT = new RegExp(`${DATE$1} (\\d{1,2}):(\\d{2})\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`);
@@ -20792,7 +20801,7 @@ async function syncBluepoch(gameId) {
 		const m = MAINT.exec(lines$4(n.content).join("\n"));
 		if (m) maintEnd.set(m[1], at$7(m[4], +m[5], +m[6], +m[7]));
 	}
-	const now = Date.now(), from = now - 3 * DAY$27, to = now + 120 * DAY$27;
+	const now = Date.now(), from = now - 3 * DAY$28, to = now + 120 * DAY$28;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const n of notices) {
@@ -20831,7 +20840,7 @@ async function syncBluepoch(gameId) {
 			const end = at$7(m[5], +m[6], +m[7], off) + 59e3;
 			const near = ls.slice(i + 1, i + 6).join(" ");
 			if (/Garment|Pack$/i.test(subtitle ?? "") || /^New Packs$/i.test(name) || /Price:/.test(near)) continue;
-			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$27) continue;
+			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$28) continue;
 			const banner = /Banner/i.test(subtitle ?? "");
 			const id = `${gameId}:${banner ? "banner" : "event"}:bp:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
@@ -20950,7 +20959,7 @@ async function withChallengeRewards(s, host, game, pages) {
 * Cada regla cita su origen; si el juego cambia el calendario, hay que actualizarla aquí.
 */
 var HOUR$4 = 36e5;
-var DAY$26 = 24 * HOUR$4;
+var DAY$27 = 24 * HOUR$4;
 var ev = (gameId, title, start, end, description, approx, now) => ({
 	id: `${gameId}:challenge:cycle:${title}:${new Date(start).toISOString().slice(0, 10)}`,
 	gameId,
@@ -20974,10 +20983,10 @@ function hi3MemorialArena(gameId, now = Date.now()) {
 	const local = new Date(now + off);
 	const back = (local.getUTCDay() - 2 + 7) % 7;
 	let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 4) - off;
-	if (start > now) start -= 7 * DAY$26;
+	if (start > now) start -= 7 * DAY$27;
 	return [0, 1].map((k) => {
-		const s = start + k * 7 * DAY$26;
-		return ev(gameId, "Memorial Arena", s, s + 6 * DAY$26 - 2 * HOUR$4 - 1e3, "⟦d.hi3Arena⟧", true, now);
+		const s = start + k * 7 * DAY$27;
+		return ev(gameId, "Memorial Arena", s, s + 6 * DAY$27 - 2 * HOUR$4 - 1e3, "⟦d.hi3Arena⟧", true, now);
 	});
 }
 /**
@@ -21037,7 +21046,7 @@ var thumb$1 = (a) => sized(a.media_thumbnail_url ? a.media_thumbnail_url.startsW
 *  mantenimiento" = 00:00 UTC (el mantenimiento semanal empieza a las 00:00 UTC desde el 29/07, según su aviso oficial).
 *  Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$25 = 864e5;
+var DAY$26 = 864e5;
 var BOARDS = {
 	announcements: 139238,
 	events: 139240,
@@ -21156,7 +21165,7 @@ function fromUpdate(gameId, lines, ends, fallbackImage) {
 	});
 	return out;
 }
-var MONTHS$10 = [
+var MONTHS$11 = [
 	"jan",
 	"feb",
 	"mar",
@@ -21186,10 +21195,10 @@ function fromEventPost(gameId, a) {
 	const w = /Event Period\s*[-:]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*[–—-]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*\(UTC\)/i.exec(s);
 	const c = /Claim Period\s*[-:]\s*(\d{1,2})\/(\d{1,2})[^■※]*?(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})/i.exec(s);
 	if (w) {
-		const sm = MONTHS$10.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$10.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
+		const sm = MONTHS$11.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$11.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
 		if (!sm || !em) return null;
 		start = utc$1(yearOf(sm, +w[2]), sm, +w[2], "00:00");
-		if (+start < posted && posted - +start < DAY$25) start = new Date(posted);
+		if (+start < posted && posted - +start < DAY$26) start = new Date(posted);
 		end = utc$1(yearOf(em, +w[4]) + (em < sm ? 1 : 0), em, +w[4], w[5]);
 		approx = true;
 		minor = true;
@@ -21224,7 +21233,7 @@ async function syncCznEvents(gameId) {
 	]);
 	if (upd.status === "rejected" && evs.status === "rejected") throw upd.reason;
 	const ends = ann.status === "fulfilled" ? maintenanceEnds$1(ann.value) : /* @__PURE__ */ new Map();
-	const from = Date.now() - 3 * DAY$25;
+	const from = Date.now() - 3 * DAY$26;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const add = (e) => {
@@ -21233,7 +21242,7 @@ async function syncCznEvents(gameId) {
 		seen.add(key);
 		out.push(e);
 	};
-	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$25).slice(0, RECENT_UPDATES)) try {
+	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$26).slice(0, RECENT_UPDATES)) try {
 		for (const e of fromUpdate(gameId, await bodyLines(a.article_id), ends, thumb$1(a))) add(e);
 	} catch {}
 	if (evs.status === "fulfilled") for (const a of evs.value) {
@@ -21257,8 +21266,8 @@ async function syncCznEvents(gameId) {
 * (UTC-7)", "11/9 (Mon) 19:00 ~ 11/16 (Mon) 18:59 (UTC)", "2026/11/03 04:00 - 2026/11/10 02:59 (UTC-7)") y les pone el nombre más cercano.
 */
 var API$7 = "https://discord.com/api/v10/channels";
-var DAY$24 = 864e5;
-var MONTHS$9 = [
+var DAY$25 = 864e5;
+var MONTHS$10 = [
 	"jan",
 	"feb",
 	"mar",
@@ -21298,9 +21307,9 @@ function dateIn(s, year) {
 		...t
 	};
 	m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/.exec(s);
-	if (m && MONTHS$9.includes(m[1].slice(0, 3).toLowerCase())) return {
+	if (m && MONTHS$10.includes(m[1].slice(0, 3).toLowerCase())) return {
 		y: m[3] ? +m[3] : year,
-		mo: MONTHS$9.indexOf(m[1].slice(0, 3).toLowerCase()),
+		mo: MONTHS$10.indexOf(m[1].slice(0, 3).toLowerCase()),
 		d: +m[2],
 		...t
 	};
@@ -21443,7 +21452,19 @@ function rangeIn(line, year, fallbackZone, postedAt) {
 * Ruido de los avisos reenviados: la mención del rol que los anuncia ("@News Feed", "@Schale news"), el aviso de tuit nuevo y los enlaces.
 * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
 */
-var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "").replace(/^\s*[^()\n]{1,40}\(@\w{1,30}\)\s*$/, "");
+var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "").replace(/^\s*(?:\*\*|__)?[^()\n*]{1,40}\(@\w{1,30}\)(?:\s+on\s+(?:X|Twitter))?(?:\*\*|__)?\s*$/i, "");
+/**
+* Tuits de Readybot (Trickcal, 12 nov 2026): "Trickcal:Chibi Go" y "@trickcal_en" en dos líneas antes del texto. El nombre de la cuenta no es el de
+* ningún evento (salía "Trickcal:Chibi Go" de título): se vacían las dos líneas. Va antes de `noise`, que ya borra la del "@".
+*/
+function dropTweetAuthor(lines) {
+	const out = [...lines];
+	for (let i = 0; i + 1 < out.length; i++) if (/^\s*@(?!everyone\b|here\b)\w{1,30}\s*$/.test(out[i + 1]) && out[i].trim().length <= 40 && !/\d{1,2}[:/]\d/.test(out[i])) {
+		out[i] = "";
+		out[i + 1] = "";
+	}
+	return out;
+}
 /**
 * Saludos que no son el nombre de nada: "Dear Commander,", "Dear Tyrant,", "Sensei,", "Hello Doctors!". Cualquier "Dear …" corto o una línea corta
 * que acaba en coma cuenta, para no tener que añadir el apodo de cada juego (Stella Sora, 11 nov 2026: el evento se llamaba "Dear Tyrant,").
@@ -21466,7 +21487,7 @@ function sentenceName(c, loose = true) {
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
 /** Viñetas y marcas de apartado al principio de una línea ("▌", "■", "◆", "►"…). */
 var MARKS = "■◆●▶◇□・▌▍▎▐►▷▸▹◢◣✦✧◈❖♦◎";
-var clean$2 = (s) => s.replace(/[*_`#>|]+/g, "").replace(new RegExp(`^[\\s${MARKS}\\-–•]+`), "").replace(/[【】]/g, " ").replace(/\s+/g, " ").trim().replace(/^\[([^[\]]+)\]$/, "$1");
+var clean$2 = (s) => s.replace(/[*_`#>|]+/g, "").replace(new RegExp(`^[\\s${MARKS}\\-–•]+`), "").replace(/[【】]/g, " ").replace(/\s+/g, " ").trim().replace(/^\[([^[\]]+)\]$/, "$1").replace(/^[\p{Extended_Pictographic}️‍\s]+/u, "");
 var isHeading = (raw) => !/^\s*\[[^\]]*\]\s*[,，、]/.test(raw) && (new RegExp(`^\\s*(\\*\\*|__|#+\\s|[${MARKS}【[])`).test(raw) || /\*\*\s*$/.test(raw));
 /**
 * Inicio y fin en líneas separadas ("Start: Nov. 12, 2026 after maintenance" / "End: Dec. 03, 2026 19:59 (UTC-7)", Stella Sora 11 nov 2026)
@@ -21506,6 +21527,12 @@ function featuredIn(lines) {
 				rarity
 			});
 		}
+	}
+	if (!out.length) {
+		for (const l of lines) for (const m of l.matchAll(/[★☆]\s*(\d)\s+([A-Z][\w'-]{1,20})(?=\s*[,&]|\s+and\b|\s+(?:limited|rate|pick)|$)/gi)) if (!/^(?:apostles?|limited|rate|pick)$/i.test(m[2]) && !out.some((f) => f.name === m[2])) out.push({
+			name: m[2],
+			rarity: +m[1]
+		});
 	}
 	return out.sort((a, b) => b.rarity - a.rarity);
 }
@@ -21573,11 +21600,11 @@ async function syncDiscord(gameId) {
 			break;
 		}
 	}
-	const now = Date.now(), from = now - 3 * DAY$24, to = now + 120 * DAY$24;
+	const now = Date.now(), from = now - 3 * DAY$25, to = now + 120 * DAY$25;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const m of messages) {
-		const raw = pickRegion(joinStartEnd(textOf(m).split("\n").map(noise)));
+		const raw = pickRegion(joinStartEnd(dropTweetAuthor(textOf(m).split("\n")).map(noise)));
 		const year = new Date(m.timestamp).getUTCFullYear();
 		const msgZone = zoneOf(raw.join(" ")) ?? SERVER_ZONE[gameId] ?? 0;
 		const image = imageOf(m);
@@ -21621,7 +21648,7 @@ async function syncDiscord(gameId) {
 				if (e) start = e;
 				else approx = true;
 			}
-			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$24) continue;
+			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$25) continue;
 			const ctx = [
 				name,
 				label,
@@ -21639,7 +21666,8 @@ async function syncDiscord(gameId) {
 			};
 			const pulls = found.pulls;
 			const items = found.items.length ? found.items : kind === "event" ? bracketRewards(section) : [];
-			out.push({
+			const featured = kind === "banner" ? featuredIn(section) : [];
+			const base = {
 				id,
 				gameId,
 				kind,
@@ -21648,12 +21676,27 @@ async function syncDiscord(gameId) {
 				start: new Date(start).toISOString(),
 				end: new Date(r.end).toISOString(),
 				items,
-				featured: kind === "banner" ? featuredIn(section) : [],
+				featured,
 				pulls,
 				official: true,
 				source: "api",
 				precision: approx ? "approx" : void 0
-			});
+			};
+			const stars = (name.match(/[★☆]\s*\d/g) ?? []).length;
+			const split = kind === "banner" && stars >= 2 ? featured.filter((f) => name.includes(f.name)) : [];
+			if (split.length >= 2) for (const f of split) {
+				const sid = `${gameId}:banner:dc:${f.name}:${new Date(start).toISOString().slice(0, 10)}`;
+				if (!seen.has(sid)) {
+					seen.add(sid);
+					out.push({
+						...base,
+						id: sid,
+						title: f.name,
+						featured: [f]
+					});
+				}
+			}
+			else out.push(base);
 		}
 	}
 	const patches = [];
@@ -21684,7 +21727,7 @@ var NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|UN
 function codesFrom(msgs) {
 	const out = [];
 	for (const { text, at } of msgs) {
-		if (Date.now() - at > 45 * DAY$24 || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue;
+		if (Date.now() - at > 45 * DAY$25 || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue;
 		const found = /* @__PURE__ */ new Set();
 		for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
 		for (const line of text.split("\n")) {
@@ -21716,7 +21759,7 @@ function codesFrom(msgs) {
 * 3–4 consultas por ciclo (caché de 12 h en el proxy).
 */
 var API$6 = "https://afk-journey.fandom.com/api.php";
-var DAY$23 = 864e5;
+var DAY$24 = 864e5;
 async function query$1(params) {
 	const res = await fetch(viaProxy(`${API$6}?${new URLSearchParams({
 		...params,
@@ -21763,13 +21806,13 @@ async function events$2(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$23, to = now + 120 * DAY$23;
+	const now = Date.now(), from = now - 3 * DAY$24, to = now + 120 * DAY$24;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content$1(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$6(field$1(text, "time_start")), e = at$6(field$1(text, "time_end"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$23) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$24) continue;
 		const name = field$1(text, "name") || p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const groups = [field$1(text, "group"), field$1(text, "group2")].filter(Boolean);
 		const kind = /\/\d{4}-\d\d-\d\d$/.test(p.title) && groups.some((g) => /Guild|Strategy/i.test(g)) ? "challenge" : "event";
@@ -21791,7 +21834,7 @@ async function events$2(gameId) {
 	}
 	return out;
 }
-async function banners$2(gameId) {
+async function banners$3(gameId) {
 	const dated = ((await query$1({
 		action: "query",
 		list: "allpages",
@@ -21814,7 +21857,7 @@ async function banners$2(gameId) {
 		const text = content$1(p);
 		const s = at$6(field$1(text, "time_start")), e = at$6(field$1(text, "time_end"));
 		const heroes = field$1(text, "hero").split(";").map((h) => h.trim()).filter(Boolean);
-		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$23) continue;
+		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$24) continue;
 		const ret = /return/i.test(field$1(text, "type")) || /Rate Up Return/.test(p.title);
 		rows.push({
 			p,
@@ -21877,7 +21920,7 @@ async function bannerArt(rows) {
 	};
 }
 async function syncAfkJourney(gameId) {
-	const [ev, bn] = await Promise.allSettled([events$2(gameId), banners$2(gameId)]);
+	const [ev, bn] = await Promise.allSettled([events$2(gameId), banners$3(gameId)]);
 	if (ev.status === "rejected" && bn.status === "rejected") throw ev.reason;
 	return {
 		events: [...ev.status === "fulfilled" ? ev.value : [], ...bn.status === "fulfilled" ? bn.value : []],
@@ -21902,8 +21945,8 @@ async function syncAfkJourney(gameId) {
 */
 var API$5 = "https://webapi.browndust2.com/api/notices";
 var LOCALE = "en-us";
-var DAY$22 = 864e5;
-var MONTHS$8 = [
+var DAY$23 = 864e5;
+var MONTHS$9 = [
 	"january",
 	"february",
 	"march",
@@ -21925,7 +21968,7 @@ var RELEVANT = /Events after the .+ Update|Contents Schedule after|Routine Maint
 /** Cupones de canje ("🎁 November 2026 Coupon", "🌝Full Moon Coupon"); no los descuentos de la tienda web. */
 var COUPON = /Coupon/i;
 var NOT_COUPON = /Web ?Shop|Webstore|Web Store|Discount|Withdrawal|Collab|Restriction/i;
-var monthIdx = (s) => MONTHS$8.findIndex((m) => m.startsWith(s.toLowerCase().slice(0, 3)));
+var monthIdx = (s) => MONTHS$9.findIndex((m) => m.startsWith(s.toLowerCase().slice(0, 3)));
 /** Año de una fecha sin año ("November 18") a partir de la fecha del aviso: si cae >6 meses antes, es del año siguiente. */
 function yearFor(mo, ref) {
 	const y = ref.getUTCFullYear();
@@ -21984,7 +22027,7 @@ function point(s, ref, m, side) {
 		const known = (after ? m.end : m.start).get(day);
 		if (known !== void 0) return [known, false];
 		const d = +new Date(day);
-		return [after ? d + DAY$22 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
+		return [after ? d + DAY$23 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
 	}
 	return [explicit(s, ref), false];
 }
@@ -22000,7 +22043,7 @@ var CHALLENGE$1 = /Colosseum|Tower of Salvation|Mirror War|Guild Raid|Arena/i;
 function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	const ref = new Date(n.publishedAt);
 	const ls = lines$3(n);
-	const now = Date.now(), from = now - 3 * DAY$22, to = now + 120 * DAY$22;
+	const now = Date.now(), from = now - 3 * DAY$23, to = now + 120 * DAY$23;
 	let section = "", img, pickup = "", usedSection = false;
 	/** Evento de la sección actual: su imagen suele venir después del periodo. */
 	let current;
@@ -22008,7 +22051,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	let costume = "";
 	const push = (kind, title, a, b, extra = {}) => {
 		const [start, s1] = point(a, ref, m, "start"), [end, e1] = point(b, ref, m, "end");
-		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$22) return;
+		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$23) return;
 		const id = `${gameId}:${kind}:${title.toLowerCase()}:${new Date(start).toISOString().slice(0, 10)}`;
 		if (seen.has(id)) return;
 		seen.add(id);
@@ -22159,7 +22202,7 @@ function readCoupon(n) {
 	if (!code) return null;
 	const endTxt = /(?:Redemption Period|Expiry Date|Valid Until|Period)\s*:[^\n]*?(?:[-–]|Until)\s*([A-Z][a-z]+\.? \d{1,2},?\s*(?:\d{4},?\s*)?\d{1,2}:\d{2}(?:\s*[AP]M)?)/i.exec(text)?.[1];
 	const end = endTxt ? explicit(endTxt, ref) : NaN;
-	if ((isNaN(end) ? +ref + 31 * DAY$22 : end) < Date.now()) return null;
+	if ((isNaN(end) ? +ref + 31 * DAY$23 : end) < Date.now()) return null;
 	return {
 		code,
 		rewards: [/Rewards?\s*:\s*([^\n]+)/i.exec(text)?.[1]?.trim(), isNaN(end) ? void 0 : `Until ${new Date(end).toUTCString().slice(5, 16)} (UTC)`].filter((x) => !!x)
@@ -22227,7 +22270,7 @@ async function syncBd2(gameId) {
 * La web oficial (chaos.infoldgames.com) firma sus peticiones con una clave: no se usa. 4 consultas por ciclo (caché de 12 h).
 */
 var API$4 = "https://infinity-nikki.fandom.com/api.php";
-var DAY$21 = 864e5;
+var DAY$22 = 864e5;
 async function query(params) {
 	const res = await fetch(viaProxy(`${API$4}?${new URLSearchParams({
 		...params,
@@ -22273,13 +22316,13 @@ async function events$1(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$21, to = now + 120 * DAY$21;
+	const now = Date.now(), from = now - 3 * DAY$22, to = now + 120 * DAY$22;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$5(field(text, "time_start"), field(text, "time_start_offset")), e = at$5(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$21) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$22) continue;
 		const name = field(text, "title") || p.title.replace(/\s*\((Event)\)$/, "").replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const type = field(text, "type");
 		const r = rewards(text);
@@ -22301,7 +22344,7 @@ async function events$1(gameId) {
 	}
 	return out;
 }
-async function banners$1(gameId) {
+async function banners$2(gameId) {
 	const j = await query({
 		action: "query",
 		generator: "categorymembers",
@@ -22320,7 +22363,7 @@ async function banners$1(gameId) {
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		const s = at$5(field(text, "time_start"), field(text, "time_start_offset")), e = at$5(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$21 || /^perm/i.test(field(text, "duration"))) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$22 || /^perm/i.test(field(text, "duration"))) continue;
 		const name = p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		out.push({
 			id: `${gameId}:banner:${p.title}`,
@@ -22371,7 +22414,7 @@ async function codes() {
 async function syncInfinityNikki(gameId) {
 	const [ev, bn, cd] = await Promise.allSettled([
 		events$1(gameId),
-		banners$1(gameId),
+		banners$2(gameId),
 		codes()
 	]);
 	if (ev.status === "rejected" && bn.status === "rejected") throw ev.reason;
@@ -22391,7 +22434,7 @@ async function syncInfinityNikki(gameId) {
 *    el aviso "Maintenance Notice (Completed)" del tablón de mantenimientos (hora exacta de fin); si aún no existe, se estima y se marca "≈".
 *    Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$20 = 864e5;
+var DAY$21 = 864e5;
 var BANNERS$1 = "https://bannerhistory.app/en/e7-pickup-history";
 /** Hora (UTC) a la que se supone terminado un mantenimiento cuyo aviso de cierre aún no existe. */
 var FALLBACK_MAINTENANCE_END = "09:00";
@@ -22432,7 +22475,7 @@ async function syncBanners(gameId) {
 	if (!res.ok) throw new Error(`bannerhistory → HTTP ${res.status}`);
 	const list = arrayAfter(flightData(await res.text()), "\"banners\":");
 	if (!list?.length) throw new Error("bannerhistory: no se encontraron banners");
-	const from = Date.now() - 3 * DAY$20;
+	const from = Date.now() - 3 * DAY$21;
 	const out = [];
 	for (const b of list) {
 		const s = +new Date(b.startUtc), e = +new Date(b.endUtc);
@@ -22507,7 +22550,7 @@ var NOT_AN_EVENT = /\b(pack|sale|sales|bundle)\b/i;
 /** Máximo de avisos cuyo cuerpo completo se pide por no traer el periodo en el resumen (cada uno es una petición). */
 var MAX_DETAILS = 8;
 async function syncEvents(gameId, list, ends) {
-	const from = Date.now() - 3 * DAY$20;
+	const from = Date.now() - 3 * DAY$21;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	let details = 0;
@@ -22515,7 +22558,7 @@ async function syncEvents(gameId, list, ends) {
 		if (NOT_AN_EVENT.test(a.title)) continue;
 		let text = a.summary ?? "";
 		let p = period(text, a.create_datetime, ends);
-		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$20) {
+		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$21) {
 			details++;
 			try {
 				text = await bodyText(a.article_id);
@@ -22556,7 +22599,7 @@ async function syncEvents(gameId, list, ends) {
 * "New 5★ Hero, <nombre>" seguido del periodo de su invocación.
 */
 async function syncNewHeroes(gameId, list, ends, known) {
-	const from = Date.now() - 3 * DAY$20;
+	const from = Date.now() - 3 * DAY$21;
 	const out = [];
 	for (const a of list.filter((x) => /Update Content/i.test(x.title)).slice(0, 2)) {
 		let lines;
@@ -22573,7 +22616,7 @@ async function syncNewHeroes(gameId, list, ends, known) {
 			const p = period(after.filter((l) => !l.startsWith("@@IMG ")).join("\n"), a.create_datetime, ends);
 			if (!p || +p.end < from) return;
 			const nk = name.toLowerCase();
-			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$20 && b.featured.some((f) => {
+			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$21 && b.featured.some((f) => {
 				const fk = f.name.toLowerCase();
 				return fk.includes(nk) || nk.includes(fk);
 			}))) return;
@@ -22636,8 +22679,8 @@ async function syncEpic7(gameId) {
 */
 var SITE$2 = "https://game8.co/games/Duet-Night-Abyss/archives";
 var HOUR$3 = 36e5;
-var DAY$19 = 24 * HOUR$3;
-var MONTHS$7 = [
+var DAY$20 = 24 * HOUR$3;
+var MONTHS$8 = [
 	"january",
 	"february",
 	"march",
@@ -22651,12 +22694,12 @@ var MONTHS$7 = [
 	"november",
 	"december"
 ];
-var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$5 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 var at$4 = (y, m, d, h) => Date.UTC(y, m, d, h - -5);
 /** "November 10 – December 21, 2026", "October 20, 2026 – November 22, 2026" → [inicio, fin] (ms, hora de América); null sin fin. */
 function dnaRange(s) {
 	const found = [...s.matchAll(/([A-Z][a-z]+)\.? (\d{1,2})(?:(?:st|nd|rd|th)?,? (\d{4}))?/g)].map((m) => ({
-		m: MONTHS$7.indexOf(m[1].toLowerCase()),
+		m: MONTHS$8.indexOf(m[1].toLowerCase()),
 		d: +m[2],
 		y: m[3] ? +m[3] : NaN
 	})).filter((x) => x.m >= 0);
@@ -22666,7 +22709,7 @@ function dnaRange(s) {
 	if (isNaN(by)) return null;
 	return [at$4(isNaN(a.y) ? a.m > b.m ? by - 1 : by : a.y, a.m, a.d, 10), at$4(by, b.m, b.d, 5)];
 }
-async function page$2(id) {
+async function page$3(id) {
 	const res = await fetch(viaProxy(`${SITE$2}/${id}`));
 	if (!res.ok) throw new Error(`game8 DNA ${id} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
@@ -22677,21 +22720,21 @@ var imgOf = (el) => {
 };
 /** Eventos vigentes y próximos (tablas "Event | Schedule & Summary"); la tabla de pasados y la de permanentes no traen dos fechas útiles. */
 async function events(gameId) {
-	const doc = await page$2("559948");
-	const from = Date.now() - 3 * DAY$19, to = Date.now() + 120 * DAY$19;
+	const doc = await page$3("559948");
+	const from = Date.now() - 3 * DAY$20, to = Date.now() + 120 * DAY$20;
 	const out = [];
 	for (const tr of doc.querySelectorAll("table tr")) {
 		const cells = [...tr.children].filter((c) => /^T[DH]$/i.test(c.tagName));
 		if (cells.length < 2) continue;
-		const name = text$4(cells[0]).replace(/\s*\((?:New Event!|Returning Event)\)\s*$/i, "").replace(/\s+Returning Event$/i, "").trim();
-		const info = text$4(cells[1]);
+		const name = text$5(cells[0]).replace(/\s*\((?:New Event!|Returning Event)\)\s*$/i, "").replace(/\s+Returning Event$/i, "").trim();
+		const info = text$5(cells[1]);
 		if (!name || /^event$/i.test(name) || /tba|coming soon/i.test(info)) continue;
 		const phases = info.split(/Phase [IVX]+\s*:/i).slice(1);
 		const ranges = (phases.length ? phases : [info]).map(dnaRange).filter((r) => !!r);
 		const r = ranges.find((x) => x[1] > from) ?? ranges[0];
 		if (!r) continue;
 		const [start, end] = r;
-		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$19) continue;
+		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$20) continue;
 		const summary = info.replace(/^.*?\d{4}\s*/, "").trim();
 		out.push({
 			id: `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`,
@@ -22714,21 +22757,21 @@ async function events(gameId) {
 	return out;
 }
 /** Banners Myriad limitados (cosméticos) y la versión en que salieron. */
-async function banners(gameId) {
-	const doc = await page$2("554952");
+async function banners$1(gameId) {
+	const doc = await page$3("554952");
 	const out = [];
 	const patches = [];
-	const head = [...doc.querySelectorAll("h2")].find((h) => /Limited[- ]Time Myriad/i.test(text$4(h)));
+	const head = [...doc.querySelectorAll("h2")].find((h) => /Limited[- ]Time Myriad/i.test(text$5(h)));
 	const found = [];
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
 		if (n.tagName !== "H3") continue;
 		let info = "", image;
 		for (let k = n.nextElementSibling; k && !/^H[23]$/.test(k.tagName); k = k.nextElementSibling) {
 			image ??= imgOf(k);
-			info += " " + text$4(k);
+			info += " " + text$5(k);
 		}
 		found.push({
-			name: text$4(n),
+			name: text$5(n),
 			info,
 			image
 		});
@@ -22747,8 +22790,8 @@ async function banners(gameId) {
 	for (const b of parsed) {
 		if (b.s === void 0) continue;
 		const e = b.e ?? parsed.find((o) => o.e && o.s === b.s)?.e;
-		const end = e ?? b.s + 41 * DAY$19 - 5 * HOUR$3;
-		if (end < now - 3 * DAY$19) continue;
+		const end = e ?? b.s + 41 * DAY$20 - 5 * HOUR$3;
+		if (end < now - 3 * DAY$20) continue;
 		const skin = /\bskin for [^,.]+? called ([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /'s skin,\s+([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /Skin Drops\s+(.+?)(?=\s+\S+(?:\s+\S+)*\s+Banner and\b|$)/.exec(b.info)?.[1]?.trim();
 		const owner = /skin for ([A-Z][\w:' ]+?) called/.exec(b.info)?.[1] ?? /features ([A-Z][\w:' ]+?)'s skin/.exec(b.info)?.[1];
 		out.push({
@@ -22792,9 +22835,9 @@ async function banners(gameId) {
 */
 function dnaTheatre(gameId, now = Date.now()) {
 	const anchor = at$4(2026, 9, 20, 10);
-	const k = Math.floor((now - anchor) / (28 * DAY$19));
+	const k = Math.floor((now - anchor) / (28 * DAY$20));
 	return [k, k + 1].map((i) => {
-		const s = anchor + i * 28 * DAY$19;
+		const s = anchor + i * 28 * DAY$20;
 		return {
 			id: `${gameId}:challenge:cycle:Immersive Theatre:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
@@ -22802,7 +22845,7 @@ function dnaTheatre(gameId, now = Date.now()) {
 			title: "Immersive Theatre",
 			description: "⟦d.dnaTheatre⟧",
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 28 * DAY$19 - 5 * HOUR$3 - 1e3)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 28 * DAY$20 - 5 * HOUR$3 - 1e3)).toISOString(),
 			items: [{
 				name: "Secret Letter Clue",
 				amount: 280
@@ -22817,7 +22860,7 @@ function dnaTheatre(gameId, now = Date.now()) {
 async function syncDna(gameId) {
 	const [ev, bn, cd] = await Promise.allSettled([
 		events(gameId),
-		banners(gameId),
+		banners$1(gameId),
 		syncGame8Codes("dna")
 	]);
 	if (ev.status === "rejected" && bn.status === "rejected") throw ev.reason;
@@ -22830,6 +22873,117 @@ async function syncDna(gameId) {
 		],
 		patches: bn.status === "fulfilled" ? bn.value.patches : [],
 		codes
+	};
+}
+// src/sources/trickcal.ts
+/**
+* Trickcal: Chibi Go (Epid Games; versión global, servidor único en UTC+9). Fuentes revisadas el 12 nov 2026:
+*  - Banners (rate-up de Apóstoles): "Banner history" de lootandwaifus.com (/trickcal-chibi-go-banner-history/), lista GLOBAL, mismo formato que la
+*    de NIKKE (`.bh-row`: nombre, "Nov 11, 2026 - Nov 19, 2026", iconos de rol/personalidad y la insignia ELDYNE). Las fechas son días UTC:
+*    el aviso oficial de Vivi/Rohne ("2026/11/12 04:00 - 2026/11/19 10:59 (UTC+9)") sale en la lista como "Nov 11 - Nov 19". Por eso el inicio va a
+*    las 19:00 UTC (04:00 UTC+9 del día siguiente) y el fin a las 01:59 UTC (10:59 UTC+9), marcados "≈" hasta que llega el aviso oficial.
+*  - Códigos: "Trickcal: Chibi Go free codes" de lootandwaifus (/guides/trickcal-revive-codes/, tabla "Active codes"; actualizada el 11 nov 2026).
+*  - Eventos y horas exactas: solo los tuits oficiales de @trickcal_en que llegan al canal de Discord "trickcal" (Readybot). No hay lista de eventos
+*    en ninguna web permitida (lootandwaifus no la tiene, Prydwen bloquea el `fetch`, la wiki de Fandom está abandonada). Sin canal, solo banners y códigos.
+*  - Rotatorios: ninguno con calendario fijo documentado (PvP y Yggdrasil Dig Site no publican su ciclo); los que se anuncien llegan por Discord.
+* 2 páginas de lootandwaifus por ciclo (caché de 1 h en el proxy, 3 s entre peticiones).
+*/
+var LOOT$1 = "https://lootandwaifus.com";
+var DAY$19 = 864e5;
+var MONTHS$7 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+var monthOf$1 = (s) => MONTHS$7.indexOf(s.slice(0, 3).toLowerCase());
+var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+async function page$2(path) {
+	const res = await fetch(viaProxy(`${LOOT$1}${path}`));
+	if (!res.ok) throw new Error(`lootandwaifus ${path} → HTTP ${res.status}`);
+	return new DOMParser().parseFromString(await res.text(), "text/html");
+}
+/** "Nov 11, 2026 - Nov 19, 2026" → [inicio 19:00 UTC, fin 01:59:59 UTC] (04:00 y 10:59 UTC+9, como los avisos oficiales). */
+function trickcalRange(s) {
+	const m = /([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})\s*[-–]\s*([A-Za-z]{3,9})\.? (\d{1,2}),? (\d{4})/.exec(s);
+	if (!m || monthOf$1(m[1]) < 0 || monthOf$1(m[4]) < 0) return null;
+	return [Date.UTC(+m[3], monthOf$1(m[1]), +m[2], 19), Date.UTC(+m[6], monthOf$1(m[4]), +m[5], 1, 59, 59)];
+}
+async function banners(gameId) {
+	const doc = await page$2("/trickcal-chibi-go-banner-history/");
+	const from = Date.now() - 3 * DAY$19, to = Date.now() + 120 * DAY$19;
+	const out = [];
+	doc.querySelectorAll(".bh-list[data-server=\"GLOBAL\"] .bh-row").forEach((row) => {
+		const name = text$4(row.querySelector("h3"));
+		const r = trickcalRange(text$4(row.querySelector(".bh-dates")));
+		if (!name || !r) return;
+		const [start, end] = r;
+		if (end < from || start > to || end <= start) return;
+		const src = row.querySelector("img.bh-portrait")?.getAttribute("src");
+		const icon = src ? src.startsWith("http") ? src : `${LOOT$1}${src}` : void 0;
+		const badges = [...row.querySelectorAll(".bh-badge")].map(text$4);
+		const eldyne = badges.some((b) => /eldyne/i.test(b));
+		const rerun = badges.some((b) => /re-?run/i.test(b));
+		const traits = [...row.querySelectorAll(".bh-icon")].map((i) => i.getAttribute("title")).filter(Boolean);
+		const featured = [{
+			name,
+			icon,
+			rarity: 3,
+			tag: [...eldyne ? ["Eldyne"] : [], ...traits.slice(0, 3)].join(" · ") || void 0
+		}];
+		out.push({
+			id: `${gameId}:banner:lw:${name}:${new Date(start).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "banner",
+			title: name,
+			description: `⟦d.charBanner⟧${eldyne ? " · Eldyne" : ""}${rerun ? " · Rerun" : ""}`,
+			start: new Date(start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured,
+			pulls: 0,
+			source: "api",
+			precision: "approx"
+		});
+	});
+	if (!out.length && !doc.querySelector(".bh-row")) throw new Error("lootandwaifus Trickcal: no se encontró el historial de banners");
+	return out;
+}
+/** Tabla "Active codes": código en `data-copy-text`; recompensas "Candy x1000, Star Candy x1000" (sin las fichas emergentes de cada objeto). */
+async function syncTrickcalCodes() {
+	const doc = await page$2("/guides/trickcal-revive-codes/");
+	const head = doc.querySelector("#active-codes") ?? [...doc.querySelectorAll("h2")].find((h) => /active codes/i.test(text$4(h)));
+	const out = [];
+	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) for (const row of n.querySelectorAll(".modular-table-row")) {
+		if (row.classList.contains("modular-table-header")) continue;
+		const cells = [...row.children].filter((c) => c.classList.contains("modular-table-cell"));
+		const code = cells[0]?.getAttribute("data-copy-text")?.trim() || text$4(cells[0]);
+		if (!code || !/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
+		const cell = cells[1]?.cloneNode(true);
+		cell?.querySelectorAll(".tooltip-content").forEach((t) => t.remove());
+		const rewards = text$4(cell).split(/\s*,\s+(?=[A-Za-z])|\s+and\s+/).map((r) => r.trim().replace(/\s*x\s?(\d[\d,]*)$/i, " ×$1")).filter(Boolean);
+		out.push({
+			code,
+			rewards: rewards.slice(0, 6)
+		});
+	}
+	return out;
+}
+async function syncTrickcal(gameId) {
+	const [bn, cd] = await Promise.allSettled([banners(gameId), syncTrickcalCodes()]);
+	if (bn.status === "rejected" && cd.status === "rejected") throw bn.reason;
+	return {
+		events: bn.status === "fulfilled" ? bn.value : [],
+		patches: [],
+		codes: cd.status === "fulfilled" ? cd.value : []
 	};
 }
 // src/sources/fgo.ts
@@ -26243,7 +26397,7 @@ async function officialFirst(official, community, communityArt = false) {
 			...events[i],
 			image: communityArt ? r.image ?? events[i].image : events[i].image ?? r.image,
 			description: events[i].description ?? r.description,
-			featured: events[i].featured.length ? events[i].featured : r.featured,
+			featured: events[i].featured.length && !(r.featured.some((f) => f.icon) && events[i].featured.every((f) => r.featured.some((x) => x.name.toLowerCase() === f.name.toLowerCase()))) ? events[i].featured : r.featured.length ? r.featured : events[i].featured,
 			items: events[i].items.length ? events[i].items : r.items,
 			pulls: events[i].pulls || r.pulls,
 			hours: events[i].hours ?? r.hours
@@ -26377,6 +26531,7 @@ async function syncSourceRaw(game) {
 			...s,
 			patches: finalize(s.patches, game.patchCycleDays)
 		}));
+		case "trickcal": return syncTrickcal(id);
 		case "fgo": return syncFgo(id);
 		case "bluearchive": return withGachafocus(id, "bluearchive", syncBlueArchive(id));
 		case "limbus": return syncLimbus(id);

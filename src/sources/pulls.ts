@@ -59,6 +59,9 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Duet Night Abyss (Game8, "Myriad Gacha Currency", 12 nov 2026): 1 Hourglass por tirada; 160 Phoxene o Phoxene Plumule = 1 Hourglass.
   // Prismatic (banner limitado) y Pristine (permanente) cuentan los dos, como las Tides de WuWa. Solo hay gacha de cosméticos.
   dna: [{ item: /^(prismatic|pristine) hourglass(es)?$/i, per: 1 }, { item: /^phoxene( plumules?)?$/i, per: 160 }],
+  // Trickcal: Chibi Go: 100 Crystal Leaf por reclutamiento, 1000 el x10 (Prydwen, "1 summon costs 100 Crystal Leafs"; lootandwaifus, "500 gems (5 singles)").
+  // Recruitment Ticket = 1. Los Card Ticket (gacha de cartas) no cuentan.
+  trickcal: [{ item: /^crystal lea(f|ves|fs)$/i, per: 100 }, { item: /^(special |rate-up )?recruitment tickets?$/i, per: 1 }],
   uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume) )?scout tickets?$/i, per: 1 }],
 }
 

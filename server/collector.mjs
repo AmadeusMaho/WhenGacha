@@ -20,6 +20,13 @@ let mod = null
 let games = []
 let running = false
 
+/**
+ * Elementos que aún cuentan al comparar dos copias: los vigentes y los futuros. Los ya terminados no: la copia guardada los conserva y las fuentes
+ * los sueltan a los 3 días, así que en un cambio de versión (WuWa, 12 nov 2026: 10 de 29 ya terminados) la copia nueva parecía "más pobre" y se
+ * rechazaba, y se seguía sirviendo la vieja hasta 12 h aunque los eventos de la versión nueva ya hubieran salido.
+ */
+export const alive = (snap, now = Date.now()) => snap.events.filter(e => !(Date.parse(e.end) < now)).length
+
 export const getSnapshot = id => snapshots.get(id)
 export const knownGames = () => games.map(g => g.id)
 
@@ -53,8 +60,9 @@ async function collectOne(g) {
     const cur = snapshots.get(g.id)
     if (!snap.events.length && cur?.events.length) throw new Error('sin datos nuevos')
     // Tampoco una mucho más pobre que otra reciente (p. ej. gachafocus bloqueado aquí pero la copia publicada desde otro equipo lo traía).
-    if (cur && Date.now() - cur.updated < 12 * 3_600_000 && snap.events.length < cur.events.length * 0.7)
-      throw new Error(`solo ${snap.events.length} elementos frente a los ${cur.events.length} de la copia reciente`)
+    // Solo cuentan los vigentes y futuros (`alive`): lo que ya terminó no hace más rica a la copia vieja.
+    if (cur && Date.now() - cur.updated < 12 * 3_600_000 && alive(snap) < alive(cur) * 0.7)
+      throw new Error(`solo ${alive(snap)} elementos vigentes o futuros frente a los ${alive(cur)} de la copia reciente`)
     snapshots.set(g.id, snap)
     failures.delete(g.id)
     await save(snap)
@@ -99,8 +107,9 @@ async function pullRemote() {
       const cur = snapshots.get(g.id)
       const newer = !cur || snap.updated > cur.updated
       // "Más completa" solo cuenta si no es mucho más vieja: una copia de hace un día (p. ej. de cuando se usaba gachafocus) no debe pisar una recién hecha.
-      const richer = !!cur && snap.events.length > cur.events.length && snap.updated > cur.updated - 6 * 3_600_000
-      if (!(newer && (!cur || snap.events.length >= cur.events.length * 0.7)) && !richer) continue
+      // Las dos comparaciones con vigentes y futuros (`alive`), como en collectOne.
+      const richer = !!cur && alive(snap) > alive(cur) && snap.updated > cur.updated - 6 * 3_600_000
+      if (!(newer && (!cur || alive(snap) >= alive(cur) * 0.7)) && !richer) continue
       snapshots.set(g.id, snap)
       await save(snap)
       console.log(`[collector] ${g.id}: copia adoptada de ${REPO}@${BRANCH} (${snap.events.length} elementos, de hace ${Math.round((Date.now() - snap.updated) / 60_000)} min)`)

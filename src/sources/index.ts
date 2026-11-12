@@ -12,6 +12,7 @@ import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
 import { syncEpic7 } from './epic7'
 import { syncDna } from './dna'
+import { syncTrickcal } from './trickcal'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
@@ -154,7 +155,10 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
     if (i < 0) { extra.push(r); continue }
     used.add(i)
     events[i] = { ...events[i], image: communityArt ? r.image ?? events[i].image : events[i].image ?? r.image, description: events[i].description ?? r.description,
-      featured: events[i].featured.length ? events[i].featured : r.featured, items: events[i].items.length ? events[i].items : r.items,
+      // Destacados de la oficial, salvo que la comunidad traiga los mismos con retrato (Trickcal: el tuit dice "★3 Vivi"; lootandwaifus da su icono y rol).
+      featured: events[i].featured.length && !(r.featured.some(f => f.icon) && events[i].featured.every(f => r.featured.some(x => x.name.toLowerCase() === f.name.toLowerCase())))
+        ? events[i].featured : r.featured.length ? r.featured : events[i].featured,
+      items: events[i].items.length ? events[i].items : r.items,
       pulls: events[i].pulls || r.pulls, hours: events[i].hours ?? r.hours }
   }
   // Códigos: los de la fuente oficial primero; sin repetir el mismo código (p. ej. el de Discord y el de la wiki).
@@ -257,6 +261,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'infinitynikki': return syncInfinityNikki(id)
     // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + Immersive Theatre (ciclo de 28 días); con canal de Discord ("dna"), sus anuncios mandan.
     case 'dna': return syncDna(id).then(s => ({ ...s, patches: finalize(s.patches, game.patchCycleDays) }))
+    // Trickcal: Chibi Go: banners y códigos de lootandwaifus; eventos y horas exactas solo por Discord (tuits oficiales, canal "trickcal").
+    case 'trickcal': return syncTrickcal(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

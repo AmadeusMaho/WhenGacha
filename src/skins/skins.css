@@ -1,5 +1,7 @@
 /* ===== Selector de skins (el botón del pincel). Cada skin tiene su propia hoja (p. ej. wuwa.css). Para quitarlas: src/skins/README.md ===== */
 .skin { position: relative; }
+/* Botón de skins un poco más visible (12 nov 2026): icono sin atenuar, mismo color que el resto. */
+.skin > .lang-btn svg { opacity: 1; }
 .skin-panel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 60; min-width: 220px; margin: 0; padding: 6px; list-style: none;
   border-radius: 14px; background: rgba(16, 20, 38, .97); border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0, 0, 0, .5); animation: rise .2s var(--ease); }
 .skin-title { padding: 6px 12px 8px; color: var(--muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; }

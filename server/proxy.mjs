@@ -128,7 +128,7 @@ const SOURCES = [
   { name: 'gamepress-fgo', ttl: 12 * HOUR, test: u => u.hostname === 'grandorder.gamepress.gg' && u.pathname === '/summon-banner-list' },
   // Ficha de un evento de FGO, solo para su arte (`banner`); hasta 6 por ciclo. El arte no cambia: caché larga.
   { name: 'atlasacademy-event', ttl: 24 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/nice\/NA\/event\/\d{4,6}$/.test(u.pathname) },
-  { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && u.pathname === '/nikke-banner-history/' },
+  { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && /^\/(nikke-banner-history|trickcal-chibi-go-banner-history|guides\/trickcal-revive-codes)\/$/.test(u.pathname) },
   // Epic Seven: calendario de banners (bannerhistory.app, su robots.txt permite /en/) y avisos oficiales de STOVE (tablones Events=988 y Game Maintenance=986).
   { name: 'bannerhistory', ttl: 6 * HOUR, test: u => u.hostname === 'bannerhistory.app' && u.pathname === '/en/e7-pickup-history' },
   { name: 'stove', ttl: 2 * HOUR, test: u => u.hostname === 'api.onstove.com' && (/^\/cwms\/v3\.0\/article_group\/BOARD\/(988|986|139238|139240|142421)\/article\/list$/.test(u.pathname) || (u.pathname === '/cwms/v3.0/article' && /^\d+$/.test(u.searchParams.get('article_id') ?? ''))) },
@@ -207,7 +207,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

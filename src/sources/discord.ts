@@ -135,7 +135,19 @@ const noise = (s: string) => s.replace(/<?https?:\/\/\S+>?/g, '')
   .replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, '')
   .replace(/^\s*a new (tweet|post) has been posted!?\s*/i, '')
   // Tuits reenviados: la línea del autor ("DuetNightAbyss (@DNAbyss_EN)") no es el nombre de nada.
-  .replace(/^\s*[^()\n]{1,40}\(@\w{1,30}\)\s*$/, '')
+  // También en negrita, como título del embed de Readybot ("**Trickcal:Chibi Go (@trickcal_en) on X**").
+  .replace(/^\s*(?:\*\*|__)?[^()\n*]{1,40}\(@\w{1,30}\)(?:\s+on\s+(?:X|Twitter))?(?:\*\*|__)?\s*$/i, '')
+
+/**
+ * Tuits de Readybot (Trickcal, 12 nov 2026): "Trickcal:Chibi Go" y "@trickcal_en" en dos líneas antes del texto. El nombre de la cuenta no es el de
+ * ningún evento (salía "Trickcal:Chibi Go" de título): se vacían las dos líneas. Va antes de `noise`, que ya borra la del "@".
+ */
+export function dropTweetAuthor(lines: string[]): string[] {
+  const out = [...lines]
+  for (let i = 0; i + 1 < out.length; i++)
+    if (/^\s*@(?!everyone\b|here\b)\w{1,30}\s*$/.test(out[i + 1]) && out[i].trim().length <= 40 && !/\d{1,2}[:/]\d/.test(out[i])) { out[i] = ''; out[i + 1] = '' }
+  return out
+}
 /**
  * Saludos que no son el nombre de nada: "Dear Commander,", "Dear Tyrant,", "Sensei,", "Hello Doctors!". Cualquier "Dear …" corto o una línea corta
  * que acaba en coma cuenta, para no tener que añadir el apodo de cada juego (Stella Sora, 11 nov 2026: el evento se llamaba "Dear Tyrant,").
@@ -170,6 +182,8 @@ const MARKS = '■◆●▶◇□・▌▍▎▐►▷▸▹◢◣✦✧◈❖�
 const clean = (s: string) => s.replace(/[*_`#>|]+/g, '').replace(new RegExp(`^[\\s${MARKS}\\-–•]+`), '').replace(/[【】]/g, ' ').replace(/\s+/g, ' ').trim()
   // Rótulo entre corchetes en toda la línea ("◈ [Event Duration]", Duet Night Abyss) → "Event Duration".
   .replace(/^\[([^[\]]+)\]$/, '$1')
+  // Emojis delante ("💜The Dreamland event…", "🕒Event Period:", "⭐️ Apostle…", tuits de Trickcal): no son parte del nombre ni del rótulo.
+  .replace(/^[\p{Extended_Pictographic}️‍\s]+/u, '')
 // Una lista "[Pristine Hourglass], [Coin]" (recompensas de DNA) empieza por corchete pero no es una cabecera.
 const isHeading = (raw: string) => !/^\s*\[[^\]]*\]\s*[,，、]/.test(raw) && (new RegExp(`^\\s*(\\*\\*|__|#+\\s|[${MARKS}【[])`).test(raw) || /\*\*\s*$/.test(raw))
 
@@ -211,6 +225,10 @@ function featuredIn(lines: string[]): { name: string; rarity: number }[] {
       const name = n.trim()
       if (name && name.length <= 40 && !out.some(f => f.name === name)) out.push({ name, rarity })
     }
+  }
+  // "★3 Vivi,★3 Rohne Limited-Time Rate Up" (Trickcal): estrella y nombre sin tipo delante; solo si lo anterior no encontró nada.
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/[★☆]\s*(\d)\s+([A-Z][\w'-]{1,20})(?=\s*[,&]|\s+and\b|\s+(?:limited|rate|pick)|$)/gi)) {
+    if (!/^(?:apostles?|limited|rate|pick)$/i.test(m[2]) && !out.some(f => f.name === m[2])) out.push({ name: m[2], rarity: +m[1] })
   }
   return out.sort((a, b) => b.rarity - a.rarity)
 }
@@ -280,7 +298,7 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
   const out: GameEvent[] = []
   const seen = new Set<string>()
   for (const m of messages) {
-    const raw = pickRegion(joinStartEnd(textOf(m).split('\n').map(noise)))
+    const raw = pickRegion(joinStartEnd(dropTweetAuthor(textOf(m).split('\n')).map(noise)))
     const year = new Date(m.timestamp).getUTCFullYear()
     // "(server time)" sin zona: la del servidor del juego.
     const msgZone = zoneOf(raw.join(' ')) ?? SERVER_ZONE[gameId] ?? 0
@@ -338,12 +356,22 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       const found = kind === 'event' ? pullsIn(gameId, section) : { pulls: 0, items: [] }
       const pulls = found.pulls
       const items = found.items.length ? found.items : kind === 'event' ? bracketRewards(section) : []
-      out.push({
+      const featured = kind === 'banner' ? featuredIn(section) : []
+      const base: GameEvent = {
         id, gameId, kind, title: name, image,
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
-        items, featured: kind === 'banner' ? featuredIn(section) : [], pulls, official: true, source: 'api',
+        items, featured, pulls, official: true, source: 'api',
         precision: approx ? 'approx' : undefined,
-      })
+      }
+      // Varios rate-up en el título ("Apostle ★3 Vivi,★3 Rohne Limited-Time Rate Up", Trickcal): un banner por Apóstol, para unirse con los de lootandwaifus.
+      const stars = (name.match(/[★☆]\s*\d/g) ?? []).length
+      const split = kind === 'banner' && stars >= 2 ? featured.filter(f => name.includes(f.name)) : []
+      if (split.length >= 2) {
+        for (const f of split) {
+          const sid = `${gameId}:banner:dc:${f.name}:${new Date(start).toISOString().slice(0, 10)}`
+          if (!seen.has(sid)) { seen.add(sid); out.push({ ...base, id: sid, title: f.name, featured: [f] }) }
+        }
+      } else out.push(base)
     }
   }
   // Avisos de temporada: versión (parche) y banners vigentes. Si se repite la versión, manda el aviso más reciente (los mensajes llegan del más nuevo al más viejo).

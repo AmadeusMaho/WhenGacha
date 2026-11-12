@@ -30,6 +30,8 @@ const ART: Record<string, string> = {
   bd2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/87/88/56/87885688-e7ce-96f5-af56-f678d5da8b65/250909_BD2__Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.jpg/1280x1280bb.jpg',
   // DNA: sus capturas de la App Store son verticales; key visual oficial horizontal (3840×2160) de su Fandom, "Version CBT1 Full Wallpaper 1".
   dna: 'https://static.wikia.nocookie.net/duetnightabyss/images/9/96/Version_CBT1_Full_Wallpaper_1.jpg/revision/latest/scale-to-width-down/1280',
+  // Trickcal: la captura principal de la App Store ("主图", 2868×1320, horizontal).
+  trickcal: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7c/ed/42/7ced4226-f461-0b48-2e65-4eac9cad37da/_U4e3b_U56fe2868-1320-EN.jpg/1280x1280bb.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -77,6 +79,9 @@ export const CATALOG: Game[] = [
   // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + anuncios oficiales por Discord (src/sources/dna.ts). Wiki de Fandom solo para iconos.
   def('dna', 'Duet Night Abyss', 'DNA', 'Pan Studio', '#9fa8da', '#232a4d', 42, 'duetnightabyss.fandom.com', 'Duet Night Abyss', 'dna',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3e/81/2f/3e812f32-2d87-8a2e-813e-d43b4e5bf1b4/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg', 'Version CBT1 Full Wallpaper 1.jpg'),
+  // Trickcal: Chibi Go: banners y códigos de lootandwaifus + tuits oficiales de @trickcal_en por Discord (eventos y horas exactas; src/sources/trickcal.ts).
+  def('trickcal', 'Trickcal: Chibi Go', 'TC', 'Epid Games', '#ffcc80', '#5a3a1a', 0, '', 'Trickcal: Chibi Go', 'trickcal',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c4/dc/00/c4dc00ed-ef86-686b-0446-bbd6da0239b9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   { ...def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },

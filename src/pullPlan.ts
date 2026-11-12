@@ -184,6 +184,9 @@ const ECON: Record<string, Econ> = {
   // Duet Night Abyss: 160 Phoxene / Phoxene Plumule = 1 Prismatic Hourglass (banner limitado); pity de 90 (Game8). El pase mensual da
   // 90 Plumule al día (allthings.how). Sin ingresos diarios fijos de Phoxene: llega de eventos, códigos y el Trial Rank (sin tabla fiable).
   dna: { currency: 'Phoxene', icon: 'Phoxene', ticket: 'Prismatic Hourglass', per: 160, pass: 90, pity: 90, sources: [] },
+  // Trickcal: Chibi Go: 100 Crystal Leaf = 1 reclutamiento (pulls.ts). Sin pity: el "Devotion" (mileage) canjea el Apóstol a las 200 tiradas (300 si es
+  // Eldyne; lootandwaifus, "Gacha System"). Sin pase ni ingresos diarios fijos documentados: llegan de eventos, códigos y PvP ("500 gems" por temporada).
+  trickcal: { currency: 'Crystal Leaf', icon: 'Crystal Leaf', ticket: 'Recruitment Ticket', per: 100, pass: 0, pity: 200, sources: [] },
   infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
 }
 
