@@ -350,8 +350,12 @@ html[data-skin="nikke"] .bcard.bcard .ev-loc { color: #7fcbff; }
 html[data-skin="nikke"] .plan .plan-total b { color: var(--nk-blue3); }
 /* Iconos de los títulos de la calculadora, sobre el panel claro: el azul de texto. */
 html[data-skin="nikke"] .plan h3 .plan-ico { color: var(--nk-blue3); }
+/* Número de paso y cifra del resumen (12 nov 2026): el azul de adorno daba 2,2:1 en el panel claro. */
+html[data-skin="nikke"] .plan :is(.plan-step, .plan-sum-n b, .plan-sum-k .plan-ico) { color: var(--nk-blue3); border-color: var(--nk-blue3); }
 
 /* "+1" (más personajes) en las fichas de banner de "Mis gachas": la ficha es oscura dentro del panel claro y heredaba su gris (1,8:1). */
 html[data-skin="nikke"] .bport .p-n small { color: #c9d3de; }
 /* "v3.8 · 12 nov" sobre el arte del juego en "Mis gachas": iba en el azul de los paneles claros y no se leía sobre artes claros. */
 html[data-skin="nikke"] .gcard-hero .head-meta > span:not(.pill) { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .9), 0 0 8px rgba(0, 0, 0, .6); }
+/* Eventos pendientes de la calculadora (12 nov 2026): el azul de texto (el de adorno daba 2,8:1 en el panel claro). */
+html[data-skin="nikke"] .plan :is(.plan-ev .plan-val b, .plan-evhead b, .plan-ev.soon .plan-ev-t > small, .plan-sum-ev .plan-ico) { color: var(--nk-blue3); }

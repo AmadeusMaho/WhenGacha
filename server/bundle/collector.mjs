@@ -21481,7 +21481,7 @@ var LABEL$2 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|detail
 * daba nombres como "A new hotfix for Stella Sora").
 */
 function sentenceName(c, loose = true) {
-	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim();
+	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim();
 }
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
@@ -21613,6 +21613,7 @@ async function syncDiscord(gameId) {
 		let headAt = Math.max(firstLine, 0);
 		let fromHead = false;
 		let label = "";
+		const msgNames = /* @__PURE__ */ new Set();
 		for (const [i, line] of raw.entries()) {
 			const c = clean$2(line);
 			if (!c) continue;
@@ -21642,6 +21643,8 @@ async function syncDiscord(gameId) {
 			const inline = /^(.{3,80}?)(?<!\d):(?!\d)\s*\S/.exec(c)?.[1];
 			const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, "");
 			if (!name) continue;
+			if (/^(?:reward\s+)?(?:claim(?:ing)?|redemption|exchange)\b[^:]{0,20}(?:time|period)/i.test(c) && msgNames.has(name)) continue;
+			msgNames.add(name);
 			let start = r.start, approx = r.approx;
 			if (r.afterMaint) {
 				const e = maintEnd.get(r.afterMaint);

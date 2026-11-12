@@ -169,6 +169,8 @@ function sentenceName(c: string, loose = true): string | undefined {
     // "Limited event: Map the Uncharted With Pen in Hand is coming soon", "Limited recruitment event: Boundless Journey, Endless Romance will begin soon!" (Stella Sora).
     ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c)
     ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c)
+    // "Weekend Event [Trick Dice] begin! Participate for…" (Trickcal, 6 nov 2026): el nombre entre corchetes justo después de "Event".
+    ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c)
     // "Limited collab gear skins will be available between 11/12 - 11/26…" (Azur Lane): sin esto el título era la frase entera cortada.
     ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null)
   return m?.[1].trim()
@@ -311,6 +313,8 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
     let fromHead = false
     // Último rótulo visto ("Recruitment Period"): ayuda a saber si el periodo es de un banner.
     let label = ''
+    // Nombres que ya tuvieron periodo en este mensaje (aunque se descartaran por fecha).
+    const msgNames = new Set<string>()
     for (const [i, line] of raw.entries()) {
       const c = clean(line)
       if (!c) continue
@@ -335,6 +339,11 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       // Sin emojis al final ("… On-Time Gift 🎁").
       const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
       if (!name) continue
+      // "Reward Claiming Time: …" (Trickcal, Trick Dice) es el plazo para canjear lo ganado, no el evento: solo vale si el mensaje no dio otro periodo
+      // para ese nombre (antes, con el evento ya terminado, salía como vigente hasta el fin del canje).
+      const claim = /^(?:reward\s+)?(?:claim(?:ing)?|redemption|exchange)\b[^:]{0,20}(?:time|period)/i.test(c)
+      if (claim && msgNames.has(name)) continue
+      msgNames.add(name)
       let start = r.start, approx = r.approx
       if (r.afterMaint) {
         const e = maintEnd.get(r.afterMaint)

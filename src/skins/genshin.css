@@ -295,6 +295,11 @@ html[data-skin="genshin"] :is(input[type="text"], input[type="search"], input[ty
 /* Pestaña "Tiradas" (Planner.tsx): en los paneles crema, el total y las tiradas de cada evento en ámbar oscuro (el dorado de la base
    se quedaba en 1,4–1,7:1). */
 html[data-skin="genshin"] .plan :is(.plan-total b, .pull-list li em) { color: #8a5600; }
+/* Resumen (12 nov 2026): la cifra grande y el número de paso, en el mismo dorado oscuro (el dorado de adorno se perdía en el crema). */
+html[data-skin="genshin"] .plan :is(.plan-sum-n b, .plan-sum-k .plan-ico) { color: #8a5600; }
+/* El número de paso va dentro de la cabecera pizarra: del color de su texto. */
+html[data-skin="genshin"] .plan h3 .plan-step { color: inherit; border-color: currentColor; }
+html[data-skin="genshin"] .plan .plan-sum.ok .plan-sum-v { color: #2f6b34; }
 /* "Que empiece / Que termine": el segmento de la skin está pensado para el fondo oscuro (texto blanco); en el panel crema va sobre la barra pizarra. */
 html[data-skin="genshin"] .plan .seg { background: var(--gi-slate); border-color: transparent; }
 /* "¡Llegas!": el verde de la base no se lee sobre crema (1,5:1). */
@@ -303,3 +308,5 @@ html[data-skin="genshin"] .plan .plan-goal.ok p { color: #2f6b34; }
 html[data-skin="genshin"] .plan h3:has(> .plan-ico)::before { display: none; }
 /* Cuadrícula: "+N✦ por conseguir antes del fin" en las tarjetas crema iba en el amarillo de la base (1,3:1). */
 html[data-skin="genshin"] .ecard .pull-left { color: #8a5600; }
+/* Eventos pendientes de la calculadora (12 nov 2026): cifras y "quedan N días" en el dorado oscuro (el de adorno daba 1,7:1 en el crema). */
+html[data-skin="genshin"] .plan :is(.plan-ev .plan-val b, .plan-evhead b, .plan-ev.soon .plan-ev-t > small, .plan-sum-ev .plan-ico) { color: #8a5600; }

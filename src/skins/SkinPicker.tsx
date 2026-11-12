@@ -111,8 +111,12 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
   return (
     <div className="skin" ref={box}>
       <button className="btn sm lang-btn" onClick={toggle} aria-haspopup="menu" aria-expanded={open} title={s.title} aria-label={s.title}>
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M14.5 4.5l5 5-8.2 8.2a3 3 0 0 1-2.1.9H6.5v-2.7a3 3 0 0 1 .9-2.1z" /><path d="M12.5 6.5l5 5" /><path d="M4 21c1.5-.4 2.5-1.2 2.5-2.4" />
+        {/* Paleta de acuarela (12 nov 2026): contorno con el hueco del pulgar y cuatro pastillas de color con el centro aguado; en el color del botón. */}
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 3.2c-5.1 0-9 3.6-9 8.3 0 4.4 3.6 8.3 8.2 8.3 1.4 0 2.1-.8 2.1-1.8 0-.6-.3-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.9-1.8h2.3c2.9 0 4.6-1.9 4.6-4.4 0-3.3-4-5.9-9-5.9z" />
+          {[[7.6, 11.2], [9.4, 7.3], [14, 6.6], [17.1, 9.6]].map(([cx, cy]) => (
+            <g key={cx}><circle cx={cx} cy={cy} r="1.75" fill="currentColor" fillOpacity=".35" /><circle cx={cx} cy={cy} r=".6" fill="currentColor" stroke="none" /></g>
+          ))}
         </svg>
       </button>
       {open && (

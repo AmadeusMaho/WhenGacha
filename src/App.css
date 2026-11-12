@@ -923,6 +923,39 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .plan-goal p { margin: 0; font-size: .88rem; font-weight: 600; }
 .plan-goal.ok p { color: var(--good); }
 .plan-goal.short p { color: var(--text); }
+/* Resumen de la ficha (12 nov 2026): la respuesta arriba, a todo el ancho. Solo variables de tema (--acc, --good, --line) para que cada skin lo pinte. */
+.plan-sum { display: grid; gap: 8px; margin: 4px 0 18px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px;
+  background: color-mix(in srgb, var(--acc) 7%, transparent); }
+.plan-sum-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 6px 18px; }
+.plan-sum-k { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-size: .88rem; color: var(--muted); min-width: 0; }
+.plan-sum-k b { color: var(--text); font-weight: 700; margin-right: 8px; }
+.plan-sum-d { font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.plan-sum-k .plan-ico { color: var(--acc); }
+.plan-sum-n { margin: 0; display: inline-flex; align-items: baseline; gap: 8px; }
+.plan-sum-n b { font-size: 2.1rem; line-height: 1; font-weight: 800; color: var(--acc); font-variant-numeric: tabular-nums; }
+.plan-sum-n span { font-size: .86rem; color: var(--muted); }
+.plan-sum .progress { margin: 2px 0 0; }
+.plan-sum-v { margin: 0; font-size: .9rem; font-weight: 600; color: var(--text); }
+.plan-sum.ok .plan-sum-v { color: var(--good); }
+.plan-sum-v.muted { font-weight: 500; color: var(--muted); }
+/* Número de paso en las cabeceras de la columna izquierda (1 Objetivo, 2 Lo que tienes). */
+.plan-step { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--acc);
+  color: var(--acc); font-size: .72rem; font-weight: 800; line-height: 1; letter-spacing: 0; }
+.plan-col > h3 + .plan-fields + h3 { margin-top: 22px; }
+/* Pase mensual: casilla y, si está marcada, cuánto da al día en la misma fila. */
+.plan-pass { grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 14px; }
+.plan-check { display: inline-flex; align-items: center; gap: 8px; min-height: 34px; cursor: pointer; color: var(--text); font-size: .84rem; }
+.plan-pass:not(.on) .plan-check { color: var(--muted); }
+/* En móvil el resumen va en columna y con aire entre el banner, la cifra, la barra y el veredicto (antes quedaba todo pegado). */
+@media (max-width: 560px) {
+  .plan-sum { gap: 14px; padding: 16px 14px; }
+  .plan-sum-top { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .plan-sum-k { align-items: flex-start; line-height: 1.45; }
+  .plan-sum-k .plan-ico { margin-top: 3px; }
+  .plan-sum .progress { margin: 0; }
+  .plan-sum-v { line-height: 1.45; }
+}
+@media (max-width: 420px) { .plan-sum-n b { font-size: 1.9rem; } .plan-pass { grid-template-columns: 1fr; } }
 .plan-events { margin-top: 10px; }
 .plan-events summary { cursor: pointer; font-size: .84rem; color: var(--muted); }
 .plan-events summary:hover { color: var(--text); }
@@ -962,6 +995,36 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .plan-val { display: inline-flex; align-items: baseline; gap: 10px; flex: none; }
 .plan-val small { color: var(--muted); font-size: .76rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .plan-val b { min-width: 3.2em; text-align: right; }
+/* Panel "Fuente" (12 nov 2026): columnas alineadas (aporte · moneda · tiradas), una cabecera que dice qué es cada cifra y una barrita con
+   lo que aporta cada fila al total. Solo --acc / --muted / --line, así cada skin lo pinta con su color. */
+.plan-val { align-items: center; }
+.plan-val .plan-cur { min-width: 5.2em; display: inline-flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.plan-share, .plan-share-h { flex: none; width: 56px; }
+.plan-share { height: 6px; border-radius: 3px; overflow: hidden; background: color-mix(in srgb, var(--acc) 16%, transparent); }
+.plan-share > i { display: block; height: 100%; border-radius: inherit; background: var(--acc); }
+.plan .plan-break li.plan-cols, .plan .plan-break li.plan-cols:hover { margin: 0 0 4px; padding: 0 2px 6px; min-height: 0; background: none; border: 0;
+  border-bottom: 1px solid var(--line); border-radius: 0; box-shadow: none; font-size: .7rem; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--muted); }
+.plan .plan-break li.plan-cols::before { display: none; }
+.plan .plan-break li.plan-cols b, .plan .plan-break li.plan-cols small { font: inherit; color: inherit; }
+.plan-share-h { text-align: center; }
+.plan-how { margin: 12px 0 0; }
+/* Eventos pendientes (12 nov 2026): cabecera de grupo con su suma y una fila por evento con arte, nombre en dos líneas y lo que queda. */
+.plan .plan-break li.plan-evhead { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+.plan .plan-break li.plan-evhead b { font-size: .95rem; letter-spacing: 0; color: var(--acc); text-transform: none; }
+.plan-break li.plan-ev { font-size: .86rem; }
+.plan-ev-art { flex: none; width: 34px; height: 34px; border-radius: 8px; object-fit: cover; border: 1px solid var(--line); }
+.plan-ev-t { display: grid; min-width: 0; line-height: 1.3; }
+.plan-ev-t > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.plan-ev-t > small { color: var(--muted); font-size: .74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.plan-ev.soon .plan-ev-t > small { color: var(--acc); font-weight: 700; }
+.plan-ev .plan-val b { color: var(--acc); }
+.plan .plan-break li.plan-ev-empty, .plan .plan-break li.plan-ev-more, .plan .plan-break li.plan-ev-more:hover { background: none; border: 0; box-shadow: none; min-height: 0; padding: 4px 2px; }
+.plan .plan-break li.plan-ev-more::before, .plan .plan-break li.plan-ev-empty::before { display: none; }
+.plan-ev-more .plan-ev-toggle { margin: 0 auto; }
+.plan-sum-ev { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-size: .84rem; color: var(--text); }
+.plan-sum-ev .plan-ico { color: var(--acc); }
+@media (max-width: 420px) { .plan-share, .plan-share-h { display: none; } .plan-val .plan-cur { min-width: 0; } }
 @media (max-width: 420px) { .plan-val { gap: 6px; } .plan-val small { font-size: .7rem; } }
 .plan-break li > span:first-child { flex: 1; min-width: 0; }
 .plan-name { min-width: 0; }

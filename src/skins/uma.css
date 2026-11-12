@@ -318,7 +318,13 @@ html[data-skin="uma"] :is(input[type="text"], input[type="search"], input[type="
 html[data-skin="uma"] .plan .plan-total b { color: var(--um-green-d); }
 /* Iconos de los títulos de la calculadora: en blanco, como el texto de la barra verde (en verde no se veían). */
 html[data-skin="uma"] .plan h3 .plan-ico { color: #fff; }
+/* Número de paso sobre la franja verde de los títulos: en blanco, como su texto (12 nov 2026). */
+html[data-skin="uma"] .plan h3 .plan-step { color: #fff; border-color: #fff; }
+/* Cifra del resumen en el verde de texto, como el total. */
+html[data-skin="uma"] .plan .plan-sum-n b { color: var(--um-green-d); }
 
 /* Títulos de las tarjetas (banners y eventos): con el interlineado de la base (1,12) se cortaban las letras que bajan de M PLUS Rounded
    ("Suomin_g_", "L_y_nae"). */
 html[data-skin="uma"] :is(.bcard, .ecard) h3 { line-height: 1.34; }
+/* Eventos pendientes de la calculadora (12 nov 2026): el verde de texto, como el total. */
+html[data-skin="uma"] .plan :is(.plan-ev .plan-val b, .plan-evhead b, .plan-ev.soon .plan-ev-t > small, .plan-sum-ev .plan-ico) { color: var(--um-green-d); }
