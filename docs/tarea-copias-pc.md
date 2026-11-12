@@ -68,7 +68,7 @@ Unregister-ScheduledTask -TaskName 'WhenGacha snapshots' -Confirm:$false
 `DISCORD_CHANNELS` debe ser la misma en `.env.local`, en Botkeep y en el secreto de GitHub Actions (el token, `DISCORD_TOKEN`, no se escribe aquí):
 
 ```
-stellasora:1568334305728659496,bluearchive:1568333566566207658,limbus:1568338884558061578,arknights:1568339330332885184,honkai3:1568351612697575424,azurlane:1568350070858977340,infinitynikki:1568519866464600217
+stellasora:1568334305728659496,bluearchive:1568333566566207658,limbus:1568338884558061578,arknights:1568339330332885184,honkai3:1568351612697575424,azurlane:1568350070858977340,infinitynikki:1568519866464600217,nikke:1569427788492972082,dna:1570290121004294244
 ```
 
 Al añadir un juego por Discord, se suma `<id del juego>:<id del canal>` al final en los tres sitios. Botkeep solo lee las variables al arrancar (hace falta redesplegar).

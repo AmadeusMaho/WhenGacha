@@ -1,4 +1,4 @@
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2' | 'afkjourney' | 'infinitynikki'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2' | 'afkjourney' | 'infinitynikki' | 'dna'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {
@@ -63,6 +63,8 @@ export interface GameEvent {
   open?: boolean
   /** estimated = fecha aún no confirmada; approx = fechas reales pero con horas aproximadas. */
   precision?: 'estimated' | 'approx'
+  /** Horas exactas en otros servidores (id de servers.ts → inicio/fin), cuando la fuente las da (Endfield: Asia). Mandan sobre el desplazamiento calculado. */
+  servers?: Record<string, { start: string; end: string }>
   /** Sale de un aviso oficial del juego (Kuro, STOVE…): sus horas mandan sobre las de cualquier agregador (gachafocus incluido). */
   official?: boolean
   source: 'api' | 'manual' | 'feed'
@@ -139,4 +141,6 @@ export interface AppState {
   leadHours: number
   /** Pestaña "Tiradas": ajustes por juego (id → solo lo que cambiaste; el resto sale de pullPlan.ts). */
   planner: Record<string, Partial<PlanCfg>>
+  /** Servidor elegido por juego (id → servers.ts); sin entrada, el servidor de la fuente. */
+  servers?: Record<string, string>
 }

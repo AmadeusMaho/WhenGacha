@@ -89,6 +89,10 @@ html[data-skin="zzz"] .seg button { border-radius: 999px; }
 html[data-skin="zzz"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
 html[data-skin="zzz"] :is(.chip.on, .seg button.on):hover { background: var(--zz-yellow) !important; color: #000; border-color: var(--zz-yellow); box-shadow: none; font-weight: 700; }
 html[data-skin="zzz"] :is(.up-chip .up-chip-t, .up-chip b, .codes-chip *) { color: #ecece8; text-shadow: none; }
+/* Pie de "Mis gachas" (códigos + servidor): con la letra ancha de ZZZ no cabían en una fila; un poco más compactos. El servidor elegido, en amarillo. */
+html[data-skin="zzz"] .gcard-foot .codes-chip { gap: 6px; padding-right: 9px; font-size: .78rem; }
+html[data-skin="zzz"] .srv-chip .cc-txt b { color: var(--zz-yellow); }
+html[data-skin="zzz"] .srv-chip:hover { border-color: var(--zz-yellow); }
 
 /* --- Etiquetas: pegatinas en cursiva (contadores, "nuevo", "urgente") --- */
 html[data-skin="zzz"] .tag { border-radius: 6px; border: 0; background: #2b2b2b; color: #f3f3f0; font-weight: 800; }

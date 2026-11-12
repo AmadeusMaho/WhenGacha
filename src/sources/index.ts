@@ -11,6 +11,7 @@ import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
 import { syncEpic7 } from './epic7'
+import { syncDna } from './dna'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
@@ -254,6 +255,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'afkjourney': return syncAfkJourney(id)
     // Infinity Nikki: wiki (eventos, banners, códigos); con canal de Discord (#game-news y #redeem-codes oficiales), sus anuncios mandan.
     case 'infinitynikki': return syncInfinityNikki(id)
+    // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + Immersive Theatre (ciclo de 28 días); con canal de Discord ("dna"), sus anuncios mandan.
+    case 'dna': return syncDna(id).then(s => ({ ...s, patches: finalize(s.patches, game.patchCycleDays) }))
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

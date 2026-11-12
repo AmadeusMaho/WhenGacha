@@ -52,10 +52,13 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Epic Seven: 5 Covenant Bookmarks por invocación; 100 Skystones = 5 Bookmarks = 1 tirada (confirmado por el dueño, 9 nov 2026).
   epic7: [{ item: /^covenant bookmarks?$/i, per: 5 }, { item: /^skystones?$/i, per: 100 }],
   // Arknights: Endfield: 500 Oroberyl por tirada; los HH Permit = 1 (Prydwen y varias guías, mismas cifras).
-  endfield: [{ item: /^oroberyl$/i, per: 500 }, { item: /^((chartered|basic) )?(hh|headhunting) permits?$/i, per: 1 }],
+  endfield: [{ item: /^oroberyl$/i, per: 500 }, { item: /^(.+ )?(hh|headhunting) permits?$/i, per: 1 }],
   // Neverness to Everness: 160 Annulith por tirada; Solid Dice (limitado) y Fabricated Dice (estándar) = 1 (Prydwen y guías, mismas cifras).
   nte: [{ item: /^annulith$/i, per: 160 }, { item: /^(solid|fabricated) dice$/i, per: 1 }],
   // Umamusume: 150 Carats por scout; los Scout Ticket = 1 (guías de Sportskeeda, bo3.gg y Game8, mismas cifras).
+  // Duet Night Abyss (Game8, "Myriad Gacha Currency", 12 nov 2026): 1 Hourglass por tirada; 160 Phoxene o Phoxene Plumule = 1 Hourglass.
+  // Prismatic (banner limitado) y Pristine (permanente) cuentan los dos, como las Tides de WuWa. Solo hay gacha de cosméticos.
+  dna: [{ item: /^(prismatic|pristine) hourglass(es)?$/i, per: 1 }, { item: /^phoxene( plumules?)?$/i, per: 160 }],
   uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume) )?scout tickets?$/i, per: 1 }],
 }
 

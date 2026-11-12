@@ -204,6 +204,15 @@ Lo que hubo que tocar por skin, en un bloque "Pestaña Tiradas" al final de su C
   `nav-pulls.webp` = `utx_ico_home_umamusume_06` del zip "Umamusume UI sprites" (la chica con la Carat), activa en naranja.
 - En móvil, "Línea de tiempo" se acorta a "Línea" (`.tab-short`, App.css) para que quepan las cuatro pestañas con cualquier skin.
 
+## Chip de servidor en "Mis gachas" (12 nov 2026)
+
+El selector de servidor de cada juego (`ServerChip` en `Views.tsx`, `src/servers.ts`) va al pie de su tarjeta, junto al de códigos, y usa
+sus mismas clases (`codes-chip`, `cc-ico`, `cc-txt`, `cc-chev`) más `srv-chip`: así cada skin lo pinta como su chip de códigos sin reglas nuevas.
+Es un `<select>` nativo transparente encima del chip (menú del sistema, también en móvil); sus opciones van siempre oscuras sobre blanco.
+El chip solo dice el nombre ("Servidor · America"); la zona va en la lista y en el título. Revisado con `skin-contrast.js` en las 7 skins,
+escritorio y 375 px: sin avisos. **ZZZ**: con su letra ancha no cabía junto al de códigos; en esa skin el pie es algo más compacto y el
+servidor elegido va en amarillo. En móvil, en las skins de letra ancha, los dos chips se apilan.
+
 ## Solo para WhenGacha Premium
 
 Las skins (y la insignia) son de **WhenGacha Premium**: se consigue apoyando en Ko-fi (enlazado desde el pincel) y se entra con el correo

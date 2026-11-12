@@ -1,7 +1,8 @@
-import type { Featured, GameEvent, Kind, Patch } from '../types'
+import type { Featured, GameEvent, Kind, Patch, RewardItem } from '../types'
 import { viaProxy } from '../net'
 import { akAnnihilation, withClientData } from './akdata'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * Fuentes basadas en las tablas Cargo de wikis wiki.gg (API de MediaWiki abierta, con CORS).
@@ -147,24 +148,89 @@ const EF = 'endfield.wiki.gg'
 /** Los campos Ameu* de la wiki ya vienen en UTC: coinciden con las horas ISO de gachafocus (p. ej. 17:00Z). */
 const AMEU = 0
 
+/**
+ * Horas del servidor de Asia (columnas Asia* de la misma tabla, también en UTC) para el selector de servidor (servers.ts). No son un simple
+ * desplazamiento de las de AMEU: unos eventos empiezan a la vez y otros con un día de diferencia ("The Stars Are With Me", nov 2026).
+ */
+function asiaOf(r: Row): GameEvent['servers'] {
+  const start = toIso(r.AsiaStartTime, AMEU), end = toIso(r.AsiaEndTime, AMEU)
+  return start && end && +new Date(end) > +new Date(start) ? { asia: { start, end } } : undefined
+}
+
+/** Wikitexto → texto: {{I|Oroberyl|600}} → "Oroberyl ×600", [[a|b]] → b, sin plantillas ni etiquetas. */
+function plain(w: string): string {
+  return w
+    .replace(/\{\{\s*(?:I|Item)\s*\|([^|}]+)(?:\|(\d[\d,]*))?[^}]*\}\}/gi, (_m, n: string, q?: string) => q ? `${n.trim()} ×${q}` : n.trim())
+    .replace(/\[\[(?:File|Image):[^\]]*\]\]/gi, '')
+    .replace(/\{\{\s*Color\s*\|([^|}]*)[^}]*\}\}/gi, '$1')
+    .replace(/\{\{[^{}]*\}\}/g, '')
+    .replace(/\[\[(?:[^|\]]*\|)?([^\]]*)\]\]/g, '$1')
+    .replace(/'{2,}|<[^>]+>/g, '')
+    .replace(/[ \t]+/g, ' ').trim()
+}
+
+/**
+ * Ficha de cada evento de Endfield desde su página de la wiki (una sola consulta para todos, máx. 50): la cita de presentación, los requisitos
+ * ("Participation Requirements") y los detalles ("Event Details"), más las recompensas `{{I|Nombre|cantidad}}` sumadas (con sus tiradas).
+ */
+async function endfieldDetails(titles: string[]): Promise<Map<string, { description: string; items: RewardItem[] }>> {
+  const out = new Map<string, { description: string; items: RewardItem[] }>()
+  if (!titles.length) return out
+  const qs = new URLSearchParams({ action: 'query', titles: titles.slice(0, 50).join('|'), prop: 'revisions', rvprop: 'content', rvslots: 'main', redirects: '1', format: 'json', formatversion: '2', origin: '*' })
+  const res = await fetch(viaProxy(`https://${EF}/api.php?${qs}`))
+  if (!res.ok) throw new Error(`${EF} → HTTP ${res.status}`)
+  const json = await res.json() as { query?: { pages?: { title: string; revisions?: { slots?: { main?: { content?: string } } }[] }[] } }
+  for (const p of json.query?.pages ?? []) {
+    const w = p.revisions?.[0]?.slots?.main?.content
+    if (!w) continue
+    const quote = /\{\{\s*Quote\s*\|([^|}]+)/i.exec(w)?.[1]
+    const section = (re: RegExp) => {
+      const m = new RegExp(`^==\\s*(?:${re.source})\\s*==[ \\t]*$([\\s\\S]*?)(?=^==[^=]|$(?![\\s\\S]))`, 'im').exec(w)
+      if (!m) return [] as string[]
+      // Breve (pedido del dueño, 12 nov 2026): solo las viñetas principales (sin las "**"), sin tablas, notas "※", subapartados ni líneas con fechas
+      // u horas (ya salen en la ficha) y sin "visita la página X". Las recompensas salen aparte, con su icono (`items`).
+      return plain(m[1].replace(/\{\|[\s\S]*?\|\}/g, '')).split('\n').map(l => l.trim())
+        .filter(l => l && !/^(※|\*\*|=)/.test(l) && !/\d{1,4}[/-]\d{1,2}[/-]\d{2,4}|\b\d{1,2}:\d{2}\b|\bvisit the\b.*\bpage\b|calendar:?$/i.test(l))
+        .map(l => l.replace(/^\*\s*/, '').replace(/\[([^\]]+)\]\s*x\s?(\d[\d,]*)/g, '$1 ×$2').replace(/\[([^\]]+)\]/g, '$1').trim())
+        // Sin rótulos sueltos ("Event Phase 1", cuyo contenido eran fechas): menos de 4 palabras no es una explicación.
+        .filter(l => l.split(/\s+/).length >= 4 && !/:$/.test(l))
+    }
+    const req = section(/Participation Requirements?/)[0], det = section(/Event Details|Details/).slice(0, 2)
+    const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n).replace(/\s+\S*$/, '')}…` : s)
+    const description = [quote && cut(plain(quote), 220), req && `⟦d.efReq|${cut(req, 160)}⟧`, ...det.map(d => `• ${cut(d, 220)}`)].filter(Boolean).join('\n')
+    const tot = new Map<string, number>()
+    // Con cantidad se suman; sin ella ("[{{Item|Mark of Perseverance|gv=no}}]") también se listan (cantidad 0), para que salgan con su icono.
+    for (const m of w.matchAll(/\{\{\s*(?:I|Item)\s*\|([^|}]+)(?:\|(\d[\d,]*))?/gi)) {
+      const n = m[1].trim()
+      if (/=/.test(n)) continue
+      tot.set(n, (tot.get(n) ?? 0) + (m[2] ? Number(m[2].replace(/,/g, '')) : 0))
+    }
+    const items = [...tot].map(([name, amount]) => ({ name, amount })).sort((a, b) => Number(/oroberyl|permit/i.test(b.name)) - Number(/oroberyl|permit/i.test(a.name)) || b.amount - a.amount).slice(0, 10)
+    out.set(p.title, { description, items })
+  }
+  return out
+}
+
 export async function syncEndfield(gameId: string): Promise<GameSync> {
   const since = sinceDate()
   const [events, banners, versions] = await Promise.all([
-    cargo(EF, { tables: 'Events', fields: 'Event,Type,Image,AmeuStartTime,AmeuEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
-    cargo(EF, { tables: 'Banners', fields: 'Banner,Image,RateUpOperator,LimitedOperators,AmeuStartTime,AmeuEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
+    cargo(EF, { tables: 'Events', fields: 'Event,Type,Image,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
+    cargo(EF, { tables: 'Banners', fields: 'Banner,Image,RateUpOperator,LimitedOperators,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
     cargo(EF, { tables: 'Versions', fields: 'Version,VersionNumber,StartTime,EndTime', order_by: 'StartTime' }),
   ])
 
-  const files = await fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image)])
+  const [files, details] = await Promise.all([fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image)]),
+    endfieldDetails(events.map(r => r.Event)).catch(err => { console.warn('[endfield] fichas:', (err as Error)?.message ?? err); return new Map<string, { description: string; items: RewardItem[] }>() })])
   const evs = compact(events.map(r => make(gameId, /challenge/i.test(r.Type) ? 'challenge' : 'event', r.Event + r.AmeuStartTime, r.Event,
-    toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), { image: r.Image ? files.get(norm(r.Image)) : undefined, description: r.Type ? `⟦d.efType|${r.Type}⟧` : undefined })))
+    toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), { image: r.Image ? files.get(norm(r.Image)) : undefined, description: [r.Type ? `⟦d.efType|${r.Type}⟧` : '', details.get(r.Event)?.description ?? ''].filter(Boolean).join('\n') || undefined, servers: asiaOf(r),
+    items: details.get(r.Event)?.items ?? [], pulls: pullsIn('endfield', (details.get(r.Event)?.items ?? []).map(i => `${i.name} x${i.amount}`)).pulls })))
 
   const bns = compact(banners.map(r => {
     const names = (r.RateUpOperator || r.LimitedOperators || '').split(';').filter(Boolean)
     const featured: Featured[] = names.slice(0, 3).map(name => ({ name, rarity: 6 }))
     return make(gameId, 'banner', r.Banner + r.AmeuStartTime, names.length ? names.join(' / ') : r.Banner,
       toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), {
-        image: r.Image ? files.get(norm(r.Image)) : undefined, featured, description: `⟦d.efBanner|${r.Banner}⟧`,
+        image: r.Image ? files.get(norm(r.Image)) : undefined, featured, description: `⟦d.efBanner|${r.Banner}⟧`, servers: asiaOf(r),
       })
   }))
 

@@ -7,6 +7,7 @@ import { enableNotifications } from './notify'
 import { iosNotInstalled, useInstall } from './install'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, useArtShape, type Ctx } from './ui'
 import type { Game, GameEvent, Patch } from './types'
+import { regionsOf, serverOf } from './servers'
 
 const DAY = 86_400_000
 
@@ -238,7 +239,11 @@ function GameCard({ g, ctx, onRemove, onOpen }: { g: Game; ctx: Ctx; onRemove: (
           </div>
         )}
 
-        <Codes g={g} ctx={ctx} />
+        {/* Pie: códigos y servidor del juego, uno al lado del otro. */}
+        <div className="gcard-foot">
+          <Codes g={g} ctx={ctx} />
+          <ServerChip g={g} ctx={ctx} />
+        </div>
       </div>
     </article>
   )
@@ -283,6 +288,34 @@ function MorePortrait({ b, n, onClick }: { b: GameEvent; n: number; onClick: () 
 function splitRewards(rewards: string[]) {
   const until = rewards.find(r => /^(until|valid until|expires?)\b/i.test(r))
   return { items: rewards.filter(r => r !== until), until: until?.replace(/^(valid until|until|expires?(?: on)?)\s*:?\s*/i, '') }
+}
+
+/**
+ * Servidor del juego (servers.ts), al pie de su tarjeta con el mismo aspecto que el chip de códigos (así cada skin lo pinta igual):
+ * "🌐 Servidor · America UTC-5 ▾". Es un <select> nativo transparente encima del chip: el menú del sistema, también en móvil y con teclado.
+ */
+function ServerChip({ g, ctx }: { g: Game; ctx: Ctx }) {
+  const { state, setState } = ctx
+  const regions = regionsOf(g)
+  const cur = serverOf(g, state)
+  if (!regions || !cur) return null
+  // En el chip solo el nombre ("America"): con la zona no cabía junto al de códigos en las skins de letra ancha. La zona va en la lista y en el título.
+  const name = cur.label.replace(/\s*\(.*\)$/, '')
+  return (
+    <label className="codes-chip srv-chip" title={`${cur.label} · ${t('server.tip')}`}>
+      <span className="cc-ico" aria-hidden>
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+        </svg>
+      </span>
+      <span className="cc-txt">{t('server.chip')} · <b>{name}</b></span>
+      <span className="cc-chev" aria-hidden>▾</span>
+      <select className="srv-select" value={cur.id} aria-label={t('server.aria', { name: g.name })}
+        onChange={e => setState(s => ({ ...s, servers: { ...s.servers, [g.id]: e.target.value } }))}>
+        {regions.list.map(sv => <option key={sv.id} value={sv.id}>{sv.label}</option>)}
+      </select>
+    </label>
+  )
 }
 
 function Codes({ g, ctx }: { g: Game; ctx: Ctx }) {

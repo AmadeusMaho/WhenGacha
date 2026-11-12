@@ -134,6 +134,8 @@ const noise = (s: string) => s.replace(/<?https?:\/\/\S+>?/g, '')
   .replace(/<a?:[\w~]+:\d+>/g, '')
   .replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, '')
   .replace(/^\s*a new (tweet|post) has been posted!?\s*/i, '')
+  // Tuits reenviados: la línea del autor ("DuetNightAbyss (@DNAbyss_EN)") no es el nombre de nada.
+  .replace(/^\s*[^()\n]{1,40}\(@\w{1,30}\)\s*$/, '')
 /**
  * Saludos que no son el nombre de nada: "Dear Commander,", "Dear Tyrant,", "Sensei,", "Hello Doctors!". Cualquier "Dear …" corto o una línea corta
  * que acaba en coma cuenta, para no tener que añadir el apodo de cada juego (Stella Sora, 11 nov 2026: el evento se llamaba "Dear Tyrant,").
@@ -144,7 +146,7 @@ const isGreeting = (c: string) => GREETING.test(c) || /^[^.!?:\d]{1,30},$/.test(
  * Rótulos de apartado que no son el nombre de nada: "▌ Event Period", "Recruitment Period", "Details", "Rewards". Si se tomaban como cabecera,
  * el evento se llamaba "Event Period".
  */
-const LABEL = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|details?|rewards?|notes?|overview|rules|requirements?|how to (?:join|participate|play))\s*:?$/i
+const LABEL = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|details?|rewards?|notes?|overview|rules|requirements?|(?:unlock\s+)?conditions?|how to (?:join|participate|play))\s*:?$/i
 /**
  * Nombre dentro de una frase. `loose` añade el patrón "X will be available", que solo vale en la propia línea del periodo (en una frase cualquiera
  * daba nombres como "A new hotfix for Stella Sora").
@@ -166,7 +168,10 @@ const TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oratio
 /** Viñetas y marcas de apartado al principio de una línea ("▌", "■", "◆", "►"…). */
 const MARKS = '■◆●▶◇□・▌▍▎▐►▷▸▹◢◣✦✧◈❖♦◎'
 const clean = (s: string) => s.replace(/[*_`#>|]+/g, '').replace(new RegExp(`^[\\s${MARKS}\\-–•]+`), '').replace(/[【】]/g, ' ').replace(/\s+/g, ' ').trim()
-const isHeading = (raw: string) => new RegExp(`^\\s*(\\*\\*|__|#+\\s|[${MARKS}【[])`).test(raw) || /\*\*\s*$/.test(raw)
+  // Rótulo entre corchetes en toda la línea ("◈ [Event Duration]", Duet Night Abyss) → "Event Duration".
+  .replace(/^\[([^[\]]+)\]$/, '$1')
+// Una lista "[Pristine Hourglass], [Coin]" (recompensas de DNA) empieza por corchete pero no es una cabecera.
+const isHeading = (raw: string) => !/^\s*\[[^\]]*\]\s*[,，、]/.test(raw) && (new RegExp(`^\\s*(\\*\\*|__|#+\\s|[${MARKS}【[])`).test(raw) || /\*\*\s*$/.test(raw))
 
 /**
  * Inicio y fin en líneas separadas ("Start: Nov. 12, 2026 after maintenance" / "End: Dec. 03, 2026 19:59 (UTC-7)", Stella Sora 11 nov 2026)
@@ -210,6 +215,35 @@ function featuredIn(lines: string[]): { name: string; rarity: number }[] {
   return out.sort((a, b) => b.rarity - a.rarity)
 }
 
+/** Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts). */
+const SERVER_ZONE: Record<string, number> = { dna: -5 }
+
+/** Línea de un periodo por región: "Asia/HMT/SEA: July 23, 2026, 10:00 - …", "Europe: …", "America: …". */
+const REGION = /^(?:(?:asia|europe|eu|americas?|na|north america|sea|hmt|tw|hk|mo|jp|kr|global|other regions?)[\s/,&]*)+[:：]\s*/i
+/**
+ * Avisos con el periodo repetido por región (Duet Night Abyss: Asia UTC+8, Europa UTC+1, América UTC-5, a la misma hora local): se queda la de
+ * América (la de nuestro público; si no está, la primera) sin el nombre de la región y las demás se vacían. Así no salen tres eventos ni uno llamado "America".
+ */
+export function pickRegion(lines: string[]): string[] {
+  const idx = lines.map((l, i) => (REGION.test(clean(l)) && /\d/.test(l) ? i : -1)).filter(i => i >= 0)
+  if (!idx.length) return lines
+  const keep = idx.find(i => /^(?:north\s+)?americas?\b|^na\b/i.test(clean(lines[i]))) ?? idx[0]
+  return lines.map((l, i) => (i === keep ? clean(l).replace(REGION, '') : idx.includes(i) ? '' : l))
+}
+
+/** "◈ [Rewards]" seguido de "[Pristine Hourglass], [Secret Letter Clue], [Coin]": nombres sin cantidad (amount 0 = sin cifra en la ficha). */
+export function bracketRewards(section: string[]): { name: string; amount: number }[] {
+  const at = section.findIndex(l => LABEL.test(l) && /reward/i.test(l))
+  if (at < 0) return []
+  const out: { name: string; amount: number }[] = []
+  for (const l of section.slice(at + 1)) {
+    if (!l) continue
+    if (LABEL.test(l)) break
+    for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) if (!out.some(o => o.name === m[1].trim())) out.push({ name: m[1].trim(), amount: 0 })
+  }
+  return out.slice(0, 10)
+}
+
 export async function syncDiscord(gameId: string): Promise<GameSync> {
   const channel = discordChannel(gameId)
   if (!channel) return { events: [], patches: [], codes: [] }
@@ -246,9 +280,10 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
   const out: GameEvent[] = []
   const seen = new Set<string>()
   for (const m of messages) {
-    const raw = joinStartEnd(textOf(m).split('\n').map(noise))
+    const raw = pickRegion(joinStartEnd(textOf(m).split('\n').map(noise)))
     const year = new Date(m.timestamp).getUTCFullYear()
-    const msgZone = zoneOf(raw.join(' ')) ?? 0
+    // "(server time)" sin zona: la del servidor del juego.
+    const msgZone = zoneOf(raw.join(' ')) ?? SERVER_ZONE[gameId] ?? 0
     const image = imageOf(m)
     const firstLine = raw.findIndex(l => clean(l) && !isGreeting(clean(l)) && !LABEL.test(clean(l)))
     // Nombre por defecto: la primera línea si es corta (un título); si es una frase larga, el nombre que se saque de alguna frase ("Limited event: X is coming soon").
@@ -300,7 +335,9 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       // Recompensas: los "Nombre xN" / "600 Pyroxenes" del apartado del evento (desde su título hasta el siguiente); tiradas según pulls.ts.
       const nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean(l).length <= 90 && !LABEL.test(clean(l)))
       const section = raw.slice(headAt, nextHead > 0 ? nextHead : raw.length).map(clean)
-      const { pulls, items } = kind === 'event' ? pullsIn(gameId, section) : { pulls: 0, items: [] }
+      const found = kind === 'event' ? pullsIn(gameId, section) : { pulls: 0, items: [] }
+      const pulls = found.pulls
+      const items = found.items.length ? found.items : kind === 'event' ? bracketRewards(section) : []
       out.push({
         id, gameId, kind, title: name, image,
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),

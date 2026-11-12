@@ -25,6 +25,8 @@ const PAGES: Record<string, { host: string; page: string }> = {
 const GAME8_CODES: Record<string, string> = {
   czn: 'Chaos-Zero-Nightmare/archives/557967',
   endfield: 'Arknights-Endfield/archives/571509',
+  // Duet Night Abyss (12 nov 2026): "Phoxene x 450", "Coin x 300k".
+  dna: 'Duet-Night-Abyss/archives/557781',
 }
 
 export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
@@ -46,7 +48,7 @@ export async function syncGame8Codes(api: string): Promise<PromoCode[]> {
       if (!code || !/^[A-Za-z0-9]{4,30}$/.test(code) || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
       const info = text(cells[0])
       if (/expired/i.test(info)) continue
-      const rewards = [...text(cells[1]).matchAll(/(?:•\s*)?([A-Z][A-Za-z0-9'():\- ]{1,50}?)\s*x\s?(\d[\d,]*)/g)].map(m => `${m[1].trim()} ×${m[2]}`)
+      const rewards = [...text(cells[1]).matchAll(/(?:[•・]\s*)?([A-Z][A-Za-z0-9'():\- ]{1,50}?)\s*x\s?(\d[\d,]*[kK]?)/g)].map(m => `${m[1].trim()} ×${m[2]}`)
       // "Duration: October 20 - November 19" → caducidad; "Only for PC Users" se conserva como aviso.
       const until = /Duration:.*?[-–]\s*([A-Z][a-z]+ \d{1,2}(?:, \d{4})?)/.exec(info)?.[1]
       const pc = /only for pc/i.test(info) ? ['PC only'] : []

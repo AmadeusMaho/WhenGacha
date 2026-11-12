@@ -407,6 +407,53 @@ Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Aren
   recompensas y caducidad, y reconoce "Resonance" como banner. Discord no copia mensajes antiguos: solo llega lo publicado desde el 7 nov.
 - Tiradas: Revelation Crystal = 1; 120 Diamonds = 1 (precio en tienda). La web oficial firma sus peticiones (`chaos.infoldgames.com`): no se usa. Game8 abandonó el juego en 2025.
 
+## Duet Night Abyss (añadido el 12 nov 2026)
+
+Se había descartado el 7 nov porque su Fandom (`duetnightabyss.fandom.com`) dejó de actualizarse en marzo de 2026; ahora va con Game8 + Discord (`src/sources/dna.ts`).
+- **Game8** (3 páginas por ciclo, caché de 6 h; añadidas a la lista del proxy): eventos de "List of All Events and Schedule" (`archives/559948`, tablas de vigentes
+  y próximos; solo el día → horas del servidor y "≈"), banners Myriad limitados de "Banners" (`archives/554952`; el fin, si no lo dice, es el del otro banner que
+  empezó el mismo día) y códigos de "Redeem Codes" (`archives/557781`, `syncGame8Codes`). La versión (p. ej. 1.7) sale de la frase del banner.
+- **Servidor**: Asia (UTC+8), Europa (UTC+1) y América (UTC-5) cambian a la misma hora local (inicio 10:00, fin 05:00). La app usa **América (UTC-5)**,
+  en Game8 y en Discord (`pickRegion` deja solo la línea de América de los avisos con un periodo por región; `SERVER_ZONE` para "(server time)" en los tuits).
+- **Discord** (`dna:1570290121004294244` en `DISCORD_CHANNELS`): anuncios oficiales y tuits reenviados de @DNAbyss_EN. Mandan sobre Game8 (`officialFirst`).
+  El lector entiende ahora los rótulos entre corchetes ("◈ [Event Duration]"), la línea del autor de un tuit, y las recompensas "◈ [Rewards]" +
+  "[Pristine Hourglass], [Coin]" (sin cantidad: salen en la ficha sin cifra y sin tiradas).
+- **Desafío**: Immersive Theatre, ciclo de 28 días desde el 20 oct 2026 (Game8 y allthings.how), calculado (`dnaTheatre`).
+- **Tiradas**: solo hay gacha de cosméticos (Myriad); personajes y armas se consiguen con Secret Letters, no con tiradas. 1 Hourglass (Prismatic = limitado,
+  Pristine = permanente) por tirada; 160 Phoxene / Phoxene Plumule = 1 Hourglass; pity 90 (Game8, "Myriad Gacha Currency").
+- **Calculadora**: sin ingresos diarios fijos (el Phoxene llega de eventos, códigos y Trial Rank, sin tabla fiable); pase mensual 90 Plumule/día (allthings.how).
+- **Recompensas con cantidades**: Game8 solo da un resumen por evento (abrir cada página costaría ~15 consultas por ciclo); las cantidades llegan por Discord.
+
+## Servidor por juego y fichas de Endfield (12 nov 2026)
+
+- **Selector de servidor** (`src/servers.ts`; chip al pie de cada tarjeta de "Mis gachas", `ServerChip` en `Views.tsx`): HoYoverse (Genshin, HSR, ZZZ, HI3; datos en Asia), WuWa y DNA (datos en América)
+  y Endfield (datos en AMEU). Las horas se desplazan la diferencia de zonas salvo las pegadas a una versión (de 2 h antes a 6 h después de su inicio),
+  y nada cruza un inicio de versión. Endfield usa las horas exactas de Asia de su wiki (columnas `Asia*` de la misma tabla Cargo, `GameEvent.servers`):
+  no son un desplazamiento fijo. La elección se guarda en el navegador (`AppState.servers`), sin cuenta. Pedido por usuarios (comentarios del 12 nov).
+- **Revisión de regiones (12 nov 2026)**: con selector, Genshin, HSR, ZZZ, HI3, WuWa, Endfield, DNA y **NTE** (añadido: cuatro servidores aislados con
+  reinicio a las 05:00 locales). Por defecto, América. Reglas por juego en `REGIONS` (`servers.ts`): `maint` (horas de mantenimiento antes de la fecha de
+  la versión; WuWa 7, el resto 5), `onlyOfficial` (NTE: solo se desplazan los avisos oficiales, en hora de América; los banners de Prydwen y los eventos
+  de Game8 van en hora de Asia y se dejan), `localLaunch` (DNA: hasta la versión sale a la hora local de cada región). Las versiones estimadas no cuentan.
+  Sin fecha de versión (NTE), los instantes en que empiezan o acaban 3+ cosas a la vez (con un banner) se toman como actualización/mantenimiento.
+  **Horas no exactas (para revisar a mano)**: HI3 (toda la wiki, servidor supuesto Asia), DNA (Game8 da solo el día), NTE (eventos solo de Game8),
+  WuWa (Endstate Matrix y los ciclos estimados de Torre/Whimpering Wastes) y los inicios/fines que dependen de una versión estimada (HSR 4.8, ZZZ 3.4).
+- **Fichas de Endfield**: una consulta más por ciclo a `endfield.wiki.gg` (las páginas de los eventos vigentes, máx. 50): cita, requisitos y hasta 2 detalles (sin fechas ni horas, que ya salen en la ficha) y
+  recompensas (también las que no dicen cantidad, para que salgan con icono) `{{I|…|n}}` / `{{Item|…|n}}` sumadas, con sus tiradas (Oroberyl y los HH Permit de evento).
+
+## FGO: lo que viene a NA según JP, y NTE China (12 nov 2026)
+
+- **FGO** (`fromJp` en `src/sources/fgo.ts`): NA repite el calendario de JP con unos dos años de retraso. Eventos de
+  `api.atlasacademy.io/export/JP/basic_event_lang_en.json` (mismos ids que NA: lo que ya está en NA no se repite; sin nombre en inglés, permanentes ni
+  Recollection Quest) y banners de la "Summon Banner List" de GamePress (`grandorder.gamepress.gg/summon-banner-list`, JSON `summonEventList` dentro de
+  la página: nombre en inglés, servants, imagen, fechas JP y NA; robots.txt solo cierra `/admin/`; sin Lucky Bag). El retraso, en días, es la mediana de
+  los 5 más recientes que ya salieron en los dos (sin reediciones ni lo simultáneo): 729 días el 12 nov 2026 (Mystery House Crafters, JP 6 nov 2024 →
+  NA 5 nov 2026). Horas de NA: abre a las 04:00 UTC y cierra a las 03:59 UTC (todos sus eventos y banners de 2026 en Atlas). Todo sale "estimado" con
+  la explicación (`d.fgoJp`). 2 consultas más por ciclo (12 h de caché). grandorder.wiki, que citaba GamePress, ya no existe (dominio en venta).
+- **NTE China** (opción `cn` del selector, `servers.ts`): el servidor chino recibe cada versión unos 6 días antes (1.0: 23/29 abr; 1.2: 2/9 jul; 1.5:
+  5/11 nov, avisos oficiales de Bilibili y nte.perfectworld.com). Su web oficial (yh.wanmei.com) tarda mucho desde fuera de China, así que no se lee:
+  se adelanta todo el calendario global 6 días (versiones incluidas), en hora UTC+8, marcado "≈". Comprobado: los banners de la 1.5 caen el 5 nov a las
+  11:00 (UTC+8), el fin del mantenimiento chino.
+
 ## Huecos de los juegos existentes (9 nov 2026)
 
 - **Tiradas** (`RULES` en `src/sources/pulls.ts`), comprobadas en su wiki o en varias guías que coinciden: Blue Archive 120 Pyroxene, Limbus 130 Lunacy,

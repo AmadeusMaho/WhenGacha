@@ -20,6 +20,7 @@ import type { Ctx } from './ui'
 import { MyGachas, Patches } from './Views'
 import { Planner } from './Planner'
 import { estimatedEvents } from './pullPlan'
+import { withServers } from './servers'
 
 /** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
 /** Servidor de Discord de la comunidad (botón del pie). */
@@ -82,22 +83,25 @@ export default function App() {
   }, [])
 
   // Avisos: al abrir, cada minuto, y copia para el service worker.
-  useEffect(() => {
-    mirrorAlerts(state)
-    fireDue(state)
-    const timer = setInterval(() => fireDue(state), 60_000)
-    return () => clearInterval(timer)
-  }, [state])
-
   const games = useMemo(() => [...CATALOG, ...state.customGames], [state.customGames])
+  // Horas llevadas al servidor que eligió el jugador en cada juego (servers.ts). Todo lo que se ve y los avisos usan esta copia.
+  const served = useMemo(() => withServers(state, games), [state, games])
+
+  useEffect(() => {
+    mirrorAlerts(served)
+    fireDue(served)
+    const timer = setInterval(() => fireDue(served), 60_000)
+    return () => clearInterval(timer)
+  }, [served])
+
   const open = useCallback((e: GameEvent) => { setClosing(false); setSelected(e) }, [])
   const close = useCallback(() => { setClosing(true); setTimeout(() => { setSelected(null); setClosing(false) }, 230) }, [])
   // Reinicios estimados de los modos de dificultad (pullPlan.ts, estimatedEvents): se ven en la línea de tiempo y la calculadora los cuenta
   // como temporadas conocidas. No se guardan en el estado (se recalculan), así una sincronización nunca los mezcla con los datos reales.
   const hour = Math.floor(now / 3_600_000)
-  const estimated = useMemo(() => [...new Set(state.tracked)].flatMap(id => { const g = games.find(x => x.id === id); return g ? estimatedEvents(g, state.events, hour * 3_600_000) : [] }),
-    [state.tracked, state.events, games, hour])
-  const view = useMemo(() => (estimated.length ? { ...state, events: [...state.events, ...estimated] } : state), [state, estimated])
+  const estimated = useMemo(() => [...new Set(state.tracked)].flatMap(id => { const g = games.find(x => x.id === id); return g ? estimatedEvents(g, served.events, hour * 3_600_000) : [] }),
+    [state.tracked, served.events, games, hour])
+  const view = useMemo(() => (estimated.length ? { ...served, events: [...served.events, ...estimated] } : served), [served, estimated])
   const ctx: Ctx = { state: view, setState, games, now, gameOf: id => games.find(g => g.id === id), open }
 
   /** Cambios de pestaña/vista con transición suave del navegador (View Transitions), si existe. */

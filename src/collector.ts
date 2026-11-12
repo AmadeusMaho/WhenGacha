@@ -110,7 +110,10 @@ async function withItemIcons(game: Game, events: GameEvent[]): Promise<GameEvent
   const names = [...new Set(events.flatMap(e => e.items.filter(i => !i.icon).map(i => i.name)))].slice(0, 60)
   if (!names.length) return events
   // También en singular ("Vouchers" → "Voucher") y sin "Exclusive" (NIKKE: "Item Selective Recruitment Voucher.png").
-  const bases = (n: string) => { const one = n.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''); return [...new Set([n, one, one.replace(/\bExclusive\s+/i, '')])] }
+  // Y con el número romano final en Unicode (Endfield: "Advanced Progression Selection Crate II" → "… Crate Ⅱ.png").
+  const ROMAN: Record<string, string> = { I: 'Ⅰ', II: 'Ⅱ', III: 'Ⅲ', IV: 'Ⅳ', V: 'Ⅴ', VI: 'Ⅵ' }
+  const roman = (n: string) => n.replace(/ (I{1,3}|IV|VI?)$/, (_m, r: string) => ` ${ROMAN[r]}`)
+  const bases = (n: string) => { const one = n.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''); return [...new Set([n, one, one.replace(/\bExclusive\s+/i, ''), roman(n)])] }
   const variants = (n: string) => bases(n).flatMap(b => [`Item ${b}.png`, `${b}.png`, `${b} Icon.png`, `Icon ${b}.png`])
   const found = new Map<string, string>() // nombre de archivo (normalizado) → URL
   const files = names.flatMap(variants)

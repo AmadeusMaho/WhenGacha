@@ -28,6 +28,8 @@ const ART: Record<string, string> = {
   infinitynikki: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/64/97/17/6497173f-1a90-2150-0bd5-b9f02b3fee6e/2688x1242_Uff08iPhone_U7aef_Uff09.png/1280x1280bb.jpg',
   afkjourney: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/29/ff/d3/29ffd3cb-74af-7408-abf5-2938160186b7/EN_iOS__U6a2a_2688x1242.jpg/1280x1280bb.jpg',
   bd2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/87/88/56/87885688-e7ce-96f5-af56-f678d5da8b65/250909_BD2__Uc2a4_Ud06c_Ub9b0_Uc0f701_EN_2208x1242.jpg/1280x1280bb.jpg',
+  // DNA: sus capturas de la App Store son verticales; key visual oficial horizontal (3840×2160) de su Fandom, "Version CBT1 Full Wallpaper 1".
+  dna: 'https://static.wikia.nocookie.net/duetnightabyss/images/9/96/Version_CBT1_Full_Wallpaper_1.jpg/revision/latest/scale-to-width-down/1280',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -72,6 +74,9 @@ export const CATALOG: Game[] = [
   // Infinity Nikki: wiki de Fandom + anuncios oficiales por Discord (src/sources/infinitynikki.ts).
   def('infinitynikki', 'Infinity Nikki', 'IN', 'Infold Games', '#f8a5c2', '#5e2a44', 0, 'infinity-nikki.fandom.com', 'Infinity Nikki', 'infinitynikki',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/9f/db/73/9fdb7374-823a-a5e8-a9fd-2bd7cee2dd34/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + anuncios oficiales por Discord (src/sources/dna.ts). Wiki de Fandom solo para iconos.
+  def('dna', 'Duet Night Abyss', 'DNA', 'Pan Studio', '#9fa8da', '#232a4d', 42, 'duetnightabyss.fandom.com', 'Duet Night Abyss', 'dna',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/3e/81/2f/3e812f32-2d87-8a2e-813e-d43b4e5bf1b4/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg', 'Version CBT1 Full Wallpaper 1.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   { ...def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
@@ -90,4 +95,5 @@ export const initialState = (): AppState => ({
   notify: false,
   leadHours: 24,
   planner: {},
+  servers: {},
 })

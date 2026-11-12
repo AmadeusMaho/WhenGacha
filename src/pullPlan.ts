@@ -181,6 +181,9 @@ const ECON: Record<string, Econ> = {
   azurlane: { currency: 'Wisdom Cubes', icon: 'Wisdom Cube', per: 2, pass: 0, pity: 0, sources: [daily(4)] },
   bd2: { currency: 'Dia', icon: 'Dia', per: 200, pass: 0, pity: 0, inputs: [{ id: 'mirror', name: 'Mirror Wars', per: 'week' }], sources: [daily(60)] },
   afkjourney: { currency: 'Diamonds', icon: 'Diamonds', ticket: 'Invite Letter', per: 300, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }, { id: 'honor', name: 'Honor Duel', per: 'week' }], sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
+  // Duet Night Abyss: 160 Phoxene / Phoxene Plumule = 1 Prismatic Hourglass (banner limitado); pity de 90 (Game8). El pase mensual da
+  // 90 Plumule al día (allthings.how). Sin ingresos diarios fijos de Phoxene: llega de eventos, códigos y el Trial Rank (sin tabla fiable).
+  dna: { currency: 'Phoxene', icon: 'Phoxene', ticket: 'Prismatic Hourglass', per: 160, pass: 90, pity: 90, sources: [] },
   infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
 }
 

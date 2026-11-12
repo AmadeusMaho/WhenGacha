@@ -30,7 +30,7 @@ Desde ahí todo es automático: el recolector lee los últimos 100 mensajes de c
 
 ## Más juegos
 
-Canales configurados (7 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane e **infinitynikki** (`1568519866464600217`: #game-news y #redeem-codes).
+Canales configurados (7 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane e **infinitynikki** (`1568519866464600217`: #game-news y #redeem-codes). Después: **nikke** (`1569427788492972082`) y **dna** (`1570290121004294244`, 12 nov 2026: anuncios oficiales y tuits de @DNAbyss_EN).
 Los mensajes con códigos de canje también se leen (`codesFrom` en `discord.ts`).
 
 Sirve para **cualquier juego**: sigue su canal de anuncios oficial hacia un canal nuevo de tu servidor y añade `<id del juego>:<id del canal>` a `DISCORD_CHANNELS`
