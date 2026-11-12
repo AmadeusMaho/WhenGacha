@@ -443,6 +443,55 @@ Versión global (Epid Games / Bilibili), **un solo servidor en UTC+9**: no tiene
 - **Tiradas**: 100 Crystal Leaf por reclutamiento, 1000 el x10 (Prydwen; lootandwaifus: "500 gems (5 singles)"); Recruitment Ticket = 1. Sin pity:
   Devotion canjea el Apóstol a las 200 tiradas (300 si es Eldyne). Los Card Ticket (gacha de cartas) no cuentan.
 
+## Girls' Frontline 2, Monster Hunter Outlanders y BLEACH: Soul Resonance (añadidos el 12 nov 2026)
+
+Pensados para tener **varias fuentes** cada uno: la web de la comunidad da la base y los anuncios oficiales por Discord (canales `gfl2`, `mho`, `bleach`, que el dueño
+añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuentes nuevas en la lista del proxy: `iopwiki.com/api.php` (dentro de `wiki`, 2 s entre peticiones),
+`gamewith` (4 páginas, 6 h, 3 s) y `gameguide` (1 página, 6 h, 3 s); Game8 suma la página de códigos de MHO.
+
+**Girls' Frontline 2: Exilium** (`src/sources/gfl2.ts`; servidor global, horas UTC-4). IOP Wiki, 3 consultas por ciclo:
+- Eventos: "GFL2 Events", plantillas `{{EventPeriod|…|server=EN}}` con inicio y fin **exactos**; imagen de cada sección. Recompensas: tabla "Event Shop" de la página de
+  cada evento (Collapse Piece, Access Permission y Targeted Access Permission; una sola consulta `prop=revisions` para todas). Concurso de popularidad: menor.
+- Banners: "GFL2 Banners", sección EN por años. Primera muñeca = la limitada (nueva si la wiki la enlaza; si no, "Rerun"), con su arma limitada como etiqueta; las otras dos, SR.
+  El retrato sale de la wiki (página de la muñeca; para las reposiciones, la del enlace de su primer banner, o "<nombre> (GFL2)").
+- **Sin fuente**: códigos (la wiki no los lista; los agregadores se contradicen) → solo por Discord. Rotatorios (Gunsmoke Frontline, Expansion Drills, Military
+  Simulation): la wiki da recompensas pero no fechas, no salen en la línea de tiempo.
+- Tiradas: 150 Collapse Piece; Targeted Access Permission = 1 (Access Permission es del permanente: se lista, no cuenta). Calculadora con "Monthly currency income"
+  de la wiki: diarias 110, semanales 345, 175 al mes y Military Simulation 300; sin Gunsmoke ni Expansion Drills (sin fechas de reinicio). Pity 80.
+
+**Monster Hunter Outlanders** (`src/sources/mho.ts`; versión global de Level Infinite, NA/JP/EU; la de Garena no se cubre). GameWith (gamewith.ai, en inglés, actualizado a diario):
+- Eventos ("Event List") con imagen y recompensas de sus tablas ("Rutacoin ×750", "Day 3 | Featured Contract ×2"); los permanentes no salen.
+- Banners ("Current Banners"): destacado y rotatorio con su adventurer; el de principiante y el permanente no caducan y no salen.
+- Rotatorios: la temporada ("Season Guide", con su jefe) y Monster Challenge (Master), fases de 2 semanas desde el 3 nov 2026.
+- Códigos: "Redeem Codes" de GameWith (con la nota "Global only") + Game8 (archives/634765), sin repetir.
+- Horas: solo días "(server time)". Se supone el reinicio de las 05:00 en UTC+8 (la zona en que GameWith da sus horarios) y todo va "≈" hasta que lleguen los avisos por Discord.
+- Tiradas: 150 Rutacoin; Featured Contract = 1 (Standard Contract no cuenta). Calculadora: diarias 50, semanales 100, meta 120 (destacado garantizado).
+
+**BLEACH: Soul Resonance** (`src/sources/bleach.ts`; global de Crunchyroll). Códigos de game.guide (lista activa comprobada a diario).
+- **Sin fuente web** de eventos ni banners: la web oficial es la de Asia y carga las noticias por JS desde otra API; la wiki de Fandom está abandonada (25 páginas);
+  Game8, GameWith, Prydwen y lootandwaifus no lo cubren; las guías de banners son artículos sueltos sin fechas. Llegan **solo por Discord** (canal `bleach`).
+  Por eso va como `wip` ("En construcción") hasta que su copia traiga eventos vigentes.
+- Tiradas: 160 Spiritual Jade (también "Jades" en los códigos); billete = 1; pity 80 sin 50/50. Sin tabla fiable de ingresos diarios.
+
+## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
+
+- **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith
+  (`/en/items`, ~680 objetos con imagen en `img.gamewith.jp`); BLEACH, los iconos oficiales de la web global (Spiritual Jade, Kan, SR Character Recruit Letter;
+  CDN de A PLUS JAPAN). GFL2 ya los trae el recolector de la IOP Wiki ("Item Collapse Piece.png"). Moneda de la calculadora: `iconUrl` en `pullPlan.ts`.
+- **Lector de avisos** (`discord.ts`), probado con los mensajes reales de MHO y BLEACH (12 nov 2026) y comparado con los 10 canales anteriores (mismo resultado):
+  "from <t:…>" / "to" / "<t:…>" en tres líneas; "Unlocks on …, lasts for 21 days"; fin abierto ("to the end of the special edition", "End of Season 0");
+  nombre en la línea de encima del periodo; "Event Preview:", "Limited-Time Gacha", "Themed Event:" y "… Starts Today!" fuera del nombre; destacados
+  'Limited SSR Character "Candice"'; horas por juego para los días sin hora (`DAY_HOURS`: BLEACH 11:00 → 08:00 UTC, mantenimiento de los miércoles; MHO
+  03:00 → 14:59 UTC); "maintenance on <fecha hora>" sin fin como inicio aproximado de lo "after maintenance"; "Apex 8" ya no se lee como "Ape ×8".
+  El analizador está separado (`parseNotices`) para leer avisos que no vienen de Discord.
+- **Trickcal, web oficial**: "Event Notice" de trickcal.biligames.com/news/en/ (API `l11-web-api.biligames.com/game/news/page|detail`, responde sin la firma;
+  servidor 113406, que cuadra con el global). Lector propio (`trickcalNotice`): apartados "1." y "①", periodo del apartado para sus Apóstoles, sin gachas de
+  cartas, muebles ni plazos de canje. Mandan sobre lootandwaifus. 1 lista + hasta 3 avisos por ciclo (caché 2 h).
+- **Pendiente**: noticias oficiales de MHO (monsterhunteroutlanders.com carga la lista con un POST a `sg-community.playerinfinite.com` de Level Infinite; las
+  páginas `news-*.html` sí son HTML estático) y de GFL2 (gf2exilium.sunborngame.com, por JS). Mientras tanto, por Discord. BLEACH: la web global
+  (playbleachsr.com) no tiene noticias, solo la del lanzamiento en PC.
+- Sin selector de servidor en los tres juegos nuevos: MHO avisa en UTC para "All Servers", BLEACH da un horario para EU y NA, GFL2 tiene un único servidor global.
+
 ## Servidor por juego y fichas de Endfield (12 nov 2026)
 
 - **Selector de servidor** (`src/servers.ts`; chip al pie de cada tarjeta de "Mis gachas", `ServerChip` en `Views.tsx`): HoYoverse (Genshin, HSR, ZZZ, HI3; datos en Asia), WuWa y DNA (datos en América)

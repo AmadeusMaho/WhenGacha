@@ -63,6 +63,16 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Recruitment Ticket = 1. Los Card Ticket (gacha de cartas) no cuentan.
   trickcal: [{ item: /^crystal lea(f|ves|fs)$/i, per: 100 }, { item: /^(special |rate-up )?recruitment tickets?$/i, per: 1 }],
   uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume) )?scout tickets?$/i, per: 1 }],
+  // Girls' Frontline 2: Exilium (IOP Wiki, "Recruitment"): 150 Collapse Piece por tirada; Targeted Access Permission = 1 (banner limitado).
+  // Access Permission es del banner permanente: se lista, pero no cuenta (como los billetes estándar de HoYoverse).
+  gfl2: [{ item: /^collapse pieces?$/i, per: 150 }, { item: /^targeted access permissions?$/i, per: 1 }],
+  // Monster Hunter Outlanders (GameWith, "How to Farm Rutacoin"): 150 Rutacoin por contrato; Featured Contract = 1 (banner destacado).
+  // Standard Contract (permanente y rotatorio) no cuenta.
+  mho: [{ item: /^rutacoins?$/i, per: 150 }, { item: /^featured contracts?$/i, per: 1 }],
+  // BLEACH: Soul Resonance: 160 Spiritual Jade por tirada (guías de BlueStacks y BitTopup: "12,800 Jade" para el pity de 80). Los códigos lo
+  // llaman también "Jades". El billete del banner limitado ("Limited Gacha Ticket", avisos oficiales) = 1; el de stamps ("Limited Stamp Gacha Ticket")
+  // es del banner de armas y no cuenta.
+  bleach: [{ item: /^(spiritual )?jades?$/i, per: 160 }, { item: /^limited gacha tickets?$/i, per: 1 }],
 }
 
 const num = (s: string) => Number(s.replace(/,/g, ''))
@@ -93,7 +103,8 @@ export function pullsIn(game: string, lines: string[]): { pulls: number; items: 
     const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, 'Ten Recruitment Ticket').replace(/\b1[- ]Recruitment Ticket/gi, 'Single Recruitment Ticket')
     // Compensaciones de mantenimiento y precios no son recompensas del evento.
     if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue
-    for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)\s*[x×]\s?(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
+    // La x de multiplicar va tras un espacio o pegada a la cifra: "Apex 8" no es "Ape ×8" (BLEACH, "reach Apex 8 or above").
+    for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
     for (const m of l.matchAll(/\b(\d[\d,]*)\s+([A-Z][A-Za-z' ]*?)(?=[,.;:)!]|\s+(?:and|to|from|in|for)\b|$)/g)) add(m[2], num(m[1]))
   }
   let pulls = 0

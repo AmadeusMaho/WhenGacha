@@ -31,6 +31,7 @@ Desde ahí todo es automático: el recolector lee los últimos 100 mensajes de c
 ## Más juegos
 
 Canales configurados (7 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane e **infinitynikki** (`1568519866464600217`: #game-news y #redeem-codes). Después: **nikke** (`1569427788492972082`) y **dna** (`1570290121004294244`, 12 nov 2026: anuncios oficiales y tuits de @DNAbyss_EN), y **trickcal** (`1570298824088363058`, 12 nov 2026: tuits de @trickcal_en vía Readybot; única fuente de eventos de Trickcal).
+Pendientes (12 nov 2026, el dueño los está creando): **gfl2** (Girls' Frontline 2; aporta los **códigos**, que no tienen fuente web), **mho** (Monster Hunter Outlanders; horas exactas, GameWith solo da días) y **bleach** (BLEACH: Soul Resonance; **única fuente de eventos y banners**: sin canal, el juego sale "En construcción"). Ids de catálogo: `gfl2`, `mho`, `bleach`.
 Los mensajes con códigos de canje también se leen (`codesFrom` en `discord.ts`).
 
 Sirve para **cualquier juego**: sigue su canal de anuncios oficial hacia un canal nuevo de tu servidor y añade `<id del juego>:<id del canal>` a `DISCORD_CHANNELS`

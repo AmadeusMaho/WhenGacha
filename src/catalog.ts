@@ -32,6 +32,10 @@ const ART: Record<string, string> = {
   dna: 'https://static.wikia.nocookie.net/duetnightabyss/images/9/96/Version_CBT1_Full_Wallpaper_1.jpg/revision/latest/scale-to-width-down/1280',
   // Trickcal: la captura principal de la App Store ("主图", 2868×1320, horizontal).
   trickcal: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7c/ed/42/7ced4226-f461-0b48-2e65-4eac9cad37da/_U4e3b_U56fe2868-1320-EN.jpg/1280x1280bb.jpg',
+  // GFL2, MHO y Bleach (12 nov 2026): primera captura de la App Store (2778×1284, horizontal).
+  gfl2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/2e/99/76/2e99765a-2026-3376-86b1-61104ddf414d/01_U9996_U56fe-ios2778x1284.jpg/1280x1280bb.jpg',
+  mho: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/21/e2/80/21e28030-9552-d59e-b2ed-f263a2f46af1/_U5356_U70b9_U56fe-_U4e3bKV-2778x1284-_U82f1_U6587.jpg/1280x1280bb.jpg',
+  bleach: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/48/48/0d/48480dda-ba1c-c1f6-3994-16c5d83dcdf5/2778-1284-1.jpg/1280x1280bb.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -82,7 +86,16 @@ export const CATALOG: Game[] = [
   // Trickcal: Chibi Go: banners y códigos de lootandwaifus + tuits oficiales de @trickcal_en por Discord (eventos y horas exactas; src/sources/trickcal.ts).
   def('trickcal', 'Trickcal: Chibi Go', 'TC', 'Epid Games', '#ffcc80', '#5a3a1a', 0, '', 'Trickcal: Chibi Go', 'trickcal',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c4/dc/00/c4dc00ed-ef86-686b-0446-bbd6da0239b9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Girls' Frontline 2: Exilium: IOP Wiki (eventos con hora exacta y recompensas, banners; también para retratos e iconos). Códigos por Discord (src/sources/gfl2.ts).
+  def('gfl2', "Girls' Frontline 2: Exilium", 'GFL2', 'Sunborn', '#ffca28', '#3d3214', 0, 'iopwiki.com', "Girls' Frontline 2", 'gfl2',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e2/e9/42/e2e942a6-474b-de24-3e8c-87e6f9d10525/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
+  // Monster Hunter Outlanders: GameWith (eventos, banners, temporada, códigos) + códigos de Game8 (src/sources/mho.ts).
+  def('mho', 'Monster Hunter Outlanders', 'MHO', 'Capcom · TiMi', '#9ccc65', '#2c3d17', 0, '', 'Monster Hunter Outlanders', 'mho',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/00/73/e0/0073e0c8-a9e4-1956-8966-f83a136ee71e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
+  // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
+  { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1c/63/de/1c63de28-b001-b1c3-ecb6-7fb9895ae0c1/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
   { ...def('azurlane', 'Azur Lane', 'AL', 'Yostar', '#90caf9', '#1d3a5f', 0, '', 'Azur Lane', 'azurlane',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/7d/73/87/7d738738-3260-25a4-89f5-e8d1ddd36054/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
 ]

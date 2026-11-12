@@ -1,4 +1,4 @@
-export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2' | 'afkjourney' | 'infinitynikki' | 'dna' | 'trickcal'
+export type ApiKey = 'genshin' | 'starrail' | 'zenless' | 'arknights' | 'endfield' | 'uma' | 'czn' | 'wuwa' | 'nikke' | 'nte' | 'fgo' | 'bluearchive' | 'limbus' | 'reverse1999' | 'epic7' | 'stellasora' | 'pgr' | 'honkai3' | 'azurlane' | 'bd2' | 'afkjourney' | 'infinitynikki' | 'dna' | 'trickcal' | 'gfl2' | 'mho' | 'bleach'
 export type Kind = 'event' | 'banner' | 'challenge'
 
 export interface Game {

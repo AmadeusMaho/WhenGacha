@@ -302,6 +302,10 @@ export const es = {
 
   // textos que escriben las fuentes de datos (se resuelven al mostrarlos)
   'd.charBanner': 'Banner de personaje',
+  'd.gfl2Custom': 'Custom Procurement: eliges la muñeca limitada que sale con probabilidad aumentada',
+  'd.mhoRotating': 'Banner rotatorio (con Standard Contracts)',
+  'd.mhoSeason': 'Temporada con jefe propio ({arg}): Apex Weapons, tienda de temporada y hasta 4000 Radiant Coin.',
+  'd.mhoChallenge': 'Monster Challenge (Master): las fases cambian cada 2 semanas; 100 Rutacoin por fase en rango C.',
   'd.inResonance': 'Resonance (banner de conjunto)',
   'd.rewardsList': 'Recompensas: {arg}.',
   'd.dnaMyriad': 'Myriad (banner de cosméticos)',
@@ -627,6 +631,10 @@ export const en: Record<Key, string> = {
   'notif.pulls': ' (~{n} pulls)',
 
   'd.charBanner': 'Character banner',
+  'd.gfl2Custom': 'Custom Procurement: you pick the limited Doll that gets the rate-up',
+  'd.mhoRotating': 'Rotating banner (uses Standard Contracts)',
+  'd.mhoSeason': 'Season with its own boss ({arg}): Apex Weapons, season shop and up to 4,000 Radiant Coin.',
+  'd.mhoChallenge': 'Monster Challenge (Master): stages change every 2 weeks; 100 Rutacoin per stage at C rank.',
   'd.inResonance': 'Resonance (outfit banner)',
   'd.rewardsList': 'Rewards: {arg}.',
   'd.dnaMyriad': 'Myriad (cosmetics banner)',
@@ -950,6 +958,10 @@ export const zh: Record<Key, string> = {
   'notif.pulls': '（约 {n} 抽）',
 
   'd.charBanner': '角色卡池',
+  'd.gfl2Custom': '自选定向采购：自选概率提升的限定人形',
+  'd.mhoRotating': '轮换卡池（使用普通契约）',
+  'd.mhoSeason': '赛季（首领：{arg}）：顶点武器、赛季商店，最多 4000 Radiant Coin。',
+  'd.mhoChallenge': '怪物挑战（大师）：关卡每 2 周轮换；C 评级每关 100 Rutacoin。',
   'd.inResonance': '共鸣（套装卡池）',
   'd.rewardsList': '奖励：{arg}。',
   'd.dnaMyriad': 'Myriad（外观卡池）',

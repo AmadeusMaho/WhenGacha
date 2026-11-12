@@ -18,7 +18,7 @@ const DAY = 24 * HOUR
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
 
 interface Embed { title?: string; description?: string; fields?: { name: string; value: string }[]; image?: { url: string }; thumbnail?: { url: string } }
-interface Message { id: string; content: string; timestamp: string; embeds?: Embed[]; attachments?: { url: string; content_type?: string }[] }
+export interface Message { id: string; content: string; timestamp: string; embeds?: Embed[]; attachments?: { url: string; content_type?: string }[] }
 
 const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
 
@@ -99,17 +99,51 @@ export function seasonFrom(gameId: string, text: string, year: number, image?: s
 
 const SEP = /\s+(?:-|–|—|~|to|until|through|thru)\s+|\s*[~～]\s*/i
 
-interface Range { start: number; end: number; afterMaint: string | null; approx: boolean }
+interface Range { start: number; end: number; afterMaint: string | null; approx: boolean; open?: boolean }
+
+/**
+ * Horas (UTC) de un día sin hora en los avisos de cada juego: inicio y fin. BLEACH: Soul Resonance (avisos de 23 sep, 14 oct y 4 nov 2026): el
+ * mantenimiento es los miércoles de 08:00 a 11:00 UTC, así que "September 23, 2026 (after maintenance)" empieza a las 11:00 y "to October 14, 2026"
+ * acaba a las 08:00, al empezar el mantenimiento de ese día. Monster Hunter Outlanders ("When Steelwing Descends", 13 nov 2026): 03:00 → 14:59 UTC.
+ */
+export const DAY_HOURS: Record<string, { start: [number, number]; end: [number, number] }> = {
+  bleach: { start: [11, 0], end: [8, 0] },
+  mho: { start: [3, 0], end: [14, 59] },
+}
+
+/** Sin fecha de fin: "to the end of the special edition" (BLEACH), "– End of Season 0" (MHO), "until the end of the version". */
+const OPEN_END = /^\s*(?:the\s+)?end\s+of\s+(?:the\s+)?(?:special\s+edition|edition|version|season|event|patch|update)\b/i
+/** Duración en vez de fin: "Unlocks on September 30, lasts for 14 days", "Will unlock on September 23 after maintenance, last for 21 days." (BLEACH). */
+const LASTS = /^(?:will\s+)?(?:unlocks?|opens?|starts?|begins?|available)\s+(?:on|from)\s+(.+?)[,;]?\s+(?:and\s+)?lasts?\s+(?:for\s+)?(\d{1,3})\s+days?\b/i
 
 /**
  * "<inicio> – <fin> (UTC±n)" en una línea; "after maintenance" deja el inicio pendiente del aviso de mantenimiento.
  * "Now through <fin>" (Blue Archive: "Event Period: Now through <t:…>") empieza a la hora del mensaje (`postedAt`).
+ * `hours`: horas por defecto del juego (DAY_HOURS) para las fechas que no las traen.
  */
-function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: number): Range | null {
+export function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: number, hours?: (typeof DAY_HOURS)[string]): Range | null {
+  const zone = zoneOf(line) ?? fallbackZone
+  const def = (x: { y: number; mo: number; d: number; h?: number; mi?: number }, h: number, mi: number, own?: [number, number]) =>
+    x.h !== undefined ? Date.UTC(x.y, x.mo, x.d, x.h - zone, x.mi ?? 0) : own ? Date.UTC(x.y, x.mo, x.d, own[0], own[1]) : Date.UTC(x.y, x.mo, x.d, h - zone, mi)
+  const lasts = LASTS.exec(line.trim())
+  if (lasts) {
+    const a = dateIn(lasts[1], year)
+    if (!a) return null
+    const after = /after (the )?(maintenance|update)/i.test(lasts[1])
+    const start = def(a, 0, 0, hours?.start)
+    return { start, end: start + +lasts[2] * DAY - 1000, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined }
+  }
   const body = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, '')
   const parts = body.split(SEP)
   if (parts.length < 2) return null
-  const zone = zoneOf(line) ?? fallbackZone
+  // Fin sin anunciar: se dibuja 6 semanas (`open`: la app no lo muestra como fecha).
+  if (OPEN_END.test(parts.slice(1).join(' '))) {
+    const a = dateIn(parts[0], year)
+    if (!a) return null
+    const after = /after (the )?(maintenance|update)/i.test(parts[0])
+    const start = def(a, 0, 0, hours?.start)
+    return { start, end: start + 42 * DAY, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined, open: true }
+  }
   if (postedAt !== undefined && /^\s*(?:from\s+)?(?:now|today)\s*$/i.test(parts[0])) {
     const b = dateIn(parts.slice(1).join(' '), new Date(postedAt).getUTCFullYear())
     if (!b) return null
@@ -119,10 +153,10 @@ function rangeIn(line: string, year: number, fallbackZone: number, postedAt?: nu
   const a = dateIn(parts[0], year), b = dateIn(parts.slice(1).join(' '), a?.y ?? year)
   if (!a || !b) return null
   if (b.y === a.y && (b.mo < a.mo || (b.mo === a.mo && b.d < a.d)) && !/\d{4}/.test(parts.slice(1).join(' '))) b.y++
-  const at = (x: NonNullable<typeof a>, h: number, mi: number) => Date.UTC(x.y, x.mo, x.d, (x.h ?? h) - zone, x.mi ?? mi)
   const after = /after (the )?(maintenance|update)/i.test(parts[0])
-  const end = at(b, 23, 59) + 59_000
-  return { start: at(a, 0, 0), end, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined }
+  // Sin hora: la del juego (DAY_HOURS) si se conoce; si no, el día entero en la zona del aviso (como hasta ahora).
+  const end = b.h === undefined && hours ? def(b, 23, 59, hours.end) + (hours.end[1] === 59 ? 59_000 : 0) : def(b, 23, 59) + 59_000
+  return { start: def(a, 0, 0, hours?.start), end, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined }
 }
 
 /**
@@ -176,6 +210,20 @@ function sentenceName(c: string, loose = true): string | undefined {
   return m?.[1].trim()
 }
 
+/**
+ * Quita del nombre lo que no es nombre: "Event Preview: When Steelwing Descends" (MHO) → "When Steelwing Descends"; "Limited-Time Gacha: Soi Fon" y
+ * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
+ */
+export function tidyName(s: string): string {
+  return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, '')
+    .replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, '')
+    .replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, '')
+    .replace(/\s+limited[- ]time (?:gacha|banner)$/i, '')
+    // "Apex Challenge Starts Today!" (MHO) → "Apex Challenge".
+    // Solo con "today/now" o con "!": "Execution Begins" (BLEACH) es el nombre del evento.
+    .replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, '').trim() || s
+}
+
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 const TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i
 
@@ -214,12 +262,20 @@ function joinStartEnd(lines: string[]): string[] {
       break
     }
   }
+  // "… maintenance from <t:…>" / "to" / "<t:…>" en tres líneas (BLEACH, 4 nov 2026) → una sola línea con el rango.
+  for (let i = 0; i + 2 < out.length; i++) {
+    if (/^(?:to|until|through|[-–~～])$/i.test(clean(out[i + 1])) && /\d{1,2}:\d{2}|\d{4}[/-]\d{1,2}/.test(out[i]) && /\d/.test(out[i + 2])) {
+      out[i] = `${out[i].trimEnd()} – ${clean(out[i + 2])}`
+      out[i + 1] = ''
+      out[i + 2] = ''
+    }
+  }
   return out
 }
 
 /** "★5 Trekker, Leafia", "★4 Trekkers, Ridge and Amber", "5★ Character: X" → destacados de un banner. */
-function featuredIn(lines: string[]): { name: string; rarity: number }[] {
-  const out: { name: string; rarity: number }[] = []
+function featuredIn(lines: string[]): { name: string; rarity: number; tag?: string }[] {
+  const out: { name: string; rarity: number; tag?: string }[] = []
   const re = /(?:[★☆]\s*(\d)|(\d)\s*[★☆]|(\d)-star)\s+[A-Z][\w-]*s?\s*[,:：]\s*([A-Z][^.!?\n]{0,60}?)(?=\s+(?:is|are|will|has|have)\b|[.!?]|$)/g
   for (const l of lines) for (const m of l.matchAll(re)) {
     const rarity = +(m[1] ?? m[2] ?? m[3])
@@ -231,6 +287,10 @@ function featuredIn(lines: string[]): { name: string; rarity: number }[] {
   // "★3 Vivi,★3 Rohne Limited-Time Rate Up" (Trickcal): estrella y nombre sin tipo delante; solo si lo anterior no encontró nada.
   if (!out.length) for (const l of lines) for (const m of l.matchAll(/[★☆]\s*(\d)\s+([A-Z][\w'-]{1,20})(?=\s*[,&]|\s+and\b|\s+(?:limited|rate|pick)|$)/gi)) {
     if (!/^(?:apostles?|limited|rate|pick)$/i.test(m[2]) && !out.some(f => f.name === m[2])) out.push({ name: m[2], rarity: +m[1] })
+  }
+  // 'Limited SSR Character "Candice"', 'Limited SSR Weapon Stamp "Execution Verdict"' (BLEACH): solo si lo anterior no encontró nada.
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b(UR|SSR|SR|[5-6]★|★[5-6])\s+(Character|Weapon Stamp|Core Stamp|Stamp|Weapon|Doll|Adventurer)\s+["“]([^"”]{2,40})["”]/g)) {
+    if (!out.some(f => f.name === m[3])) out.push({ name: m[3], rarity: /^SR$/.test(m[1]) ? 4 : 5, ...(/character|doll|adventurer/i.test(m[2]) ? {} : { tag: m[2] }) })
   }
   return out.sort((a, b) => b.rarity - a.rarity)
 }
@@ -271,13 +331,22 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
   if (!res.ok) throw new Error(`discord ${gameId} → HTTP ${res.status}`)
   const messages = (await res.json()) as Message[]
   if (!Array.isArray(messages)) throw new Error('discord: respuesta inesperada')
+  return parseNotices(gameId, messages)
+}
 
+/**
+ * El lector de avisos, separado de Discord: también lee los avisos de las webs oficiales (Trickcal, `trickcal.ts`), pasados como mensajes
+ * (`content` = texto del aviso, `timestamp` = publicación). Mensajes del más nuevo al más viejo, como los da Discord.
+ */
+export function parseNotices(gameId: string, messages: Message[]): GameSync {
   const textOf = (m: Message) => discordStamps([m.content, ...(m.embeds ?? []).flatMap(e => [e.title ? `**${e.title}**` : '', e.description ?? '', ...(e.fields ?? []).flatMap(f => [`**${f.name}**`, f.value])])].join('\n'))
   const imageOf = (m: Message) => m.attachments?.find(a => /^image\//.test(a.content_type ?? '') || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url
     ?? m.embeds?.find(e => e.image?.url)?.image?.url ?? m.embeds?.find(e => e.thumbnail?.url)?.thumbnail?.url
 
   // Fin real de cada mantenimiento ("Maintenance … 2026/10/19 13:00 - 21:00 (UTC-7)"), por día de inicio.
   const maintEnd = new Map<string, number>()
+  // Solo el inicio ("Trickcal will undergo maintenance on 2026/11/05 11:00 (UTC+9)"): lo "after maintenance" empieza ahí, aproximado.
+  const maintAt = new Map<string, number>()
   for (const m of messages) {
     const text = textOf(m)
     if (!/maintenance/i.test(text)) continue
@@ -288,6 +357,11 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       const a = dateIn(parts[0] ?? '', year)
       const tail = parts.slice(1).join(' ')
       const tEnd = /(\d{1,2}):(\d{2})/.exec(tail)
+      if (a && a.h !== undefined && !tEnd && parts.length === 1 && /\bmaintenance\s+(?:on|at|from)\b/i.test(line)) {
+        const k = `${a.y}-${a.mo}-${a.d}`
+        if (!maintAt.has(k)) maintAt.set(k, Date.UTC(a.y, a.mo, a.d, a.h - (zoneOf(line) ?? 0), a.mi ?? 0))
+        continue
+      }
       if (!a || a.h === undefined || !tEnd) continue
       const b = dateIn(tail, a.y) ?? a
       const zone = zoneOf(line) ?? 0
@@ -318,7 +392,7 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
     for (const [i, line] of raw.entries()) {
       const c = clean(line)
       if (!c) continue
-      const r = rangeIn(c, year, msgZone, +new Date(m.timestamp))
+      const r = rangeIn(c, year, msgZone, +new Date(m.timestamp), zoneOf(raw.join(' ')) === undefined ? DAY_HOURS[gameId] : undefined)
       if (!r) {
         if (LABEL.test(c)) { label = c; continue }
         // "■ Limited Headhunting: Sea of Stars" → "Sea of Stars"; el prefijo queda en `label` para saber que es un banner.
@@ -337,8 +411,16 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       // (Los dos puntos de una hora, "11:59", no cuentan: con ellos el nombre era la frase entera hasta la hora.)
       const inline = /^(.{3,80}?)(?<!\d):(?!\d)\s*\S/.exec(c)?.[1]
       // Sin emojis al final ("… On-Time Gift 🎁").
-      const name = (inline && !/period|duration|time|date|schedule/i.test(inline) ? inline : sentenceName(c) ?? heading).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
+      // Título en la línea justo encima del periodo, sin viñeta (BLEACH: " Limited-Time Gacha: Soi Fon" / " Event Period: …"; " Deck Inspector" /
+      // " Unlocks on …, lasts for 14 days"): manda sobre una cabecera más lejana. Solo una línea corta que no sea una frase ni un rótulo.
+      // La propia cabecera cuenta si salió de una frase ("Candice Themed Event: Execution Begins" daba "Execution", con "Begins" como verbo).
+      const prevAt = (() => { for (let j = i - 1; j > headAt || (j === headAt && !fromHead && j >= 0); j--) if (clean(raw[j])) return j; return -1 })()
+      const prev = prevAt >= 0 ? clean(raw[prevAt]) : ''
+      const near = prev && prev.length <= 60 && !/[.!?,:;]$/.test(prev) && !isGreeting(prev) && !LABEL.test(prev) && !rangeIn(prev, year, msgZone) && /^[A-Z0-9"“「]/.test(prev) ? prev : ''
+      const lineName = inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c)
+      const name = tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
       if (!name) continue
+      if (near && !lineName) { label = /gacha|banner|recruit|summon/i.test(near) ? near : label; headAt = prevAt }
       // "Reward Claiming Time: …" (Trickcal, Trick Dice) es el plazo para canjear lo ganado, no el evento: solo vale si el mensaje no dio otro periodo
       // para ese nombre (antes, con el evento ya terminado, salía como vigente hasta el fin del canje).
       const claim = /^(?:reward\s+)?(?:claim(?:ing)?|redemption|exchange)\b[^:]{0,20}(?:time|period)/i.test(c)
@@ -348,7 +430,7 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       if (r.afterMaint) {
         const e = maintEnd.get(r.afterMaint)
         if (e) start = e
-        else approx = true
+        else { approx = true; start = maintAt.get(r.afterMaint) ?? start }
       }
       if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY) continue
       // "200 FREE RECRUITMENTS" (Blue Archive, 10 nov 2026) es un evento de inicio de sesión que regala tiradas, no un banner.
@@ -360,7 +442,16 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
       if (seen.has(id)) continue
       seen.add(id)
       // Recompensas: los "Nombre xN" / "600 Pyroxenes" del apartado del evento (desde su título hasta el siguiente); tiradas según pulls.ts.
-      const nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean(l).length <= 90 && !LABEL.test(clean(l)))
+      let nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean(l).length <= 90 && !LABEL.test(clean(l)))
+      // Sin cabeceras marcadas (BLEACH): el apartado acaba en el título del siguiente periodo (la línea con texto anterior a él).
+      if (near && !lineName) {
+        const nextRange = raw.findIndex((l, j) => j > i && !!clean(l) && !!rangeIn(clean(l), year, msgZone))
+        if (nextRange > 0) {
+          let t = nextRange - 1
+          while (t > i && !clean(raw[t])) t--
+          if (t > i && (nextHead < 0 || t < nextHead)) nextHead = t
+        }
+      }
       const section = raw.slice(headAt, nextHead > 0 ? nextHead : raw.length).map(clean)
       const found = kind === 'event' ? pullsIn(gameId, section) : { pulls: 0, items: [] }
       const pulls = found.pulls
@@ -370,7 +461,7 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
         id, gameId, kind, title: name, image,
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
         items, featured, pulls, official: true, source: 'api',
-        precision: approx ? 'approx' : undefined,
+        precision: approx ? 'approx' : undefined, open: r.open || undefined,
       }
       // Varios rate-up en el título ("Apostle ★3 Vivi,★3 Rohne Limited-Time Rate Up", Trickcal): un banner por Apóstol, para unirse con los de lootandwaifus.
       const stars = (name.match(/[★☆]\s*\d/g) ?? []).length

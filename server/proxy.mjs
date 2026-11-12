@@ -71,7 +71,14 @@ const SOURCES = [
   { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && u.pathname === '/api/v1/character/list' && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
-  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781))$/.test(u.pathname) },
+  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765)$/.test(u.pathname) },
+  // Monster Hunter Outlanders: guía de GameWith en inglés (eventos con recompensas, banners, temporada y códigos; robots.txt solo cierra /api/).
+  { name: 'gamewith', ttl: 6 * HOUR, test: u => u.hostname === 'gamewith.ai' && /^\/monster-hunter-outlanders\/en\/(articles\/(event-list|current-banners|season-guide|redeem-codes)|items)$/.test(u.pathname) && !u.search },
+  // Trickcal: avisos oficiales de su web (trickcal.biligames.com/news/en/ pide aquí la lista y cada aviso). Solo el servidor 113406 y estos parámetros.
+  { name: 'biligames', ttl: 2 * HOUR, test: u => u.hostname === 'l11-web-api.biligames.com' && /^\/game\/news\/(page|detail)$/.test(u.pathname) && u.searchParams.get('game_base_id') === '113406'
+    && [...u.searchParams.keys()].every(k => ['game_base_id', 'show_position', 'client_type', 'lang', 'type', 'page_num', 'page_size', 'news_id'].includes(k)) && Number(u.searchParams.get('page_size') ?? 0) <= 10 },
+  // BLEACH: Soul Resonance: lista de códigos de game.guide (robots.txt solo cierra /api/). Una sola página.
+  { name: 'gameguide', ttl: 6 * HOUR, test: u => u.hostname === 'www.game.guide' && u.pathname === '/bleach-soul-resonance-codes' && !u.search },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
   // Fondos de las skins (server/skin-live.mjs): qué vídeo e imagen de portada tiene AHORA la web oficial de cada juego (cambian con cada
   // versión). Solo para el servidor (`internal`), cada 12 h; el proxy guarda únicamente las URL que hacen falta (`shrinkText`/`shrink`), no las páginas.
@@ -135,7 +142,7 @@ const SOURCES = [
   // BrownDust2: avisos oficiales, la API de su propia web de noticias (browndust2.com/robots.txt: Allow /). Lista y aviso suelto, solo en inglés.
   { name: 'bd2', ttl: 3 * HOUR, test: u => u.hostname === 'webapi.browndust2.com' && /^\/api\/notices(\/[0-9A-Z]{26})?$/.test(u.pathname) && u.searchParams.get('locale') === 'en-us'
     && [...u.searchParams.keys()].every(k => ['locale', 'page', 'limit'].includes(k)) && Number(u.searchParams.get('limit') ?? 0) <= 50 },
-  { name: 'wiki', ttl: 12 * HOUR, test: u => ((u.hostname.endsWith('.fandom.com') || u.hostname.endsWith('.wiki.gg')) && u.pathname === '/api.php') || (u.hostname === 'bluearchive.wiki' && u.pathname === '/w/api.php') },
+  { name: 'wiki', ttl: 12 * HOUR, test: u => ((u.hostname.endsWith('.fandom.com') || u.hostname.endsWith('.wiki.gg')) && u.pathname === '/api.php') || (u.hostname === 'bluearchive.wiki' && u.pathname === '/w/api.php') || (u.hostname === 'iopwiki.com' && u.pathname === '/api.php') },
 ]
 
 /* ---------- caché en memoria ---------- */
@@ -207,7 +214,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

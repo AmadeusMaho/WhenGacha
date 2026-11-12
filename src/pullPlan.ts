@@ -188,6 +188,22 @@ const ECON: Record<string, Econ> = {
   // Eldyne; lootandwaifus, "Gacha System"). Sin pase ni ingresos diarios fijos documentados: llegan de eventos, códigos y PvP ("500 gems" por temporada).
   trickcal: { currency: 'Crystal Leaf', icon: 'Crystal Leaf', ticket: 'Recruitment Ticket', per: 100, pass: 0, pity: 200, sources: [] },
   infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
+  // Girls' Frontline 2 (IOP Wiki, "Monthly currency income" y "Recruitment", 12 nov 2026): 150 Collapse Piece por tirada; pity de 80 (el limitado
+  // está garantizado a las 160 si se pierde el 50/50). Diarias 110 (Daily Patrol 20 + Combat Exercise 30 + Daily Activity 60); semanales 345
+  // (Boundary Push 120 + Peak Value Assessment 225); al mes, 120 de inicios de sesión y 55 del pase gratuito, y Military Simulation 300 (15 partidas).
+  // No se cuentan Gunsmoke Frontline (300 + 300 cada 3 semanas) ni Expansion Drills (500 cada 2): la wiki no da sus fechas de reinicio.
+  gfl2: { currency: 'Collapse Piece', icon: 'Collapse Piece', ticket: 'Targeted Access Permission', per: 150, pass: 0, pity: 80, sources: [daily(110), weekly(345),
+    { key: 'monthly', amount: 175, per: 'month', day: 1 },
+    // Sin `endgame`: no se conoce el día en que empieza su temporada y así no sale en la línea de tiempo con una fecha supuesta.
+    { name: 'Military Simulation', amount: 300, per: 'month', day: 1 }] },
+  // Monster Hunter Outlanders (GameWith, "How to Farm Rutacoin" y "Gacha Rates and Pity", 12 nov 2026): 150 Rutacoin por contrato; SSR a las 90 y el
+  // destacado garantizado a las 120 (una vez por banner). Diarias 50 y semanales 100. Monster Challenge (100 por fase, cada 2 semanas) no se cuenta: el
+  // número de fases cambia por temporada.
+  // Iconos de la lista de objetos de GameWith (sin wiki que los dé).
+  mho: { currency: 'Rutacoin', icon: 'Rutacoin', iconUrl: 'https://img.gamewith.jp/article_tools/mhoutlanders/gacha/item_3.png', ticket: 'Featured Contract', per: 150, pass: 0, pity: 120, sources: [daily(50), weekly(100)] },
+  // BLEACH: Soul Resonance: 160 Spiritual Jade por tirada; pity de 80 sin 50/50 (BlueStacks, BitTopup). Sin tabla fiable de ingresos diarios.
+  // Icono oficial de la web global (bleach.ts, BLEACH_ICONS).
+  bleach: { currency: 'Spiritual Jade', icon: 'Spiritual Jade', iconUrl: 'https://game-cdn.aplusjapan-game.com/bleach_web/web/reg_0.png', ticket: 'Gacha Ticket', per: 160, pass: 0, pity: 80, sources: [] },
 }
 
 /** Juegos sin economía conocida (los que añades a mano): moneda genérica a 160 por tirada, que se puede cambiar. */

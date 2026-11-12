@@ -12,7 +12,10 @@ import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
 import { syncEpic7 } from './epic7'
 import { syncDna } from './dna'
-import { syncTrickcal } from './trickcal'
+import { syncTrickcal, syncTrickcalNews } from './trickcal'
+import { syncGfl2 } from './gfl2'
+import { mhoIcons, syncMho } from './mho'
+import { BLEACH_ICONS, syncBleach } from './bleach'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
@@ -216,9 +219,24 @@ async function cznRecurring(s: GameSync): Promise<GameSync> {
 /** Hora (UTC) a la que suelen salir las versiones: tras el mantenimiento, 11:00 UTC+8 (Endfield, 12:00 UTC+8). Para fechas de la wiki sin hora. */
 const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail: 3, zenless: 3, endfield: 4 }
 
+/**
+ * Iconos de recompensas de los juegos sin wiki (el recolector los busca en la wiki del juego, `withItemIcons` de collector.ts): MHO, la lista de objetos
+ * de GameWith; BLEACH, los iconos oficiales de su web. Se aplica después de unir Discord, así también los avisos oficiales salen con icono.
+ */
+const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS }
+async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
+  const load = ITEM_ICONS[id]
+  if (!load || !s.events.some(e => e.items.some(i => !i.icon))) return s
+  const icons = await load().catch(() => new Map<string, string>())
+  if (!icons.size) return s
+  const find = (n: string) => { const k = n.toLowerCase().trim(); return icons.get(k) ?? icons.get(k.replace(/(?<!s)s$/, '')) ?? icons.get(k.replace(/^limited /, '')) }
+  return { ...s, events: s.events.map(e => (e.items.some(i => !i.icon) ? { ...e, items: e.items.map(i => (i.icon ? i : { ...i, icon: find(i.name) })) } : e)) }
+}
+
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
-  const s = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
+  const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
+  const s = await withItemIcons(game.id, s0)
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
   if (aligned.codes.length || !game.api) return aligned
@@ -262,7 +280,14 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + Immersive Theatre (ciclo de 28 días); con canal de Discord ("dna"), sus anuncios mandan.
     case 'dna': return syncDna(id).then(s => ({ ...s, patches: finalize(s.patches, game.patchCycleDays) }))
     // Trickcal: Chibi Go: banners y códigos de lootandwaifus; eventos y horas exactas solo por Discord (tuits oficiales, canal "trickcal").
-    case 'trickcal': return syncTrickcal(id)
+    // + los "Event Notice" de su web oficial (biligames), con hora exacta: mandan sobre lootandwaifus.
+    case 'trickcal': return officialFirst(syncTrickcalNews(id), syncTrickcal(id))
+    // Girls' Frontline 2: IOP Wiki (eventos del servidor global con hora exacta y recompensas de su tienda, banners con sus muñecas). Códigos por Discord.
+    case 'gfl2': return syncGfl2(id)
+    // Monster Hunter Outlanders: GameWith (eventos con recompensas, banners, temporada, Monster Challenge, códigos) + códigos de Game8.
+    case 'mho': return syncMho(id)
+    // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"), sin fuente web permitida.
+    case 'bleach': return syncBleach()
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
