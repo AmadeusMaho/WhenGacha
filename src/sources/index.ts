@@ -30,7 +30,7 @@ import { game8Recurring, syncGame8 } from './game8'
 import { syncPrydwen } from './prydwen'
 import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
-import { syncStellaSora } from './stellasora'
+import { syncStellaSora, syncStellaSoraNews } from './stellasora'
 import { syncUma } from './uma'
 import { alignPatches, buildPatches, fetchHistory, finalize } from './versions'
 import { syncArknights, syncEndfield } from './wiki'
@@ -265,8 +265,9 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
       .then(s => ({ ...s, events: s.events.map(e => e.kind === 'event' && /Hunter's Crucible/i.test(e.title) ? { ...e, kind: 'challenge' as const, description: '⟦d.nteCrucible⟧' } : e) }))
     // Avisos oficiales de Bluepoch (eventos y banners con hora exacta e imagen) + la wiki para lo que no traen.
     case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id))).then(s => ({ ...s, events: [...s.events, ...r99Limbo(id)] }))
-    // Stella Sora: banners exactos de su wiki; los eventos (que la wiki no fecha) siguen siendo de gachafocus.
-    case 'stellasora': return withGachafocus(id, 'stellasora', syncStellaSora(id), true)
+    // Stella Sora: avisos oficiales de stellasora.global (todos los eventos de la versión, hora exacta) + banners exactos de su wiki (con imagen).
+    // Gachafocus solo si se reactiva.
+    case 'stellasora': return withGachafocus(id, 'stellasora', officialFirst(syncStellaSoraNews(id), syncStellaSora(id)), true)
     // Epic Seven: banners de bannerhistory.app + eventos de los avisos oficiales de STOVE. Gachafocus solo si se reactiva (GACHAFOCUS_ENABLED=1).
     case 'epic7': return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id)
     // Notas de parche oficiales (vía nikke.gg) con hora exacta + Prydwen/wiki para banners y lo que no traen.

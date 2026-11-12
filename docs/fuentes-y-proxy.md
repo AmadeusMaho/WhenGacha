@@ -557,3 +557,17 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
 - **Stella Sora**: su wiki (Miraheze) va muy atrasada (último evento fechado: jun 2026) y su `#game-news` de Discord no ha publicado nada desde el 6 nov:
   sigue sin eventos. Si el canal oficial de anuncios es otro, seguir ese.
 - **BrownDust2**: las imágenes de sus avisos son tablas de recompensas (comprobado), no arte; sus eventos se quedan con el fondo del juego.
+
+## Revisión de datos (12 nov 2026, noche)
+
+- **WuWa 3.8 sin eventos**: Kuro tituló las notas "Patch Notes for Version 3.8: …" (sin "Wuthering Waves"), así que `syncKuro` seguía leyendo las de la 3.7,
+  ya caducadas. El filtro acepta ahora las dos formas, y la duración "✦Duration✦ Version 3.8 Update - …" (sin dos puntos) también se lee. Vuelven 6 eventos con hora exacta.
+- **GFL2, avisos que faltaban**: la lista oficial se pedía con 10 avisos y los ~10 de una versión la llenan; los eventos que salen después (Para Bellum,
+  Simulation Exercise, Equipment Analysis) tienen un Id menor y quedaban fuera. Se piden 2 páginas (la API empieza en `page=1`; `page=0` repite la primera).
+  Las recompensas que el aviso enumera ("[Collapse Piece ×700]") pasan a la ficha y a las tiradas (Para Bellum: 4,7).
+- Los canales de Discord de DNA, GFL2, MHO y BLEACH se siguieron el 12 nov: aún no tienen ningún aviso, así que todavía no aportan nada (se llenarán solos).
+- **Stella Sora, web oficial** (`syncStellaSoraNews` en `src/sources/stellasora.ts`; fuente `stellasoraweb` del proxy, 3 s entre peticiones, caché 3 h):
+  `stellasora.global/api/resource/news?index=1&size=12&type=` y `/news/detail?id=…` (sin claves ni robots.txt). Las notas de versión traen todos los
+  eventos con hora exacta en UTC-7; se leen con `parseNotices` y se limpian cabeceras ("Recruitment Period ✦", "Zone 2 – …", packs de la tienda).
+  En la 2.1 pasa de 1 evento a 11 (Cooling Supply Station, Cataclysm Survivor, Urgent Bounty, A Finale Echoing, Call for Best Records…) y los
+  reclutamientos de Leafia y del disco. Discord solo reenvía algunos tuits (2 de ~12). Sin imagen por evento (las notas no ilustran cada uno).

@@ -190,7 +190,7 @@ async function banners(gameId: string): Promise<GameEvent[]> {
  * Avisos oficiales de la web global (gf2exilium.sunborngame.com, que los pide a `gf2-web-us-api.sunborngame.com/website/…`; sin claves). Cada evento y
  * banner tiene el suyo ("[Themis' Game]", "Faelynn Rate Up!", "[Broker's Rebate] Is Now Open") con su imagen y "[Duration] 2026/10/29 9:00 ~
  * 2026/11/18 18:59 (UTC-4)". Mandan en horas e imagen; la IOP Wiki completa recompensas, retratos y si es reposición (`officialFirst`, index.ts).
- * 1 lista (`news_list/4`, los 10 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
+ * 2 páginas de la lista (`news_list/4`, los 20 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
  */
 const SUNBORN = 'https://gf2-web-us-api.sunborngame.com/website'
 
@@ -203,20 +203,34 @@ export function gfl2Notice(gameId: string, title: string, html: string, year: nu
   const name = (rate?.[1] ?? title).replace(/\s+Is Now (?:Available|Open|Live)$/i, '').replace(/^\[(.+)\]$/, '$1').trim()
   const kind = rate ? 'banner' as const : 'event' as const
   const image = /<img[^>]*\bsrc="([^"]+)"/i.exec(html)?.[1]
+  // Recompensas que el aviso enumera con cantidad ("[Collapse Piece ×700]"; la lista se repite en el texto: se cuenta una vez, la mayor).
+  const listed = new Map<string, number>()
+  // "Collapse Piece ×700" y luego "Collapse Pieces ×700": el mismo objeto, en singular.
+  for (const m of text.matchAll(/\[([A-Z][^[\]×]*?)\s*[×x]\s*(\d[\d,]*)\]/g)) {
+    const n = m[1].trim().replace(/(?<!s)s$/, ''), v = Number(m[2].replace(/,/g, ''))
+    if (v > (listed.get(n) ?? 0)) listed.set(n, v)
+  }
+  // La lista va tal cual ("Next-Gen Memory Stick"); pullsIn solo cuenta las tiradas.
+  const items: RewardItem[] = [...listed].map(([name, amount]) => ({ name, amount }))
+  const { pulls } = pullsIn('gfl2', items.map(i => `${i.name} ×${i.amount}`))
   return {
     id: `${gameId}:${kind}:sb:${name}:${new Date(r.start).toISOString().slice(0, 10)}`, gameId, kind, title: name, image,
     start: new Date(r.start).toISOString(), end: new Date(r.end).toISOString(),
     // Los destacados (con retrato y SR) y si es reposición los pone la IOP Wiki al unirse.
-    items: [], featured: [], pulls: 0, official: true, source: 'api',
+    items, featured: [], pulls, official: true, source: 'api',
     // Pases y tiendas de pago ("Voyage Logs", "Broker's Rebate"): menores.
     minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || undefined,
   }
 }
 
 export async function syncGfl2Official(gameId: string): Promise<GameSync> {
-  const res = await fetch(viaProxy(`${SUNBORN}/news_list/4?page=1&limit=10`))
-  if (!res.ok) throw new Error(`sunborn GFL2 → HTTP ${res.status}`)
-  const list = ((await res.json())?.data?.list ?? []) as { Id: number; Title: string; Date: string }[]
+  // Dos páginas de 10 (la API empieza en page=1; page=0 repite la primera): los ~10 avisos de una versión llenan la primera y los eventos
+  // que salen después (Para Bellum, Simulation Exercise…) tienen un Id menor y quedaban fuera (12 nov 2026).
+  const pages = await Promise.all([1, 2].map(p => fetch(viaProxy(`${SUNBORN}/news_list/4?page=${p}&limit=10`))))
+  if (!pages[0].ok) throw new Error(`sunborn GFL2 → HTTP ${pages[0].status}`)
+  const list = (await Promise.all(pages.map(r => (r.ok ? r.json().catch(() => null) : null))))
+    .flatMap(j => (j?.data?.list ?? []) as { Id: number; Title: string; Date: string }[])
+    .filter((n, i, all) => all.findIndex(x => x.Id === n.Id) === i)
   // "2026-10-29 09:00:00" en UTC-4 (el servidor global).
   const at = (s: string) => Date.parse(`${s.replace(' ', 'T')}-04:00`)
   const out: GameEvent[] = []

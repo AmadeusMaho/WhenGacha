@@ -23484,17 +23484,28 @@ async function banners$1(gameId) {
 * Avisos oficiales de la web global (gf2exilium.sunborngame.com, que los pide a `gf2-web-us-api.sunborngame.com/website/…`; sin claves). Cada evento y
 * banner tiene el suyo ("[Themis' Game]", "Faelynn Rate Up!", "[Broker's Rebate] Is Now Open") con su imagen y "[Duration] 2026/10/29 9:00 ~
 * 2026/11/18 18:59 (UTC-4)". Mandan en horas e imagen; la IOP Wiki completa recompensas, retratos y si es reposición (`officialFirst`, index.ts).
-* 1 lista (`news_list/4`, los 10 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
+* 2 páginas de la lista (`news_list/4`, los 20 más recientes) + el detalle de los de los últimos 45 días (caché de 6 h y 12 h en el proxy).
 */
 var SUNBORN = "https://gf2-web-us-api.sunborngame.com/website";
 function gfl2Notice(gameId, title, html, year) {
-	const line = htmlText(html).split("\n").find((l) => /\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s*[~～-]/.test(l));
+	const text = htmlText(html);
+	const line = text.split("\n").find((l) => /\d{4}\/\d{1,2}\/\d{1,2}\s+\d{1,2}:\d{2}\s*[~～-]/.test(l));
 	const r = line ? rangeIn(line, year, -4) : null;
 	if (!r || !(r.end > r.start)) return null;
 	const rate = /^(.+?)\s+Rate Up!?$/i.exec(title.trim());
 	const name = (rate?.[1] ?? title).replace(/\s+Is Now (?:Available|Open|Live)$/i, "").replace(/^\[(.+)\]$/, "$1").trim();
 	const kind = rate ? "banner" : "event";
 	const image = /<img[^>]*\bsrc="([^"]+)"/i.exec(html)?.[1];
+	const listed = /* @__PURE__ */ new Map();
+	for (const m of text.matchAll(/\[([A-Z][^[\]×]*?)\s*[×x]\s*(\d[\d,]*)\]/g)) {
+		const n = m[1].trim().replace(/(?<!s)s$/, ""), v = Number(m[2].replace(/,/g, ""));
+		if (v > (listed.get(n) ?? 0)) listed.set(n, v);
+	}
+	const items = [...listed].map(([name, amount]) => ({
+		name,
+		amount
+	}));
+	const { pulls } = pullsIn("gfl2", items.map((i) => `${i.name} ×${i.amount}`));
 	return {
 		id: `${gameId}:${kind}:sb:${name}:${new Date(r.start).toISOString().slice(0, 10)}`,
 		gameId,
@@ -23503,18 +23514,18 @@ function gfl2Notice(gameId, title, html, year) {
 		image,
 		start: new Date(r.start).toISOString(),
 		end: new Date(r.end).toISOString(),
-		items: [],
+		items,
 		featured: [],
-		pulls: 0,
+		pulls,
 		official: true,
 		source: "api",
 		minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || void 0
 	};
 }
 async function syncGfl2Official(gameId) {
-	const res = await fetch(viaProxy(`${SUNBORN}/news_list/4?page=1&limit=10`));
-	if (!res.ok) throw new Error(`sunborn GFL2 → HTTP ${res.status}`);
-	const list = (await res.json())?.data?.list ?? [];
+	const pages = await Promise.all([1, 2].map((p) => fetch(viaProxy(`${SUNBORN}/news_list/4?page=${p}&limit=10`))));
+	if (!pages[0].ok) throw new Error(`sunborn GFL2 → HTTP ${pages[0].status}`);
+	const list = (await Promise.all(pages.map((r) => r.ok ? r.json().catch(() => null) : null))).flatMap((j) => j?.data?.list ?? []).filter((n, i, all) => all.findIndex((x) => x.Id === n.Id) === i);
 	const at = (s) => Date.parse(`${s.replace(" ", "T")}-04:00`);
 	const out = [];
 	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$20)) {
@@ -24536,7 +24547,7 @@ async function syncKuro(gameId) {
 	const menu = await res.json();
 	if (!Array.isArray(menu)) throw new Error("kuro: lista inesperada");
 	const now = Date.now();
-	const notes = menu.filter((a) => /^Patch Notes for Wuthering Waves Version/i.test(a.articleTitle) && at$3(a.startTime, ASIA) <= now + DAY$16).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
+	const notes = menu.filter((a) => /^Patch Notes for (?:Wuthering Waves )?Version/i.test(a.articleTitle) && at$3(a.startTime, ASIA) <= now + DAY$16).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
 	if (!notes) throw new Error("kuro: sin notas de parche");
 	const art = await fetch(viaProxy(`${CDN}/article/${notes.articleId}.json`));
 	if (!art.ok) throw new Error(`kuro article ${notes.articleId} → HTTP ${art.status}`);
@@ -24559,7 +24570,7 @@ async function syncKuro(gameId) {
 			titles.push(i);
 			continue;
 		}
-		const d = /^✦?\s*Duration:\s*(.+?)\s*-\s*(\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2})\s*\((server time|UTC([+-]\d+))\)/i.exec(l);
+		const d = /^✦?\s*Duration\s*(?::|✦)\s*(.+?)\s*-\s*(\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2})\s*\((server time|UTC([+-]\d+))\)/i.exec(l);
 		if (!d || !current) continue;
 		const offset = d[4] ? +d[4] : AMERICA$2;
 		const start = /Version [\d.]+ Update/i.test(d[1]) ? versionStart : at$3(d[1], offset);
@@ -26303,6 +26314,56 @@ async function syncStellaSora(gameId) {
 		codes: []
 	};
 }
+/**
+* Avisos oficiales de la web global (stellasora.global/news; la página pide la lista y cada aviso a `/api/resource/news?index=1&size=…&type=` y
+* `/api/resource/news/detail?id=…`, sin claves). Las notas de cada versión ("Version 2.1 Preview", "11/12 Version 2.1 Update Maintenance") traen
+* todos los eventos con hora exacta en UTC-7 ("Period: Nov. 26, 2026 21:00 – Dec. 03, 2026 19:59 (UTC-7)"; "after maintenance" = fin del
+* mantenimiento del aviso). Discord solo reenvía algunos tuits (2 de ~12 en la 2.1, 12 nov 2026). Se leen con el lector de avisos (`parseNotices`).
+* 1 lista + hasta 4 avisos por ciclo (caché de 3 h en el proxy).
+*/
+var WEB = "https://stellasora.global/api/resource/news";
+async function syncStellaSoraNews(gameId) {
+	const res = await fetch(viaProxy(`${WEB}?index=1&size=12&type=`));
+	if (!res.ok) throw new Error(`stellasora.global → HTTP ${res.status}`);
+	const list = (await res.json())?.data?.rows ?? [];
+	const wanted = list.filter((n) => Date.now() - n.publishTime < 40 * DAY$5 && /version|maintenance|recruitment|event|rerun/i.test(n.title) && !/contest|faq/i.test(n.title)).sort((a, b) => b.publishTime - a.publishTime).slice(0, 4);
+	const messages = [];
+	for (const n of wanted) {
+		const html = (await fetch(viaProxy(`${WEB}/detail?id=${n.id}`)).then((r) => r.ok ? r.json() : null).catch(() => null))?.data?.news?.content ?? "";
+		if (html) messages.push({
+			id: String(n.id),
+			content: `${n.title}\n${htmlText(html.replace(/&ndash;|&mdash;/g, "–").replace(/&times;/g, "×").replace(/&ge;/g, "≥"))}`,
+			timestamp: new Date(n.publishTime).toISOString()
+		});
+	}
+	if (!messages.length && !list.length) throw new Error("stellasora.global: sin avisos");
+	const s = parseNotices(gameId, messages);
+	const out = [];
+	for (const e0 of s.events) {
+		if (/✦|^zone \d|maintenance|bundle|\bset$|event shop/i.test(e0.title)) continue;
+		let e = {
+			...e0,
+			title: e0.title.replace(/^Limited Event:\s*/i, "").trim()
+		};
+		const rec = /^Limited ★\d\s+(Trekker|Runic Disc),\s*(.+)$/i.exec(e.title);
+		if (rec) e = {
+			...e,
+			kind: "banner",
+			title: rec[2].trim(),
+			featured: [{ name: rec[2].trim() }]
+		};
+		if (/appearance|style gallery|^limited event story/i.test(e.title)) e = {
+			...e,
+			minor: true
+		};
+		if (out.some((o) => o.kind === e.kind && o.title.toLowerCase() === e.title.toLowerCase() && o.start === e.start)) continue;
+		out.push(e);
+	}
+	return {
+		...s,
+		events: out
+	};
+}
 // src/sources/uma.ts
 /**
 * Cronología del servidor Global de Umamusume desde los recursos públicos de uma.moe.
@@ -27485,7 +27546,7 @@ async function syncSourceRaw(game) {
 			...s,
 			events: [...s.events, ...r99Limbo(id)]
 		}));
-		case "stellasora": return withGachafocus(id, "stellasora", syncStellaSora(id), true);
+		case "stellasora": return withGachafocus(id, "stellasora", officialFirst(syncStellaSoraNews(id), syncStellaSora(id)), true);
 		case "epic7": return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id);
 		case "nikke": return withGachafocus(id, "nikke", officialFirst(syncNikkeGg(id), syncNikke(id)));
 		case "bd2": return syncBd2(id);

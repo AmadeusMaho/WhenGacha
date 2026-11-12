@@ -57,7 +57,7 @@ export async function syncKuro(gameId: string): Promise<GameSync> {
   const now = Date.now()
   // La nota de parche publicada más reciente (la de la versión en curso).
   const notes = menu
-    .filter(a => /^Patch Notes for Wuthering Waves Version/i.test(a.articleTitle) && at(a.startTime, ASIA) <= now + DAY)
+    .filter(a => /^Patch Notes for (?:Wuthering Waves )?Version/i.test(a.articleTitle) && at(a.startTime, ASIA) <= now + DAY)
     .sort((a, b) => b.startTime.localeCompare(a.startTime))[0]
   if (!notes) throw new Error('kuro: sin notas de parche')
 
@@ -81,7 +81,7 @@ export async function syncKuro(gameId: string): Promise<GameSync> {
     const l = text[i]
     const name = eventName(l)
     if (name) { current = name; currentAt = i; titles.push(i); continue }
-    const d = /^✦?\s*Duration:\s*(.+?)\s*-\s*(\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2})\s*\((server time|UTC([+-]\d+))\)/i.exec(l)
+    const d = /^✦?\s*Duration\s*(?::|✦)\s*(.+?)\s*-\s*(\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2})\s*\((server time|UTC([+-]\d+))\)/i.exec(l)
     if (!d || !current) continue
     const offset = d[4] ? +d[4] : AMERICA
     const start = /Version [\d.]+ Update/i.test(d[1]) ? versionStart : at(d[1], offset)
