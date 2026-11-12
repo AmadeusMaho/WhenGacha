@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import { t } from './i18n'
+import { getLang, locale, t } from './i18n'
 import { bannerArt, eventImage, faceOf, officialArt, splashOf, wallpaperOf } from './images'
 import { countdown, eventStatus, trackedGames, verdict } from './logic'
-import { fetchSnapshot } from './net'
+import { fetchSnapshot, fetchUpcomingLive, type LiveUpcoming } from './net'
 import { enableNotifications } from './notify'
 import { iosNotInstalled, useInstall } from './install'
 import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, useArtShape, type Ctx } from './ui'
 import type { Game, GameEvent, Patch } from './types'
 import { regionsOf, serverOf } from './servers'
+import { upcomingList, type UpcomingGame } from './upcoming'
 
 const DAY = 86_400_000
 
@@ -380,9 +381,10 @@ const nextPatchOf = (patches: Patch[], gameId: string, now: number) =>
 
 export function Patches(ctx: Ctx & { goMine: () => void }) {
   const { state, games, goMine, now } = ctx
+  const soonList = useUpcoming(games, now)
   const mine = trackedGames(games, state.tracked)
   if (!mine.length)
-    return <div className="empty"><p>{t('patch.empty')}</p><button className="btn primary" onClick={goMine}>{t('btn.choose')}</button></div>
+    return <><div className="empty"><p>{t('patch.empty')}</p><button className="btn primary" onClick={goMine}>{t('btn.choose')}</button></div><UpcomingGames list={soonList} now={now} /></>
   const withData = mine.filter(g => state.patches.some(p => p.gameId === g.id))
   const without = mine.filter(g => !withData.includes(g))
   // Próxima versión de cada juego, de la más cercana a la más lejana.
@@ -392,6 +394,7 @@ export function Patches(ctx: Ctx & { goMine: () => void }) {
   const goTo = (id: string) => document.getElementById(`patch-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   return (
     <>
+      {soonList.length > 0 && <UpcomingJump list={soonList} />}
       {upcoming.length > 0 && (
         <section className="up-patches">
           <h3>{t('patch.upcomingTitle')}</h3>
@@ -417,7 +420,87 @@ export function Patches(ctx: Ctx & { goMine: () => void }) {
           <button className="link-btn" onClick={goMine}>{t('patch.seeMine')}</button>
         </p>
       )}
+      <UpcomingGames list={soonList} now={now} />
     </>
+  )
+}
+
+/* ---------- Próximos gachas (lista curada a mano en src/upcoming.ts) ---------- */
+/** Fecha o ventana en texto. Se arma con los números del propio ISO (en UTC) para que el día no cambie con la zona del navegador. */
+function upWhen(g: UpcomingGame): string {
+  const y = +g.date.slice(0, 4), m = +g.date.slice(5, 7) - 1, d = +g.date.slice(8, 10)
+  const utc = (o: Intl.DateTimeFormatOptions) => new Date(Date.UTC(y, m, d)).toLocaleDateString(locale(), { ...o, timeZone: 'UTC' })
+  switch (g.precision) {
+    case 'day': return utc({ day: 'numeric', month: 'short', year: 'numeric' })
+    case 'month': return utc({ month: 'long', year: 'numeric' })
+    case 'quarter': return t('up.quarter', { q: Math.floor(m / 3) + 1, y })
+    case 'half': return t('up.half', { h: m < 6 ? 1 : 2, y })
+    case 'spring': return t('up.spring', { y })
+    case 'year': return String(y)
+    case 'tba': return t('up.tba')
+  }
+}
+
+const initials = (name: string) => name.replace(/[^A-Za-z0-9 ]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+
+/** Lista curada + lo que el servidor descubrió en las noticias (sin servidor, solo la curada). */
+function useUpcoming(games: Game[], now: number): UpcomingGame[] {
+  const [live, setLive] = useState<LiveUpcoming[]>([])
+  useEffect(() => {
+    let alive = true
+    fetchUpcomingLive().then(x => { if (alive) setLive(x) })
+    return () => { alive = false }
+  }, [])
+  return upcomingList(now, live, games.map(g => g.name))
+}
+
+/** Arriba de Parches: lleva a "Próximos gachas", que queda al final de la página. */
+function UpcomingJump({ list }: { list: UpcomingGame[] }) {
+  const go = () => document.getElementById('up-games')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  return (
+    <button className="up-card up-jump" onClick={go}>
+      <span className="up-jump-icons" aria-hidden>{list.filter(g => g.icon).slice(0, 4).map(g => <Img key={g.id} src={g.icon} style={g.iconPos ? { objectPosition: g.iconPos } : undefined} />)}</span>
+      {t('up.jump', { n: list.length })} ↓
+    </button>
+  )
+}
+
+function UpcomingGames({ list, now }: { list: UpcomingGame[]; now: number }) {
+  if (!list.length) return null
+  const l = getLang()
+  return (
+    <section className="up-games" id="up-games">
+      <h3>{t('up.title')}</h3>
+      <p className="muted up-lead">{t('up.lead')}</p>
+      <div className="up-strip">
+        {list.map(g => {
+          const at = +new Date(g.date)
+          const exact = g.precision === 'day'
+          const out = exact && at <= now
+          return (
+            <article key={g.id} className="up-card up-game" style={{ '--c': g.color, '--c2': g.color2 } as React.CSSProperties}>
+              <span className="avatar" style={{ width: 52, height: 52, borderRadius: 14, background: `linear-gradient(135deg, ${g.color2}, ${g.color2})`, fontSize: 16 }}>
+                {g.icon ? <Img className="applogo" src={g.icon} alt={g.name} style={g.iconPos ? { objectPosition: g.iconPos } : undefined} /> : initials(g.name)}
+              </span>
+              <span className="up-txt">
+                <strong>{g.name}</strong>
+                <small>{[g.publisher, g.regions.join(' / ')].filter(Boolean).join(' · ')}</small>
+                <small className="up-when">
+                  <b>{g.confirmed ? '' : '≈ '}{upWhen(g)}</b>
+                  {exact && !out && <> · {t('patch.in', { t: countdown(at - now) })}</>}
+                </small>
+                <small>{g.platforms} · {t(`up.status.${g.status}` as const)}</small>
+                {g.note && <small className="up-note">{g.note[l]}{g.news && <> · <a href={g.news.link} target="_blank" rel="noopener noreferrer">{t('up.via', { site: g.news.site })}</a></>}</small>}
+                <span className="up-foot">
+                  <Tag tone={out ? 'great' : g.confirmed ? 'good' : 'mid'}>{out ? t('up.out') : g.confirmed ? t('up.confirmed') : t('patch.estimated')}</Tag>
+                  {g.url && <a className="btn sm" href={g.url} target="_blank" rel="noopener noreferrer">{g.status === 'prereg' ? t('up.prereg') : t('up.site')} ↗</a>}
+                </span>
+              </span>
+            </article>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 

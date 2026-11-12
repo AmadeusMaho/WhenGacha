@@ -77,6 +77,14 @@ for (const g of mod.games()) {
     log(`${g.id}: ERROR ${String(err.message ?? err).slice(0, 100)}${old ? ' (se conserva la copia anterior)' : ''}`)
   }
 }
+// Próximos gachas (server/upcoming-live.mjs): se publica la lista acumulada para que un deploy del servidor (que borra .cache/) no la pierda.
+try {
+  const up = await import('../server/upcoming-live.mjs')
+  const old = await previous('upcoming')
+  const list = await up.refreshUpcomingLive({ seed: Array.isArray(old?.items) ? old.items : [], log })
+  await writeFile(path.join(dir, 'upcoming.json'), JSON.stringify(list))
+  log(`upcoming: ${list.items.length} juegos`)
+} catch (err) { log(`upcoming: ERROR ${String(err.message ?? err).slice(0, 100)}`) }
 await writeFile(path.join(dir, 'index.json'), JSON.stringify({ generatedAt: Date.now(), games: summary }))
 
 if (!PUBLISH) { log(`copias en ${dir}`); process.exit(0) }

@@ -148,6 +148,10 @@ const SOURCES = [
   { name: 'discord', ttl: 30 * MIN, internal: true, ua: DISCORD_UA, headers: () => ({ authorization: `Bot ${DISCORD_TOKEN}` }),
     test: u => !!DISCORD_TOKEN && u.hostname === 'discord.com' && DISCORD_CHANNEL_IDS.has(/^\/api\/v10\/channels\/(\d+)\/messages$/.exec(u.pathname)?.[1] ?? '') && [...u.searchParams.keys()].every(k => k === 'limit') },
   { name: 'reverie', ttl: 3 * HOUR, test: u => u.hostname === 'gachalife-production.up.railway.app' && /^\/events\/wuwa$/.test(u.pathname) },
+  // Próximos gachas (server/upcoming-live.mjs, solo servidor): titulares de tres webs de noticias por su RSS (robots.txt lo permite; Gematsu pide
+  // Crawl-delay 10) y la API pública de búsqueda de Apple para confirmar que el juego tiene ficha en reserva (fecha, icono, editor). Cada 3 h.
+  { name: 'news-feed', ttl: 2 * HOUR, internal: true, test: u => (u.hostname === 'www.gematsu.com' && u.pathname === '/feed' || (u.hostname === 'gamingonphone.com' || u.hostname === 'www.siliconera.com') && u.pathname === '/feed/') && !u.search },
+  { name: 'itunes', ttl: 12 * HOUR, internal: true, test: u => u.hostname === 'itunes.apple.com' && /^\/(search|lookup)$/.test(u.pathname) && [...u.searchParams.keys()].every(k => ['term', 'id', 'entity', 'country', 'limit', 'media'].includes(k)) },
   { name: 'snapshots', ttl: 15 * MIN, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/AmadeusMaho\/WhenGacha\/data\/snapshots\/[a-z0-9]+\.json$/.test(u.pathname) },
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
@@ -235,7 +239,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

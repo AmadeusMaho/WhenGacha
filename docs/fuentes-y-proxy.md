@@ -615,3 +615,34 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
     todos los avisos, añadir también al canal un reenvío de los tuits de **@BleachSRgame** (como el "News Feed" que ya tienen Stella Sora y Trickcal).
 - **Duplicados por prefijo** (`dedupeEvents` en `syncSource`): el mismo evento con y sin "Limited Event:" / "New Event:" / "Limited Recruitment:"
   (el tuit de Stella Sora lo deja; su web no) se une si coincide el tipo y el periodo (±1 h), con la imagen y la descripción de cualquiera de los dos.
+
+## Próximos gachas (12 nov 2026)
+
+Sección "Próximos gachas" al final de la pestaña **Parches** (`UpcomingGames` en `src/Views.tsx`), pedida por usuarios: juegos aún sin lanzar
+o sin lanzar en global, con fecha, región, editor, plataformas, estado y botón de prerregistro/web oficial.
+
+- **Fuente: lista curada a mano en `src/upcoming.ts`** (sin consultas externas: la app no pide nada a nadie para esta sección).
+  Cada entrada lleva `date` + `precision` (`day`/`month`/`quarter`/`spring`/`half`/`year`/`tba`), `confirmed` (true solo si lo dice el
+  editor), `sources` (enlaces que respaldan la fecha, no se muestran) y `checked` (última revisión). Cuenta atrás solo con día exacto;
+  "≈" + "Estimado" cuando la fecha sale de una tienda o calendario. Una entrada desaparece sola 14 días después de su ventana.
+- **Imágenes**: icono de la App Store (como el catálogo); si no hay ficha, Steam (LIMIT ZERO BREAKERS), TapTap (Azure Haven) o el
+  arte de la nota de prensa oficial (Guardian Maiden, `iconPos` para recortarlo).
+- **Webs de calendarios** (usadas solo como pista para buscar, a mano): gacha.gg/upcoming (robots.txt solo cierra `/api/`; sin
+  condiciones de uso publicadas), revenue.ennead.cc/upcoming (su API exige token, ver arriba). **anigacha y hideoutgacha prohíben el
+  scraping: no se usan.**
+- **Se actualiza sola** (`server/upcoming-live.mjs`, desde el 12 nov 2026). Cada 3 h el servidor lee los titulares RSS de **Gematsu**
+  (`/feed`, robots.txt con Crawl-delay 10: el proxy espacia sus peticiones 10 s), **GamingonPhone** y **Siliconera** (`/feed/`; Siliconera solo
+  cierra el feed a Amazonbot). De los titulares que hablan de anuncio, prerregistro, beta, lanzamiento o fecha saca el nombre del juego (`nameOf`:
+  corta en el primer verbo; "Honkai: Nexus Anima" se queda entero) y lo busca en la **API pública de Apple** (`itunes.apple.com/search`, tienda de EE. UU.).
+  Solo se añade si hay una ficha de **juego en reserva** (fecha de salida futura), sin precio y de un género típico de gacha (rol, estrategia,
+  cartas; o aventura/simulación/acción con una descripción que lo delate). Así el ruido de los titulares se queda fuera y la fecha, el icono y el
+  editor salen de la tienda. Cada ciclo revisa las ya guardadas de una vez (`/lookup?id=…`): pone la fecha al día y las quita 14 días después de salir.
+  - Se guardan en `.cache/upcoming.json` y se sirven en `GET /data/upcoming.json`. De la noticia solo se guardan el titular y el enlace (se muestra
+    "vía Gematsu" con enlace). `scripts/snapshot.mjs` (GitHub Actions, cada 3 h) también publica la lista acumulada en la rama `data`
+    (`snapshots/upcoming.json`) y el servidor la une a la suya: un deploy de Botkeep, que borra `.cache/`, no la pierde. Render
+    (`COLLECTOR_ENABLED=0`) no consulta nada: solo adopta esa copia. `UPCOMING_ENABLED=0` lo apaga.
+  - La app une las dos listas (`upcomingList` en `src/upcoming.ts`): **la curada manda**. Una automática no se muestra si ya está en la curada
+    o en el catálogo, y la fecha de la App Store solo sustituye a una curada con día **estimado**. Las automáticas salen como "≈ Estimado".
+  - Límites: un juego sin ficha en la App Store de EE. UU. (solo PC/consola, o solo CN/JP/KR) no se descubre solo; para eso sigue la lista
+    curada. Los RSS guardan poco (Gematsu ~8 h, GamingonPhone 10 titulares), de ahí el ciclo de 3 h. Como mucho 25 búsquedas nuevas por ciclo.
+- Botón **"Próximos gachas (n) ↓"** arriba de Parches (`UpcomingJump`), con los iconos de los más cercanos: baja a la sección, que va al final.

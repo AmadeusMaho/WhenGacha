@@ -765,6 +765,23 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 /* Juegos sin versiones: una línea al final. */
 .nopatch { margin-top: 22px; }
 .nopatch .link-btn { padding: 0; }
+/* Próximos gachas (Parches): tarjetas fijas, no botones; reutilizan .up-card para que cada skin las vista igual que "Próximas actualizaciones". */
+.up-games { margin-top: 28px; scroll-margin-top: 130px; }
+.up-jump { display: inline-flex; width: auto; margin-bottom: 18px; padding: 7px 16px 7px 9px; border-radius: 999px; font-weight: 600; font-size: .9rem; border-left-width: 1px; }
+.up-jump-icons { display: inline-flex; }
+.up-jump-icons img { width: 26px; height: 26px; border-radius: 8px; object-fit: cover; border: 2px solid var(--panel, #111); background: #222; }
+.up-jump-icons img + img { margin-left: -9px; }
+.up-note a { color: inherit; text-decoration: underline; }
+.up-games .up-lead { margin: -4px 0 12px; font-size: .86rem; }
+.up-game { align-items: flex-start; cursor: default; }
+.up-game:hover { transform: none; }
+.up-game .avatar { font-size: 16px; }
+.up-game .up-txt { gap: 2px; }
+.up-game .up-when { color: var(--text); font-size: .84rem; }
+.up-game .up-when b { color: inherit; }
+.up-game .up-note { font-style: italic; }
+.up-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 6px; }
+.up-foot .btn { text-decoration: none; }
 .next-top .lbl { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 .next-top .stream { margin-left: auto; }
 

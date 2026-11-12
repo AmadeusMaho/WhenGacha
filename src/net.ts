@@ -24,3 +24,16 @@ export async function fetchSnapshot(id: string): Promise<GameSnapshot | null> {
     return Array.isArray(snap.events) && Date.now() - snap.updated < SNAPSHOT_MAX_AGE ? snap : null
   } catch { return null }
 }
+
+/** Próximos gachas descubiertos por el servidor (server/upcoming-live.mjs: titulares de noticias + App Store). Vacío sin servidor. */
+export interface LiveUpcoming { id: string; appId: number; name: string; publisher: string; date: string; icon?: string; url: string; news?: { site: string; title: string; link: string } }
+
+export async function fetchUpcomingLive(): Promise<LiveUpcoming[]> {
+  if (!USE_PROXY) return []
+  try {
+    const res = await fetch('/data/upcoming.json')
+    if (!res.ok) return []
+    const j = await res.json() as { items?: LiveUpcoming[] }
+    return Array.isArray(j.items) ? j.items.filter(i => i && typeof i.name === 'string' && typeof i.date === 'string') : []
+  } catch { return [] }
+}

@@ -14,6 +14,7 @@ import { getSnapshot, startCollector } from './collector.mjs'
 import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
 import { handleApi, supportProblems } from './supporter.mjs'
 import { getSkinLive, startSkinLive } from './skin-live.mjs'
+import { getUpcomingLive, startUpcomingLive } from './upcoming-live.mjs'
 import { countVisit } from './visits.mjs' // contador de visitas en el log (sin guardar IPs)
 
 const gzip = promisify(gzipCb)
@@ -118,6 +119,10 @@ const server = http.createServer(async (req, res) => {
       const body = JSON.stringify(getSkinLive())
       return send(res, 200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=3600' }, req.method === 'HEAD' ? undefined : body)
     }
+    if (url.pathname === '/data/upcoming.json') { // próximos gachas descubiertos en noticias + App Store (server/upcoming-live.mjs)
+      const body = JSON.stringify(getUpcomingLive())
+      return send(res, 200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'public, max-age=1800' }, req.method === 'HEAD' ? undefined : body)
+    }
     const data = /^\/data\/([a-z0-9]+)\.json$/.exec(url.pathname)
     if (data) { // copia de un juego generada por el recolector (ya normalizada)
       const snap = getSnapshot(data[1])
@@ -142,6 +147,7 @@ server.listen(PORT, HOST, async () => {
   console.log(`WhenGacha escuchando en ${HOST}:${PORT} (Node ${process.version}, caché máx. ${MAX_BYTES / 1024 / 1024} MB)`)
   startCollector().catch(err => console.error('[collector]', err))
   startSkinLive().catch(err => console.error('[skin-live]', err))
+  if (process.env.UPCOMING_ENABLED !== '0') startUpcomingLive().catch(err => console.error('[upcoming]', err))
   if (envFileKeys.length) console.log(`[env] cargadas de .env: ${envFileKeys.join(', ')}`) // solo nombres, nunca valores
   const premium = supportProblems() // si el host no pasa las variables al proceso, aquí se ve cuáles (solo nombres)
   console.log(premium.length ? `[premium] desactivado. Faltan o no valen: ${premium.join(', ')}` : '[premium] activo')
