@@ -587,3 +587,31 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
 - **Endfield, recompensas**: el total que anuncia el texto con la cantidad fuera de la plantilla (`[{{Item|Oroberyl|gv=no}}]x1000`) se leía como 0 y
   solo contaba la tabla de tareas (Yuanyuan's Blazing Stoves: 600 en vez de 1000). Ahora, si el texto anuncia más, manda el texto.
 - **Unión de fuentes** (`officialFirst`): una lista oficial que solo nombra objetos sin cantidad (avisos de NTE) ya no tapa la de la comunidad si esta trae cifras.
+
+## Búsqueda de fuentes (12 nov 2026, noche): BLEACH, Steam y juegos con huecos
+
+- **Steam (`src/sources/steam.ts`, fuente `steam` del proxy; API pública `ISteamNews/GetNewsForApp`, sin clave)**: solo los anuncios de la página
+  del juego (`steam_community_announcements`), leídos con `parseNotices`. Mandan sobre las fuentes de siempre (`officialFirst` en `syncSource`).
+  - **DNA**: sus notas de versión dan el periodo de cada evento en "(server time)", que aquí es América (UTC-5; `SERVER_TIME`). De 20 eventos "≈"
+    (Game8, solo el día) a 9 con hora exacta; Game8 daba mal los cierres (05:00 en vez de 17:00).
+  - **Infinity Nikki**: los eventos y banners de la 2.11, que la wiki aún no tiene (6 → 16 vigentes).
+  - Descartados: Epic Seven (repite STOVE, con HTML suelto), Honkai 3rd ("From 12:00, OCT 29 to 12:00, NOV 19": el lector aún no entiende ese
+    formato; sería lo siguiente), Limbus, Blue Archive y Uma (sin periodos legibles). BLEACH y MHO no están en Steam.
+- **Unión de fuentes**: un rotatorio y un evento solo se unen si el nombre del evento es el del rotatorio o lo contiene ("Stygian Onslaught" ↔
+  "Stygian Onslaught: Battle…", sí; "Immersive Theatre" ↔ "Immersive Theatre – Rhythm: Flamewrought", no: el rotatorio desaparecía).
+- **AFK Journey**: la wiki da 00:00/23:59 UTC pero cada servidor cambia a su medianoche local: esas fechas salen ahora "≈ Hora aprox.".
+- **BLEACH: Soul Resonance**, revisado a fondo; sigue dependiendo de Discord:
+  - Web global (playbleachsr.com): su API (`am-web-api` / `eu-web-api.aplus-games.com`) solo tiene el prerregistro (correo, estado); sin noticias.
+  - Wiki de wiki.gg (bleachsoulresonance.wiki.gg): abandonada (última edición: ago 2026; la cronología, ene 2026). La de Fandom, también.
+  - gacha.gg (/bleach-soul-resonance/banners): robots lo permite y no lo prohíbe, pero solo da días y va con retraso (el 12 nov no tenía el
+    banner de Urahara del 4 nov). No se usa.
+  - anigacha.com y hideoutgacha.com: tienen los avisos, pero **sus condiciones prohíben el scraping** ("Not use automated scripts, bots, or
+    scraping tools… without our express permission"; "Use automated tools to scrape…"). No se usan sin permiso escrito.
+  - TapTap: su robots.txt bloquea a los bots de IA. No se usa.
+  - **De dónde sacan ellos la información**: de la cuenta oficial de X **@BleachSRgame** (los artículos de hideoutgacha enlazan sus tuits) y del
+    Discord oficial; el texto de anigacha es el del aviso oficial ("Event Period: November 4, 2026 (after maintenance) to November 25, 2026,
+    03:59:59"), que nuestro lector ya entiende. Es decir, la misma fuente que nuestro canal de Discord `bleach`.
+  - **Lo que falta (dueño)**: el canal `bleach` sigue el #game-news y el #codes del Discord oficial EU&NA desde el 12 nov, sin avisos aún. Para tener
+    todos los avisos, añadir también al canal un reenvío de los tuits de **@BleachSRgame** (como el "News Feed" que ya tienen Stella Sora y Trickcal).
+- **Duplicados por prefijo** (`dedupeEvents` en `syncSource`): el mismo evento con y sin "Limited Event:" / "New Event:" / "Limited Recruitment:"
+  (el tuit de Stella Sora lo deja; su web no) se une si coincide el tipo y el periodo (±1 h), con la imagen y la descripción de cualquiera de los dos.

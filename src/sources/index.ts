@@ -23,6 +23,7 @@ import { syncHonkai3 } from './honkai3'
 import { eventPages, syncHoyoWiki } from './hoyowiki'
 import { pullsIn, type PullGame } from './pulls'
 import { shortDescription } from './summary'
+import { STEAM_APPS, syncSteamNews } from './steam'
 import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
 import { syncNikkeGg } from './nikkegg'
@@ -80,6 +81,13 @@ function findMatch(base: GameEvent[], e: GameEvent, used: Set<number>): number {
   return base.findIndex((b, i) => {
     if (used.has(i)) return false
     if ((b.kind === 'banner') !== (e.kind === 'banner')) return false
+    // Un rotatorio y un evento solo se unen si el nombre del evento es el del rotatorio o lo contiene entero ("Stygian Onslaught" de la wiki y
+    // "Stygian Onslaught: Battle Amid the Great Waves" de ennead, sí). El rotatorio "Immersive Theatre" (DNA, ciclo de 28 días) no es el evento
+    // "Immersive Theatre – Rhythm: Flamewrought" del aviso de Steam, que ya acabó: se llevaba su fecha y el rotatorio desaparecía.
+    if ((b.kind === 'challenge') !== (e.kind === 'challenge')) {
+      const ch = key(b.kind === 'challenge' ? b.title : e.title), ev = key(b.kind === 'challenge' ? e.title : b.title)
+      if (!ch.startsWith(ev)) return false
+    }
     // Mismo periodo (aprox.): evita confundir una repetición (rerun) con el original.
     if (Math.abs(+new Date(b.start) - +new Date(e.start)) > 3 * DAY) return false
     const bk = key(b.title)
@@ -241,12 +249,34 @@ async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
   return { ...s, events: s.events.map(e => (e.items.some(i => !i.icon) ? { ...e, items: e.items.map(i => (i.icon ? i : { ...i, icon: find(i.name) })) } : e)) }
 }
 
+/**
+ * Último paso común: el mismo evento con dos nombres porque una fuente deja el prefijo genérico y otra no ("Limited Event: Map the Uncharted…"
+ * del tuit de Stella Sora y "Map the Uncharted…" de su web, 12 nov 2026). Mismo tipo, mismo nombre sin prefijo y mismo periodo (±1 h): se queda
+ * uno, con la imagen, descripción y recompensas que tenga cualquiera de los dos.
+ */
+const GENERIC_PREFIX = /^(?:(?:limited|time-limited|limited-time|new|special)\s+)?(?:event|recruitment|gacha)\s*[:：]\s*/i
+function dedupeEvents(events: GameEvent[]): GameEvent[] {
+  const out: GameEvent[] = []
+  for (const e0 of events) {
+    const e = GENERIC_PREFIX.test(e0.title) ? { ...e0, title: e0.title.replace(GENERIC_PREFIX, '').trim() } : e0
+    const i = out.findIndex(o => o.kind === e.kind && key(o.title) === key(e.title)
+      && Math.abs(+new Date(o.start) - +new Date(e.start)) <= HOUR && Math.abs(+new Date(o.end) - +new Date(e.end)) <= HOUR)
+    if (i < 0) { out.push(e); continue }
+    const o = out[i]
+    out[i] = { ...o, image: o.image ?? e.image, description: o.description ?? e.description,
+      items: o.items.length ? o.items : e.items, pulls: o.pulls || e.pulls, featured: o.featured.length ? o.featured : e.featured }
+  }
+  return out
+}
+
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
-  const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
+  // Avisos oficiales publicados en Steam (steam.ts): mandan sobre las fuentes de siempre, como los de Discord.
+  const raw = () => (STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game))
+  const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), raw()) : await raw()
   const s1 = await withItemIcons(game.id, s0)
   // Descripciones sin HTML y breves (resúmenes al estilo de Endfield; summary.ts).
-  const s = { ...s1, events: s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e)) }
+  const s = { ...s1, events: dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e))) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
   if (aligned.codes.length || !game.api) return aligned

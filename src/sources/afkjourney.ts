@@ -25,6 +25,12 @@ async function query(params: Record<string, string>): Promise<{ query?: { pages?
   return res.json()
 }
 
+/**
+ * La wiki da 00:00 / 23:59 UTC, pero cada servidor de AFK Journey cambia a su medianoche local: con esas horas, "≈ Hora aprox."
+ * (antes salían como exactas; revisión del 12 nov 2026).
+ */
+const dayOnly = (s: number, e: number): 'approx' | undefined =>
+  new Date(s).getUTCHours() === 0 && new Date(s).getUTCMinutes() === 0 && new Date(e).getUTCHours() === 23 && new Date(e).getUTCMinutes() === 59 ? 'approx' : undefined
 const field = (text: string, name: string) => new RegExp(`\\|\\s*${name}\\s*=\\s*([^|\\n}]*)`).exec(text)?.[1]?.trim() ?? ''
 /** "2026-11-02 00:00" (UTC) → ms; "23:59" cierra al final del minuto. */
 const at = (s: string) => {
@@ -67,7 +73,7 @@ async function events(gameId: string): Promise<GameEvent[]> {
       description: groups.length ? groups.join(' · ') : undefined,
       image: p.thumbnail?.source,
       start: new Date(s).toISOString(), end: new Date(e).toISOString(),
-      items: r.items, featured: [], pulls: r.pulls, source: 'api',
+      items: r.items, featured: [], pulls: r.pulls, source: 'api', precision: dayOnly(s, e),
     })
   }
   return out
@@ -96,6 +102,7 @@ async function banners(gameId: string): Promise<GameEvent[]> {
     image: p.thumbnail?.source ?? art.banner(p.title, heroes),
     start: new Date(s).toISOString(), end: new Date(e).toISOString(),
     items: [], featured: heroes.map(name => ({ name, rarity: 5, icon: art.hero.get(name) })), pulls: 0, source: 'api' as const,
+    precision: dayOnly(s, e),
   }))
 }
 

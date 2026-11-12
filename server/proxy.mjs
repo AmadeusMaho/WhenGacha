@@ -93,6 +93,10 @@ const SOURCES = [
   // BLEACH: Soul Resonance: lista de códigos de game.guide (robots.txt solo cierra /api/). Una sola página.
   { name: 'gameguide', ttl: 6 * HOUR, test: u => u.hostname === 'www.game.guide' && u.pathname === '/bleach-soul-resonance-codes' && !u.search },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
+  // Avisos oficiales publicados en Steam (src/sources/steam.ts): API pública de noticias, sin clave. Solo GetNewsForApp de las apps de la lista.
+  { name: 'steam', ttl: 3 * HOUR, test: u => u.hostname === 'api.steampowered.com' && u.pathname === '/ISteamNews/GetNewsForApp/v2/'
+    && /^\d{4,8}$/.test(u.searchParams.get('appid') ?? '') && Number(u.searchParams.get('count')) <= 20
+    && [...u.searchParams.keys()].every(k => ['appid', 'count', 'maxlength', 'format'].includes(k)) },
   // Stella Sora: avisos oficiales de stellasora.global (su web pide la lista y cada aviso a /api/resource/news…, sin claves; sin robots.txt).
   { name: 'stellasoraweb', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.global' && (
     (u.pathname === '/api/resource/news' && [...u.searchParams.keys()].every(k => ['index', 'size', 'type'].includes(k)) && Number(u.searchParams.get('size')) <= 12)
@@ -231,7 +235,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 2000, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]
