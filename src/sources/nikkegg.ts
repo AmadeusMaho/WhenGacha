@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { Featured, GameEvent, Kind } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, segments } from './pulls'
+import { summarize } from './summary'
 
 /**
  * NIKKE (Global): notas de parche oficiales, tal como las reproduce nikke.gg (red DotGG) en su API pública de WordPress.
@@ -104,6 +105,7 @@ function parseNotes(gameId: string, html: string, out: GameEvent[], seen: Set<st
     const { pulls, items } = pullsIn('nikke', ls.slice(a, b))
     marks[k].ev.pulls = pulls
     marks[k].ev.items = items
+    marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
   })
   for (const g of selective) {
     const id = `${gameId}:banner:ngg:${g.names.join('/')}:${new Date(g.start).toISOString().slice(0, 10)}`

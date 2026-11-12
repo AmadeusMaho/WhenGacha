@@ -52,7 +52,7 @@ var GLOBALS = Symbol("globals");
 var IMAGE = Symbol("image");
 var MIME = Symbol("mime");
 var MUTATION_OBSERVER = Symbol("MutationObserver");
-var NEXT = Symbol("next");
+var NEXT$1 = Symbol("next");
 var OWNER_ELEMENT = Symbol("ownerElement");
 var PREV = Symbol("prev");
 var PRIVATE = Symbol("private");
@@ -3371,7 +3371,7 @@ var $String = String;
 var getEnd = (node) => node.nodeType === 1 ? node[END] : node;
 var ignoreCase = ({ ownerDocument }) => ownerDocument[MIME].ignoreCase;
 var knownAdjacent = (prev, next) => {
-	prev[NEXT] = next;
+	prev[NEXT$1] = next;
 	next[PREV] = prev;
 };
 var knownBoundaries = (prev, current, next) => {
@@ -3390,7 +3390,7 @@ var localCase = ({ localName, ownerDocument }) => {
 	return ownerDocument[MIME].ignoreCase ? localName.toUpperCase() : localName;
 };
 var setAdjacent = (prev, next) => {
-	if (prev) prev[NEXT] = next;
+	if (prev) prev[NEXT$1] = next;
 	if (next) next[PREV] = prev;
 };
 /**
@@ -3408,7 +3408,7 @@ var htmlToFragment = (ownerDocument, html) => {
 		let child = firstChild;
 		do
 			child.parentNode = fragment;
-		while (child !== lastChild && (child = getEnd(child)[NEXT]));
+		while (child !== lastChild && (child = getEnd(child)[NEXT$1]));
 	}
 	return fragment;
 };
@@ -3435,10 +3435,10 @@ var connectedCallback = (element) => {
 	if (reactive) {
 		triggerConnected(element);
 		if (shadowRoots.has(element)) element = shadowRoots.get(element).shadowRoot;
-		let { [NEXT]: next, [END]: end } = element;
+		let { [NEXT$1]: next, [END]: end } = element;
 		while (next !== end) {
 			if (next.nodeType === 1) triggerConnected(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 	}
 };
@@ -3447,10 +3447,10 @@ var disconnectedCallback = (element) => {
 	if (reactive) {
 		triggerDisconnected(element);
 		if (shadowRoots.has(element)) element = shadowRoots.get(element).shadowRoot;
-		let { [NEXT]: next, [END]: end } = element;
+		let { [NEXT$1]: next, [END]: end } = element;
 		while (next !== end) {
 			if (next.nodeType === 1) triggerDisconnected(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 	}
 };
@@ -3652,7 +3652,7 @@ var registerHTMLClass = (names, Class) => {
 	}
 };
 // node_modules/linkedom/esm/shared/jsdon.js
-var loopSegment = ({ [NEXT]: next, [END]: end }, json) => {
+var loopSegment = ({ [NEXT$1]: next, [END]: end }, json) => {
 	while (next !== end) {
 		switch (next.nodeType) {
 			case 2:
@@ -3669,7 +3669,7 @@ var loopSegment = ({ [NEXT]: next, [END]: end }, json) => {
 				break;
 			case 10: documentTypeAsJSON(next, json);
 		}
-		next = next[NEXT];
+		next = next[NEXT$1];
 	}
 	const last = json.length - 1;
 	const value = json[last];
@@ -3855,15 +3855,15 @@ var emptyAttributes = /* @__PURE__ */ new Set([
 var setAttribute = (element, attribute) => {
 	const { [VALUE]: value, name } = attribute;
 	attribute.ownerElement = element;
-	knownSiblings(element, attribute, element[NEXT]);
+	knownSiblings(element, attribute, element[NEXT$1]);
 	if (name === "class") element.className = value;
 	attributeChangedCallback(element, name, null);
 	attributeChangedCallback$1(element, name, null, value);
 };
 var removeAttribute = (element, attribute) => {
 	const { [VALUE]: value, name } = attribute;
-	knownAdjacent(attribute[PREV], attribute[NEXT]);
-	attribute.ownerElement = attribute[PREV] = attribute[NEXT] = null;
+	knownAdjacent(attribute[PREV], attribute[NEXT$1]);
+	attribute.ownerElement = attribute[PREV] = attribute[NEXT$1] = null;
 	if (name === "class") element[CLASS_LIST] = null;
 	attributeChangedCallback(element, name, value);
 	attributeChangedCallback$1(element, name, value, null);
@@ -4010,7 +4010,7 @@ var Node$1 = class extends DOMEventTarget {
 		this.localName = localName;
 		this.nodeType = nodeType;
 		this.parentNode = null;
-		this[NEXT] = null;
+		this[NEXT$1] = null;
 		this[PREV] = null;
 	}
 	get ELEMENT_NODE() {
@@ -4275,7 +4275,7 @@ var previousSibling = ({ [PREV]: prev }) => {
 	return null;
 };
 var nextSibling = (node) => {
-	const next = getEnd(node)[NEXT];
+	const next = getEnd(node)[NEXT$1];
 	return next && (next.nodeType === -1 ? null : next);
 };
 // node_modules/linkedom/esm/mixin/non-document-type-child-node.js
@@ -4301,7 +4301,7 @@ var before = (node, nodes) => {
 };
 var after = (node, nodes) => {
 	const { ownerDocument, parentNode } = node;
-	if (parentNode) parentNode.insertBefore(asFragment(ownerDocument, nodes), getEnd(node)[NEXT]);
+	if (parentNode) parentNode.insertBefore(asFragment(ownerDocument, nodes), getEnd(node)[NEXT$1]);
 };
 var replaceWith = (node, nodes) => {
 	const { ownerDocument, parentNode } = node;
@@ -4316,7 +4316,7 @@ var remove = (prev, current, next) => {
 	if (prev || next) {
 		setAdjacent(prev, next);
 		current[PREV] = null;
-		getEnd(current)[NEXT] = null;
+		getEnd(current)[NEXT$1] = null;
 	}
 	if (parentNode) {
 		current.parentNode = null;
@@ -4361,7 +4361,7 @@ var CharacterData$1 = class extends Node$1 {
 		replaceWith(this, nodes);
 	}
 	remove() {
-		remove(this[PREV], this, this[NEXT]);
+		remove(this[PREV], this, this[NEXT$1]);
 	}
 	/* c8 ignore start */
 	get data() {
@@ -7069,8 +7069,8 @@ var ParentNode = class extends Node$1 {
 		super(ownerDocument, localName, nodeType);
 		this[PRIVATE] = null;
 		/** @type {NodeStruct} */
-		this[NEXT] = this[END] = {
-			[NEXT]: null,
+		this[NEXT$1] = this[END] = {
+			[NEXT$1]: null,
 			[PREV]: this,
 			[START]: this,
 			nodeType: -1,
@@ -7100,8 +7100,8 @@ var ParentNode = class extends Node$1 {
 	* @returns {NodeStruct | null}
 	*/
 	get firstChild() {
-		let { [NEXT]: next, [END]: end } = this;
-		while (next.nodeType === 2) next = next[NEXT];
+		let { [NEXT$1]: next, [END]: end } = this;
+		while (next.nodeType === 2) next = next[NEXT$1];
 		return next === end ? null : next;
 	}
 	/**
@@ -7141,10 +7141,10 @@ var ParentNode = class extends Node$1 {
 		insert(this, this[END], nodes);
 	}
 	replaceChildren(...nodes) {
-		let { [NEXT]: next, [END]: end } = this;
-		while (next !== end && next.nodeType === 2) next = next[NEXT];
+		let { [NEXT$1]: next, [END]: end } = this;
+		while (next !== end && next.nodeType === 2) next = next[NEXT$1];
 		while (next !== end) {
-			const after = getEnd(next)[NEXT];
+			const after = getEnd(next)[NEXT$1];
 			next.remove();
 			next = after;
 		}
@@ -7152,38 +7152,38 @@ var ParentNode = class extends Node$1 {
 	}
 	getElementsByClassName(className) {
 		const elements = new NodeList();
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 1 && next.hasAttribute("class") && next.classList.has(className)) elements.push(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return elements;
 	}
 	getElementsByTagName(tagName) {
 		const elements = new NodeList();
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 1 && (next.localName === tagName || localCase(next) === tagName)) elements.push(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return elements;
 	}
 	querySelector(selectors) {
 		const matches = prepareMatch(this, selectors);
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 1 && matches(next)) return next;
-			next = next.nodeType === 1 && next.localName === "template" ? next[END] : next[NEXT];
+			next = next.nodeType === 1 && next.localName === "template" ? next[END] : next[NEXT$1];
 		}
 		return null;
 	}
 	querySelectorAll(selectors) {
 		const matches = prepareMatch(this, selectors);
 		const elements = new NodeList();
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 1 && matches(next)) elements.push(next);
-			next = next.nodeType === 1 && next.localName === "template" ? next[END] : next[NEXT];
+			next = next.nodeType === 1 && next.localName === "template" ? next[END] : next[NEXT$1];
 		}
 		return elements;
 	}
@@ -7232,9 +7232,9 @@ var ParentNode = class extends Node$1 {
 		return node;
 	}
 	normalize() {
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
-			const { [NEXT]: $next, [PREV]: $prev, nodeType } = next;
+			const { [NEXT$1]: $next, [PREV]: $prev, nodeType } = next;
 			if (nodeType === 3) {
 				if (!next[VALUE]) next.remove();
 				else if ($prev && $prev.nodeType === 3) {
@@ -7251,7 +7251,7 @@ var ParentNode = class extends Node$1 {
 		return node;
 	}
 	replaceChild(node, replaced) {
-		const next = getEnd(replaced)[NEXT];
+		const next = getEnd(replaced)[NEXT$1];
 		replaced.remove();
 		this.insertBefore(node, next);
 		return replaced;
@@ -7260,10 +7260,10 @@ var ParentNode = class extends Node$1 {
 // node_modules/linkedom/esm/mixin/non-element-parent-node.js
 var NonElementParentNode = class extends ParentNode {
 	getElementById(id) {
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 1 && next.id === id) return next;
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return null;
 	}
@@ -7748,7 +7748,7 @@ var Element$1 = class extends ParentNode {
 		replaceWith(this, nodes);
 	}
 	remove() {
-		remove(this[PREV], this, this[END][NEXT]);
+		remove(this[PREV], this, this[END][NEXT$1]);
 	}
 	get id() {
 		return stringAttribute.get(this, "id");
@@ -7811,11 +7811,11 @@ var Element$1 = class extends ParentNode {
 	}
 	get innerText() {
 		const text = [];
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			if (next.nodeType === 3) text.push(next.textContent.replace(/\s+/g, " "));
-			else if (text.length && next[NEXT] != end && BLOCK_ELEMENTS.has(next.tagName)) text.push("\n");
-			next = next[NEXT];
+			else if (text.length && next[NEXT$1] != end && BLOCK_ELEMENTS.has(next.tagName)) text.push("\n");
+			next = next[NEXT$1];
 		}
 		return text.join("");
 	}
@@ -7824,11 +7824,11 @@ var Element$1 = class extends ParentNode {
 	*/
 	get textContent() {
 		const text = [];
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			const nodeType = next.nodeType;
 			if (nodeType === 3 || nodeType === 4) text.push(next.textContent);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return text.join("");
 	}
@@ -7852,10 +7852,10 @@ var Element$1 = class extends ParentNode {
 	}
 	get attributes() {
 		const attributes = new NamedNodeMap(this);
-		let next = this[NEXT];
+		let next = this[NEXT$1];
 		while (next.nodeType === 2) {
 			attributes.push(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return new Proxy(attributes, attributesHandler);
 	}
@@ -7868,19 +7868,19 @@ var Element$1 = class extends ParentNode {
 		return attribute && (ignoreCase(this) ? attribute.value : escape(attribute.value));
 	}
 	getAttributeNode(name) {
-		let next = this[NEXT];
+		let next = this[NEXT$1];
 		while (next.nodeType === 2) {
 			if (next.name === name) return next;
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return null;
 	}
 	getAttributeNames() {
 		const attributes = new NodeList();
-		let next = this[NEXT];
+		let next = this[NEXT$1];
 		while (next.nodeType === 2) {
 			attributes.push(next.name);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return attributes;
 	}
@@ -7888,27 +7888,27 @@ var Element$1 = class extends ParentNode {
 		return !!this.getAttributeNode(name);
 	}
 	hasAttributes() {
-		return this[NEXT].nodeType === 2;
+		return this[NEXT$1].nodeType === 2;
 	}
 	removeAttribute(name) {
 		if (name === "class" && this[CLASS_LIST]) this[CLASS_LIST].clear();
-		let next = this[NEXT];
+		let next = this[NEXT$1];
 		while (next.nodeType === 2) {
 			if (next.name === name) {
 				removeAttribute(this, next);
 				return;
 			}
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 	}
 	removeAttributeNode(attribute) {
-		let next = this[NEXT];
+		let next = this[NEXT$1];
 		while (next.nodeType === 2) {
 			if (next === attribute) {
 				removeAttribute(this, next);
 				return;
 			}
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 	}
 	setAttribute(name, value) {
@@ -8008,7 +8008,7 @@ var Element$1 = class extends ParentNode {
 		};
 		const clone = create(ownerDocument, this, localName);
 		let parentNode = clone, $next = clone;
-		let { [NEXT]: next, [END]: prev } = this;
+		let { [NEXT$1]: next, [END]: prev } = this;
 		while (next !== prev && (deep || next.nodeType === 2)) {
 			switch (next.nodeType) {
 				case -1:
@@ -8032,7 +8032,7 @@ var Element$1 = class extends ParentNode {
 				case 8:
 				case 4: addNext(next.cloneNode(deep));
 			}
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		knownAdjacent($next, clone[END]);
 		return clone;
@@ -8040,10 +8040,10 @@ var Element$1 = class extends ParentNode {
 	toString() {
 		const out = [];
 		const { [END]: end } = this;
-		let next = { [NEXT]: this };
+		let next = { [NEXT$1]: this };
 		let isOpened = false;
 		do {
-			next = next[NEXT];
+			next = next[NEXT$1];
 			switch (next.nodeType) {
 				case 2: {
 					const attr = " " + next;
@@ -19500,10 +19500,10 @@ var ImageClass = (ownerDocument) => class Image extends HTMLImageElement {
 };
 // node_modules/linkedom/esm/interface/range.js
 var deleteContents = ({ [START]: start, [END]: end }, fragment = null) => {
-	setAdjacent(start[PREV], end[NEXT]);
+	setAdjacent(start[PREV], end[NEXT$1]);
 	do {
 		const after = getEnd(start);
-		const next = after === end ? after : after[NEXT];
+		const next = after === end ? after : after[NEXT$1];
 		if (fragment) fragment.insertBefore(start, fragment[END]);
 		else start.remove();
 		start = next;
@@ -19550,7 +19550,7 @@ var Range = class Range {
 		while (start !== end) {
 			fragment.insertBefore(start.cloneNode(true), fragment[END]);
 			start = getEnd(start);
-			if (start !== end) start = start[NEXT];
+			if (start !== end) start = start[NEXT$1];
 		}
 		return fragment;
 	}
@@ -19605,7 +19605,7 @@ var TreeWalker = class {
 		this.root = root;
 		this.currentNode = root;
 		this.whatToShow = whatToShow;
-		let { [NEXT]: next, [END]: end } = root;
+		let { [NEXT$1]: next, [END]: end } = root;
 		if (root.nodeType === 9) {
 			const { documentElement } = root;
 			next = documentElement;
@@ -19614,7 +19614,7 @@ var TreeWalker = class {
 		const nodes = [];
 		while (next && next !== end) {
 			if (isOK(next, whatToShow)) nodes.push(next);
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		this[PRIVATE] = {
 			i: 0,
@@ -19629,10 +19629,10 @@ var TreeWalker = class {
 };
 // node_modules/linkedom/esm/interface/document.js
 var query$2 = (method, ownerDocument, selectors) => {
-	let { [NEXT]: next, [END]: end } = ownerDocument;
+	let { [NEXT$1]: next, [END]: end } = ownerDocument;
 	return method.call({
 		ownerDocument,
-		[NEXT]: next,
+		[NEXT$1]: next,
 		[END]: end
 	}, selectors);
 };
@@ -19728,7 +19728,7 @@ var Document$1 = class extends NonElementParentNode {
 		if (/^([a-z:]+)(\s+system|\s+public(\s+"([^"]+)")?)?(\s+"([^"]+)")?/i.test(value)) {
 			const { $1: name, $4: publicId, $6: systemId } = RegExp;
 			this[DOCTYPE] = new DocumentType$1(this, name, publicId, systemId);
-			knownSiblings(this, this[DOCTYPE], this[NEXT]);
+			knownSiblings(this, this[DOCTYPE], this[NEXT$1]);
 		}
 	}
 	get documentElement() {
@@ -19814,10 +19814,10 @@ var Document$1 = class extends NonElementParentNode {
 		if (deep) switch (node.nodeType) {
 			case 1:
 			case 11: {
-				let { [NEXT]: next, [END]: end } = node;
+				let { [NEXT$1]: next, [END]: end } = node;
 				while (next !== end) {
 					if (next.nodeType === 1) upgrade(next);
-					next = next[NEXT];
+					next = next[NEXT$1];
 				}
 				break;
 			}
@@ -19871,12 +19871,12 @@ var HTMLDocument = class extends Document$1 {
 	}
 	get all() {
 		const nodeList = new NodeList();
-		let { [NEXT]: next, [END]: end } = this;
+		let { [NEXT$1]: next, [END]: end } = this;
 		while (next !== end) {
 			switch (next.nodeType) {
 				case 1: nodeList.push(next);
 			}
-			next = next[NEXT];
+			next = next[NEXT$1];
 		}
 		return nodeList;
 	}
@@ -20783,6 +20783,149 @@ function segments(n, titles, marks) {
 		return [start, end];
 	});
 }
+// src/sources/summary.ts
+/**
+* Descripción breve de un evento, al estilo de las fichas de Endfield (wiki.ts, `endfieldDetails`): una o dos frases que explican de qué va,
+* los requisitos (⟦d.efReq|…⟧) y, si quedan, hasta dos detalles con viñeta. Sin fechas ni horas (ya salen en la ficha), sin recompensas
+* (salen aparte, con su icono), sin compensaciones ni rótulos sueltos.
+*
+* Recibe el texto del apartado del evento ya partido en líneas (avisos oficiales, notas de versión, Discord, páginas de la wiki).
+* Pensado para todas las fuentes que ya descargan ese texto: no hace peticiones.
+*/
+var BULLET = /^[\s■□●○◆◇◈✦✧★☆•·▪▶►\-–*>]+/;
+/** Rótulo al principio de una línea de descripción: se quita y se queda el texto ("Event Intro: During the event…"). */
+var INTRO = /^\[?(?:event\s+)?(?:intro(?:duction)?|details?|description|overview|guidelines?|gameplay|story(?:\s+intro)?|about(?:\s+the\s+event)?|how\s+to\s+(?:play|participate))\]?\s*[:：]\s*/i;
+/** Requisitos para participar. */
+var REQ = /^\[?(?:participation\s+)?(?:requirements?|unlock(?:ing)?\s+(?:conditions?|requirements?)|eligibility|conditions?|unlocks?\s+(?:at|after|when|upon))\]?\s*[:：]?\s*/i;
+/** Líneas que no explican el evento. */
+var SKIP = /\b(?:duration|period|event\s+time|schedule|available\s+(?:from|until|after)|starts?\s*:|ends?\s*:|rewards?\s*:|compensation|maintenance|server\s+time|utc|gmt|patch\s+notes?|dear\s+\w+|thank\s+you|stay\s+tuned|for\s+more\s+(?:info|details)|visit\s+the|check\s+(?:the|out)|follow\s+us|#\w+|https?:\/\/|note\s*:|hello\b|greetings\b|this\s+is\s+gm\b|after\s+the\s+event\s+ends|will\s+be\s+(?:automatically\s+)?(?:deleted|removed|invalid|converted)|not\s+be\s+returned|no\s+longer\s+be\s+able)/i;
+/** Notas, saludos y fragmentos que empiezan por puntuación (restos de comillas: '", the avatar frame…'). */
+var JUNK = /^(?:※|["'”’,;:.)\]]|(?:hello|greetings|hi)\b)/i;
+var DATEISH = /\d{1,4}[/.-]\d{1,2}[/.-]\d{1,4}|\b\d{1,2}:\d{2}\b|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+\d{1,2}\b/i;
+var cut = (s, n) => s.length > n ? `${s.slice(0, n).replace(/\s+\S*$/, "").replace(/[,;:]$/, "")}…` : s;
+var tidy = (s) => s.replace(/\*\*|__|`/g, "").replace(/<[^>]+>/g, "").replace(/\[([^\]]+)\]/g, "$1").replace(/\s+/g, " ").trim();
+var words$1 = (s) => s.split(/\s+/).filter(Boolean).length;
+/** Primera frase (o dos, si la primera es corta) de un párrafo. */
+function sentences(s, max = 220) {
+	const parts = s.split(/(?<!\b(?:Lv|No|Ver|vs|Mr|Ms|Dr|St|Vol|Ch|Pt|approx|e\.g|i\.e|\d))(?<=[.!?。])\s+(?=["“A-Z])/).map((x) => x.trim()).filter(Boolean);
+	let out = parts[0] ?? s;
+	if (out.length < 90 && parts[1]) out = `${out} ${parts[1]}`;
+	return cut(out, max);
+}
+/** Cabecera de otro apartado. */
+var NEXT = /^(?:[■□◆◇✦]|\d+[.)]\s|\[[^\]]{3,80}\]\s*[A-Za-z0-9 &'-]{0,30}$|(?:experience improvements|bug fixes|optimi[sz]ations?|adjustments|fixes|other new content|new (?:outfits?|resonators?|weapons?|characters?|locations?|merch|challenges?|stories))\b)/i;
+/** Resume el apartado de un evento. Devuelve undefined si no hay ninguna frase que explique algo. */
+function summarize(lines, opts = {}) {
+	const title = opts.title?.toLowerCase().replace(/[^a-z0-9]+/g, "");
+	let req = "";
+	let reqNext = false;
+	const text = [];
+	let seen = false;
+	const joined = [];
+	for (const raw of lines) {
+		const t = raw.trim();
+		if (joined.length && /^[a-z]/.test(t) && !/[.!?:。」"”)]$/.test(joined[joined.length - 1].trim())) joined[joined.length - 1] += ` ${t}`;
+		else joined.push(raw);
+	}
+	for (const raw of joined) {
+		let l = tidy(raw.replace(BULLET, "")).replace(/^\d+[.)]\s+/, "");
+		if (!l) continue;
+		if (seen && opts.sections !== false && NEXT.test(raw.trim()) && !(title && l.toLowerCase().replace(/[^a-z0-9]+/g, "").startsWith(title))) break;
+		seen = true;
+		if (reqNext) {
+			reqNext = false;
+			if (!req && !DATEISH.test(l) && !REQ.exec(l)?.[0].trim()) {
+				req = cut(l.replace(/[.。]$/, ""), 160);
+				continue;
+			}
+		}
+		const r = REQ.exec(l);
+		if (r && r[0].trim()) {
+			const rest = l.slice(r[0].length).trim();
+			if (!rest) reqNext = true;
+			else if (!req && !DATEISH.test(rest)) req = cut(rest.replace(/[.。]$/, ""), 160);
+			continue;
+		}
+		l = l.replace(INTRO, "");
+		if (SKIP.test(l) || DATEISH.test(l) || JUNK.test(l)) continue;
+		if (/(?:^|\s)[,;](?:\s*[,;]|\s+(?:or|and)\s*[,;!.])/.test(l)) continue;
+		if (/[:：]$/.test(l) || words$1(l) < 6) continue;
+		const flat = l.toLowerCase().replace(/^\d+[.)]\s*/, "").replace(/[^a-z0-9]+/g, "");
+		if (title && (flat === title || flat.startsWith(title) && words$1(l) < 12)) continue;
+		if ((l.match(/[×x]\s?\d/g) ?? []).length >= 2) continue;
+		if (!text.some((t) => t === l)) text.push(l);
+	}
+	if (!text.length && !req) return void 0;
+	const [lead, ...rest] = text;
+	const out = [
+		lead && sentences(lead),
+		req && `⟦d.efReq|${req}⟧`,
+		...rest.slice(0, opts.details ?? 2).map((d) => `• ${sentences(d, 200)}`)
+	].filter(Boolean);
+	return out.length ? out.join("\n") : void 0;
+}
+/** Añade el resumen a una descripción existente (p. ej. "⟦d.efType|…⟧"), sin repetirlo. */
+function withSummary(current, summary) {
+	if (!summary) return current;
+	if (!current) return summary;
+	return current.includes(summary) ? current : `${current}\n${summary}`;
+}
+/** Wikitexto → texto: [[a|b]] → b, {{I|Nombre|n}} → "Nombre ×n", sin otras plantillas, negritas ni etiquetas. */
+function wikiPlain(w) {
+	return w.replace(/\{\{\s*(?:I|Item)\s*\|([^|}]+)(?:\|(\d[\d,]*))?[^}]*\}\}/gi, (_m, n, q) => q ? `${n.trim()} ×${q}` : n.trim()).replace(/\[\[(?:File|Image|Category):[^\]]*\]\]/gi, "").replace(/\{\{\s*[^{}|]+\|([^{}]*)\}\}/g, (_m, args) => args.split("|").map((a) => a.trim()).filter((a) => a && !a.includes("=")).pop() ?? "").replace(/\{\{[^{}]*\}\}/g, "").replace(/\[\[(?:[^|\]]*\|)?([^\]]*)\]\]/g, "$1").replace(/'{2,}/g, "").replace(/<ref[\s\S]*?<\/ref>/gi, "").replace(/<[^>]+>/g, "").replace(/[ \t]+/g, " ").trim();
+}
+/**
+* Resumen desde la página de un evento en una wiki MediaWiki (HoYoverse en Fandom…). Prioridad: la plantilla {{Description|…}} (el texto del
+* juego, con apartados "'''Event Guidelines'''" / "'''Eligibility'''" separados por <br>), el parámetro description/quote del infobox y, si no,
+* el primer párrafo ("'''X''' is a Recurring Event where…"). Las viñetas de "Event Details"/"Gameplay" dan los detalles.
+*/
+function wikiSummary(w, title) {
+	const lines = [];
+	const desc = /\{\{\s*Description\s*\|([\s\S]*?)\}\}\s*(?:\n|$)/i.exec(w)?.[1];
+	if (desc) for (const part of desc.replace(/'''([^']+?)'''\s*<br\s*\/?>/gi, "\n$1: ").split(/<br\s*\/?>|\n/i)) {
+		const l = wikiPlain(part);
+		if (l && !/^notes?:/i.test(l)) lines.push(l);
+	}
+	const param = /^\s*\|\s*(?:description|desc|quote|intro)\s*=\s*(.+)$/im.exec(w)?.[1];
+	if (param) lines.push(wikiPlain(param));
+	if (!lines.length) {
+		const first = w.replace(/\{\{[\s\S]*?\}\}/g, (m) => m.includes("\n") ? "" : m).split("\n").find((l) => /^'''/.test(l.trim()) || /^[A-Z]/.test(l.trim()) && l.trim().split(/\s+/).length > 8);
+		if (first) lines.push(wikiPlain(first));
+	}
+	const sec = /^==\s*(?:Event Details|Details|Gameplay|Overview)\s*==[ \t]*$([\s\S]*?)(?=^==[^=]|$(?![\s\S]))/im.exec(w)?.[1];
+	if (sec) {
+		let sub = "";
+		for (const raw of sec.replace(/\{\|[\s\S]*?\|\}/g, "").split("\n")) {
+			const l = raw.trim();
+			const h = /^===+\s*(.+?)\s*===+$/.exec(l);
+			if (h) {
+				sub = h[1].toLowerCase();
+				continue;
+			}
+			if (!/^\*(?!\*)/.test(l) || /duration|time|date/.test(sub)) continue;
+			const t = wikiPlain(l.slice(1));
+			lines.push(/requirement|eligib|unlock/.test(sub) ? `Requirements: ${t}` : t);
+		}
+	}
+	const parts = summarize(lines, {
+		title,
+		sections: false
+	})?.split("\n") ?? [];
+	if (parts.length > 1 && /\bis an? [^.]*\b(?:event|battle pass)\b[^.]*\bversion [\d.]+\.?$/i.test(parts[0])) parts.shift();
+	return parts.length ? parts.join("\n").replace(/^• /, "") : void 0;
+}
+/**
+* Descripciones que ya traían las fuentes (ennead, Uma…): sin HTML ("<i>Fluffy Across the Blue</i>"), sin la fecha del aviso delante
+* ("As of 10:00 p.m., Aug 26, 2026 (UTC), …") y, si son largas, en la primera frase o dos, como los resúmenes. Las claves ⟦…⟧ se dejan.
+*/
+function shortDescription(d) {
+	if (!d) return d;
+	const one = (l) => {
+		const t = tidy(l).replace(/^(?:as of|from|starting)\b.{0,50}?\((?:UTC|GMT)[^)]*\),\s*/i, "").replace(/^[–-]\s*[A-Z][a-z]+ \d{1,2}, \d{4}\s*/, "").replace(/^[a-z]/, (c) => c.toUpperCase());
+		return t.length > 260 ? sentences(t, 260) : t;
+	};
+	return d.split("\n").map((l) => /⟦/.test(l) ? l : one(l)).filter(Boolean).join("\n") || void 0;
+}
 // src/sources/bluepoch.ts
 /**
 * Reverse: 1999 (Global): avisos oficiales de Bluepoch, los mismos que muestra re1999.bluepoch.com/en/home.
@@ -20916,6 +21059,7 @@ async function syncBluepoch(gameId) {
 			const { pulls, items } = pullsIn("reverse1999", ls.slice(a, b));
 			marks[k].ev.pulls = pulls;
 			marks[k].ev.items = items;
+			marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 		});
 	}
 	if (!out.length) throw new Error("bluepoch: sin eventos vigentes en los avisos");
@@ -21169,7 +21313,8 @@ function fromUpdate(gameId, lines, ends, fallbackImage) {
 			out.push({
 				...mk(title, main, image),
 				items,
-				pulls
+				pulls,
+				description: summarize(firstSub > 0 ? sec.slice(0, firstSub) : sec, { title })
 			});
 		}
 		sec.forEach((l, i) => {
@@ -21819,7 +21964,8 @@ function parseNotices(gameId, messages) {
 				official: true,
 				source: "api",
 				precision: approx ? "approx" : void 0,
-				open: r.open || void 0
+				open: r.open || void 0,
+				description: kind === "event" ? summarize(section, { title: name }) : void 0
 			};
 			const stars = (name.match(/[★☆]\s*\d/g) ?? []).length;
 			const split = kind === "banner" && stars >= 2 ? featured.filter((f) => name.includes(f.name)) : [];
@@ -22226,6 +22372,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 			current.pulls = pulls;
 			current.items = items;
 		}
+		if (current && block.length) current.description ??= summarize(block, { title: current.title });
 		block = [];
 	};
 	/** Título del regalo con plazo: el último "[…]" del aviso ("[November 4 (UTC) Maintenance Compensation]") o el asunto sin emojis. */
@@ -22725,6 +22872,10 @@ async function syncEvents(gameId, list, ends) {
 			items,
 			featured: [],
 			pulls,
+			description: summarize(text.split("\n"), {
+				title,
+				sections: false
+			}),
 			minor: p.dayOnly || void 0,
 			precision: p.precision,
 			official: true,
@@ -23229,6 +23380,10 @@ function trickcalNotice(gameId, text, posted) {
 			official: true,
 			source: "api",
 			precision: approx ? "approx" : void 0,
+			description: kind === "event" ? summarize(p.lines, {
+				title,
+				sections: false
+			}) : void 0,
 			minor: /pet errands|^pass$|civvies/i.test(title) || void 0
 		});
 	}
@@ -23519,6 +23674,10 @@ function gfl2Notice(gameId, title, html, year) {
 		pulls,
 		official: true,
 		source: "api",
+		description: kind === "event" ? summarize(text.split("\n"), {
+			title: name,
+			sections: false
+		}) : void 0,
 		minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || void 0
 	};
 }
@@ -24607,6 +24766,7 @@ async function syncKuro(gameId) {
 		const { pulls, items } = pullsIn("wuwa", text.slice(a, b));
 		marks[k].ev.pulls = pulls;
 		marks[k].ev.items = items;
+		marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 	});
 	const next = menu.find((a) => at$3(a.startTime, ASIA) > at$3(notes.startTime, ASIA) && /Version Preview .*Scheduled for Release on ([A-Z][a-z]+) (\d{1,2})/i.test(a.articleTitle));
 	if (next && !isNaN(versionStart)) {
@@ -24944,6 +25104,7 @@ async function syncPgr(gameId) {
 		const { pulls, items } = pullsIn("pgr", text.slice(a, b));
 		marks[k].ev.pulls = pulls;
 		marks[k].ev.items = items;
+		marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 	});
 	if (!out.length) throw new Error(`pgr: sin eventos vigentes en ${notes.articleId}`);
 	const version = text.map((l) => /^[IVX]+\.\s+(.+?)\s+[—–]\s+/.exec(l)?.[1]).find(Boolean);
@@ -25101,7 +25262,11 @@ var at$1 = (s) => {
 	return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4] - SERVER, +m[5], m[6] ? +m[6] : 0) : NaN;
 };
 /** Recompensas de cada página (`{{Event Rewards |Primogem = 60 |sort = …}}`), en una sola consulta (máx. 50 páginas). Título pedido → recompensas. */
-async function eventRewards(host, pages) {
+/**
+* Página de cada evento en la wiki (una sola consulta, máx. 50): recompensas de su {{Event Rewards}} y un resumen de su texto
+* (`wikiSummary`: el {{Description|…}} del juego, requisitos y detalles, como las fichas de Endfield).
+*/
+async function eventPages(host, pages) {
 	const out = /* @__PURE__ */ new Map();
 	const titles = [...new Set(pages)].slice(0, 50);
 	if (!titles.length) return out;
@@ -25124,13 +25289,17 @@ async function eventRewards(host, pages) {
 	for (const r of json?.query?.redirects ?? []) back.set(r.to, back.get(r.from) ?? r.from);
 	for (const p of json?.query?.pages ?? []) {
 		const text = p?.revisions?.[0]?.slots?.main?.content ?? "";
+		if (!text) continue;
 		const block = /\{\{\s*Event Rewards([\s\S]*?)\}\}/i.exec(text)?.[1];
-		if (!block) continue;
-		const items = [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)].map((m) => ({
+		const items = block ? [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)].map((m) => ({
 			name: m[1].trim(),
 			amount: Number(m[2].replace(/,/g, ""))
-		})).filter((i) => i.amount > 0 && !/^sort$/i.test(i.name));
-		if (items.length) out.set(back.get(p.title) ?? p.title, items);
+		})).filter((i) => i.amount > 0 && !/^sort$/i.test(i.name)) : [];
+		const description = wikiSummary(text, p.title);
+		if (items.length || description) out.set(back.get(p.title) ?? p.title, {
+			items,
+			description
+		});
 	}
 	return out;
 }
@@ -25189,12 +25358,14 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 		if (page) pageOf.set(id, page);
 	}
 	if (pullGame) {
-		const rewards = await eventRewards(host, [...pageOf.values()]).catch(() => /* @__PURE__ */ new Map());
+		const pages = await eventPages(host, [...pageOf.values()]).catch(() => /* @__PURE__ */ new Map());
 		for (const e of out) {
-			const items = rewards.get(pageOf.get(e.id) ?? "");
-			if (!items) continue;
-			e.items = items;
-			e.pulls = pullsIn(pullGame, items.map((i) => `${i.name} x${i.amount}`)).pulls;
+			const pg = pages.get(pageOf.get(e.id) ?? "");
+			if (!pg) continue;
+			if (pg.description) e.description = pg.description;
+			if (!pg.items.length) continue;
+			e.items = pg.items;
+			e.pulls = pullsIn(pullGame, pg.items.map((i) => `${i.name} x${i.amount}`)).pulls;
 		}
 	}
 	return {
@@ -25750,6 +25921,7 @@ function parseNotes(gameId, html, out, seen) {
 		const { pulls, items } = pullsIn("nikke", ls.slice(a, b));
 		marks[k].ev.pulls = pulls;
 		marks[k].ev.items = items;
+		marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 	});
 	for (const g of selective) {
 		const id = `${gameId}:banner:ngg:${g.names.join("/")}:${new Date(g.start).toISOString().slice(0, 10)}`;
@@ -25878,7 +26050,7 @@ function parse(gameId, post, out, seen) {
 			gameId,
 			kind,
 			title,
-			description: h.replace(/"[^"]+"/, "").trim() || void 0,
+			description: withSummary(h.replace(/"[^"]+"/, "").trim() || void 0, summarize(ls.slice(i + 1, ((k) => k > 0 ? k : ls.length)(ls.findIndex((l, j) => j > i && (l.startsWith("●") || /^\d+\.\s/.test(l))))), { title })),
 			start: new Date(start).toISOString(),
 			end: new Date(end).toISOString(),
 			...rewardsAt(ls, i),
@@ -27159,6 +27331,10 @@ async function endfieldDetails(titles) {
 			if (/=/.test(n)) continue;
 			tot.set(n, (tot.get(n) ?? 0) + (m[2] ? Number(m[2].replace(/,/g, "")) : 0));
 		}
+		for (const m of w.matchAll(/\{\{\s*(?:I|Item)\s*\|([^|}]+)[^}]*\}\}\]?\s*[x×]\s?(\d[\d,]*)/gi)) {
+			const n = m[1].trim(), v = Number(m[2].replace(/,/g, ""));
+			if (!/=/.test(n) && v > (tot.get(n) ?? 0)) tot.set(n, v);
+		}
 		const items = [...tot].map(([name, amount]) => ({
 			name,
 			amount
@@ -27394,7 +27570,7 @@ async function officialFirst(official, community, communityArt = false) {
 			image: communityArt ? r.image ?? events[i].image : events[i].image ?? r.image,
 			description: events[i].description ?? r.description,
 			featured: events[i].featured.length && !(r.featured.some((f) => f.icon) && events[i].featured.every((f) => r.featured.some((x) => x.name.toLowerCase() === f.name.toLowerCase()))) ? events[i].featured : r.featured.length ? r.featured : events[i].featured,
-			items: events[i].items.length ? events[i].items : r.items,
+			items: events[i].items.length && (events[i].items.some((x) => x.amount > 0) || !r.items.some((x) => x.amount > 0)) ? events[i].items : r.items,
 			pulls: events[i].pulls || r.pulls,
 			hours: events[i].hours ?? r.hours
 		};
@@ -27412,19 +27588,23 @@ async function officialFirst(official, community, communityArt = false) {
 * Una sola consulta (máx. 50 páginas) por ciclo; los que no tienen página o plantilla (p. ej. "Planar Fissure", de bonificación) se quedan igual.
 */
 async function withWikiEventRewards(s, host, game) {
-	const need = s.events.filter((e) => e.kind === "event" && !e.items.length && +new Date(e.end) > Date.now());
+	const need = s.events.filter((e) => e.kind === "event" && (!e.items.length || !e.description) && +new Date(e.end) > Date.now());
 	if (!need.length) return s;
-	const found = await eventRewards(host, need.map((e) => e.title)).catch(() => /* @__PURE__ */ new Map());
+	const base = (t) => t.replace(/\s+(?:Cycle|Phase|Part)\s+\d+$/i, "").replace(/\s*\((?:Rerun|Web)\)$/i, "").trim();
+	const found = await eventPages(host, need.flatMap((e) => [e.title, base(e.title)])).catch(() => /* @__PURE__ */ new Map());
 	if (!found.size) return s;
 	return {
 		...s,
 		events: s.events.map((e) => {
-			const items = need.includes(e) ? found.get(e.title) : void 0;
-			return items ? {
+			const pg = need.includes(e) ? found.get(e.title) ?? found.get(base(e.title)) : void 0;
+			if (!pg) return e;
+			const items = e.items.length ? e.items : pg.items;
+			return {
 				...e,
 				items,
-				pulls: e.pulls || pullsIn(game, items.map((i) => `${i.name} x${i.amount}`)).pulls
-			} : e;
+				pulls: e.pulls || (items.length ? pullsIn(game, items.map((i) => `${i.name} x${i.amount}`)).pulls : 0),
+				description: e.description ?? pg.description
+			};
 		})
 	};
 }
@@ -27509,7 +27689,14 @@ async function withItemIcons$1(id, s) {
 }
 async function syncSource(game) {
 	const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game);
-	const s = await withItemIcons$1(game.id, s0);
+	const s1 = await withItemIcons$1(game.id, s0);
+	const s = {
+		...s1,
+		events: s1.events.map((e) => e.description ? {
+			...e,
+			description: shortDescription(e.description)
+		} : e)
+	};
 	const aligned = s.patches.length ? {
 		...s,
 		patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ""], game.patchCycleDays)

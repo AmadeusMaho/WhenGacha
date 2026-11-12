@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { Featured, GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, segments } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Reverse: 1999 (Global): avisos oficiales de Bluepoch, los mismos que muestra re1999.bluepoch.com/en/home.
@@ -128,6 +129,8 @@ export async function syncBluepoch(gameId: string): Promise<GameSync> {
       const { pulls, items } = pullsIn('reverse1999', ls.slice(a, b))
       marks[k].ev.pulls = pulls
       marks[k].ev.items = items
+      // Resumen desde el título del propio evento (segments alarga el tramo hacia atrás para las recompensas).
+      marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
     })
   }
   if (!out.length) throw new Error('bluepoch: sin eventos vigentes en los avisos')

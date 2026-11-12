@@ -3,6 +3,7 @@ import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { articles, bodyLines, bodyText as body, sized, thumb, type Article } from './stove'
 import { pullsIn } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Epic Seven (servidor Global) sin gachafocus:
@@ -153,6 +154,7 @@ async function syncEvents(gameId: string, list: Article[], ends: Map<string, str
       id: `${gameId}:event:${a.article_id}`, gameId, kind: 'event', title,
       image: thumb(a),
       start: p.start.toISOString(), end: p.end.toISOString(), items, featured: [], pulls,
+      description: summarize(text.split('\n'), { title, sections: false }),
       minor: p.dayOnly || undefined, // los eventos semanales de comentarios no traen hora: campañas menores
       precision: p.precision, official: true, source: 'api',
     })

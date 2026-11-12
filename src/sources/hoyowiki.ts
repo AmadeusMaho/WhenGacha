@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent, Kind } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, type PullGame } from './pulls'
+import { wikiSummary } from './summary'
 
 /**
  * Eventos de Genshin, Star Rail y ZZZ desde sus wikis de Fandom: la plantilla `{{Event List|hidepast=1}}` (la que usa su página "Event") se renderiza con
@@ -26,8 +27,12 @@ const at = (s: string) => {
 type Reward = { name: string; amount: number }
 
 /** Recompensas de cada página (`{{Event Rewards |Primogem = 60 |sort = …}}`), en una sola consulta (máx. 50 páginas). Título pedido → recompensas. */
-export async function eventRewards(host: string, pages: string[]): Promise<Map<string, Reward[]>> {
-  const out = new Map<string, Reward[]>()
+/**
+ * Página de cada evento en la wiki (una sola consulta, máx. 50): recompensas de su {{Event Rewards}} y un resumen de su texto
+ * (`wikiSummary`: el {{Description|…}} del juego, requisitos y detalles, como las fichas de Endfield).
+ */
+export async function eventPages(host: string, pages: string[]): Promise<Map<string, { items: Reward[]; description?: string }>> {
+  const out = new Map<string, { items: Reward[]; description?: string }>()
   const titles = [...new Set(pages)].slice(0, 50)
   if (!titles.length) return out
   const qs = new URLSearchParams({ action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main', titles: titles.join('|'), redirects: '1', format: 'json', formatversion: '2', origin: '*' })
@@ -40,14 +45,21 @@ export async function eventRewards(host: string, pages: string[]): Promise<Map<s
   for (const r of json?.query?.redirects ?? []) back.set(r.to, back.get(r.from) ?? r.from)
   for (const p of json?.query?.pages ?? []) {
     const text: string = p?.revisions?.[0]?.slots?.main?.content ?? ''
+    if (!text) continue
     const block = /\{\{\s*Event Rewards([\s\S]*?)\}\}/i.exec(text)?.[1]
-    if (!block) continue
-    const items = [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)]
+    const items = block ? [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)]
       .map(m => ({ name: m[1].trim(), amount: Number(m[2].replace(/,/g, '')) }))
-      .filter(i => i.amount > 0 && !/^sort$/i.test(i.name))
-    if (items.length) out.set(back.get(p.title) ?? p.title, items)
+      .filter(i => i.amount > 0 && !/^sort$/i.test(i.name)) : []
+    const description = wikiSummary(text, p.title)
+    if (items.length || description) out.set(back.get(p.title) ?? p.title, { items, description })
   }
   return out
+}
+
+/** Solo las recompensas (compatibilidad). */
+export async function eventRewards(host: string, pages: string[]): Promise<Map<string, Reward[]>> {
+  const pg = await eventPages(host, pages)
+  return new Map([...pg].filter(([, v]) => v.items.length).map(([k, v]) => [k, v.items]))
 }
 
 export async function syncHoyoWiki(gameId: string, host: string, pullGame?: PullGame): Promise<GameSync> {
@@ -95,12 +107,14 @@ export async function syncHoyoWiki(gameId: string, host: string, pullGame?: Pull
   }
   // Recompensas y tiradas desde la página de cada evento. Si falla, quedan sin recompensas (sin veredicto), como antes.
   if (pullGame) {
-    const rewards = await eventRewards(host, [...pageOf.values()]).catch(() => new Map<string, Reward[]>())
+    const pages = await eventPages(host, [...pageOf.values()]).catch(() => new Map<string, { items: Reward[]; description?: string }>())
     for (const e of out) {
-      const items = rewards.get(pageOf.get(e.id) ?? '')
-      if (!items) continue
-      e.items = items
-      e.pulls = pullsIn(pullGame, items.map(i => `${i.name} x${i.amount}`)).pulls
+      const pg = pages.get(pageOf.get(e.id) ?? '')
+      if (!pg) continue
+      if (pg.description) e.description = pg.description
+      if (!pg.items.length) continue
+      e.items = pg.items
+      e.pulls = pullsIn(pullGame, pg.items.map(i => `${i.name} x${i.amount}`)).pulls
     }
   }
   return { events: out, patches: [], codes: [] }

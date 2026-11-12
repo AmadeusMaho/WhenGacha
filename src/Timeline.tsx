@@ -27,7 +27,8 @@ const ZOOMS = [{ key: 'zoom.2w', ppd: 56 }, { key: 'zoom.6w', ppd: 28 }, { key: 
 type View = 'timeline' | 'grid'
 
 const precLabel = (p: NonNullable<GameEvent['precision']>) => t(p === 'estimated' ? 'prec.estimated' : 'prec.approx')
-const precHint = (p: NonNullable<GameEvent['precision']>) => t(p === 'estimated' ? 'prec.estimatedHint' : 'prec.approxHint')
+// Hora aproximada: basta la etiqueta ("Hora aprox."); "Fechas reales, horas aproximadas" no aportaba nada (pedido del dueño, 12 nov 2026).
+const precHint = (p: NonNullable<GameEvent['precision']>) => t(p === 'estimated' ? 'prec.estimatedHint' : 'prec.approx')
 
 /** Tiñe la aurora del fondo con el color del juego que se está viendo (--glow); al salir la deja como estaba. */
 function useGlow(game?: Game) {

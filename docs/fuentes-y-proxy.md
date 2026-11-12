@@ -571,3 +571,19 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
   eventos con hora exacta en UTC-7; se leen con `parseNotices` y se limpian cabeceras ("Recruitment Period ✦", "Zone 2 – …", packs de la tienda).
   En la 2.1 pasa de 1 evento a 11 (Cooling Supply Station, Cataclysm Survivor, Urgent Bounty, A Finale Echoing, Call for Best Records…) y los
   reclutamientos de Leafia y del disco. Discord solo reenvía algunos tuits (2 de ~12). Sin imagen por evento (las notas no ilustran cada uno).
+
+## Descripciones resumidas y recompensas (12 nov 2026, noche)
+
+- **Resumen de cada evento** (`src/sources/summary.ts`), al estilo de las fichas de Endfield: una o dos frases de presentación, los requisitos
+  (`⟦d.efReq|…⟧`) y hasta dos detalles con viñeta; sin fechas, horas, recompensas (salen aparte), compensaciones, saludos ni notas "※". Sale del
+  texto que cada fuente **ya descarga** (sin peticiones nuevas): lector de avisos (`parseNotices`: Discord, Trickcal, MHO, Stella Sora), notas de Kuro
+  (WuWa, PGR), avisos de GFL2, Bluepoch (R:1999), nikke.gg, neverness.gg (NTE), BD2, STOVE (CZN, Epic Seven) y la wiki de HoYoverse (`eventPages`
+  en `hoyowiki.ts`: `{{Description|…}}` del juego y los subapartados Requirements/Summary de "Event Details"; también para los eventos que ya tenían
+  recompensas, en la misma consulta). Las descripciones que ya traían las fuentes se limpian (`shortDescription`: sin HTML ni "As of <fecha> (UTC),").
+  Cobertura de eventos vigentes con texto, antes → después: Genshin 3→14/17, HSR 4→9/16, ZZZ 0→10/13, WuWa 0→5, PGR 0→7/7, Stella Sora 0→10/11,
+  Trickcal 0→8/8, GFL2 1→10/14, R:1999 0→12/22, NIKKE 0→7/8, CZN 0→6/17, BD2 0→7/9, NTE 0→9/16. Siguen sin texto: los eventos de GameWith (MHO),
+  AFK Journey, Honkai 3rd, Arknights, Blue Archive, Infinity Nikki, Limbus, FGO y Azur Lane (sus fuentes no traen el texto del evento).
+- La ficha ya no repite "Fechas reales, horas aproximadas" (la etiqueta ≈ Hora aprox. lo dice); la fecha estimada sí se explica.
+- **Endfield, recompensas**: el total que anuncia el texto con la cantidad fuera de la plantilla (`[{{Item|Oroberyl|gv=no}}]x1000`) se leía como 0 y
+  solo contaba la tabla de tareas (Yuanyuan's Blazing Stoves: 600 en vez de 1000). Ahora, si el texto anuncia más, manda el texto.
+- **Unión de fuentes** (`officialFirst`): una lista oficial que solo nombra objetos sin cantidad (avisos de NTE) ya no tapa la de la comunidad si esta trae cifras.

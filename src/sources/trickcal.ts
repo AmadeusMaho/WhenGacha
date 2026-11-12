@@ -3,6 +3,7 @@ import type { Featured, GameEvent, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 import { htmlText, parseNotices, rangeIn, type Message } from './discord'
 import { pullsIn } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Trickcal: Chibi Go (Epid Games; versión global, servidor único en UTC+9). Fuentes revisadas el 12 nov 2026:
@@ -169,6 +170,8 @@ export function trickcalNotice(gameId: string, text: string, posted: number): Ga
       id: `${gameId}:${kind}:bili:${title}:${new Date(start).toISOString().slice(0, 10)}`, gameId, kind, title,
       start: new Date(start).toISOString(), end: new Date(r.end).toISOString(), items: found.items, pulls: found.pulls,
       featured: kind === 'banner' && apostle ? [{ name: title, rarity: 3 }] : [], official: true, source: 'api', precision: approx ? 'approx' : undefined,
+      // "Event Intro: Earn points in Dreamland…" y "Unlock Condition: Clear World Map…": resumen como las fichas de Endfield.
+      description: kind === 'event' ? summarize(p.lines, { title, sections: false }) : undefined,
       minor: /pet errands|^pass$|civvies/i.test(title) || undefined,
     })
   }

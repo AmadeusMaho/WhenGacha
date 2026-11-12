@@ -20,8 +20,9 @@ import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
 import { syncHonkai3 } from './honkai3'
-import { eventRewards, syncHoyoWiki } from './hoyowiki'
+import { eventPages, syncHoyoWiki } from './hoyowiki'
 import { pullsIn, type PullGame } from './pulls'
+import { shortDescription } from './summary'
 import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
 import { syncNikkeGg } from './nikkegg'
@@ -161,7 +162,9 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
       // Destacados de la oficial, salvo que la comunidad traiga los mismos con retrato (Trickcal: el tuit dice "★3 Vivi"; lootandwaifus da su icono y rol).
       featured: events[i].featured.length && !(r.featured.some(f => f.icon) && events[i].featured.every(f => r.featured.some(x => x.name.toLowerCase() === f.name.toLowerCase())))
         ? events[i].featured : r.featured.length ? r.featured : events[i].featured,
-      items: events[i].items.length ? events[i].items : r.items,
+      // Recompensas: las de la oficial, salvo que solo nombre los objetos sin cantidad (avisos de NTE: "including Annulith, Fons…") y la
+      // comunidad sí traiga cifras: entonces mandan las de la comunidad (antes una lista sin cifras tapaba la buena).
+      items: events[i].items.length && (events[i].items.some(x => x.amount > 0) || !r.items.some(x => x.amount > 0)) ? events[i].items : r.items,
       pulls: events[i].pulls || r.pulls, hours: events[i].hours ?? r.hours }
   }
   // Códigos: los de la fuente oficial primero; sin repetir el mismo código (p. ej. el de Discord y el de la wiki).
@@ -175,13 +178,18 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
  * Una sola consulta (máx. 50 páginas) por ciclo; los que no tienen página o plantilla (p. ej. "Planar Fissure", de bonificación) se quedan igual.
  */
 async function withWikiEventRewards(s: GameSync, host: string, game: PullGame): Promise<GameSync> {
-  const need = s.events.filter(e => e.kind === 'event' && !e.items.length && +new Date(e.end) > Date.now())
+  // Eventos vigentes sin recompensas o sin descripción. "To Temper Thyself and Journey Far Cycle 6" tiene su página sin el número de ciclo.
+  const need = s.events.filter(e => e.kind === 'event' && (!e.items.length || !e.description) && +new Date(e.end) > Date.now())
   if (!need.length) return s
-  const found = await eventRewards(host, need.map(e => e.title)).catch(() => new Map<string, { name: string; amount: number }[]>())
+  const base = (t: string) => t.replace(/\s+(?:Cycle|Phase|Part)\s+\d+$/i, '').replace(/\s*\((?:Rerun|Web)\)$/i, '').trim()
+  const found = await eventPages(host, need.flatMap(e => [e.title, base(e.title)]))
+    .catch(() => new Map<string, { items: { name: string; amount: number }[]; description?: string }>())
   if (!found.size) return s
   return { ...s, events: s.events.map(e => {
-    const items = need.includes(e) ? found.get(e.title) : undefined
-    return items ? { ...e, items, pulls: e.pulls || pullsIn(game, items.map(i => `${i.name} x${i.amount}`)).pulls } : e
+    const pg = need.includes(e) ? found.get(e.title) ?? found.get(base(e.title)) : undefined
+    if (!pg) return e
+    const items = e.items.length ? e.items : pg.items
+    return { ...e, items, pulls: e.pulls || (items.length ? pullsIn(game, items.map(i => `${i.name} x${i.amount}`)).pulls : 0), description: e.description ?? pg.description }
   }) }
 }
 
@@ -236,7 +244,9 @@ async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
   const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), syncSourceRaw(game)) : await syncSourceRaw(game)
-  const s = await withItemIcons(game.id, s0)
+  const s1 = await withItemIcons(game.id, s0)
+  // Descripciones sin HTML y breves (resúmenes al estilo de Endfield; summary.ts).
+  const s = { ...s1, events: s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e)) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
   if (aligned.codes.length || !game.api) return aligned

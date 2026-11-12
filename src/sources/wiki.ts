@@ -205,6 +205,13 @@ async function endfieldDetails(titles: string[]): Promise<Map<string, { descript
       if (/=/.test(n)) continue
       tot.set(n, (tot.get(n) ?? 0) + (m[2] ? Number(m[2].replace(/,/g, '')) : 0))
     }
+    // Total anunciado en el texto, con la cantidad fuera de la plantilla: "claim rewards including [{{Item|Oroberyl|gv=no}}]x1000" (Yuanyuan's
+    // Blazing Stoves, 12 nov 2026). La tabla de tareas de esa página solo sumaba 600 (los hitos de la posada no salen en ella): si el texto
+    // anuncia más, manda el texto.
+    for (const m of w.matchAll(/\{\{\s*(?:I|Item)\s*\|([^|}]+)[^}]*\}\}\]?\s*[x×]\s?(\d[\d,]*)/gi)) {
+      const n = m[1].trim(), v = Number(m[2].replace(/,/g, ''))
+      if (!/=/.test(n) && v > (tot.get(n) ?? 0)) tot.set(n, v)
+    }
     const items = [...tot].map(([name, amount]) => ({ name, amount })).sort((a, b) => Number(/oroberyl|permit/i.test(b.name)) - Number(/oroberyl|permit/i.test(a.name)) || b.amount - a.amount).slice(0, 10)
     out.set(p.title, { description, items })
   }

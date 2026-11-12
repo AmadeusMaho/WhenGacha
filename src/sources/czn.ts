@@ -2,6 +2,7 @@ import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { articles, bodyLines, thumb, type Article } from './stove'
 import { pullsIn } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Chaos Zero Nightmare (servidor Global): eventos desde los avisos oficiales de su comunidad en STOVE (los banners vienen de Prydwen).
@@ -98,7 +99,7 @@ function fromUpdate(gameId: string, lines: string[], ends: Map<string, string>, 
     if (main) {
       const firstSub = sec.findIndex(l => l.startsWith('◆') && !NOT_SUB.test(l.slice(1).trim()))
       const { pulls, items } = pullsIn('czn', firstSub > 0 ? sec.slice(0, firstSub) : sec)
-      out.push({ ...mk(title, main, image), items, pulls })
+      out.push({ ...mk(title, main, image), items, pulls, description: summarize(firstSub > 0 ? sec.slice(0, firstSub) : sec, { title }) })
     }
     // Sub-eventos: "◆ Nombre" con periodo propio (misma línea o la siguiente), o los que heredan el del evento.
     sec.forEach((l, i) => {

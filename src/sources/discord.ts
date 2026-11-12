@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent, Kind, Patch, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Anuncios oficiales que llegan a NUESTRO servidor de Discord: cada canal "sigue" (función Follow de Discord) el canal de anuncios oficial de un juego
@@ -469,6 +470,8 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
         items, featured, pulls, official: true, source: 'api',
         precision: approx ? 'approx' : undefined, open: r.open || undefined,
+        // Resumen del apartado ("Event Intro: …", requisitos): como las fichas de Endfield. Solo eventos; los banners ya dicen a quién destacan.
+        description: kind === 'event' ? summarize(section, { title: name }) : undefined,
       }
       // Varios rate-up en el título ("Apostle ★3 Vivi,★3 Rohne Limited-Time Rate Up", Trickcal): un banner por Apóstol, para unirse con los de lootandwaifus.
       const stars = (name.match(/[★☆]\s*\d/g) ?? []).length

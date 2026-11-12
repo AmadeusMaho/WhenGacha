@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent, Kind, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
+import { summarize } from './summary'
 
 /**
  * BrownDust2 (Global): avisos oficiales de browndust2.com, desde la API que usa su propia web (webapi.browndust2.com/api/notices,
@@ -159,6 +160,7 @@ function parseNotice(gameId: string, n: Notice, m: Maint, out: GameEvent[], seen
       current.pulls = pulls
       current.items = items
     }
+    if (current && block.length) current.description ??= summarize(block, { title: current.title })
     block = []
   }
   /** Título del regalo con plazo: el último "[…]" del aviso ("[November 4 (UTC) Maintenance Compensation]") o el asunto sin emojis. */

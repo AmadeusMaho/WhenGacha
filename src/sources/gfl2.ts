@@ -3,6 +3,7 @@ import type { Featured, GameEvent, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
 import { htmlText, rangeIn } from './discord'
+import { summarize } from './summary'
 
 /**
  * Girls' Frontline 2: Exilium (Sunborn / Darkwinter; servidor global, horas en UTC-4). Fuentes revisadas el 12 nov 2026:
@@ -218,6 +219,8 @@ export function gfl2Notice(gameId: string, title: string, html: string, year: nu
     start: new Date(r.start).toISOString(), end: new Date(r.end).toISOString(),
     // Los destacados (con retrato y SR) y si es reposición los pone la IOP Wiki al unirse.
     items, featured: [], pulls, official: true, source: 'api',
+    // Resumen del aviso ("During the event, clear event stages…", "[Unlock Conditions]"); los banners dicen a quién destacan.
+    description: kind === 'event' ? summarize(text.split('\n'), { title: name, sections: false }) : undefined,
     // Pases y tiendas de pago ("Voyage Logs", "Broker's Rebate"): menores.
     minor: /logs?$|rebate|pack|bundle|shop/i.test(name) || undefined,
   }

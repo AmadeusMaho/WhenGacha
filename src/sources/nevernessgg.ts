@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
+import { summarize, withSummary } from './summary'
 
 /**
  * NTE (Global): avisos oficiales de Perfect World ("Source: Perfect World"), tal como los reproduce neverness.gg (red DotGG) en su API
@@ -70,7 +71,9 @@ function parse(gameId: string, post: Post, out: GameEvent[], seen: Set<string>) 
     seen.add(id)
     out.push({
       id, gameId, kind, title,
-      description: banner ? undefined : h.replace(/"[^"]+"/, '').trim() || undefined,
+      // Tipo ("New Mystery Box Event") + resumen del apartado, hasta el siguiente "●".
+      description: banner ? undefined : withSummary(h.replace(/"[^"]+"/, '').trim() || undefined,
+        summarize(ls.slice(i + 1, (k => (k > 0 ? k : ls.length))(ls.findIndex((l, j) => j > i && (l.startsWith('●') || /^\d+\.\s/.test(l))))), { title })),
       start: new Date(start).toISOString(), end: new Date(end).toISOString(),
       // Recompensas: los "Nombre xN" hasta el siguiente apartado "●"; 160 Annulith = 1 tirada (pulls.ts).
       ...rewardsAt(ls, i),

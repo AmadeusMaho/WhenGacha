@@ -77,7 +77,8 @@ export default function EventModal({ event: e, onClose, closing, ...ctx }: Ctx &
           </div>
           {e.pulls > 0 && <p className="pulls">{t('modal.pulls', { n: e.pulls })}{e.hours ? t('modal.pullsHours', { h: e.hours }) : ''}</p>}
           {e.description && <p className="desc">{tx(e.description)}</p>}
-          {e.precision && <p className="desc muted">{t(e.precision === 'estimated' ? 'prec.estimatedHint' : 'prec.approxHint')}</p>}
+          {/* "Hora aprox." ya lo dice la etiqueta ≈; solo se explica la fecha estimada (aún sin anunciar). */}
+          {e.precision === 'estimated' && <p className="desc muted">{t('prec.estimatedHint')}</p>}
           {plan && (
             <>
               <h3>{t('pull.title')}</h3>

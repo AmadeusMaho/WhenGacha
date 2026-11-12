@@ -3,6 +3,7 @@ import { withGrayRavens } from './grayravens'
 import type { GameEvent, Patch, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, segments } from './pulls'
+import { summarize } from './summary'
 
 /**
  * Eventos de Wuthering Waves desde las notas de parche oficiales de Kuro Games.
@@ -109,6 +110,9 @@ export async function syncKuro(gameId: string): Promise<GameSync> {
     const { pulls, items } = pullsIn('wuwa', text.slice(a, b))
     marks[k].ev.pulls = pulls
     marks[k].ev.items = items
+    // Resumen del apartado ("During the event, complete the campaigns…"), desde el título del propio evento: `segments` alarga el tramo hacia
+    // atrás sobre cabeceras ajenas ("[New Resonator]") para no perder recompensas, y su biografía salía como descripción.
+    marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
   })
   // Pase de batalla (Pioneer Podcast): toda la versión, del fin del mantenimiento al inicio del de la siguiente. El inicio de ese mantenimiento
   // sale de su "Update Maintenance Notice" si ya existe; si no, del día del "Version Preview … Scheduled for Release on November 12th (UTC+8)"
@@ -369,6 +373,7 @@ export async function syncPgr(gameId: string): Promise<GameSync> {
     const { pulls, items } = pullsIn('pgr', text.slice(a, b))
     marks[k].ev.pulls = pulls
     marks[k].ev.items = items
+    marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
   })
   if (!out.length) throw new Error(`pgr: sin eventos vigentes en ${notes.articleId}`)
   // Arte de la wiki GRAY RAVENS (la nota oficial no trae imágenes): nombre de la versión de "I. A Comet's Afterglow — New Character".
