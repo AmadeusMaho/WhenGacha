@@ -149,3 +149,62 @@ html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(
   html[data-skin] .skin-live.kb { animation: none !important; }
   html[data-skin] .skin-live-fx { display: none; }
 }
+
+/* ===== Música de la skin (SkinMusic.tsx): botón junto al pincel y mini-reproductor flotante =====
+   El vídeo se ve siempre mientras suena (YouTube exige ≥ 200×200 px y no permite ocultarlo): ventanita del mínimo, 200×200, en una
+   esquina (también en móvil), con una barra de título fina encima. Fondo oscuro opaco en todas las skins (en Genshin el panel es claro
+   y translúcido y el título no se leía); la línea de abajo, del color de la skin. */
+.music-btn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; } /* como el pincel (va dentro de .skin, arriba y sin estirarse): misma altura y misma línea */
+.music-btn svg { opacity: 1; margin-block: -1px; } /* igual que el pincel (.skin > .lang-btn svg) */
+.music-btn.on { color: var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
+.music-dock { position: fixed; bottom: 16px; z-index: 900; width: min-content; /* = el vídeo (200 justos; con width: 200px el borde lo dejaba en 198) y el título se recorta */ display: flex; flex-direction: column; overflow: hidden;
+  background: #121418; border: 1px solid rgba(255, 255, 255, .14); border-radius: 12px; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); animation: music-in .25s ease-out both; }
+.music-dock.right { right: 16px; } .music-dock.left { left: 16px; }
+@keyframes music-in { from { opacity: 0; transform: translateY(12px); } }
+@media (prefers-reduced-motion: reduce) { .music-dock { animation: none; } }
+.music-head { display: flex; align-items: center; gap: 3px; padding: 4px 4px 4px 9px; color: #f1f2f3; box-shadow: inset 0 -2px 0 var(--acc); }
+.music-title { flex: 1; min-width: 0; display: grid; line-height: 1.2; }
+.music-title b { font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-title small { color: #b9bec6; font-size: .72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-ctl { flex: none; width: 24px; height: 24px; display: grid; place-items: center; border: 0; border-radius: 8px; background: rgba(255, 255, 255, .1); color: #f1f2f3; font: inherit; font-size: .85rem; cursor: pointer; }
+.music-ctl:hover { background: rgba(255, 255, 255, .18); }
+.music-ctl:focus-visible { outline: 2px solid var(--acc); outline-offset: 1px; }
+/* Selector de modo: dos pestañas; la activa, con el icono y una línea del color de la skin (texto blanco: se lee con cualquier acento). */
+.music-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 5px 5px 6px; }
+.music-modes button { display: flex; align-items: center; justify-content: center; gap: 5px; min-width: 0; padding: 5px 4px; border: 0; border-radius: 7px; cursor: pointer;
+  background: rgba(255, 255, 255, .05); color: #b9bec6; font: inherit; font-size: .72rem; font-weight: 700; white-space: nowrap; transition: background .15s, color .15s; }
+.music-modes button span { overflow: hidden; text-overflow: ellipsis; }
+.music-modes button svg { flex: none; opacity: .75; }
+.music-modes button:hover { background: rgba(255, 255, 255, .1); color: #fff; }
+.music-modes button.on { background: rgba(255, 255, 255, .13); color: #fff; box-shadow: inset 0 -2px 0 var(--acc); }
+.music-modes button.on svg { color: var(--acc); opacity: 1; }
+.music-modes button:focus-visible { outline: 2px solid var(--acc); outline-offset: 1px; }
+.music-frame { display: block; width: 200px; height: 200px; border: 0; background: #000; }
+@media (max-width: 700px) { .music-dock { bottom: 8px; } .music-dock.right { right: 8px; } .music-dock.left { left: 8px; } }
+/* Cada skin, con su forma de botón: Genshin y Uma redondeadas (píldora), HSR con borde dorado fino, ZZZ cuadrada con amarillo, WuWa con el
+   canto dorado, NIKKE en cápsula azul. */
+html[data-skin="genshin"] .music-modes button, html[data-skin="uma"] .music-modes button { border-radius: 999px; }
+html[data-skin="genshin"] .music-modes button.on { box-shadow: inset 0 0 0 1px var(--acc); }
+html[data-skin="uma"] .music-modes button.on { box-shadow: inset 0 0 0 1px var(--acc); }
+html[data-skin="hsr"] .music-modes button { border-radius: 4px; }
+html[data-skin="hsr"] .music-modes button.on { box-shadow: inset 0 0 0 1px rgba(255, 226, 163, .55), inset 0 -2px 0 var(--acc); }
+html[data-skin="zzz"] .music-modes button { border-radius: 0; font-weight: 800; font-size: .64rem; gap: 4px; padding-inline: 2px; }
+html[data-skin="zzz"] .music-title b { font-size: .74rem; } /* su letra (Rubik) es muy ancha: así cabe "Populares" y casi todo el nombre */
+html[data-skin="zzz"] .music-modes button.on { box-shadow: inset 0 0 0 2px var(--acc); }
+html[data-skin="wuwa"] .music-modes button { border-radius: 2px; }
+html[data-skin="wuwa"] .music-modes button.on { box-shadow: inset 2px 0 0 var(--acc), inset 0 -1px 0 rgba(255, 240, 196, .5); }
+html[data-skin="nikke"] .music-modes button { border-radius: 999px; }
+html[data-skin="nikke"] .music-modes button.on { background: rgba(127, 203, 255, .16); box-shadow: inset 0 0 0 1px var(--acc2); }
+html[data-skin="nikke"] .music-modes button.on svg { color: var(--acc2); }
+/* Arknights: diálogo carbón del juego, esquina cortada y canto blanco; botones cuadrados. */
+html[data-skin="arknights"] .music-dock { border-radius: 0; border: 0; background: #16171a; box-shadow: inset 2px 0 0 rgba(255, 255, 255, .85), 0 0 0 1px rgba(255, 255, 255, .12), 0 14px 40px rgba(0, 0, 0, .6);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
+html[data-skin="arknights"] .music-head { box-shadow: inset 0 -3px 0 var(--ak-yel); }
+html[data-skin="arknights"] .music-title b { font-family: var(--ak-head); letter-spacing: .08em; }
+html[data-skin="arknights"] .music-title small { font-family: var(--ak-num); color: #b4b9bf; }
+html[data-skin="arknights"] .music-ctl { border-radius: 0; background: #0c0d0f; }
+html[data-skin="arknights"] .music-ctl:hover { background: var(--ak-yel); color: #111214; }
+html[data-skin="arknights"] .music-modes button { border-radius: 0; background: #0c0d0f; font-family: var(--ak-num); letter-spacing: .04em;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+html[data-skin="arknights"] .music-modes button.on { background: #2c2e32; box-shadow: inset 3px 0 0 var(--ak-yel); }
+html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }

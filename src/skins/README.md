@@ -319,3 +319,15 @@ Una skin nueva debe traer su versión de ambos (bloque "Destacados" de su CSS) y
 3. Si también quitas Premium: `server/supporter.mjs` (+ `.d.mts`), `server/support/`, `scripts/premium.mjs`, el script `premium` de
    `package.json`, las líneas de `/api/` en `server/index.mjs` y `vite.config.ts`, `docs/premium.md` y el apartado de Premium de `public/privacidad.html`.
 4. `npm run build:prod` y subir `dist/` como siempre.
+
+## Música de cada skin (`SkinMusic.tsx`, 13 nov 2026)
+
+Botón 🎵 a la izquierda del pincel (mismo tamaño y línea), solo con una skin puesta. Abre un mini-reproductor flotante de YouTube
+(`youtube-nocookie.com`) del mínimo que permite YouTube, 200×200; empieza cerrado y al cerrarlo la música para. Normas de YouTube que obligan a
+este diseño: el reproductor tiene que verse mientras suena y no se puede ocultar ni quedarse solo con el audio.
+
+Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en el color de cada skin; se recuerda): **toda la banda sonora** (por defecto), una lista OFICIAL del juego barajada al abrir
+(la API de la ventana: `setShuffle` + `playVideoAt` al azar), que mantiene el propio estudio, así que lo nuevo entra solo; y **populares**, las 4
+subidas oficiales más vistas. Wuthering Waves no tiene lista oficial: usa sus 20 pistas más vistas de "Wuthering Waves - Topic".
+Para cambiar la música de una skin, su entrada de `MUSIC`: `list` (id "PL…" de una lista oficial) o `ids` (vídeos sueltos). Comprobación de
+que es oficial y se puede incrustar: `https://www.youtube.com/oembed?url=…` (200 con el canal; 401 si la inserción está desactivada).

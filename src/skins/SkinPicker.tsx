@@ -6,6 +6,7 @@ import { useLiveWithFeed } from './liveFeed'
 import { clearNotice, loginWithCode, logout, requestLink, useNotice, type ApiResult } from './premium'
 import { SKINS, applySkin, endPreview, setSkin, startPreview, usePreview, useSkin, useSupporter } from './skins'
 import SupportDialog from './SupportDialog'
+import SkinMusic from './SkinMusic'
 import './skins.css'
 import './wuwa.css'
 import './genshin.css'
@@ -117,7 +118,12 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
     if (r === 'ok') { setCode(''); setCodeStatus(null); setView('skins') } else setCodeStatus(r)
   }
 
+  // Música de la skin puesta (no de la vista previa): el botón va a la izquierda del pincel y solo existe con una skin.
+  const music = skin && supporter ? SKINS.find(k => k.id === skin) : undefined
   return (
+    <>
+    {/* `key`: al cambiar de skin el reproductor se reinicia cerrado (otra lista; no debe empezar a sonar sola). */}
+    {music && <SkinMusic key={music.id} skin={music.id} name={music.name} lang={lang} />}
     <div className="skin" ref={box}>
       <button className="btn sm lang-btn" onClick={toggle} aria-haspopup="menu" aria-expanded={open} title={s.title} aria-label={s.title}>
         {/* Paleta de acuarela (12 nov 2026): contorno con el hueco del pulgar y cuatro pastillas de color con el centro aguado; en el color del botón. */}
@@ -202,5 +208,6 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
         onLogin={() => { setDialog(false); toggle(); setView('login') }} />}
       {live && active && <LiveWallpaper key={def?.liveAllTabs ? `${active}:${tab}` : active} skin={active} live={live} />}
     </div>
+    </>
   )
 }
