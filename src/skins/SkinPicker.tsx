@@ -49,7 +49,7 @@ const TXT: Record<Lang, Record<string, string>> = {
  * `timeline`: si se está viendo la línea de tiempo (ahí va el fondo animado de la skin, si tiene).
  * `donateUrl`: donación sin Premium, por si el apoyo con Premium aún no está configurado en el servidor.
  */
-export default function SkinPicker({ timeline = false, donateUrl }: { timeline?: boolean; donateUrl?: string }) {
+export default function SkinPicker({ timeline = false, tab, donateUrl }: { timeline?: boolean; tab?: string; donateUrl?: string }) {
   const lang = useLang()
   const s = TXT[lang] ?? TXT.es
   const skin = useSkin()
@@ -59,7 +59,7 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
   // Lo que se ve: la vista previa (sin Premium) o la skin elegida.
   const active = preview ?? skin
   // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), solo en la línea de tiempo (o en todas las pestañas si la
-  // skin lo pide con `liveAllTabs`; ahí el mismo vídeo sigue al cambiar de pestaña y el siguiente sale en la próxima visita).
+  // skin lo pide con `liveAllTabs`; ahí cada pestaña muestra el siguiente fondo: LiveWallpaper se vuelve a montar con la pestaña en la key).
   const def = SKINS.find(k => k.id === active)
   const live = useLiveWithFeed(active, timeline || def?.liveAllTabs ? def?.live : undefined)
   const [open, setOpen] = useState(false)
@@ -186,7 +186,7 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
       )}
       {dialog && <SupportDialog donateUrl={donateUrl} onClose={() => setDialog(false)}
         onLogin={() => { setDialog(false); toggle(); setView('login') }} />}
-      {live && active && <LiveWallpaper key={active} skin={active} live={live} />}
+      {live && active && <LiveWallpaper key={def?.liveAllTabs ? `${active}:${tab}` : active} skin={active} live={live} />}
     </div>
   )
 }
