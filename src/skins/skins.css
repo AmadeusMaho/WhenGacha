@@ -20,6 +20,12 @@
 .skin-try { white-space: nowrap; flex: none; font-size: .68rem; font-weight: 700; letter-spacing: .04em; color: var(--acc); padding: 1px 7px; border-radius: 999px; border: 1px solid currentColor; opacity: .85; }
 
 .skin-lock { font-size: .8rem; }
+/* Opción de la skin puesta (Arknights: interruptor del giroscopio, akTilt.ts). */
+.skin-opt { margin-top: 6px; padding: 10px 12px 4px; border-top: 1px solid var(--line); }
+.skin-opt label { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; font-size: .85rem; color: var(--text); }
+.skin-opt input { flex: none; width: 16px; height: 16px; margin: 2px 0 0; accent-color: var(--acc); cursor: pointer; }
+.skin-opt span { display: grid; gap: 2px; font-weight: 600; }
+.skin-opt small { font-weight: 400; font-size: .74rem; line-height: 1.4; color: var(--muted); }
 /* minmax(0, 1fr): sin esto la columna medía lo que el campo de correo + el botón y "Enviar enlace" se salía del panel (fuentes anchas, p. ej. ZZZ). */
 .skin-unlock { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 6px; padding: 10px 12px 6px; border-top: 1px solid var(--line); }
 .skin-unlock p { margin: 0; font-size: .8rem; line-height: 1.45; color: var(--muted); }

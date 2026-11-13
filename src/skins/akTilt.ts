@@ -7,10 +7,27 @@
  *   el "centro" y se va recalibrando despacio, así solo cuentan los giros. En iPhone el navegador pide permiso: se pide con el primer
  *   toque en la página (tiene que ser un gesto del usuario: se usa `click`); si se deniega, no pasa nada.
  * Solo con la skin puesta; nada con "reducir movimiento".
+ * Se puede apagar (13 nov 2026, "por si molesta"): interruptor en el menú de skins, solo visible con esta skin (SkinPicker.tsx). Se guarda en
+ * el navegador (`whengacha:ak-tilt` = "off") y marca <html data-ak-flat>; apagado, ni el ratón ni el sensor inclinan nada.
  */
 const SEL = 'header nav button, .btn, .soon-card, .up-card, .pick, .portrait, .bport, .chip, .fopt, .bar, .gcard, .ecard'
 const root = document.documentElement
-const on = () => root.getAttribute('data-skin') === 'arknights'
+const KEY = 'whengacha:ak-tilt'
+let enabled = (() => { try { return localStorage.getItem(KEY) !== 'off' } catch { return true } })()
+root.toggleAttribute('data-ak-flat', !enabled)
+const tiltListeners = new Set<() => void>()
+const on = () => enabled && root.getAttribute('data-skin') === 'arknights'
+
+/** Interruptor del efecto (para `useSyncExternalStore`). */
+export const tiltEnabled = () => enabled
+export const subscribeTilt = (l: () => void) => { tiltListeners.add(l); return () => { tiltListeners.delete(l) } }
+export function setTiltEnabled(v: boolean) {
+  enabled = v
+  try { localStorage.setItem(KEY, v ? 'on' : 'off') } catch { /* sin localStorage: vale para esta visita */ }
+  root.toggleAttribute('data-ak-flat', !v)
+  if (!v) { reset(cur); cur = null; stop() }
+  tiltListeners.forEach(l => l())
+}
 const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 
 // ---------- Ratón ----------
