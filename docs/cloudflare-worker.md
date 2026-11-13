@@ -82,3 +82,12 @@ Comprobación: `https://<dirección de Botkeep>/healthz` debe traer `x-served-by
   Si se nota, baja `TIMEOUT_MS` (p. ej. `4000`).
 - Límites en memoria por servidor (intentos por IP, enlaces de acceso de un solo uso, caché de 10 min de la lista de donantes): al
   cambiar de servidor pueden desfasarse unos minutos. No afecta a pagos ni a sesiones.
+
+## HTTPS obligatorio (13 nov 2026)
+
+El dominio ya tenía certificado (Cloudflare, Let's Encrypt, `*.whengacha.site`), pero el Worker también atendía las visitas por `http://`
+sin redirigirlas: quien escribía `whengacha.site` a secas o venía de un enlace antiguo veía el sitio como "No seguro". Ahora `worker.js`
+redirige `http` → `https` (301 en GET/HEAD; 308 en el resto, que conserva el método y el cuerpo, p. ej. el aviso de Ko-fi) y pone
+`Strict-Transport-Security: max-age=15552000` (6 meses, sin `includeSubDomains` ni `preload`). Hay que desplegarlo con `npx wrangler deploy`.
+Refuerzo opcional sin código: Cloudflare → SSL/TLS → Edge Certificates → **Always Use HTTPS** (hace lo mismo antes de llegar al Worker).
+Comprobación: `http://whengacha.site/` debe responder 301 con `location: https://whengacha.site/`.

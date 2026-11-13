@@ -25,14 +25,26 @@ function upstreamRequest(request, origin, body) {
 
 const isDown = (res, env) => res.status >= 500 || (env.REQUIRE_MARKER === '1' && !res.headers.get('x-served-by'))
 
+// HSTS (13 nov 2026): el navegador recuerda durante 6 meses usar siempre https en este dominio (sin subdominios ni lista de precarga,
+// que son difíciles de deshacer). El certificado lo pone Cloudflare (Let's Encrypt, *.whengacha.site).
+const HSTS = 'max-age=15552000'
+
 function withVia(res, via) {
   const out = new Response(res.body, res)
   out.headers.set('x-whengacha-via', via)
+  out.headers.set('strict-transport-security', HSTS)
   return out
 }
 
 export default {
   async fetch(request, env) {
+    // Visitas por http (escribir "whengacha.site" a secas, enlaces o marcadores antiguos): se mandan a https. Antes se servían tal cual y
+    // el sitio salía "No seguro". GET/HEAD con 301; el resto con 308, que conserva el método y el cuerpo.
+    const url = new URL(request.url)
+    if (url.protocol === 'http:') {
+      url.protocol = 'https:'
+      return Response.redirect(url.toString(), request.method === 'GET' || request.method === 'HEAD' ? 301 : 308)
+    }
     if (!env.PRIMARY || !env.BACKUP) return new Response('Worker sin configurar: faltan PRIMARY o BACKUP', { status: 500 })
     // El cuerpo se lee una vez y se guarda: si el principal falla, el respaldo tiene que recibir el mismo (p. ej. el aviso de Ko-fi).
     const body = request.method === 'GET' || request.method === 'HEAD' ? undefined : await request.arrayBuffer()
