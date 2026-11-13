@@ -81,6 +81,9 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   soc: [{ item: /^(hope )?luxites?$/i, per: 150 }, { item: /^secret fates?$/i, per: 1 }],
   // MONGIL: STAR DIVE (GameWith y Prydwen): el banner limitado usa Compass of Destiny (1 por tirada); 160 Starlight Crystal = 1 Compass.
   // Compass of Memory (artefactos) y Compass of Promise (permanente) no cuentan para el banner de personaje.
+  // Suikoden STAR LEAP (Kaiden.gg): 150 Fantasy Stones por tirada ("1,500 Fantasy Stones, enough for a 10-pull"; "24,000 … worth 160 gacha pulls").
+  // Los billetes de temporada ("Season 1 Gacha Ticket") = 1. Los "Guaranteed Ticket" de los puntos no son tiradas.
+  suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }
 

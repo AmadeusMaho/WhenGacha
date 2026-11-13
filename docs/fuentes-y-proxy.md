@@ -538,6 +538,23 @@ ya sale con el retrato. Juegos sin wiki (BD2, MHO, Stella Sora) siguen sin retra
 `node scripts/check-icons.mjs`. **Sin fuente de iconos**: CZN (su wiki de Fandom está vacía y ni Game8 ni GameWith listan sus objetos con imagen), "Radiant Coin"
 y los sellos de MHO (no están en la lista de objetos de GameWith), y algunos trajes y cosméticos sin página en su wiki (Infinity Nikki, Honkai 3rd, AFK Journey).
 
+## Suikoden STAR LEAP (añadido el 13 nov 2026)
+
+`src/sources/suikoden.ts`. Juego solo de Japón (Konami, 7 ago 2026), horas en JST (UTC+9), sin selector de servidor. Fuente nueva del proxy: `kaiden`
+(www.kaiden.gg, robots.txt "Allow: /", sin anuncios; 6 h de caché, 3 s entre páginas; solo /gacha/, /events/, la página de cada evento, /tower/, el blog del juego
+y sus avisos). 6–7 páginas por ciclo.
+- **Banners**: /gacha/ (inicio y fin exactos, arte y destacados con su cara). Los permanentes ("Always available") no se listan.
+- **Eventos**: los Event RPG de /events/ con sus personajes; el que está en curso, con "Everything the event pays" (recompensas con icono y tiradas).
+- **Desafío**: el Transient Chamber de la Mirage Tower (cambia cada mes; /tower/ trae el actual y el siguiente con fecha y recompensas).
+- **Regalos**: los avisos del blog con tabla "Gift | Rewards | Claim by (JST)" salen como eventos (empiezan el día del aviso, "≈").
+- **Lo próximo** (estimado): la pickup del siguiente episodio del Event RPG ("Next episode", a las 18:00 JST como las anteriores) con los invitados "Not yet released",
+  y las series "Off the schedule" sin fecha (p. ej. "D. Galaxy Conqueror 3") tras el último banner vigente.
+- **Códigos: no hay**. El juego no tiene canje de códigos (el soporte de Konami no lo menciona); los regalos llegan a la caja y ya salen como eventos.
+- **Sin icono / sin retrato**: "Hero Piece" (Kaiden no le pone imagen en ninguna página) y los personajes aún no publicados (Kasumi, Suigetsu…), que no tienen
+  página hasta que salen. No hay wiki del juego en inglés que los cubra.
+- La web oficial (konami.com/games/suikoden/star_leap/jp/ja/) no tiene lista de noticias: los avisos salen solo en X (@GensoSuikodenSP).
+- Tiradas: 150 Fantasy Stones o 1 "Season N Gacha Ticket". Calculadora con meta 200 (los puntos del banner compran al destacado).
+
 ## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
 
 - **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith

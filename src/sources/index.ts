@@ -20,6 +20,7 @@ import { syncOnmyoji } from './onmyoji'
 import { syncPtn } from './ptn'
 import { syncSoc } from './soc'
 import { syncMongil } from './mongil'
+import { syncSuikoden } from './suikoden'
 import { syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -355,6 +356,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'soc': return syncSoc(id)
     // MONGIL: STAR DIVE: banners de Prydwen + códigos de PocketGamer; eventos solo por Discord (canal "mongil"), sin fuente web al día.
     case 'mongil': return syncMongil(id)
+    // Suikoden STAR LEAP: Kaiden.gg (banners con retrato, Event RPG con recompensas, regalos de la caja, Transient Chamber y lo próximo, estimado).
+    case 'suikoden': return syncSuikoden(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

@@ -125,6 +125,8 @@ input[type=checkbox] { accent-color: var(--acc); width: 16px; height: 16px; padd
 .gcard-hero { position: relative; height: 150px; background: linear-gradient(135deg, var(--c), var(--c2)); overflow: hidden; }
 .gcard-hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .6s var(--ease); }
 .gcard:hover .gcard-hero > img { transform: scale(1.08); }
+/* Encuadre de portadas altas: la ilustración de Suikoden STAR LEAP (1300×1103) tiene las caras en la parte de arriba. */
+:is(.gcard-hero > img, .pick-art img)[src*="/star_leap/s/images/mainv"] { object-position: 55% 22%; }
 .gcard-head { position: absolute; left: 16px; right: 16px; bottom: 12px; display: flex; gap: 12px; align-items: center; }
 .gcard-head h2 { font-size: 1.15rem; text-shadow: 0 2px 8px #000; } .gcard-head p { font-size: .82rem; color: #ddd; text-shadow: 0 1px 4px #000; }
 .gcard-body { padding: 4px 16px 16px; }

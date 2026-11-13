@@ -212,6 +212,8 @@ const ECON: Record<string, Econ> = {
   // Sword of Convallaria: 150 Hope Luxite = 1 Secret Fate; el destacado del banner de debut está garantizado a las 180 (GameWith).
   soc: { currency: 'Hope Luxite', icon: 'Hope Luxite', ticket: 'Secret Fate', per: 150, pass: 0, pity: 180, sources: [] },
   // MONGIL: STAR DIVE: 160 Starlight Crystal = 1 Compass of Destiny; 5★ garantizado a las 90 en el banner de personaje (Prydwen).
+  // Suikoden STAR LEAP: 150 Fantasy Stones por tirada; 200 puntos del banner compran el destacado que elijas (Kaiden.gg, "How Gacha Points work").
+  suikoden: { currency: 'Fantasy Stone', icon: 'Fantasy Stone', iconUrl: 'https://www.kaiden.gg/img/suikoden-star-leap/assets/cmn_item_icon_30000.webp', ticket: 'Season Gacha Ticket', per: 150, pass: 0, pity: 200, sources: [] },
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [] },
 }
 

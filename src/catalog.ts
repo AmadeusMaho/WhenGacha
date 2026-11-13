@@ -41,6 +41,9 @@ const ART: Record<string, string> = {
   ptn: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/70/12/5a/70125a2c-ba9f-eb90-7fdf-836943e6e21d/a875fcb0-4b3d-44f5-8134-07fae21e2e33_2-_U6a2a_U677f2208x1242.jpg/1280x1280bb.jpg',
   soc: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/21/68/e8/2168e8de-386c-ca73-5793-2c5b8a10d84f/35-_U843d_U7248-_U82f9_U679c-2868x1230.jpg/1280x1280bb.jpg',
   mongil: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/bb/6c/a7/bb6ca74c-24c9-b87f-e4e6-0d47558723be/260901__Ubaac_Uae38_00__Ud0a4_Uc544_Ud2b8_2796x1290_EN.jpg/1280x1280bb.jpg',
+  // Suikoden STAR LEAP (13 nov 2026): la ilustración principal de su web oficial (konami.com, "mainv_pc"), sin texto. Sus capturas de la
+  // App Store son pantallas de juego con interfaz y como portada se veían raras.
+  suikoden: 'https://img.konami.com/games/suikoden/star_leap/s/images/mainv_pc.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -109,6 +112,10 @@ export const CATALOG: Game[] = [
   // MONGIL: STAR DIVE: banners de Prydwen + códigos de PocketGamer; eventos por Discord (src/sources/mongil.ts). Wiki.gg para los retratos.
   def('mongil', 'MONGIL: STAR DIVE', 'MSD', 'Netmarble', '#80deea', '#143840', 0, 'mongil.wiki.gg', 'MONGIL: STAR DIVE', 'mongil',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5f/7f/cd/5f7fcd25-7377-4c5e-b9d3-31da50600807/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Suikoden STAR LEAP (solo Japón, JST): banners, Event RPG con recompensas, regalos y Transient Chamber de Kaiden.gg (src/sources/suikoden.ts).
+  // Sin códigos: el juego no tiene canje. Retratos desde la propia fuente (sin wiki).
+  def('suikoden', 'Suikoden STAR LEAP', 'SSL', 'Konami', '#e0b45a', '#3a2a10', 0, '', 'Suikoden STAR LEAP', 'suikoden',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/47/c6/9a/47c69aa8-4c29-c992-cf98-6bb165472253/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

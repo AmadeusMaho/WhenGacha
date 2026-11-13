@@ -66,7 +66,7 @@ const REGIONS: Record<string, Regions> = {
  * Arknights y Stella Sora (UTC-7), Infinity Nikki (todo anclado a UTC-7), NIKKE (UTC+9), CZN, Epic Seven, AFK Journey y PGR (UTC), Reverse: 1999
  * (UTC-5 en sus avisos), Blue Archive, Umamusume, FGO (NA), Limbus, BrownDust2 y Azur Lane (EN).
  * Revisados el 13 nov 2026: Onmyoji (un servidor global, EST UTC-5), Sword of Convallaria (global, sus avisos dan el mismo instante en UTC-4 y
- * en hora del Pacífico), MONGIL (servicio mundial, avisos en UTC y Prydwen con las mismas horas en NA/EU/Asia). Path to Nowhere sí tiene regiones (arriba).
+ * en hora del Pacífico), MONGIL (servicio mundial, avisos en UTC y Prydwen con las mismas horas en NA/EU/Asia), Suikoden STAR LEAP (solo Japón, JST). Path to Nowhere sí tiene regiones (arriba).
  */
 export const regionsOf =(g: Game): Regions | undefined => (g.api ? REGIONS[g.api] : undefined)
 
