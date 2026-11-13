@@ -1,5 +1,5 @@
 # WhenGacha
-Popular Gacha Tracker: línea de tiempo de eventos, banners y parches de tus gachas, con datos que se cargan solos.
+Popular Gacha Tracker: línea de tiempo de eventos, banners y parches de tus gachas.
 
 Idiomas: español, inglés y chino. Se usa el del navegador y se cambia con el icono del globo de la cabecera.
 
