@@ -505,3 +505,24 @@ html[data-skin="arknights"] :is(.btn, .chip, .ichip, .soon-toggle, .fopt, .up-ch
   html[data-skin="arknights"] .logo { box-shadow: 0 0 0 2px #0f1012, 0 0 0 4px var(--ak-yel); }
   html[data-skin="arknights"] .brand h1::after { display: none; }
 }
+
+/* ===== Cursor PRTS (13 nov 2026, "agrega este cursor al skin de arknights") =====
+   Cuatro cursores del juego (public/skins/arknights/cursor/): normal, enlace, mover y prohibido. Primero el .cur (trae 32, 48 y 64 px y su punto de
+   clic; el navegador elige el tamaño según la pantalla) y, si no lo lee (Safari), el PNG de 32 px (64 px en pantallas de alta densidad) con el
+   punto de clic del .cur (3,3; el de mover, 16,20). Los campos de texto mantienen la barra de escritura. Solo con ratón: en táctil no hay cursor. */
+html[data-skin="arknights"] {
+  --ak-cur: url(/skins/arknights/cursor/normal.cur), image-set(url(/skins/arknights/cursor/normal-32.png) 1x, url(/skins/arknights/cursor/normal-64.png) 2x) 3 3, default;
+  --ak-cur-link: url(/skins/arknights/cursor/link.cur), image-set(url(/skins/arknights/cursor/link-32.png) 1x, url(/skins/arknights/cursor/link-64.png) 2x) 3 3, pointer;
+  --ak-cur-move: url(/skins/arknights/cursor/move.cur), image-set(url(/skins/arknights/cursor/move-32.png) 1x, url(/skins/arknights/cursor/move-64.png) 2x) 16 20, move;
+  --ak-cur-no: url(/skins/arknights/cursor/denied.cur), image-set(url(/skins/arknights/cursor/denied-32.png) 1x, url(/skins/arknights/cursor/denied-64.png) 2x) 3 3, not-allowed;
+}
+@media (hover: hover) and (pointer: fine) {
+  html[data-skin="arknights"], html[data-skin="arknights"] body, html[data-skin="arknights"] .up-game { cursor: var(--ak-cur); }
+  /* Todo lo que en la app normal muestra la manita. */
+  html[data-skin="arknights"] :is(a[href], button, summary, label, select, [role="button"], [role="menuitemradio"], [role="tab"], input[type="checkbox"], input[type="radio"],
+    .bar, .gcard, .ecard, .chip, .close, .fold, .fopt, .gcard-hero.go, .ichip, .jump-chip, .linkbtn, .link-btn, .list li.clickable, .phase-units .unit, .pick,
+    .plan-check, .pull-list li, .seg button, .soon-toggle, .srv-select, .up-card, .up-chip, .x) { cursor: var(--ak-cur-link); }
+  html[data-skin="arknights"] :is(.reorder-grip, .reorder li.dragging .reorder-grip) { cursor: var(--ak-cur-move); }
+  html[data-skin="arknights"] :is(:disabled, [aria-disabled="true"]) { cursor: var(--ak-cur-no); }
+  html[data-skin="arknights"] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(:disabled), textarea:not(:disabled)) { cursor: text; }
+}
