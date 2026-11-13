@@ -20,7 +20,9 @@ const BRANCH = process.env.SNAPSHOT_BRANCH || 'data'
 const FEEDS = [
   { site: 'Gematsu', url: 'https://www.gematsu.com/feed' },
   { site: 'GamingonPhone', url: 'https://gamingonphone.com/feed/' },
-  { site: 'Siliconera', url: 'https://www.siliconera.com/feed/' },
+  // Siliconera: su robots.txt permite el feed, pero Cloudflare corta las IP de servidores (403 en Botkeep, 13 nov 2026). Solo desde el PC
+  // del dueño y Actions (scripts/snapshot.mjs, `allFeeds`); el servidor no lo pide para no acumular rechazos.
+  { site: 'Siliconera', url: 'https://www.siliconera.com/feed/', notServer: true },
 ]
 /** Máximo de búsquedas nuevas en la App Store por ciclo (la API admite ~20/min; el proxy las espacia 3,5 s). */
 const MAX_SEARCHES = 25
@@ -109,7 +111,7 @@ function union(a, b) {
  * Un ciclo: revisa las guardadas y busca nuevas. `seed` = lista anterior (p. ej. la publicada en la rama `data`).
  * Devuelve la lista nueva; no lanza (cada paso que falla conserva lo anterior).
  */
-export async function refreshUpcomingLive({ seed = [], log = console.log } = {}) {
+export async function refreshUpcomingLive({ seed = [], log = console.log, allFeeds = false } = {}) {
   let items = union(feed.items, seed)
   const now = Date.now()
   // 1) Las que ya conocemos: fecha al día y fuera las que salieron hace más de 14 días (o la App Store ya no tiene).
@@ -130,7 +132,7 @@ export async function refreshUpcomingLive({ seed = [], log = console.log } = {})
   const known = new Set(items.map(i => norm(i.name)))
   const tried = new Set()
   let searches = 0
-  for (const f of FEEDS) {
+  for (const f of FEEDS.filter(x => allFeeds || !x.notServer)) {
     let news = []
     try {
       const res = await sourceFetch(f.url)

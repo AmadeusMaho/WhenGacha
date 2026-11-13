@@ -656,3 +656,6 @@ o sin lanzar en global, con fecha, región, editor, plataformas, estado y botón
   vigentes de la copia anterior que la nueva no tiene, ni con otro nombre (mismo tipo, un nombre contiene al otro, fin a ±2 días), se
   conservan con `seen` = la última vez que una fuente los dio. A las 24 h sin confirmarse se sueltan. Sin fallos, no añade nada.
 - Recuerda actualizar el secreto `DISCORD_CHANNELS` de Actions con los 13 canales: si no, cada copia de Actions sale sin esos avisos.
+- **Rechazos en Botkeep (13 nov 2026)**: game8.co y webapi.browndust2.com bloquean su IP (ya sabido; las copias llegan desde el PC por la rama
+  `data` y `carryOver` evita perderlas). **iopwiki.com** pide `Crawl-delay: 20` y el proxy esperaba 2 s: ahora 20 s (`GAP`). **Siliconera**
+  (RSS de próximos gachas): Cloudflare corta las IP de servidores; el servidor ya no lo pide (`notServer`), solo el PC y Actions (`allFeeds`).

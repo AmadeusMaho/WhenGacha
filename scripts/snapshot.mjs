@@ -82,7 +82,7 @@ for (const g of mod.games()) {
 try {
   const up = await import('../server/upcoming-live.mjs')
   const old = await previous('upcoming')
-  const list = await up.refreshUpcomingLive({ seed: Array.isArray(old?.items) ? old.items : [], log })
+  const list = await up.refreshUpcomingLive({ seed: Array.isArray(old?.items) ? old.items : [], log, allFeeds: true })
   await writeFile(path.join(dir, 'upcoming.json'), JSON.stringify(list))
   log(`upcoming: ${list.items.length} juegos`)
 } catch (err) { log(`upcoming: ERROR ${String(err.message ?? err).slice(0, 100)}`) }
