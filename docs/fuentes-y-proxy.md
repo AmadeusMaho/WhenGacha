@@ -487,14 +487,14 @@ following new …" y guiones dentro del nombre ("Battle UI - Angels' Stage is av
 
 **Onmyoji** (`src/sources/onmyoji.ts`; servidor global). Sin avisos oficiales legibles: su web en inglés (en.onmyojigame.com) dejó de publicar noticias en abril
 de 2020 y su Discord está abandonado. Wiki de Fandom, página "Events/Global": una tabla por año con la imagen de cada evento
-(el nombre es el del archivo) y su periodo solo en días ("November 11th - December 8th"). Horas supuestas 12:00 → 23:59 (UTC+8), todo "≈".
+(el nombre es el del archivo) y su periodo solo en días ("November 11th - December 8th"). Día entero 00:00 → 23:59 en hora del servidor global, EST (UTC-5; reloj "Server Time" de la portada de la wiki), todo "≈". Un solo servidor: sin selector de región.
 - Banners: "Memory Scrolls …" y "Starry Return - …", con los shikigami del título; retrato de su página en la wiki ("SP Hyakuwa Hououka" → página "SP Hououka").
 - Tiendas, packs, pases y aspectos: campaña menor (ocultos por defecto).
 - **Sin fuente**: recompensas (los eventos nuevos no tienen página; los avisos oficiales no se pueden leer) y **códigos** (Onmyoji global no los publica con
   regularidad y nadie mantiene una lista).
 - Tiradas: Mystery Amulet = 1; 100 Jade por invocación (wiki, "Summon"). Sin pity fijo.
 
-**Path to Nowhere** (`src/sources/ptn.ts`; servidor global de América, UTC-7). La wiki de Fandom dejó de seguir los eventos en 2024; la de wiki.gg
+**Path to Nowhere** (`src/sources/ptn.ts`; tres servidores: América UTC-7, Europa UTC+2 y Asia UTC+7, cada uno con su "Server Time"; los datos van en hora de América y el selector de región de servers.ts los desplaza). La wiki de Fandom dejó de seguir los eventos en 2024; la de wiki.gg
 (pathtonowhere.wiki.gg) los pone en su portada, plantilla "MP/Middle": `{{MPEvent|nombre|fecha con hora (Server Time)|tipo}}` (Story/Event, SO = pase,
 LA = arresto limitado, EA = arresto de evento) y los Sinners nuevos (`{{CharacterPortal|Requiem|S}}`). Imagen "<nombre> Banner.png", retrato "<nombre> Skin1 Icon.png".
 - Reparto de los Sinners nuevos (la wiki no dice cuál va en cada arresto): la S con "·" (variantes limitadas) al limitado; el resto, y la A nueva, al de evento.

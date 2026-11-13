@@ -235,7 +235,8 @@ export function tidyName(s: string): string {
     .replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, '')
     .replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, '')
     // "Upcoming Limited-Time Summon Event: Get Together" (Sword of Convallaria) → "Get Together".
-    .replace(/^(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/i, '')
+    // 'RERUN｜🐺 Upcoming Limited-Time "Debut" Summon Event: Silver wolf Queen' → "Silver wolf Queen".
+    .replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, '')
     .replace(/\s+limited[- ]time (?:gacha|banner)$/i, '')
     // "Apex Challenge Starts Today!" (MHO) → "Apex Challenge".
     // Solo con "today/now" o con "!": "Execution Begins" (BLEACH) es el nombre del evento.
@@ -303,7 +304,7 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
     }
   }
   // 'the probability of summoning "Lukamar" and "Pooch Runrun" will be significantly increased' (Sword of Convallaria).
-  if (!out.length) for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+((?:["“][^"”]{2,30}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) {
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+(?:(?:new\s+)?characters?\s+)?((?:["“][^"”]{2,40}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) {
     for (const n of m[1].matchAll(/["“]([^"”]+)["”]/g)) if (!out.some(f => f.name === n[1].trim())) out.push({ name: n[1].trim(), rarity: 5 })
   }
   // "the S-Class Sinner [000] or [Shalom]" (avisos de Path to Nowhere en X, que siguen la misma forma en cada reposición).

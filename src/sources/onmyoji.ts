@@ -13,14 +13,15 @@ import { fileKey, fileUrls, wikitext } from './wikifiles'
  *    X) no se pueden leer: los eventos salen sin recompensas ni tiradas.
  *  - Códigos: SIN fuente. Onmyoji global no publica códigos de canje con regularidad y ninguna web (PocketGamer, Game8, la wiki) mantiene una lista.
  *  - Steam (app 551170): sus avisos se quedaron en 2022; no sirve.
- * Horas: la tabla solo da días. El servidor global va en UTC+8 y los eventos abren tras el mantenimiento del miércoles: inicio ≈ 12:00 y
- * fin 23:59 (UTC+8), marcados "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
+ * Horas: la tabla solo da días. El servidor global va en EST, UTC-5 (reloj "Server Time" de la portada de la wiki, plantilla "Clock": "GL
+ * _ -5:00 EST"; y el aviso de feb 2018 "Server time (EST) display function is added"). Un solo servidor global: sin selector de región
+ * (servers.ts). No se sabe a qué hora acaba el mantenimiento: el día entero, 00:00 → 23:59 (EST), marcado "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
  */
 const HOST = 'onmyoji.fandom.com'
 const HOUR = 3_600_000
 const DAY = 24 * HOUR
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
-const TZ = 8
+const TZ = -5
 
 /** Convocatorias (banners): "Memory Scrolls X & Y", "Starry Return - X", "… Summoning", "Rate Up". */
 const BANNER = /memory scrolls|starry return|summon(?:ing)?\b|rate[- ]up/i
@@ -47,7 +48,7 @@ export function onmyojiRange(s: string, year: number): [number, number] | null {
   if (!a || !b) return null
   const ay = a.y ?? year
   const by = b.y ?? (b.m < a.m ? ay + 1 : ay)
-  return [Date.UTC(ay, a.m, a.d, 12 - TZ), Date.UTC(by, b.m, b.d, 23 - TZ, 59, 59)]
+  return [Date.UTC(ay, a.m, a.d, 0 - TZ), Date.UTC(by, b.m, b.d, 23 - TZ, 59, 59)]
 }
 
 /** Shikigami del título de una convocatoria: "Memory Scrolls Iwanaga Hime & SP Hyakuwa Hououka" → ["Iwanaga Hime", "SP Hyakuwa Hououka"]. */

@@ -55,12 +55,18 @@ const REGIONS: Record<string, Regions> = {
   nte: { base: 'na', onlyOfficial: true, list: [NA, EU, ASIA, { id: 'sea', label: 'SEA (UTC+8)', offset: 8 }, { id: 'cn', label: 'China (UTC+8, ≈6 días antes)', offset: 8, ahead: 6 }] },
   // Duet Night Abyss: dna.ts y discord.ts usan América.
   dna: { base: 'na', localLaunch: true, list: [NA, EU, { id: 'asia', label: 'Asia/SEA/HMT (UTC+8)', offset: 8 }] },
+  // Path to Nowhere (13 nov 2026): tres servidores con su propio "Server Time", los relojes de la portada de su wiki (pathtonowhere.wiki.gg,
+  // plantilla MP/Middle): América UTC-7, Europa UTC+2 y Asia UTC+7. Los avisos ("November 3rd, 14:00 (Server Time)") y ptn.ts van en hora de
+  // América; cada región abre a la misma hora LOCAL, parches incluidos ("after the maintenance… 14:00 (Server Time)"): todo se desplaza.
+  ptn: { base: 'na', localLaunch: true, list: [{ id: 'na', label: 'America (UTC-7)', offset: -7 }, { id: 'eu', label: 'Europe (UTC+2)', offset: 2 }, { id: 'asia', label: 'Asia (UTC+7)', offset: 7 }] },
 }
 
 /*
  * Sin selector (revisado el 12 nov 2026): juegos con un solo servidor o con regiones que cambian en el MISMO instante, cuyos avisos dan hora UTC fija:
  * Arknights y Stella Sora (UTC-7), Infinity Nikki (todo anclado a UTC-7), NIKKE (UTC+9), CZN, Epic Seven, AFK Journey y PGR (UTC), Reverse: 1999
  * (UTC-5 en sus avisos), Blue Archive, Umamusume, FGO (NA), Limbus, BrownDust2 y Azur Lane (EN).
+ * Revisados el 13 nov 2026: Onmyoji (un servidor global, EST UTC-5), Sword of Convallaria (global, sus avisos dan el mismo instante en UTC-4 y
+ * en hora del Pacífico), MONGIL (servicio mundial, avisos en UTC y Prydwen con las mismas horas en NA/EU/Asia). Path to Nowhere sí tiene regiones (arriba).
  */
 export const regionsOf =(g: Game): Regions | undefined => (g.api ? REGIONS[g.api] : undefined)
 

@@ -21782,7 +21782,7 @@ function sentenceName(c, loose = true) {
 * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
 */
 function tidyName(s) {
-	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/i, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
+	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
 }
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
@@ -21835,7 +21835,7 @@ function featuredIn(lines) {
 		}
 	}
 	if (!out.length) {
-		for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+((?:["“][^"”]{2,30}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) for (const n of m[1].matchAll(/["“]([^"”]+)["”]/g)) if (!out.some((f) => f.name === n[1].trim())) out.push({
+		for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+(?:(?:new\s+)?characters?\s+)?((?:["“][^"”]{2,40}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) for (const n of m[1].matchAll(/["“]([^"”]+)["”]/g)) if (!out.some((f) => f.name === n[1].trim())) out.push({
 			name: n[1].trim(),
 			rarity: 5
 		});
@@ -24246,8 +24246,9 @@ async function wikitext$1(host, page) {
 *    X) no se pueden leer: los eventos salen sin recompensas ni tiradas.
 *  - Códigos: SIN fuente. Onmyoji global no publica códigos de canje con regularidad y ninguna web (PocketGamer, Game8, la wiki) mantiene una lista.
 *  - Steam (app 551170): sus avisos se quedaron en 2022; no sirve.
-* Horas: la tabla solo da días. El servidor global va en UTC+8 y los eventos abren tras el mantenimiento del miércoles: inicio ≈ 12:00 y
-* fin 23:59 (UTC+8), marcados "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
+* Horas: la tabla solo da días. El servidor global va en EST, UTC-5 (reloj "Server Time" de la portada de la wiki, plantilla "Clock": "GL
+* _ -5:00 EST"; y el aviso de feb 2018 "Server time (EST) display function is added"). Un solo servidor global: sin selector de región
+* (servers.ts). No se sabe a qué hora acaba el mantenimiento: el día entero, 00:00 → 23:59 (EST), marcado "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
 */
 var HOST$1 = "onmyoji.fandom.com";
 var DAY$25 = 864e5;
@@ -24291,7 +24292,7 @@ function onmyojiRange(s, year) {
 	if (!a || !b) return null;
 	const ay = a.y ?? year;
 	const by = b.y ?? (b.m < a.m ? ay + 1 : ay);
-	return [Date.UTC(ay, a.m, a.d, 4), Date.UTC(by, b.m, b.d, 15, 59, 59)];
+	return [Date.UTC(ay, a.m, a.d, 5), Date.UTC(by, b.m, b.d, 28, 59, 59)];
 }
 /** Shikigami del título de una convocatoria: "Memory Scrolls Iwanaga Hime & SP Hyakuwa Hououka" → ["Iwanaga Hime", "SP Hyakuwa Hououka"]. */
 function onmyojiFeatured(title) {
@@ -24631,9 +24632,12 @@ function characterIcons(doc) {
 	}
 	return out;
 }
+/** Iconos de personaje de la última lectura de la página de banners (para los banners que solo trae un aviso). */
+var lastIcons = /* @__PURE__ */ new Map();
 async function gwBanners(gameId, now) {
 	const doc = await page$2(68920);
 	const icons = characterIcons(doc);
+	lastIcons = icons;
 	const head = [...doc.querySelectorAll("h3")].find((h) => /current banners/i.test(text$5(h)));
 	let table = null;
 	for (let n = head?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) if (n.tagName === "TABLE" || n.querySelector("table")) {
@@ -24794,6 +24798,50 @@ async function syncSocOfficial(gameId) {
 	};
 }
 /**
+* Tuits oficiales de @SwordofConva publicados ANTES de conectar el canal de Discord "soc" (13 nov 2026), copiados del canal por el dueño:
+* dan el inicio exacto de lo que ya estaba en curso (GameWith solo da el fin). Se leen con el mismo lector que Discord y cada uno deja de
+* contar solo cuando su evento termina. Lo nuevo llega por el canal; no hace falta añadir más aquí.
+*/
+var TWEETS = [
+	{
+		at: "2026-10-29T12:00:00Z",
+		text: `Upcoming Limited-Time Summon Event: Get Together\n\nFor a limited time, the probability of summoning "Selina" and "Taair" will be significantly increased!\n\n⏰ Event Duration\n12:00, Oct 30, 2026 - 23:59, Nov 12, 2026 (UTC-4)`
+	},
+	{
+		at: "2026-10-29T12:00:00Z",
+		text: `Dear Voyager,\n\nThe "Voyage of Discovery" event is back!\n\n⏰ Event Period\n12:00, Oct 30, 2026 – 23:59, Nov 20, 2026 (UTC-4)`
+	},
+	{
+		at: "2026-11-05T12:00:00Z",
+		text: `🌟 Upcoming Limited-Time "Debut" Summon Event: Polaris of Winter\n\nFor a limited time, the probability of summoning new character "Agata - Polaris of Winter" will be significantly increased!\n\n⏰ Event Duration\n12:00, Nov 6, 2026 – 23:59, Nov 19, 2026 (UTC-4)`
+	},
+	{
+		at: "2026-11-05T12:00:00Z",
+		text: `RERUN｜🐺 Upcoming Limited-Time "Debut" Summon Event: Silver wolf Queen\n\nFor a limited time, the probability of summoning character "Agata" will be significantly increased!\n\n⏰ Event Duration\n12:00, Nov 6, 2026 – 23:59, Nov 19, 2026 (UTC-4)`
+	},
+	{
+		at: "2026-11-05T12:00:00Z",
+		text: `Dear Voyager,\n\nAgata - Polaris of Winter's Live Skin "After the Midnight Snow" event will be available!\n\n⏰ Event Period\n12:00, Nov 6, 2026 – 23:59, Dec 3, 2026 (UTC-4)\n\n📜 Event Details\n● During the event, you can spend Wish Coupons to draw rewards.`
+	},
+	{
+		at: "2026-11-12T12:00:00Z",
+		text: `Dear Voyager,\n\nA new event, The Frontier Line, will be available soon for a limited time!\n\n⏰ Event Period\n12:00, Nov 13, 2026 – 23:59, Dec 3, 2026 (UTC-4)\n\n📜 Event Details\n● Frontier Line centers on exploring regions, capturing Resource Zones, gathering resources.`
+	},
+	{
+		at: "2026-11-12T12:00:00Z",
+		text: `Upcoming Limited-Time Summon Event: Get Together\n\nFor a limited time, the probability of summoning "Lukamar" and "Pooch Runrun" will be significantly increased!\n\n⏰ Event Duration\n12:00, Nov 13, 2026 - 23:59, Nov 26, 2026 (UTC-4)`
+	}
+];
+var socTweets = (gameId) => parseNotices(gameId, TWEETS.map((t, i) => ({
+	id: `tw${i}`,
+	timestamp: t.at,
+	content: t.text
+}))).events.filter((e) => Date.parse(e.end) > Date.now() - 3 * DAY$23);
+/** Mismo personaje en un aviso y en GameWith: "Agata - Polaris of Winter" (variante, en los tuits) = "SP Agata" (GameWith); "Agata" = "Agata". */
+var who = (n, tweet) => {
+	return `${(tweet ? /\s[-–]\s/.test(n) : /^sp\s/i.test(n)) ? "sp:" : ""}${n.replace(/^sp\s+/i, "").split(/\s[-–]\s/)[0].trim().toLowerCase()}`;
+};
+/**
 * GameWith + avisos oficiales. Los banners del aviso no dicen a quién traen y los de GameWith no dicen cuándo empiezan: si un banner oficial
 * acaba a la misma hora (±1 h) que uno de GameWith, el de GameWith toma su inicio y se quita el oficial (si varios acaban igual, el primero
 * con nombre parecido o, si no, el primero sin usar). Eventos: mismo nombre → la hora oficial manda.
@@ -24813,12 +24861,13 @@ async function syncSoc(gameId) {
 		["códigos", c]
 	]) if (r.status === "rejected") console.warn(`[soc] ${what}:`, r.reason?.message);
 	if (b.status === "rejected" && e.status === "rejected" && o.status === "rejected") throw b.reason;
-	const official = o.status === "fulfilled" ? o.value.events : [];
+	const official = [...o.status === "fulfilled" ? o.value.events : [], ...socTweets(gameId)];
 	const used = /* @__PURE__ */ new Set();
 	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 	const fix = (g) => {
 		const same = official.filter((x) => !used.has(x) && x.kind === g.kind && Math.abs(Date.parse(x.end) - Date.parse(g.end)) <= HOUR$5);
-		const hit = same.find((x) => key(x.title) === key(g.title) || key(g.title).includes(key(x.title)) || key(x.title).includes(key(g.title))) ?? (g.kind === "banner" ? same[0] : void 0);
+		const g0 = g.featured[0]?.name;
+		const hit = same.find((x) => key(x.title) === key(g.title) || key(g.title).includes(key(x.title)) || key(x.title).includes(key(g.title))) ?? (g.kind !== "banner" ? void 0 : g0 ? same.find((x) => x.featured.some((f) => who(f.name, true) === who(g0, false))) : same.find((x) => !x.featured.length));
 		if (!hit) return g;
 		used.add(hit);
 		return {
@@ -24836,10 +24885,17 @@ async function syncSoc(gameId) {
 		console.warn("[soc] próximos:", err?.message);
 		return [];
 	})).filter((n) => !gw.some((g) => g.featured.some((f) => f.name.toLowerCase() === n.title.toLowerCase())));
+	const withFaces = (x) => x.kind === "banner" && x.featured.some((f) => !f.icon) ? {
+		...x,
+		featured: x.featured.map((f) => f.icon ? f : {
+			...f,
+			icon: lastIcons.get(f.name.toLowerCase()) ?? lastIcons.get(f.name.toLowerCase().replace(/s+/g, ""))
+		})
+	} : x;
 	return {
 		events: [
 			...gw,
-			...official.filter((x) => !used.has(x)),
+			...official.filter((x) => !used.has(x)).map(withFaces),
 			...fresh
 		],
 		patches: [],
