@@ -13,6 +13,8 @@ import './zzz.css'
 import './hsr.css'
 import './nikke.css'
 import './uma.css'
+import './arknights.css'
+import './akTilt'
 
 /** Textos propios (no van en locales.ts para que quitar las skins no toque nada más). */
 const TXT: Record<Lang, Record<string, string>> = {
@@ -56,8 +58,10 @@ export default function SkinPicker({ timeline = false, donateUrl }: { timeline?:
   const preview = usePreview()
   // Lo que se ve: la vista previa (sin Premium) o la skin elegida.
   const active = preview ?? skin
-  // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), solo en la línea de tiempo.
-  const live = useLiveWithFeed(active, timeline ? SKINS.find(k => k.id === active)?.live : undefined)
+  // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), solo en la línea de tiempo (o en todas las pestañas si la
+  // skin lo pide con `liveAllTabs`; ahí el mismo vídeo sigue al cambiar de pestaña y el siguiente sale en la próxima visita).
+  const def = SKINS.find(k => k.id === active)
+  const live = useLiveWithFeed(active, timeline || def?.liveAllTabs ? def?.live : undefined)
   const [open, setOpen] = useState(false)
   // Vista del menú: las skins, o "entrar con el correo" (aparte, para no llenar el menú de texto).
   const [view, setView] = useState<'skins' | 'login'>('skins')

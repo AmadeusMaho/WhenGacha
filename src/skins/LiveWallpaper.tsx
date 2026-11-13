@@ -26,7 +26,8 @@ const STALL_MS = 10_000
  * Fondo animado de una skin (solo en la línea de tiempo). Va en <body>, fuera de la cabecera (su backdrop-filter atraparía `position: fixed`).
  * Vídeo en bucle, sin audio; si la skin trae varios, cada visita a la pestaña usa el siguiente. Un fondo sin vídeo (solo `poster`)
  * se mueve despacio (acercamiento y desplazamiento lentos, clase `kb`), como un fondo animado. Se queda en el fotograma fijo, sin
- * movimiento, con pantallas pequeñas, "ahorro de datos" o "reducir movimiento"; el vídeo se pausa mientras la pestaña no se ve.
+ * movimiento, solo con "ahorro de datos" o "reducir movimiento" (en móvil se reproduce el vídeo; si el navegador bloquea la
+ * reproducción automática, su póster con movimiento lento); el vídeo se pausa mientras la pestaña no se ve.
  * Si el fondo de la versión (de fuera) falla —el vídeo da error o no arranca en 10 s, o su imagen no carga—, se cambia por uno de
  * los que trae la skin (un vídeo si lo hay).
  */
@@ -35,10 +36,15 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
   // Se elige al montar: SkinPicker lo monta al entrar en la línea de tiempo y lo desmonta al salir.
   const [clip, setClip] = useState(() => clips[nextClip(skin, clips.length)])
   const video = useRef<HTMLVideoElement>(null)
+  // Fijo del todo solo con "ahorro de datos" o "reducir movimiento". En móvil antes también (max-width: 700px) y los fondos se veían
+  // siempre quietos (13 nov 2026); ahora el móvil reproduce el vídeo (0,4–2 MB) como el escritorio.
   const [still] = useState(() => {
     const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
-    return !!conn?.saveData || matchMedia('(prefers-reduced-motion: reduce), (max-width: 700px)').matches
+    return !!conn?.saveData || matchMedia('(prefers-reduced-motion: reduce)').matches
   })
+  // Si el navegador no deja reproducir el vídeo solo (iPhone en modo de bajo consumo, ahorro de batería de Android…), se queda su
+  // póster con el recorrido de cámara lento en vez de un fotograma quieto.
+  const [blocked, setBlocked] = useState(false)
 
   const fallback = useCallback(() => {
     setClip(cur => {
@@ -69,6 +75,8 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
   useEffect(() => {
     const v = video.current
     if (!v) return
+    // NotAllowedError = reproducción automática bloqueada; otros errores (cambio de vídeo a medias) no cuentan.
+    v.play().catch(e => { if ((e as DOMException)?.name === 'NotAllowedError') setBlocked(true) })
     const sync = () => { if (document.hidden) v.pause(); else v.play().catch(() => {}) }
     document.addEventListener('visibilitychange', sync)
     return () => document.removeEventListener('visibilitychange', sync)
@@ -77,7 +85,7 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
   // Fondo fijo animado: la imagen hace un recorrido de cámara (clase `kb`) y encima va una capa de luz (`skin-live-fx`: motas que suben
   // y un haz que la cruza; color por skin con --live-fx). Antes solo había un acercamiento del 7 % en 48 s y parecía una imagen quieta.
   return createPortal(
-    still || !clip.video
+    still || !clip.video || blocked
       ? <>
           <div key={clip.poster} className={`skin-live${still ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
           {!still && <div className="skin-live-fx" aria-hidden />}

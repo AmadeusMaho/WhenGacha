@@ -93,6 +93,57 @@ Botón con un pincel en la cabecera, al lado del idioma: "Original" o una skin d
   - Sin fondo animado. Fuente: M PLUS Rounded 1c (Google Fonts, OFL); la del juego (FOT-Rodin) es de pago y no se aportó.
     Texto normal en peso 500 (en 700 se empastaba) y títulos de tarjeta con interlineado 1,34 (se cortaban la g y la y).
   - Las tarjetas de banner (`.bcard`) y la cabecera de "Mis gachas" (`.gcard-hero`) llevan el texto sobre el arte: ahí se vuelve a blanco.
+- `arknights.css` (3.ª versión, 13 nov 2026): la skin **Arknights**. El dueño la quiere más trabajada que ninguna y que cambie **todo**;
+  la 2.ª (paneles claros) se parecía demasiado a NIKKE. Esta usa piezas REALES de la interfaz, de la extracción del cliente que aportó el
+  dueño (`D:\descargas\OOT\Nueva carpeta\export_apk`, atlas `UI_HOME` y `UI_COMMON_DIALOG`; el alfa viene en un `_alpha.png` aparte):
+  pestañas y botones = baldosas blancas del menú (`tile-small`) con el icono original de cada una de marca de agua (`ic-missions`,
+  `ic-squads`, `ic-base`, `ic-recruit`) y un subtítulo en inglés (TIMELINE, SQUADS…); la activa en azul PRTS `#0a72a6`. Paneles = los
+  diálogos del juego (`dlg-darkpanel`, cabeceras sobre `dlg-dark`, lo urgente sobre `dlg-red`, esquina `dlg-head` en la ventana del evento);
+  logo dentro del anillo de nivel (`ring`), cinta de advertencia (`hazard`, rayas pasadas a blanco: en el atlas son negras), rótulo
+  BREAKING NEWS (`news`) en "Termina en las próximas 72 h", emblema triangular de Rhodes Island (`ri-emblem`) en el margen derecho del
+  fondo (oculto con menos de 1720 px, porque quedaba tapado por la línea de tiempo) y ficha de operador con `elite.webp` (de Aceship).
+  La interfaz no usa arte de personajes (el atlas trae la silueta del Doctor: no se usa); los personajes van en los fondos (abajo).
+  - Recortes del atlas: se limpian los restos de las piezas vecinas (componentes que tocan el borde del recorte y son finos o pequeños);
+    sin eso salían líneas sueltas junto a los iconos.
+  - **Fuentes del juego** (de la misma extracción, recortes solo latinos): Novecento Wide Bold/Medium (`ak-nove-*.woff2`, rótulos) y
+    Bender (`ak-bender*.woff2`, cifras y etiquetas). El Bender grueso no trae tildes: su `@font-face` va con `unicode-range` ASCII.
+  - **Efecto giroscopio** (`akTilt.ts`): cada botón/baldosa se inclina levemente según dónde esté el ratón sobre él (pone `--ak-tx/--ak-ty`
+    en el propio elemento). `--ak-gyro` se declara en los elementos y no en `<html>`: una variable que usa otras se resuelve donde se declara.
+    Solo con ratón, pantallas anchas y sin "reducir movimiento".
+  - **Trampa**: las cabeceras de cada juego también son `<header class="gsec-head">` (sticky). Las reglas de la cabecera del sitio van
+    con `.app > header`; con `header` a secas se volvían `position: relative` y bajaban 76 px encima del arte (pasó en Parches).
+  - **Línea de tiempo** (3.ª vez, 13 nov 2026): sigue la lista de misiones del juego (atlas `UI_MISSION_2.0`): placas gris carbón lisas
+    con una línea fina de color abajo (banner amarillo, evento azul, rotatorio gris claro) y la esquina inferior derecha apenas cortada;
+    el arte del evento muy apagado y solo a la derecha; secciones solo con texto en Bender y un cuadradito del color del tipo; carriles
+    lisos con canto blanco fino; rejilla casi invisible. Se descartaron: la textura de diálogo detrás de los juegos, los rótulos en bloque
+    de color (destacaban demasiado), la luz que parpadeaba y las rayas animadas. Títulos de barra en Barlow (Novecento los recortaba).
+  - Ronda del 13 nov 2026: sin la cinta de advertencia bajo la cabecera, en los títulos ni en el pie (separadores finos); la etiqueta
+    "PRTS // RHODES ISLAND" va en el flujo del `h1` (absoluta se metía bajo la primera pestaña); en móvil el anillo dorado se sustituye por
+    un borde amarillo en el propio logo (a 54 px fijos quedaba descentrado). Botones = placa clara con esquina cortada y filo oscuro (sombra
+    en `filter`, porque `clip-path` recorta `box-shadow`). **Efecto 3D al pasar el ratón**: inclinación hacia el ratón, `scale(1.04)` y
+    sombra al lado contrario (`--ak-drop`); también en las barras de la línea de tiempo (giran menos en Y) y en las tarjetas.
+  - **Fondos con personajes** (13 nov 2026, el dueño cambió de idea: ahora SÍ lleva arte): 12 vídeos de MoeWalls en `FONDOS.arknights`
+    (elegidos por el dueño; los ultrapanorámicos Mon3tr y Amiya Midnight Blue City, recortados al centro en 16:9 con `crop169` de la app
+    de fondos). Como la pantalla principal del juego: el operador detrás, grande, y la interfaz encima en cristal. El vídeo se oscurece
+    poco (brillo .68) y una capa fija (`body::after`, sobre el vídeo y bajo el contenido) apaga solo la izquierda, arriba y abajo, con la
+    trama de líneas del HUD; la línea de tiempo es cristal oscuro (`rgba(16,17,20,.58)` + desenfoque 7 px) con las barras casi opacas y
+    el eje/columna de juegos opacos. Lo que va suelto sobre el vídeo lleva sombra, y "Termina en las próximas 72 h" y el pie, una franja
+    de cristal (sobre el fotograma blanco de Kal'tsit se perdían). Todo con `body:has(> .skin-live)`: sin vídeo, la skin sigue igual.
+    Contraste revisado también simulando un fotograma claro (fondo del `body` a gris 125 durante la auditoría).
+  - **4.ª ronda** (13 nov 2026): el fondo sale en **todas las pestañas** (`liveAllTabs: true` en skins.ts; SkinPicker lo monta siempre y el
+    vídeo sigue al cambiar de pestaña). Paneles y tarjetas **sin la textura negra** de los diálogos: cristal carbón translúcido con
+    desenfoque (`--ak-glass`), filo de 1 px y el canto blanco + azul; las ventanas, opacas (`--ak-solid`); dentro de un panel (versión
+    actual / próxima de Parches) placas lisas sin segundo cristal. Títulos y textos sueltos sobre el vídeo, con franja de cristal. Sin el
+    rótulo BREAKING NEWS. **Botones**: todos con la esquina cortada y una línea fina de color siguiendo el corte (`--ak-ln8` / `--ak-ln6`,
+    degradado a 315° que empieza donde acaba el corte), filo de 1 px por dentro y foco de teclado por dentro (el `clip-path` se comía el
+    contorno); variantes `ghost`/`soft` en cristal, `discord` morado; `.ztag` y `.fold` ya no son redondos.
+  - **Giroscopio en móvil** (`akTilt.ts`): con pantalla táctil, `deviceorientation` inclina a la vez baldosas, botones y tarjetas (pone
+    `--ak-tx/--ak-ty` y `data-ak-gyro` en `<html>`; CSS en `@media (hover: none)`; sin las barras de la línea de tiempo, por rendimiento).
+    El centro es la postura con que se sujeta el móvil y se recalibra despacio. Se escucha siempre; en iPhone el permiso se pide con el
+    primer `click` (no se espera la respuesta: Chrome trae `requestPermission` y en escritorio contesta "denied"). Probado con eventos
+    simulados en la vista móvil; falta probarlo en un teléfono de verdad.
+  - **Marca de sección**: el emblema de Rhodes Island (`ri-emblem`, invertido a blanco con halo azul) en vez del cuadradito blanco.
+  - Sin cursor propio.
 - **Vista previa de skins** (`SkinPicker.tsx`): cambia al MOVER el ratón por una fila y se quita al salir del menú entero. El menú tiene
   posición fija (medida al abrirlo) y las mismas medidas y fuente con cualquier skin (bloque final de `skins.css`): antes cambiaba de tamaño
   en cada vista previa y saltaba bajo el ratón (parpadeo con ZZZ). Una skin nueva NO debe tocar las medidas del menú, solo sus colores.
@@ -167,7 +218,7 @@ bucket `whengacha-fondos` de la cuenta del dueño, con su URL pública `r2.dev` 
 (exige pasar los DNS del dominio de Namecheap a Cloudflare) y solo cambia `LIVE_CDN`.
 - **Copia local de lo que hay en el bucket**: `../fondos-skins/r2/<skin>/live-<n>.mp4` (65 vídeos, ~128 MB). El bucket tiene las mismas
   rutas (`<skin>/live-<n>.mp4`). Los `.webp` (fotograma fijo, ~45 KB) están en `public/skins/<skin>/`, que es de donde se leen
-  (póster, fondo en móvil o con "ahorro de datos", y reserva si R2 falla).
+  (póster, fondo con "ahorro de datos" o "reducir movimiento", y reserva si R2 falla; desde el 13 nov 2026 el móvil reproduce el vídeo).
 - **Subir un vídeo** (con `npx wrangler login` hecho en este equipo):
   `npx wrangler r2 object put whengacha-fondos/<skin>/live-<n>.mp4 --file <ruta> --content-type video/mp4 --cache-control "public, max-age=31536000, immutable" --remote`
   (sin `--remote`, wrangler 4 lo guarda en local). Como la caché es de un año, un vídeo que cambie lleva **nombre nuevo**.

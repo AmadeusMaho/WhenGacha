@@ -1,0 +1,507 @@
+/* ===== Skin "Arknights" (3.ª versión, 13 nov 2026) =====
+   Hecha con piezas REALES de la interfaz del juego (extracción del cliente que aportó el dueño; ver README) y con su lenguaje:
+   - Pestañas y botones = las BALDOSAS BLANCAS del menú principal (tile-small: blanco con la trama de puntos en la esquina),
+     rótulo negro en Novecento Wide, subtítulo en inglés en Bender y el ICONO ORIGINAL de cada baldosa de marca de agua
+     (Missions, Squads, Base, Recruit). La activa, azul PRTS con el icono en blanco. Cada botón se inclina con el ratón (akTilt.ts).
+   - Paneles = los DIÁLOGOS del juego: fondo oscuro con líneas geométricas y trama (dlg-darkpanel), cabeceras sobre la barra negra
+     texturizada (dlg-dark), lo urgente sobre la barra roja (dlg-red), y la esquina de ventana con trama (dlg-head) en la ventana del evento.
+   - Marca: el logo dentro del ANILLO DE NIVEL amarillo (ring) y "PRTS // RHODES ISLAND" en Bender; emblema triangular de Rhodes
+     Island (ri-emblem) de marca de agua en el fondo y en las secciones; separadores finos (la cinta de advertencia se quitó: no gustó).
+   - "Termina en las próximas 72 h" lleva el rótulo BREAKING NEWS del menú (news).
+   - Línea de tiempo: barras carbón con el canto del tipo (banner amarillo, evento azul, desafío rojo) y cifras en Bender.
+   - Destacados: ficha de operador (brillo de rareza, franja negra con el nombre sobre línea amarilla, insignia de Élite).
+   Colores con texto (≥ 4.5:1): blanco/#c2c6cc sobre el carbón; azul PRTS #0a72a6 con texto blanco; en lo blanco, #15171a / #4a5058.
+   Solo aplica con <html data-skin="arknights">. */
+
+/* --- Fuentes del juego (de la extracción; recortes solo latinos): Novecento Wide (© Jan Tonellato) y Bender (© Jovanny Lemonad).
+   El Bender grueso no trae tildes: va solo para ASCII y el resto cae en Barlow letra a letra. --- */
+@font-face { font-family: 'AK Novecento'; src: url(/skins/arknights/ak-nove-bold.woff2) format('woff2'); font-weight: 700; font-display: swap; }
+@font-face { font-family: 'AK Novecento'; src: url(/skins/arknights/ak-nove-medium.woff2) format('woff2'); font-weight: 500; font-display: swap; }
+@font-face { font-family: 'AK Bender'; src: url(/skins/arknights/ak-bender.woff2) format('woff2'); font-weight: 700; font-display: swap; unicode-range: U+0020-007E; }
+@font-face { font-family: 'AK Bender'; src: url(/skins/arknights/ak-bender-light.woff2) format('woff2'); font-weight: 400; font-display: swap; }
+
+html[data-skin="arknights"] {
+  --ak-ink: #15171a;
+  --ak-ink2: #4a5058;
+  --ak-coal: #1b1c1f;
+  --ak-coal2: #232529;
+  --ak-blue: #0a72a6;
+  --ak-blue-hi: #1fa3e0;
+  --ak-sky: #6cc8f5;
+  --ak-yel: #ffd23f;
+  --ak-red: #9b1520;
+  --ak-red-t: #ff8a8a;
+  --bg: #0f1012;
+  --panel: rgba(30, 32, 35, .96);
+  --panel2: rgba(38, 40, 44, .97);
+  --line: rgba(255, 255, 255, .1);
+  --text: #f1f2f3;
+  --muted: #c2c6cc;
+  --acc: var(--ak-sky);
+  --acc2: var(--ak-sky);
+  --warn: #ffd98a;
+  --good: #8fe3b0;
+  --bad: var(--ak-red-t);
+  color-scheme: dark;
+  --ak-head: 'AK Novecento', 'Saira', 'Barlow', sans-serif;
+  --ak-num: 'AK Bender', 'Barlow', 'Segoe UI', sans-serif;
+  --ak-cut: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%);
+}
+html[data-skin="arknights"] body { background: var(--bg); font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-weight: 500; }
+html[data-skin="arknights"] :is(h1, h2, h3, h4) { font-family: var(--ak-head); font-weight: 700; }
+html[data-skin="arknights"] :is(b, strong) { font-weight: 700; }
+html[data-skin="arknights"] ::selection { background: rgba(31, 163, 224, .5); color: #fff; }
+html[data-skin="arknights"] * { scrollbar-color: rgba(255, 255, 255, .3) transparent; }
+
+/* ===== Fondo: carbón con rejilla, haz de luz y el emblema triangular de Rhodes Island ===== */
+html[data-skin="arknights"] .aurora {
+  background:
+    linear-gradient(-62deg, transparent 36%, rgba(255, 255, 255, .05) 44%, transparent 54%),
+    radial-gradient(70% 55% at 88% 0%, rgba(31, 163, 224, .13), transparent 70%),
+    linear-gradient(180deg, #17181b, #0e0f11 70%);
+}
+html[data-skin="arknights"] .aurora::before, html[data-skin="arknights"] .aurora::after { content: ""; position: absolute; inset: 0; pointer-events: none; display: block; }
+html[data-skin="arknights"] .aurora::before {
+  background:
+    linear-gradient(rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 192px 192px,
+    linear-gradient(90deg, rgba(255, 255, 255, .04) 1px, transparent 1px) 0 0 / 192px 192px,
+    linear-gradient(rgba(255, 255, 255, .018) 1px, transparent 1px) 0 0 / 48px 48px,
+    linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px) 0 0 / 48px 48px;
+  -webkit-mask-image: linear-gradient(180deg, #000 30%, transparent 95%); mask-image: linear-gradient(180deg, #000 30%, transparent 95%);
+  animation: ak-grid 40s linear infinite;
+}
+/* Emblema en el margen derecho, fuera del contenido (main mide como mucho 1240 px): antes quedaba tapado por la línea de tiempo.
+   En pantallas sin margen suficiente se oculta (ahí siempre quedaba debajo). */
+html[data-skin="arknights"] .aurora::after { background: url(/skins/arknights/ri-emblem.webp) right max(12px, calc((100vw - 1240px) / 2 - 250px)) bottom 5vh / 220px auto no-repeat;
+  opacity: .14; filter: grayscale(1); }
+@media (max-width: 1720px) { html[data-skin="arknights"] .aurora::after { display: none; } }
+@keyframes ak-grid { from { background-position: 0 0, 0 0, 0 0, 0 0; } to { background-position: 0 192px, 0 0, 0 48px, 0 0; } }
+@media (prefers-reduced-motion: reduce) { html[data-skin="arknights"] .aurora::before { animation: none; } }
+/* ===== Fondos con personajes (13 nov 2026; antes la skin iba sin arte) =====
+   Como la pantalla principal del juego: el operador de fondo, grande y bien visible, y la interfaz flotando encima. Los vídeos son de
+   MoeWalls (FONDOS.arknights) y solo salen en la línea de tiempo (LiveWallpaper.tsx). Se oscurecen poco (brillo .68, antes .45) y una
+   capa fija encima (body::after, por encima del vídeo y por debajo del contenido) apaga solo donde va texto: la columna de juegos a la
+   izquierda, la cabecera y el pie; en medio y a la derecha el personaje queda casi limpio. Lleva además la trama de líneas finas del HUD
+   del juego, muy tenue. */
+html[data-skin="arknights"] .skin-live { filter: brightness(.68) saturate(.95) contrast(1.04); animation: ak-live-in 1.2s ease both; }
+@keyframes ak-live-in { from { opacity: 0; } }
+html[data-skin="arknights"] body:has(> .skin-live)::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, rgba(10, 11, 13, .62), rgba(10, 11, 13, .18) 38%, rgba(10, 11, 13, .05) 60%, rgba(10, 11, 13, .25)),
+    linear-gradient(180deg, rgba(10, 11, 13, .55), transparent 22%, transparent 75%, rgba(10, 11, 13, .7)); }
+html[data-skin="arknights"] main { position: relative; }
+
+/* ===== Cabecera ===== */
+html[data-skin="arknights"] .app > header { position: relative; background: linear-gradient(180deg, rgba(11, 12, 14, .97), rgba(16, 17, 19, .92)); border-bottom: 1px solid rgba(255, 255, 255, .07);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5); backdrop-filter: blur(10px); }
+/* Logo dentro del anillo de nivel amarillo. */
+html[data-skin="arknights"] .brand { position: relative; padding-left: 4px; }
+html[data-skin="arknights"] .brand::before { content: ""; position: absolute; left: -3px; top: 50%; width: 54px; height: 54px; transform: translateY(-50%); pointer-events: none;
+  background: url(/skins/arknights/ring.webp) center / contain no-repeat; filter: drop-shadow(0 0 6px rgba(255, 210, 63, .35)); }
+html[data-skin="arknights"] .logo { border-radius: 50%; border: 0; box-shadow: none; }
+html[data-skin="arknights"] .brand:hover .logo { transform: none; }
+/* La etiqueta "PRTS // RHODES ISLAND" va en el flujo (rejilla): antes era absoluta y se metía debajo de la primera pestaña. */
+html[data-skin="arknights"] .brand h1 { display: grid; gap: 4px; margin: 0 8px 0 6px; color: #fff; font-size: 1.12rem; letter-spacing: .06em; line-height: 1; }
+html[data-skin="arknights"] .brand h1::after { content: "PRTS // RHODES ISLAND"; font: 400 .66rem/1 var(--ak-num); letter-spacing: .12em; color: var(--ak-sky); white-space: nowrap; }
+/* Botones de la barra (skins, idioma, sincronizar): como los de ajustes/correo del juego, cuadro gris translúcido con icono blanco. */
+html[data-skin="arknights"] .app > header .btn { background: rgba(255, 255, 255, .12) !important; border: 0; color: #fff; clip-path: none; font-family: var(--ak-num); font-weight: 700;
+  letter-spacing: .02em; box-shadow: inset 0 -2px 0 rgba(255, 255, 255, .18); }
+html[data-skin="arknights"] .app > header .btn:hover:not(:disabled) { background: rgba(255, 255, 255, .24) !important; color: #fff; box-shadow: inset 0 -2px 0 var(--ak-blue-hi); }
+
+/* ===== Pestañas = baldosas blancas del menú principal con su icono original ===== */
+html[data-skin="arknights"] .app > header nav { background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow: visible; border-radius: 0; gap: 5px; padding: 4px; }
+html[data-skin="arknights"] .app > header nav .nav-ind { display: none; }
+html[data-skin="arknights"] .app > header nav button { position: relative; overflow: hidden; isolation: isolate; border-radius: 0; min-height: 38px; padding: 14px 32px 4px 9px;
+  background: #f4f5f6 url(/skins/arknights/tile-small.webp) right bottom / auto 100% no-repeat !important; color: var(--ak-ink) !important;
+  font-family: var(--ak-head); font-weight: 700; font-size: .74rem; letter-spacing: .02em; line-height: 1; text-align: left; align-items: flex-end;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .5) !important; }
+/* Icono original de la baldosa, grande y recortado por el borde, en gris (como en el menú). */
+html[data-skin="arknights"] .app > header nav button::before { content: ""; position: absolute; right: -5px; top: 50%; width: 36px; height: 36px; transform: translateY(-50%);
+  background: center / contain no-repeat; filter: invert(1); opacity: .15; z-index: -1; pointer-events: none; transition: opacity .2s; }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(1)::before { background-image: url(/skins/arknights/ic-missions.webp); }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(2)::before { background-image: url(/skins/arknights/ic-squads.webp); }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(3)::before { background-image: url(/skins/arknights/ic-base.webp); }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(4)::before { background-image: url(/skins/arknights/ic-recruit.webp); }
+/* Subtítulo pequeño en inglés arriba a la izquierda, como el de las baldosas ("Management"). */
+html[data-skin="arknights"] .app > header nav button::after { position: absolute; left: 9px; top: 4px; font: 400 .56rem/1 var(--ak-num); letter-spacing: .1em; color: var(--ak-ink2); z-index: 1; }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(1)::after { content: "TIMELINE"; }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(2)::after { content: "SQUADS"; }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(3)::after { content: "UPDATES"; }
+html[data-skin="arknights"] .app > header nav button:nth-of-type(4)::after { content: "HEADHUNT"; }
+html[data-skin="arknights"] .app > header nav button:hover:not(.on)::before { opacity: .28; }
+html[data-skin="arknights"] .app > header nav button.on { background: linear-gradient(180deg, #0b7cb5, var(--ak-blue)) !important; color: #fff !important;
+  box-shadow: 0 0 0 1px rgba(108, 200, 245, .5), 0 8px 22px rgba(10, 114, 166, .5) !important; }
+html[data-skin="arknights"] .app > header nav button.on::before { filter: none; opacity: .3; }
+html[data-skin="arknights"] .app > header nav button.on::after { color: #d8efff; }
+html[data-skin="arknights"] .app > header nav button:focus-visible { outline: 2px solid var(--ak-yel); outline-offset: 2px; }
+
+/* ===== Botones (2.ª versión): como los del juego, placa clara con la esquina inferior derecha cortada, un filo oscuro a la izquierda
+   y, al pasar, la línea azul abajo. El principal, azul PRTS con filo blanco. La sombra va en filter (el clip-path recorta box-shadow). ===== */
+html[data-skin="arknights"] .btn { border-radius: 0; border: 0; color: var(--ak-ink); background: linear-gradient(180deg, #f6f7f8, #e3e5e8);
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+  box-shadow: inset 3px 0 0 var(--ak-ink), inset 0 1px 0 #fff; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, .4)); text-shadow: none;
+  font-family: var(--ak-head); font-weight: 700; font-size: .78em; letter-spacing: .04em; padding-left: 14px; }
+html[data-skin="arknights"] .btn::after { display: none; }
+html[data-skin="arknights"] .btn:hover:not(:disabled) { background: #fff !important; color: var(--ak-ink); box-shadow: inset 3px 0 0 var(--ak-blue-hi), inset 0 -3px 0 var(--ak-blue-hi) !important; }
+html[data-skin="arknights"] .btn:active:not(:disabled) { background: #d9dce0 !important; }
+html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  background: linear-gradient(180deg, #0a76ad, var(--ak-blue)) !important; color: #fff; box-shadow: inset 3px 0 0 #fff, inset 0 1px 0 rgba(255, 255, 255, .3) !important; }
+html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { background: linear-gradient(180deg, #0a76ad, #08679a) !important;
+  box-shadow: inset 3px 0 0 #fff, inset 0 -3px 0 var(--ak-yel) !important; }
+html[data-skin="arknights"] .btn.mark .spark { color: #8a5a00; }
+html[data-skin="arknights"] .btn.mark.primary .spark { color: #fff; }
+html[data-skin="arknights"] .btn.mark:not(.primary) { background: #fff3d1 !important; color: #4a2a00; box-shadow: inset 0 -3px 0 var(--ak-yel); }
+html[data-skin="arknights"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 2px solid var(--ak-yel); outline-offset: 2px; }
+html[data-skin="arknights"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 0; border: 1px solid rgba(255, 255, 255, .26); background: #121315; color: #f1f2f3; }
+html[data-skin="arknights"] :is(input, select):focus { border-color: var(--ak-blue-hi); box-shadow: inset 3px 0 0 var(--ak-blue-hi); outline: none; }
+html[data-skin="arknights"] :is(input, textarea)::placeholder { color: #9aa0a8; opacity: 1; }
+html[data-skin="arknights"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ak-blue-hi); }
+
+/* ===== Chips y filtros: como los interruptores de ajustes del juego (gris oscuro; el activo, azul con raya blanca) ===== */
+html[data-skin="arknights"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
+  border-radius: 0; border: 1px solid rgba(255, 255, 255, .14); background: #2a2c30; color: #eceef0; box-shadow: none; }
+html[data-skin="arknights"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { background: #373a3f !important; border-color: rgba(255, 255, 255, .4); }
+html[data-skin="arknights"] .seg { border-radius: 0; background: #1d1f22; border: 1px solid rgba(255, 255, 255, .14); }
+html[data-skin="arknights"] .seg button { border-radius: 0; color: #dfe2e5; font-family: var(--ak-head); font-weight: 700; font-size: .8em; letter-spacing: .03em; }
+html[data-skin="arknights"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="arknights"] :is(.chip.on, .seg button.on):hover { background: var(--ak-blue) !important; color: #fff; border-color: var(--ak-blue); box-shadow: inset 0 -3px 0 #fff; }
+html[data-skin="arknights"] .up-chip-t { color: #c9cdd2; }
+
+/* ===== Etiquetas ===== */
+html[data-skin="arknights"] .tag { border-radius: 0; border: 0; background: #111214; color: #eceef0; font-family: var(--ak-num); font-weight: 700; letter-spacing: .03em; }
+html[data-skin="arknights"] .tag.great { background: var(--ak-yel); color: #111; }
+html[data-skin="arknights"] .tag.good { color: #8fe3b0; }
+html[data-skin="arknights"] .tag.mid { color: #ffd98a; }
+html[data-skin="arknights"] .tag.bad { color: var(--ak-red-t); }
+html[data-skin="arknights"] .pill.hot { border-radius: 0; background: var(--ak-red); color: #fff; }
+html[data-skin="arknights"] .pill.new { border-radius: 0; background: var(--ak-yel); color: #111; }
+/* "HOY": como la insignia azul de NOTIFICATION del menú. */
+html[data-skin="arknights"] .today-flag { border-radius: 0; background: var(--ak-blue); color: #fff; font-family: var(--ak-num); font-weight: 700; box-shadow: 0 0 12px rgba(31, 163, 224, .5); }
+
+/* ===== Títulos de sección: cuadrado blanco + rótulo en Novecento + línea con tramo de cinta de advertencia ===== */
+html[data-skin="arknights"] h3 { color: #fff; font-size: .9rem; letter-spacing: .04em; line-height: 1.15; }
+/* Marca de sección: el emblema triangular de Rhodes Island del juego, en blanco con un halo azul (antes un cuadradito blanco con
+   sombra azul: al dueño le pareció feo). */
+html[data-skin="arknights"] h3::before { content: ""; flex: none; width: 20px; height: 17px; margin-right: 6px; box-shadow: none;
+  background: url(/skins/arknights/ri-emblem.webp) center / contain no-repeat; filter: invert(1) drop-shadow(0 0 3px rgba(31, 163, 224, .55)); }
+/* Guía fina que se desvanece (antes acababa en un tramo de cinta de advertencia: no gustó). */
+html[data-skin="arknights"] h3:not(:has(> button, > .btn, > a))::after { content: ""; flex: 1 1 0; min-width: 0; height: 1px; margin-left: 12px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .3), rgba(255, 255, 255, .04)); }
+html[data-skin="arknights"] h3 small { color: var(--muted); font-family: 'Barlow', sans-serif; font-size: .78rem; font-weight: 500; letter-spacing: 0; }
+html[data-skin="arknights"] h3:has(> .sec-ico)::before { display: none; }
+html[data-skin="arknights"] h3 > .sec-ico { color: var(--ak-sky); }
+html[data-skin="arknights"] .kind-head { color: #fff; font-family: var(--ak-head); border-bottom-color: rgba(255, 255, 255, .16); }
+
+/* ===== Paneles: cristal oscuro (4.ª ronda, 13 nov 2026) =====
+   Antes llevaban la textura negra de los diálogos del juego (dlg-darkpanel, dlg-dark, dlg-head): con el personaje de fondo se veían
+   pesados y "sucios", y el dueño pidió quitarla. Ahora: cristal carbón translúcido con desenfoque (se intuye el fondo), filo claro de
+   1 px, un brillo suave arriba y el canto blanco + azul de la skin. Las ventanas (evento, apoyo, aviso) son opacas: van sobre todo. */
+html[data-skin="arknights"] {
+  --ak-glass: linear-gradient(165deg, rgba(38, 40, 45, .84), rgba(20, 21, 24, .8) 60%);
+  --ak-solid: linear-gradient(165deg, #26282c, #1b1c1f 60%);
+  --ak-edge: 0 0 0 1px rgba(255, 255, 255, .1), inset 0 1px 0 rgba(255, 255, 255, .08), 0 18px 40px rgba(0, 0, 0, .45);
+}
+html[data-skin="arknights"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 0; border: 0; box-shadow: var(--ak-edge); }
+html[data-skin="arknights"] :is(.psec, .gsec, .current, .next-patch) { background: var(--ak-glass); backdrop-filter: blur(12px) saturate(1.15); }
+html[data-skin="arknights"] :is(.support-dialog, .sheet, .consent) { background: var(--ak-solid); }
+/* Dentro de un panel (Parches: versión actual y próxima), placas interiores lisas: sin segundo cristal, sin canto ni emblema propios. */
+html[data-skin="arknights"] :is(.psec, .gsec) :is(.current, .next-patch) { background: rgba(255, 255, 255, .05); backdrop-filter: none;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .08); }
+html[data-skin="arknights"] :is(.psec, .gsec) :is(.current, .next-patch)::after { display: none; }
+html[data-skin="arknights"] :is(.psec, .gsec) :is(.current, .next-patch)::before { display: none; }
+html[data-skin="arknights"] :is(.psec, .gsec) .next-patch { box-shadow: inset 2px 0 0 var(--ak-blue-hi), inset 0 0 0 1px rgba(255, 255, 255, .08); }
+html[data-skin="arknights"] :is(.psec, .gsec, .current, .next-patch, .support-dialog) { position: relative; isolation: isolate; }
+/* Emblema de Rhodes Island de marca de agua abajo a la derecha y canto blanco + azul arriba a la izquierda. */
+html[data-skin="arknights"] :is(.psec, .gsec, .current, .next-patch, .support-dialog)::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background: url(/skins/arknights/ri-emblem.webp) right 14px bottom 12px / 110px auto no-repeat; opacity: .07; filter: grayscale(1); }
+html[data-skin="arknights"] :is(.psec, .gsec, .current, .next-patch, .support-dialog)::after { content: ""; position: absolute; left: 0; top: 0; width: 40px; height: 4px;
+  background: #fff; pointer-events: none; z-index: 3; box-shadow: 44px 0 0 -1px var(--ak-blue-hi); }
+html[data-skin="arknights"] :is(.up-card, .soon-card) { background: var(--ak-glass); backdrop-filter: blur(10px) saturate(1.15); }
+html[data-skin="arknights"] :is(.skin-panel, .lang-menu) { background: var(--ak-solid); }
+/* Tarjetas (Mis gachas, Cuadrícula): el mismo cristal; el cuerpo, sin fondo propio (antes, la textura). */
+html[data-skin="arknights"] :is(.gcard, .ecard) { background: var(--ak-glass); backdrop-filter: blur(12px) saturate(1.15); }
+html[data-skin="arknights"] .modal { background: #1d1e21; }
+html[data-skin="arknights"] :is(.gcard-body, .ecard-body) { background: transparent; }
+html[data-skin="arknights"] .modal-body { background: #1d1e21; }
+html[data-skin="arknights"] .grid.even .codes[open] > ul { background: rgba(14, 15, 17, .92); }
+html[data-skin="arknights"] :is(.gcard-hero, .ecard-img) { background-color: #1e2023; }
+/* El arte de cabecera se funde con el cristal (antes, con el carbón opaco). */
+html[data-skin="arknights"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 35%, rgba(30, 32, 36, .55) 70%, rgba(32, 34, 38, .92)); }
+html[data-skin="arknights"] .ecard.bnr .fade { background: linear-gradient(transparent 60%, rgba(32, 34, 38, .92)); }
+html[data-skin="arknights"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(29, 30, 33, .98)); }
+html[data-skin="arknights"] .modal-hero { background: #222427; }
+/* Línea fina de luz bajo el arte de cada tarjeta, como el filo de las fichas del juego. */
+html[data-skin="arknights"] :is(.gcard-hero, .ecard-img) { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .14); }
+html[data-skin="arknights"] .modal-title h2 { font-size: 1.3rem; letter-spacing: .02em; }
+html[data-skin="arknights"] .modal-title small { color: var(--ak-sky); font-family: var(--ak-num); letter-spacing: .06em; }
+html[data-skin="arknights"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { box-shadow: 0 0 0 2px var(--ak-blue-hi), 0 16px 36px rgba(0, 0, 0, .6); }
+/* Cabecera de juego (Cuadrícula): franja oscura lisa con el canto blanco y una línea azul que se desvanece abajo (antes, la barra
+   negra texturizada). */
+html[data-skin="arknights"] .gsec-head { border-radius: 0; background: linear-gradient(90deg, rgba(12, 13, 15, .94), rgba(24, 26, 29, .9));
+  box-shadow: inset 4px 0 0 #fff, inset 0 -1px 0 rgba(31, 163, 224, .45); }
+html[data-skin="arknights"] .gsec-head .stats > div { background: rgba(255, 255, 255, .07); }
+html[data-skin="arknights"] .gsec-head .stats b { color: var(--ak-sky); }
+html[data-skin="arknights"] :is(.lang-menu, .skin-panel) button.on { background: var(--ak-blue); color: #fff; box-shadow: inset 4px 0 0 #fff; }
+html[data-skin="arknights"] :is(.lang-menu, .skin-panel) button.on :is(i, small) { color: #fff; }
+html[data-skin="arknights"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: rgba(255, 255, 255, .1); }
+html[data-skin="arknights"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--ak-yel); border-color: rgba(255, 210, 63, .55); opacity: 1; }
+
+/* Filas: placas carbón con canto gris; al pasar, canto azul. */
+html[data-skin="arknights"] :is(.list li, .hist li) { margin: 0 0 3px; border-radius: 0; background: rgba(255, 255, 255, .06); border: 0; border-left: 2px solid rgba(255, 255, 255, .45); box-shadow: none;
+  transition: background .2s, border-color .2s; }
+html[data-skin="arknights"] :is(.list li, .hist li):hover { background: rgba(255, 255, 255, .12); border-left-color: var(--ak-blue-hi); }
+html[data-skin="arknights"] .progress { border-radius: 0; background: rgba(255, 255, 255, .12); }
+html[data-skin="arknights"] .progress i { border-radius: 0; background: linear-gradient(90deg, var(--ak-blue), var(--ak-blue-hi)); }
+html[data-skin="arknights"] .prog { background: rgba(0, 0, 0, .35); }
+html[data-skin="arknights"] .prog span { color: #fff; text-shadow: none; font-family: var(--ak-num); }
+html[data-skin="arknights"] .stats > div { border-radius: 0; background: rgba(255, 255, 255, .07); border: 0; border-top: 2px solid #fff; }
+html[data-skin="arknights"] .stats b { font-family: var(--ak-num); font-size: 1.15em; }
+html[data-skin="arknights"] :is(.ev-loc, .gcard-head p) { color: var(--ak-sky); }
+html[data-skin="arknights"] .gcard-head h2 { letter-spacing: .02em; }
+html[data-skin="arknights"] :is(.code-until, .prec) { color: #ffd98a; }
+html[data-skin="arknights"] .link-btn { color: var(--ak-sky); }
+html[data-skin="arknights"] .stars { color: var(--ak-yel); text-shadow: none; }
+html[data-skin="arknights"] .avatar { border-radius: 0; border: 1px solid rgba(255, 255, 255, .45); clip-path: var(--ak-cut); box-shadow: none; }
+html[data-skin="arknights"] .gcard-hero .corner { border-radius: 0; }
+html[data-skin="arknights"] .x { border-radius: 0; }
+html[data-skin="arknights"] .close { border-radius: 0; background: rgba(0, 0, 0, .75); clip-path: var(--ak-cut); }
+html[data-skin="arknights"] .close:hover { background: var(--ak-blue); transform: none; }
+/* Selector de juegos ("Mis gachas"): rectos, con canto azul al pasar. */
+html[data-skin="arknights"] .pick { border-radius: 0; border: 0; box-shadow: 0 0 0 1px rgba(255, 255, 255, .1), 0 6px 16px rgba(0, 0, 0, .45); }
+html[data-skin="arknights"] .pick:hover { box-shadow: inset 4px 0 0 var(--ak-blue-hi), 0 0 0 1px rgba(255, 255, 255, .4), 0 8px 20px rgba(0, 0, 0, .5); }
+html[data-skin="arknights"] .pick.wip .tag { background: #111214; color: #ffd98a; }
+
+/* ===== "Termina en las próximas 72 h": lo urgente, en la barra roja de los avisos (el rótulo BREAKING NEWS se quitó: no gustó) ===== */
+html[data-skin="arknights"] .soon-card em { border-radius: 0; background: #111214; color: #ffd98a; font-family: var(--ak-num); font-weight: 700; }
+html[data-skin="arknights"] .soon-card.urgent em { color: #fff; background: var(--ak-red) url(/skins/arknights/dlg-red.webp) center / cover; }
+
+/* ===== Línea de tiempo (3.ª vez, 13 nov 2026: "limpia y bonita como la interfaz del juego") =====
+   Sigue la lista de MISIONES del juego (atlas UI_MISSION_2.0): placas gris carbón lisas con una línea fina de color abajo, sin texturas
+   ni bloques de color. Las secciones son solo texto con un cuadradito; el color del tipo vive en la línea de abajo de cada placa
+   (banner amarillo, evento azul, rotatorio gris claro) y en ese cuadradito. Antes: textura de diálogo en los carriles y rótulos en
+   bloque de color (destacaban demasiado). */
+html[data-skin="arknights"] [style*="--c:"] { --c: var(--ak-sky) !important; --c2: #232529 !important; }
+html[data-skin="arknights"] .tl.tl { background: rgba(22, 23, 26, .9); backdrop-filter: blur(4px); box-shadow: 0 0 0 1px rgba(255, 255, 255, .09), 0 16px 36px rgba(0, 0, 0, .5); }
+/* Con fondo de personaje: cristal oscuro (se ve el operador detrás, desenfocado); las barras siguen casi opacas y el eje, la esquina y la
+   columna de juegos, opacos del todo (son fijos al hacer scroll y, transparentes, dejaban ver los eventos por debajo; lo mismo en NIKKE). */
+html[data-skin="arknights"] body:has(> .skin-live) .tl.tl { background: rgba(16, 17, 20, .58); backdrop-filter: blur(7px) saturate(1.1);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .14), 0 16px 36px rgba(0, 0, 0, .35); }
+html[data-skin="arknights"] body:has(> .skin-live) .bar { background: rgba(40, 42, 46, .94) !important; }
+html[data-skin="arknights"] body:has(> .skin-live) .bar:hover { background: rgba(52, 55, 60, .97) !important; }
+html[data-skin="arknights"] body:has(> .skin-live) .month-band { background: rgba(255, 255, 255, .02); }
+/* Cabecera del sitio en cristal sobre el personaje, con la línea azul de luz abajo. */
+html[data-skin="arknights"] body:has(> .skin-live) .app > header { background: linear-gradient(180deg, rgba(10, 11, 13, .88), rgba(14, 15, 17, .74)); backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 0; box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .08), 0 10px 30px rgba(0, 0, 0, .35); }
+html[data-skin="arknights"] body:has(> .skin-live) .app > header::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(31, 163, 224, .7) 20%, rgba(108, 200, 245, .5) 50%, transparent 85%); }
+/* Lo que va suelto sobre el vídeo (títulos de sección, avisos) lleva sombra para leerse sobre cualquier fotograma. */
+html[data-skin="arknights"] body:has(> .skin-live) main :is(h3, h3 small, .hint, .muted, .lane-empty, .sec-title, .ztag) { text-shadow: 0 1px 3px rgba(0, 0, 0, .9), 0 0 10px rgba(0, 0, 0, .6); }
+html[data-skin="arknights"] body:has(> .skin-live) main :is(h3 small, .ztag) { color: #e6e8eb; }
+/* "Termina en las próximas 72 h" y el pie van sobre una franja de cristal oscuro: sobre un fotograma claro (Kal'tsit) se perdían. */
+html[data-skin="arknights"] body:has(> .skin-live) .soon-strip > h3 { width: fit-content; padding: 2px 12px 2px 0; background: linear-gradient(90deg, rgba(10, 11, 13, .75), rgba(10, 11, 13, .55) 85%, transparent); }
+/* Con el fondo en todas las pestañas: los títulos de sección y los textos sueltos (fuera de los paneles) van sobre una franja de cristal
+   que se desvanece a la derecha; sobre un fotograma claro, solo con sombra, se quedaban en ~2,4:1. */
+html[data-skin="arknights"] body:has(> .skin-live) main h3:not(:is(.psec, .gsec, .gcard, .ecard, .modal, .tl, .up-card, .soon-card, .current, .next-patch, .sheet, .bcard) *):not(.soon-strip > h3) {
+  padding: 3px 8px 3px 6px; background: linear-gradient(90deg, rgba(10, 11, 13, .78), rgba(10, 11, 13, .6) 40%, rgba(10, 11, 13, 0) 75%); }
+html[data-skin="arknights"] body:has(> .skin-live) main :is(p.muted, .link-btn, label.inline-label):not(:is(.psec, .gsec, .gcard, .ecard, .modal, .tl, .up-card, .soon-card, .current, .next-patch, .sheet, .bcard) *) {
+  width: fit-content; max-width: 100%; padding: 2px 8px; background: rgba(10, 11, 13, .72); color: #e6e8eb; }
+html[data-skin="arknights"] body:has(> .skin-live) main .link-btn:not(:is(.psec, .gsec, .gcard, .ecard, .modal, .tl, .up-card, .soon-card, .current, .next-patch, .sheet, .bcard) *) { color: var(--ak-sky); }
+html[data-skin="arknights"] body:has(> .skin-live) .site-foot { background: rgba(12, 13, 15, .78); backdrop-filter: blur(8px); padding-left: 14px; padding-right: 14px; }
+html[data-skin="arknights"] :is(.tl-corner, .tl-axis) { background: #151618; }
+html[data-skin="arknights"] .tl-axis { border-bottom: 1px solid rgba(255, 255, 255, .1); }
+/* Eje: meses en Novecento, semanas en Bender con una marca fina. */
+html[data-skin="arknights"] .month { border-left: 1px solid rgba(255, 255, 255, .16); background: none !important; }
+html[data-skin="arknights"] .month b { color: #fff; font-family: var(--ak-head); font-size: .72rem; letter-spacing: .14em; }
+html[data-skin="arknights"] .tick { color: #aeb3ba; font-family: var(--ak-num); font-size: .8rem; letter-spacing: .04em; }
+html[data-skin="arknights"] .today-flag { letter-spacing: .1em; padding: 1px 9px; box-shadow: none; }
+html[data-skin="arknights"] .today-flag::after { border-top-color: var(--ak-blue); }
+/* Línea de "ahora": fina y continua, con un rombo pequeño arriba. */
+html[data-skin="arknights"] .now-line { width: 1px; margin-left: 0; opacity: 1; background: var(--ak-sky); box-shadow: 0 0 6px rgba(108, 200, 245, .5); }
+html[data-skin="arknights"] .now-line::before { content: ""; position: absolute; left: 50%; top: 0; width: 7px; height: 7px; transform: translate(-50%, -50%) rotate(45deg); background: var(--ak-sky); }
+/* Carril: etiqueta lisa con un canto blanco fino; código del juego en Novecento y nombre en Bender. */
+html[data-skin="arknights"] .tl-label { border-left: 0; background: #18191c; box-shadow: inset 2px 0 0 rgba(255, 255, 255, .85), inset -1px 0 0 rgba(255, 255, 255, .08); }
+html[data-skin="arknights"] .tl-label strong { font-family: var(--ak-head); font-size: .95rem; letter-spacing: .08em; }
+html[data-skin="arknights"] .tl-label small { font-family: var(--ak-num); color: #aeb3ba; letter-spacing: .03em; }
+html[data-skin="arknights"] .tl-lane { border-color: rgba(255, 255, 255, .08); }
+/* Rejilla casi invisible: semanas a 4 %, meses a 10 %. */
+html[data-skin="arknights"] .grid-line { background: rgba(255, 255, 255, .04); }
+html[data-skin="arknights"] .grid-line.month-line { background: rgba(255, 255, 255, .1); }
+html[data-skin="arknights"] .month-band { background: rgba(255, 255, 255, .012); }
+
+/* Secciones: solo texto (Bender, gris claro) con un cuadradito del color del tipo y una línea finísima. */
+html[data-skin="arknights"] .sec-band { border-top: 0; background: none !important; box-shadow: none !important; }
+html[data-skin="arknights"] .sec-band::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: rgba(255, 255, 255, .06); pointer-events: none; }
+html[data-skin="arknights"] .sec-band.banner { --ak-sec: var(--ak-yel); }
+html[data-skin="arknights"] .sec-band.event { --ak-sec: var(--ak-blue-hi); }
+html[data-skin="arknights"] .sec-band.challenge { --ak-sec: #c9cdd2; }
+html[data-skin="arknights"] .sec-title.sec-title { position: sticky; z-index: 1; padding: 4px 10px 0 8px; background: transparent; color: #d4d7db !important;
+  font-family: var(--ak-num); font-weight: 700; font-size: .78rem; letter-spacing: .14em; }
+html[data-skin="arknights"] .sec-title .sec-ico { display: none; }
+html[data-skin="arknights"] .sec-title::before { content: ""; width: 6px; height: 6px; background: var(--ak-sec); margin-right: 2px; }
+
+/* Barras = placas de misión: gris carbón liso, línea fina de color abajo, esquina inferior derecha cortada apenas. */
+html[data-skin="arknights"] .bar { --ak-tab: var(--ak-blue-hi); border-radius: 0; border: 0;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%);
+  background: #2c2e32 !important; box-shadow: inset 0 -2px 0 var(--ak-tab), inset 0 1px 0 rgba(255, 255, 255, .07) !important; transition: transform .2s, background .2s; }
+html[data-skin="arknights"] .bar.banner { --ak-tab: var(--ak-yel); }
+html[data-skin="arknights"] .bar.event { --ak-tab: var(--ak-blue-hi); }
+html[data-skin="arknights"] .bar.challenge { --ak-tab: #aeb3ba; }
+html[data-skin="arknights"] .bar-clip { border-radius: 0; }
+/* El arte del evento, muy apagado y solo a la derecha (se funde con el gris hacia la izquierda). */
+html[data-skin="arknights"] .bar .bar-bg { filter: grayscale(.35); -webkit-mask-image: linear-gradient(90deg, transparent 35%, #000); mask-image: linear-gradient(90deg, transparent 35%, #000); }
+html[data-skin="arknights"] .bar-clip::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(90deg, rgba(44, 46, 50, .55), rgba(44, 46, 50, .35)); }
+html[data-skin="arknights"] .bar-in { z-index: 2; }
+html[data-skin="arknights"] .bar-in b { font-family: 'Barlow', sans-serif; font-weight: 700; font-size: .86rem; letter-spacing: .01em; text-shadow: 0 1px 2px rgba(0, 0, 0, .8); }
+html[data-skin="arknights"] .bar .bar-txt small { font-family: var(--ak-num); letter-spacing: .02em; color: #c9cdd2; }
+html[data-skin="arknights"] .bar .bar-txt .when { font-family: var(--ak-num); font-weight: 700; }
+html[data-skin="arknights"] .bar .bar-txt .when.upcoming { color: #d6d9dd !important; }
+html[data-skin="arknights"] .bar :is(.face, .thumb) { border-radius: 0; border: 0; box-shadow: 0 0 0 1px rgba(255, 255, 255, .35); }
+html[data-skin="arknights"] .bar .bar-left { border-radius: 0; font-family: var(--ak-num); font-weight: 700; background: #151618; }
+html[data-skin="arknights"] .bar:hover { filter: none; outline: 0; transform: translateY(-2px); background: #36393e !important;
+  box-shadow: inset 0 -2px 0 var(--ak-tab), inset 0 0 0 1px rgba(255, 255, 255, .35) !important; }
+/* En curso: lo transcurrido, un poco más claro, con el borde blanco fino donde va "ahora"; y la línea de abajo más gruesa. */
+html[data-skin="arknights"] .bar.live { box-shadow: inset 0 -3px 0 var(--ak-tab), inset 0 1px 0 rgba(255, 255, 255, .12) !important; }
+html[data-skin="arknights"] .bar-prog { opacity: 1; z-index: 1; background: rgba(255, 255, 255, .06) !important; box-shadow: inset -1px 0 0 rgba(255, 255, 255, .55); }
+html[data-skin="arknights"] .bar.past { opacity: 1; filter: grayscale(1) brightness(.6); }
+html[data-skin="arknights"] .bar.est { box-shadow: inset 0 -2px 0 var(--ak-tab), inset 0 0 0 1px rgba(255, 255, 255, .14) !important; }
+html[data-skin="arknights"] .patch-mark { opacity: 1; color: var(--ak-yel); font-family: var(--ak-num); font-weight: 700; }
+html[data-skin="arknights"] .lane-empty { font-family: var(--ak-num); }
+
+/* ===== Destacados: ficha de operador ===== */
+html[data-skin="arknights"] .bport { border-radius: 0; border: 0; }
+html[data-skin="arknights"] .bport:hover { box-shadow: 0 0 0 2px var(--ak-blue-hi); }
+html[data-skin="arknights"] .bport .p-time { border-radius: 0; background: #111214; color: var(--ak-yel); border: 0; backdrop-filter: none; font-family: var(--ak-num); font-weight: 700; }
+html[data-skin="arknights"] .bport .p-time.hot { color: #fff; background: var(--ak-red); }
+html[data-skin="arknights"] .featured { gap: 8px; }
+html[data-skin="arknights"] .portrait { position: relative; width: 88px; gap: 0; overflow: hidden; border-radius: 0; background: #111214; clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%); }
+html[data-skin="arknights"] .portrait::before { content: ""; position: absolute; left: 4px; top: 4px; width: 18px; height: 15px; z-index: 2; pointer-events: none;
+  background: url(/skins/arknights/elite.webp) center / contain no-repeat; filter: drop-shadow(0 1px 2px #000); }
+html[data-skin="arknights"] .portrait img { width: 100%; height: 100px; border: 0; border-radius: 0; object-position: 50% 8%;
+  background: radial-gradient(90% 60% at 50% 100%, rgba(255, 210, 63, .55), transparent 70%), linear-gradient(180deg, #2a2e33, #3a3226); }
+html[data-skin="arknights"] .portrait:hover { box-shadow: inset 0 0 0 2px var(--ak-blue-hi); }
+html[data-skin="arknights"] .portrait:hover img { transform: none; }
+html[data-skin="arknights"] .portrait span { padding: 5px 4px; background: #0c0d0f; border-top: 2px solid var(--ak-yel); color: #fff; font-family: var(--ak-head);
+  font-size: .64rem; line-height: 1.15; letter-spacing: .02em; }
+html[data-skin="arknights"] .portrait small { padding: 0 4px 5px; background: #0c0d0f; color: #c2c6cc; font-size: .7rem; font-family: var(--ak-num); }
+html[data-skin="arknights"] :is(.bcard, .bport) :is(.stars, .p-stars) { color: var(--ak-yel); text-shadow: 0 1px 2px #000; }
+/* Cabeceras de sección de la ventana del evento: franja clara que se desvanece, con el canto blanco (antes, la barra texturizada). */
+html[data-skin="arknights"] .modal-body h3 { background: linear-gradient(90deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02) 70%, transparent); padding: 7px 10px 7px 14px; box-shadow: inset 3px 0 0 #fff; }
+html[data-skin="arknights"] .modal-body h3::before { display: none; }
+html[data-skin="arknights"] .modal-body .desc { color: #c9cdd2; }
+
+/* ===== Pie: línea fina con un tramo blanco a la izquierda ===== */
+html[data-skin="arknights"] .site-foot { border-top: 0; position: relative; }
+html[data-skin="arknights"] .site-foot::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+  background: linear-gradient(90deg, #fff 0 48px, rgba(255, 255, 255, .14) 48px); }
+html[data-skin="arknights"] .plan-break li { border-left-color: #7a8089; }
+
+/* ===== Efecto 3D al pasar el ratón (akTilt.ts) =====
+   Como las baldosas del juego con el giroscopio: el elemento bajo el ratón se inclina hacia él (akTilt.ts pone --ak-tx / --ak-ty, de -1 a 1,
+   en el propio elemento), crece un poco y su sombra se va al lado contrario, así se lee como algo que flota. Al salir vuelve con suavidad.
+   --ak-kx / --ak-ky = grados máximos (las barras de la línea de tiempo son muy anchas: giran menos en Y). Las variables se declaran en los
+   elementos, no en <html>: una variable que usa otras se resuelve donde se declara. Solo con ratón y sin "reducir movimiento". */
+html[data-skin="arknights"] :is(header nav button, .btn, .soon-card, .up-card, .pick, .portrait, .bport, .chip, .fopt, .bar, .gcard, .ecard) {
+  --ak-kx: 12deg; --ak-ky: 12deg;
+  --ak-gyro: perspective(600px) rotateY(calc(var(--ak-tx, 0) * var(--ak-ky))) rotateX(calc(var(--ak-ty, 0) * var(--ak-kx) * -1));
+  --ak-drop: drop-shadow(calc(var(--ak-tx, 0) * -7px) calc(8px - var(--ak-ty, 0) * 5px) 10px rgba(0, 0, 0, .55)); }
+html[data-skin="arknights"] .bar { --ak-ky: 2.5deg; --ak-kx: 14deg; }
+html[data-skin="arknights"] :is(.gcard, .ecard) { --ak-ky: 4deg; --ak-kx: 4deg; }
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html[data-skin="arknights"] :is(header nav button, .btn, .soon-card, .up-card, .pick, .portrait, .bport, .chip, .fopt, .bar, .gcard, .ecard) {
+    transition: transform .45s cubic-bezier(.2, .8, .2, 1), filter .45s, box-shadow .2s, background .2s, color .2s; }
+  html[data-skin="arknights"] :is(header nav button, .btn, .soon-card, .up-card, .pick, .portrait, .bport, .chip, .fopt, .bar):hover {
+    transform: var(--ak-gyro) scale(1.04); filter: var(--ak-drop); z-index: 6;
+    transition: transform .12s ease-out, filter .12s, box-shadow .2s, background .2s, color .2s; }
+  html[data-skin="arknights"] .bar:hover { transform: var(--ak-gyro) scale(1.015); }
+  html[data-skin="arknights"] :is(.gcard, .ecard):hover { transform: var(--ak-gyro); transition: transform .12s ease-out, box-shadow .2s; }
+  html[data-skin="arknights"] .bar.past:hover { filter: grayscale(1) brightness(.75) var(--ak-drop); }
+}
+
+/* Móvil: con el giroscopio (akTilt.ts pone data-ak-gyro y --ak-tx/--ak-ty en <html>), todo se inclina a la vez al girar el teléfono,
+   como las baldosas del menú del juego. Ángulos más suaves que con ratón y sin las barras de la línea de tiempo (son muchas; moverlas
+   todas a la vez cuesta en móviles modestos). */
+@media (hover: none) and (prefers-reduced-motion: no-preference) {
+  html[data-skin="arknights"][data-ak-gyro] :is(header nav button, .btn, .soon-card, .up-card, .pick, .portrait, .bport, .gcard, .ecard) {
+    --ak-kx: 9deg; --ak-ky: 9deg; transform: var(--ak-gyro); will-change: transform; }
+  html[data-skin="arknights"][data-ak-gyro] :is(.gcard, .ecard) { --ak-kx: 3deg; --ak-ky: 3deg; }
+}
+
+/* ===== Botones: acabado final (13 nov 2026, "pule los bordes de todos los botones") =====
+   - Todos con la esquina inferior derecha cortada y, siguiendo el corte, una LÍNEA FINA de color (como el filo de los botones del juego):
+     azul en los claros, blanca en los azules y gris en los oscuros. Se dibuja con un degradado a 315° que empieza justo donde acaba el
+     corte (8 px de lado → 5,66 px en diagonal; 6 px → 4,24 px).
+   - Filo de 1 px alrededor (sombra interior) para que no se pierdan sobre el cristal ni sobre el personaje.
+   - Foco de teclado: el clip-path recortaba el contorno amarillo (no se veía); ahora va por dentro, con sombra interior. */
+html[data-skin="arknights"] {
+  --ak-ln8: linear-gradient(315deg, transparent 0 5.7px, var(--ak-ln, var(--ak-blue-hi)) 5.7px 7.3px, transparent 7.3px);
+  --ak-ln6: linear-gradient(315deg, transparent 0 4.3px, var(--ak-ln, rgba(255, 255, 255, .45)) 4.3px 5.7px, transparent 5.7px);
+  --ak-cut6: polygon(0 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+}
+/* Botón claro: placa con filo oscuro a la izquierda, borde fino y la línea azul en el corte; al pasar, blanca con la línea de abajo. */
+html[data-skin="arknights"] .btn { background: var(--ak-ln8), linear-gradient(180deg, #f7f8f9, #e2e4e7);
+  box-shadow: inset 3px 0 0 var(--ak-ink), inset 0 0 0 1px rgba(0, 0, 0, .16), inset 0 1px 0 #fff; }
+html[data-skin="arknights"] .btn:hover:not(:disabled) { background: var(--ak-ln8), #fff !important;
+  box-shadow: inset 3px 0 0 var(--ak-blue-hi), inset 0 -2px 0 var(--ak-blue-hi), inset 0 0 0 1px rgba(10, 114, 166, .35) !important; }
+html[data-skin="arknights"] .btn:active:not(:disabled) { background: var(--ak-ln8), #d9dce0 !important; }
+html[data-skin="arknights"] .btn:disabled { opacity: .5; filter: grayscale(.4); }
+/* Fantasma / suave: cristal oscuro con borde claro (para las acciones secundarias, que no compitan con las claras). */
+html[data-skin="arknights"] :is(.btn.ghost, .btn.soft) { --ak-ln: rgba(255, 255, 255, .5); background: var(--ak-ln8), rgba(255, 255, 255, .08); color: #f1f2f3;
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .8), inset 0 0 0 1px rgba(255, 255, 255, .22); }
+html[data-skin="arknights"] :is(.btn.ghost, .btn.soft):hover:not(:disabled) { --ak-ln: var(--ak-sky); background: var(--ak-ln8), rgba(255, 255, 255, .16) !important; color: #fff;
+  box-shadow: inset 2px 0 0 var(--ak-blue-hi), inset 0 -2px 0 var(--ak-blue-hi), inset 0 0 0 1px rgba(255, 255, 255, .35) !important; }
+/* Principal (y "Apoyar"): azul PRTS con filo blanco y la línea del corte en blanco; al pasar, la línea de abajo amarilla. */
+html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  --ak-ln: rgba(255, 255, 255, .85); background: var(--ak-ln8), linear-gradient(180deg, #0b7bb4, var(--ak-blue)) !important; color: #fff;
+  box-shadow: inset 3px 0 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .22), inset 0 1px 0 rgba(255, 255, 255, .3) !important; }
+html[data-skin="arknights"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { background: var(--ak-ln8), linear-gradient(180deg, #0a76ad, #08679a) !important;
+  box-shadow: inset 3px 0 0 #fff, inset 0 -2px 0 var(--ak-yel), inset 0 0 0 1px rgba(255, 255, 255, .3) !important; }
+/* Discord: su morado, con el mismo acabado (texto blanco a 4.5:1 con #4752c4). */
+html[data-skin="arknights"] .btn.discord, html[data-skin="arknights"] .btn.discord:hover:not(:disabled) { --ak-ln: rgba(255, 255, 255, .85); color: #fff;
+  background: var(--ak-ln8), linear-gradient(180deg, #5560d8, #4752c4) !important; box-shadow: inset 3px 0 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .22) !important; }
+html[data-skin="arknights"] .btn.discord:hover:not(:disabled) { box-shadow: inset 3px 0 0 #fff, inset 0 -2px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .3) !important; }
+/* Botones de la barra de arriba (skin, idioma, sincronizar): cuadro gris translúcido, ahora con borde fino y su corte de 6 px. */
+html[data-skin="arknights"] .app > header .btn { --ak-ln: rgba(255, 255, 255, .55); clip-path: var(--ak-cut6); background: var(--ak-ln6), rgba(255, 255, 255, .1) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18), inset 0 -2px 0 rgba(255, 255, 255, .14); }
+html[data-skin="arknights"] .app > header .btn:hover:not(:disabled) { --ak-ln: var(--ak-sky); background: var(--ak-ln6), rgba(255, 255, 255, .2) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .3), inset 0 -2px 0 var(--ak-blue-hi); }
+/* Chips y filtros: corte de 6 px con su línea; el borde pasa a sombra interior (con clip-path, el borde no seguía la esquina). */
+html[data-skin="arknights"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip) { clip-path: var(--ak-cut6); border-color: transparent;
+  background: var(--ak-ln6), #2a2c30; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
+html[data-skin="arknights"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { --ak-ln: var(--ak-sky); background: var(--ak-ln6), #373a3f !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .38); }
+html[data-skin="arknights"] :is(.chip.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on), html[data-skin="arknights"] .chip.on:hover {
+  --ak-ln: rgba(255, 255, 255, .9); background: var(--ak-ln6), var(--ak-blue) !important; box-shadow: inset 0 -2px 0 #fff, inset 0 0 0 1px rgba(255, 255, 255, .25); }
+/* Selector Línea / Cuadrícula: caja con el corte y la línea; el activo, azul con la raya blanca. */
+html[data-skin="arknights"] .seg { clip-path: var(--ak-cut6); border-color: transparent; background: var(--ak-ln6), #1d1f22; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16); }
+html[data-skin="arknights"] .seg button:hover:not(.on) { background: rgba(255, 255, 255, .08); }
+/* Pestañas (baldosas): filo fino y, al pasar, la línea azul abajo como los demás botones. */
+html[data-skin="arknights"] .app > header nav button:not(.on) { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .14), 0 6px 18px rgba(0, 0, 0, .5) !important; }
+html[data-skin="arknights"] .app > header nav button:not(.on):hover { box-shadow: inset 0 -2px 0 var(--ak-blue-hi), inset 0 0 0 1px rgba(10, 114, 166, .3), 0 6px 18px rgba(0, 0, 0, .5) !important; }
+/* Cerrar (×): cuadro negro con corte, borde fino y la línea del corte. */
+html[data-skin="arknights"] .close { --ak-ln: rgba(255, 255, 255, .6); background: var(--ak-ln8), rgba(0, 0, 0, .75); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+html[data-skin="arknights"] .close:hover { --ak-ln: #fff; background: var(--ak-ln8), var(--ak-blue); }
+html[data-skin="arknights"] .x { clip-path: var(--ak-cut6); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .25); }
+html[data-skin="arknights"] .x:hover { background: var(--ak-blue) !important; color: #fff; }
+/* Etiqueta de zona horaria (GMT-3) y el botón de plegar un juego (▾): eran redondos. */
+html[data-skin="arknights"] .ztag { border-radius: 0; clip-path: var(--ak-cut6); border-color: transparent; background: var(--ak-ln6), rgba(20, 21, 24, .8);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); color: #e6e8eb; }
+html[data-skin="arknights"] .fold { border-radius: 0; clip-path: var(--ak-cut6); background: var(--ak-ln6), #2a2c30; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2); }
+html[data-skin="arknights"] .fold:hover { --ak-ln: var(--ak-sky); background: var(--ak-ln6), #373a3f; }
+/* Foco de teclado por dentro (el clip-path se comía el contorno). */
+html[data-skin="arknights"] :is(.btn, .chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .seg button, .close, .x, header nav button):focus-visible {
+  outline: none; box-shadow: inset 0 0 0 2px var(--ak-yel), inset 0 0 0 3px rgba(0, 0, 0, .6) !important; }
+
+/* ===== Móvil ===== */
+@media (max-width: 700px) {
+  html[data-skin="arknights"] .app > header nav { gap: 4px; }
+  html[data-skin="arknights"] .app > header nav button { min-height: 42px; padding: 15px 18px 5px 7px; font-size: .68rem; letter-spacing: 0; }
+  html[data-skin="arknights"] .app > header nav button::before { width: 32px; height: 32px; right: -6px; }
+  html[data-skin="arknights"] .app > header nav button::after { left: 7px; top: 5px; font-size: .56rem; letter-spacing: .06em; }
+  html[data-skin="arknights"] .brand h1 { font-size: .95rem; }
+  /* El anillo iba a 54 px fijos y en móvil quedaba descentrado respecto al logo: aquí se ajusta al logo con un borde del anillo. */
+  html[data-skin="arknights"] .brand::before { display: none; }
+  html[data-skin="arknights"] .logo { box-shadow: 0 0 0 2px #0f1012, 0 0 0 4px var(--ak-yel); }
+  html[data-skin="arknights"] .brand h1::after { display: none; }
+}

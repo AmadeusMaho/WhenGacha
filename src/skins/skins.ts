@@ -14,9 +14,11 @@ export interface SkinDef {
   name: string
   /** Fuentes de Google Fonts que usa (familias con sus pesos, formato css2). */
   fonts?: string
-  /** Fondo animado de la línea de tiempo: vídeo (sin audio) y su fotograma fijo (móvil, ahorro de datos, "reducir movimiento").
+  /** Fondo animado de la línea de tiempo: vídeo (sin audio) y su fotograma fijo (ahorro de datos, "reducir movimiento", vídeo bloqueado).
    *  Con una lista, cada visita a la línea de tiempo usa el siguiente (LiveWallpaper.tsx). */
   live?: LiveClip | LiveClip[]
+  /** El fondo animado sale en TODAS las pestañas, no solo en la línea de tiempo (Arknights: la skin se diseñó con el personaje detrás). */
+  liveAllTabs?: boolean
 }
 
 /** Un fondo de la línea de tiempo: vídeo con su fotograma fijo, o solo una imagen (`poster`), que se mueve despacio. */
@@ -33,7 +35,7 @@ const stills = (skin: string, names: string[]): LiveClip[] => names.map(n => ({ 
 /*
  * Fondos animados en Cloudflare R2 (11 nov 2026): el despliegue tiene un límite de 20 MB y los vídeos no caben en public/.
  * Bucket `whengacha-fondos` (URL pública r2.dev); cada nombre de FONDOS es `<skin>/live-<nombre>.mp4` en el bucket (copia local en
- * ../fondos-skins/r2/). Su fotograma fijo `live-<nombre>.webp` (~45 KB) va en public/skins/<skin>/: es el póster, el fondo en móvil
+ * ../fondos-skins/r2/). Su fotograma fijo `live-<nombre>.webp` (~45 KB) va en public/skins/<skin>/: es el póster, el fondo con "ahorro de datos"
  * y el de reserva si R2 no responde (LiveWallpaper.tsx). Ver README, "Fondos en R2". Créditos de los de fans: public/acerca.html.
  * Para añadir o quitar fondos: la app de fondos local del dueño (scripts/fondos/abrir.cmd; no está en el repositorio).
  */
@@ -63,6 +65,10 @@ export const FONDOS: Record<string, string[]> = {
     'romantic-valentine', 'secret-garden', 'summer', 'terminusticket', 'wisdom-spring'
   ],
   uma: [],
+  arknights: [
+    'spark-in-the-eyes-exusiai', 'skadi-blood-moon-ocean', 'mizuki-and-caerula-arbor', 'kaltsit-esperanta', 'mon3tr', 'texas-x-exusiai',
+    'lappland-x-texas', 'amiya-midnight-blue-city', 'umbrella-anime-girl-flower-shop', 'collapse', 'melantha', 'amiya-nightmare-chen'
+  ],
 }
 // </fondos>
 
@@ -91,6 +97,8 @@ export const SKINS: SkinDef[] = [
   { id: 'nikke', game: 'nikke', name: 'NIKKE', fonts: 'family=Saira+Semi+Condensed:wght@400;500;600;700', live: cdn('nikke') },
   // Prueba local (uma.css) con piezas de interfaz del zip "Umamusume UI sprites" y el cursor del juego en public/skins/uma/ (ver README).
   { id: 'uma', game: 'uma', name: 'Umamusume', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800', live: [...cdn('uma'), ...stills('uma', ['kv', 'stadium', 'race'])] },
+  // arknights.css (3.ª versión): piezas de interfaz y fuentes de la extracción del cliente en public/skins/arknights/.
+  { id: 'arknights', game: 'arknights', name: 'Arknights', fonts: 'family=Barlow:wght@400;500;600;700', ...(FONDOS.arknights?.length ? { live: cdn('arknights'), liveAllTabs: true } : {}) },
 ]
 
 const KEY = 'whengacha:skin'

@@ -96,8 +96,9 @@ html[data-skin="genshin"] :is(select, input:not([type="checkbox"]):not([type="ra
 /* --- Chips y filtros sobre el fondo oscuro: crema transparente; el activo, crema lleno (como "All") --- */
 html[data-skin="genshin"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt) { border-radius: 999px; border: 1px solid rgba(236, 229, 216, .35); background: rgba(236, 229, 216, .08); color: var(--gi-cream); box-shadow: none; }
 html[data-skin="genshin"] :is(.chip, .ichip, .soon-toggle, .fopt):hover { background: rgba(236, 229, 216, .2) !important; border-color: rgba(236, 229, 216, .6); }
-html[data-skin="genshin"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge)),
-html[data-skin="genshin"] :is(.seg button.on, .chip.on):hover { background: var(--gi-cream) !important; color: var(--gi-ink); box-shadow: none; }
+/* .fopt.on = opciones de la hoja de Filtros: faltaban aquí y la activa se veía igual que la inactiva (13 nov 2026). */
+html[data-skin="genshin"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="genshin"] :is(.seg button.on, .chip.on, .fopt.on):hover { background: var(--gi-cream) !important; color: var(--gi-ink); border-color: var(--gi-cream); box-shadow: none; }
 html[data-skin="genshin"] .seg button { border-radius: 999px; }
 
 /* --- Títulos de sección sobre el fondo: barra pizarra con texto crema (como "Noblesse Oblige") --- */
@@ -310,3 +311,6 @@ html[data-skin="genshin"] .plan h3:has(> .plan-ico)::before { display: none; }
 html[data-skin="genshin"] .ecard .pull-left { color: #8a5600; }
 /* Eventos pendientes de la calculadora (12 nov 2026): cifras y "quedan N días" en el dorado oscuro (el de adorno daba 1,7:1 en el crema). */
 html[data-skin="genshin"] .plan :is(.plan-ev .plan-val b, .plan-evhead b, .plan-ev.soon .plan-ev-t > small, .plan-sum-ev .plan-ico) { color: #8a5600; }
+
+/* Contador de filtros activos (botón «Filtros»): crema sobre el botón crema no se veía (1,02:1); va en tinta con número crema. */
+html[data-skin="genshin"] .fbtn .badge { background: var(--gi-ink); color: var(--gi-cream); }
