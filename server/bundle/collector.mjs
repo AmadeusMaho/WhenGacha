@@ -21927,7 +21927,7 @@ function parseNotices(gameId, messages) {
 		e.title ? `**${e.title}**` : "",
 		e.description ?? "",
 		...(e.fields ?? []).flatMap((f) => [`**${f.name}**`, f.value])
-	])].join("\n"));
+	])].join("\n")).replace(/\\([^\w\s])/g, "$1");
 	const imageOf = (m) => m.attachments?.find((a) => /^image\//.test(a.content_type ?? "") || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url ?? m.embeds?.find((e) => e.image?.url)?.image?.url ?? m.embeds?.find((e) => e.thumbnail?.url)?.thumbnail?.url;
 	const maintEnd = /* @__PURE__ */ new Map();
 	const maintAt = /* @__PURE__ */ new Map();
@@ -22109,16 +22109,18 @@ var NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|UN
 function codesFrom(msgs) {
 	const out = [];
 	for (const { text, at } of msgs) {
-		if (Date.now() - at > 45 * DAY$35 || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue;
-		const found = /* @__PURE__ */ new Set();
-		for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
-		for (const line of text.split("\n")) {
+		const gifts = [...text.matchAll(/\bgift\s*[:：]\s*`?([A-Z0-9]{8,16})`?/gi)].map((m) => m[1]).filter((c) => /\d/.test(c) && /[A-Z]/.test(c));
+		const named = /\bcodes?\b/i.test(text);
+		if (Date.now() - at > 45 * DAY$35 || !named && !gifts.length || /\b(expired|no longer valid)\b/i.test(text)) continue;
+		const found = new Set(gifts);
+		if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
+		for (const line of named ? text.split("\n") : []) {
 			const c = line.replace(/[*_`>|]+/g, "").trim();
 			if (/^[A-Z0-9]{6,24}$/.test(c) && /[A-Z]/.test(c) && !NOT_CODE.test(c)) found.add(c);
 		}
 		if (!found.size) continue;
 		const rewards = [...text.matchAll(/([A-Z][A-Za-z' ]{2,40}?)\s*[x×]\s?(\d(?:[\d,.]*\d)?\s*[kK]?)/g)].map((m) => `${clean$2(m[1]).replace(/^.*\b(?:for|get|obtain|receive|claim|rewards?:?)\s+/i, "")} ×${m[2].trim()}`);
-		const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1];
+		const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1] ?? /validity\s*:[^\n]*?[~～]\s*(?:\d{1,2}:\d{2},?\s*)?([A-Za-z]{3,9}\.? \d{1,2})/i.exec(text)?.[1];
 		for (const code of found) {
 			if (out.some((c) => c.code.toUpperCase() === code.toUpperCase()) || /^(?:code|codes)$/i.test(code)) continue;
 			out.push({

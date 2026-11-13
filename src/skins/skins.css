@@ -151,17 +151,33 @@ html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(
 }
 
 /* ===== Música de la skin (SkinMusic.tsx): botón junto al pincel y mini-reproductor flotante =====
-   El vídeo se ve siempre mientras suena (YouTube exige ≥ 200×200 px y no permite ocultarlo): ventanita del mínimo, 200×200, en una
-   esquina (también en móvil), con una barra de título fina encima. Fondo oscuro opaco en todas las skins (en Genshin el panel es claro
-   y translúcido y el título no se leía); la línea de abajo, del color de la skin. */
+   El vídeo se ve siempre mientras suena (YouTube exige ≥ 200×200 px y no permite ocultarlo ni taparlo): ventanita del mínimo, 200×200, en
+   una esquina (también en móvil). Dos formas:
+   - Todas menos ZZZ: barra de título fina encima y fondo oscuro opaco (en Genshin el panel es claro y translúcido y el título no se leía);
+     la línea de abajo, del color de la skin.
+   - ZZZ (.music-dock.tv): la tele CRT de su pantalla de inicio, especial de esa skin. Se probó dar a cada skin su "aparato" con la misma
+     estructura (13 nov 2026) y se quitó: todas acababan pareciendo teles. Las variables --tv-* son de la tele. */
 .music-btn { display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; } /* como el pincel (va dentro de .skin, arriba y sin estirarse): misma altura y misma línea */
 .music-btn svg { opacity: 1; margin-block: -1px; } /* igual que el pincel (.skin > .lang-btn svg) */
 .music-btn.on { color: var(--acc); box-shadow: inset 0 0 0 1px var(--acc); }
 .music-dock { position: fixed; bottom: 16px; z-index: 900; width: min-content; /* = el vídeo (200 justos; con width: 200px el borde lo dejaba en 198) y el título se recorta */ display: flex; flex-direction: column; overflow: hidden;
   background: #121418; border: 1px solid rgba(255, 255, 255, .14); border-radius: 12px; box-shadow: 0 14px 40px rgba(0, 0, 0, .5); animation: music-in .25s ease-out both; }
+.music-dock.tv { overflow: visible; border: 0;
+  /* Valores por defecto (una skin nueva sin tema propio sale con este aparato oscuro neutro). */
+  --tv-on: var(--acc, #ffd84d); --tv-label: #d9d6cf; --tv-icon: #a9a59d; --tv-font: inherit;
+  --tv-body: linear-gradient(180deg, #2b2b2e, #18181a); --tv-body-sh: inset 0 1px 0 rgba(255, 255, 255, .12), 0 0 0 1px #070707, 0 18px 44px rgba(0, 0, 0, .6); --tv-r: 14px;
+  --tv-bezel: #08080a; --tv-bezel-sh: inset 0 0 0 1px #333; --tv-bezel-r: 12px; --tv-bezel-pad: 9px; --tv-screen-r: 6px; --tv-screen-bg: #000; --tv-screen-sh: 0 0 0 1px #000;
+  --tv-side: #111113; --tv-side-sh: inset 0 0 0 1px #2c2c30; --tv-side-r: 9px;
+  --tv-knob: radial-gradient(circle at 38% 32%, #5a5a60, #222225 60%); --tv-knob-sh: 0 0 0 2px #0a0a0b, 0 0 0 3px #3a3a3f; --tv-knob-on-sh: 0 0 0 2px #0a0a0b, 0 0 0 3px var(--tv-on); --tv-knob-r: 50%; --tv-knob-size: 36px;
+  --tv-mark: #cfcac0; --tv-grille: repeating-linear-gradient(180deg, #050505 0 2px, #27272a 2px 4px);
+  --tv-deck: linear-gradient(180deg, #232326, #111113); --tv-deck-sh: inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 0 0 1px #050505; --tv-deck-r: 8px;
+  --tv-btn: linear-gradient(180deg, #34343a, #1b1b1e); --tv-btn-ink: #e2dfd8; --tv-btn-sh: inset 0 1px 0 rgba(255, 255, 255, .15), 0 0 0 1px #000, 0 2px 3px rgba(0, 0, 0, .6); --tv-btn-r: 5px;
+  --tv-power: #46e07a; --tv-power-glow: rgba(70, 224, 122, .7);
+  --tv-slot: #050505; --tv-slot-ink: var(--tv-on); --tv-slot-glow: none; --tv-slot-sh: inset 0 0 0 1px #2b2b2e, inset 0 2px 5px rgba(0, 0, 0, .9); --tv-slot-r: 3px; --tv-slot-ico: '▶ ';
+  width: auto; padding: 9px; border-radius: var(--tv-r); background: var(--tv-body); box-shadow: var(--tv-body-sh); font-family: var(--tv-font); }
 .music-dock.right { right: 16px; } .music-dock.left { left: 16px; }
 @keyframes music-in { from { opacity: 0; transform: translateY(12px); } }
-@media (prefers-reduced-motion: reduce) { .music-dock { animation: none; } }
+.music-frame { display: block; width: 200px; height: 200px; border: 0; background: #000; }
 .music-head { display: flex; align-items: center; gap: 3px; padding: 4px 4px 4px 9px; color: #f1f2f3; box-shadow: inset 0 -2px 0 var(--acc); }
 .music-title { flex: 1; min-width: 0; display: grid; line-height: 1.2; }
 .music-title b { font-size: .8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -179,24 +195,18 @@ html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(
 .music-modes button.on { background: rgba(255, 255, 255, .13); color: #fff; box-shadow: inset 0 -2px 0 var(--acc); }
 .music-modes button.on svg { color: var(--acc); opacity: 1; }
 .music-modes button:focus-visible { outline: 2px solid var(--acc); outline-offset: 1px; }
-.music-frame { display: block; width: 200px; height: 200px; border: 0; background: #000; }
-@media (max-width: 700px) { .music-dock { bottom: 8px; } .music-dock.right { right: 8px; } .music-dock.left { left: 8px; } }
-/* Cada skin, con su forma de botón: Genshin y Uma redondeadas (píldora), HSR con borde dorado fino, ZZZ cuadrada con amarillo, WuWa con el
-   canto dorado, NIKKE en cápsula azul. */
+/* Cada skin, con su forma de botón: Genshin y Uma redondeadas (píldora), HSR con borde dorado fino, WuWa con el canto dorado, NIKKE en
+   cápsula azul, Arknights cuadrada con la esquina cortada. */
 html[data-skin="genshin"] .music-modes button, html[data-skin="uma"] .music-modes button { border-radius: 999px; }
 html[data-skin="genshin"] .music-modes button.on { box-shadow: inset 0 0 0 1px var(--acc); }
 html[data-skin="uma"] .music-modes button.on { box-shadow: inset 0 0 0 1px var(--acc); }
 html[data-skin="hsr"] .music-modes button { border-radius: 4px; }
 html[data-skin="hsr"] .music-modes button.on { box-shadow: inset 0 0 0 1px rgba(255, 226, 163, .55), inset 0 -2px 0 var(--acc); }
-html[data-skin="zzz"] .music-modes button { border-radius: 0; font-weight: 800; font-size: .64rem; gap: 4px; padding-inline: 2px; }
-html[data-skin="zzz"] .music-title b { font-size: .74rem; } /* su letra (Rubik) es muy ancha: así cabe "Populares" y casi todo el nombre */
-html[data-skin="zzz"] .music-modes button.on { box-shadow: inset 0 0 0 2px var(--acc); }
 html[data-skin="wuwa"] .music-modes button { border-radius: 2px; }
 html[data-skin="wuwa"] .music-modes button.on { box-shadow: inset 2px 0 0 var(--acc), inset 0 -1px 0 rgba(255, 240, 196, .5); }
 html[data-skin="nikke"] .music-modes button { border-radius: 999px; }
 html[data-skin="nikke"] .music-modes button.on { background: rgba(127, 203, 255, .16); box-shadow: inset 0 0 0 1px var(--acc2); }
 html[data-skin="nikke"] .music-modes button.on svg { color: var(--acc2); }
-/* Arknights: diálogo carbón del juego, esquina cortada y canto blanco; botones cuadrados. */
 html[data-skin="arknights"] .music-dock { border-radius: 0; border: 0; background: #16171a; box-shadow: inset 2px 0 0 rgba(255, 255, 255, .85), 0 0 0 1px rgba(255, 255, 255, .12), 0 14px 40px rgba(0, 0, 0, .6);
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
 html[data-skin="arknights"] .music-head { box-shadow: inset 0 -3px 0 var(--ak-yel); }
@@ -208,3 +218,247 @@ html[data-skin="arknights"] .music-modes button { border-radius: 0; background: 
   clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
 html[data-skin="arknights"] .music-modes button.on { background: #2c2e32; box-shadow: inset 3px 0 0 var(--ak-yel); }
 html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
+.tv-set { display: flex; gap: 8px; align-items: stretch; }
+.tv-bezel { position: relative; padding: var(--tv-bezel-pad); border-radius: var(--tv-bezel-r); background: var(--tv-bezel); box-shadow: var(--tv-bezel-sh); }
+.tv-screen { position: relative; width: 200px; height: 200px; overflow: hidden; border-radius: var(--tv-screen-r); background: var(--tv-screen-bg); box-shadow: var(--tv-screen-sh); }
+.tv-side { position: relative; width: 62px; flex: none; display: flex; flex-direction: column; gap: 8px; padding: 7px 5px; border-radius: var(--tv-side-r); background: var(--tv-side); box-shadow: var(--tv-side-sh); }
+.tv-knobs { display: flex; flex-direction: column; gap: 7px; }
+.tv-knob { position: relative; display: grid; justify-items: center; gap: 3px; padding: 0; border: 0; background: none; color: var(--tv-label); font: inherit; font-size: .56rem; cursor: pointer; }
+.tv-knob::before { content: ''; grid-area: 1 / 1; width: var(--tv-knob-size); height: var(--tv-knob-size); border-radius: var(--tv-knob-r); background: var(--tv-knob); box-shadow: var(--tv-knob-sh); transition: box-shadow .2s, background .2s; }
+.tv-knob i { grid-area: 1 / 1; align-self: center; width: 3px; height: calc(var(--tv-knob-size) - 6px); border-radius: 2px; background: linear-gradient(var(--tv-mark) 0 30%, transparent 30%);
+  transform: rotate(-50deg); transition: transform .3s ease, background .2s; pointer-events: none; }
+.tv-knob svg { grid-area: 1 / 1; align-self: center; width: 13px; height: 13px; color: var(--tv-icon); pointer-events: none; position: relative; }
+.tv-knob span { max-width: 58px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: .02em; }
+.tv-knob.on i { transform: rotate(40deg); background: linear-gradient(var(--tv-on) 0 30%, transparent 30%); }
+.tv-knob.on svg, .tv-knob.on span { color: var(--tv-on); }
+.tv-knob.on::before { box-shadow: var(--tv-knob-on-sh); }
+.tv-knob:hover:not(.on) span { filter: brightness(1.25); }
+.tv-knob:focus-visible { outline: 2px solid var(--tv-on); outline-offset: 2px; border-radius: 6px; }
+.tv-grille { position: relative; flex: 1; min-height: 24px; overflow: hidden; border-radius: 4px; background: var(--tv-grille); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .8); }
+.tv-deck { position: relative; display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px; border-radius: var(--tv-deck-r); background: var(--tv-deck); box-shadow: var(--tv-deck-sh); }
+.tv-power, .tv-eject { flex: none; width: 28px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: var(--tv-btn-r); cursor: pointer; font: inherit; font-size: .85rem;
+  background: var(--tv-btn); color: var(--tv-btn-ink); box-shadow: var(--tv-btn-sh); }
+.tv-power { color: var(--tv-power); }
+.tv-power svg { filter: drop-shadow(0 0 3px var(--tv-power-glow)); }
+.tv-power:hover { color: #ff6a5a; } .tv-power:hover svg { filter: drop-shadow(0 0 3px rgba(255, 106, 90, .7)); }
+.tv-eject:hover { color: var(--tv-on); }
+.tv-power:active, .tv-eject:active { transform: translateY(1px); }
+.tv-power:focus-visible, .tv-eject:focus-visible { outline: 2px solid var(--tv-on); outline-offset: 1px; }
+.tv-slot { flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; padding: 0 8px; overflow: hidden; border-radius: var(--tv-slot-r); background: var(--tv-slot);
+  box-shadow: var(--tv-slot-sh); color: var(--tv-slot-ink); font-size: .66rem; letter-spacing: .06em; text-transform: uppercase; text-shadow: var(--tv-slot-glow); }
+.tv-slot span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-slot span::before { content: var(--tv-slot-ico); }
+@media (prefers-reduced-motion: reduce) { .music-dock, .music-dock *, .music-dock *::before, .music-dock *::after { animation: none !important; transition: none !important; } }
+/* Móvil: el vídeo no puede bajar de 200×200, así que se encoge el aparato: sin panel lateral, marco fino y los selectores pasan a la fila
+   de abajo (cerrar · selectores · título · ⇄): unos 226×256 px. Con display: contents las piezas van a la rejilla del aparato sin cambiar el
+   HTML; el fondo de esa fila lo pone ::after. */
+@media (max-width: 700px) {
+  .music-dock { bottom: 8px; } .music-dock.right { right: 8px; } .music-dock.left { left: 8px; }
+  .music-dock.tv-zzz { display: grid; grid-template-columns: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "scr scr scr scr scr" "pwr k1 k2 lcd ej";
+    column-gap: 5px; row-gap: 10px; padding: 6px 6px 9px; box-sizing: border-box; width: 226px; /* = pantalla (200) + marco (2×7) + borde (2×6); min-content no sirve con la columna 1fr */ }
+  .music-dock.tv-zzz::after { content: ''; grid-row: 2; grid-column: 1 / -1; margin: -4px -2px; border-radius: var(--tv-deck-r); z-index: 0; background: var(--tv-deck); box-shadow: var(--tv-deck-sh); }
+  .music-dock.tv-zzz :is(.tv-set, .tv-side, .tv-knobs, .tv-deck) { display: contents; }
+  .music-dock.tv-zzz .tv-grille { display: none; }
+  .music-dock.tv-zzz :is(.tv-bezel, .tv-knob, .tv-power, .tv-slot, .tv-eject) { position: relative; z-index: 1; }
+  .music-dock.tv-zzz .tv-bezel { grid-area: scr; padding: 7px; }
+  .music-dock.tv-zzz .tv-power { grid-area: pwr; }
+  .music-dock.tv-zzz .tv-knob:nth-child(1) { grid-area: k1; }
+  .music-dock.tv-zzz .tv-knob:nth-child(2) { grid-area: k2; }
+  .music-dock.tv-zzz .tv-slot { grid-area: lcd; width: 100%; height: 22px; padding: 0 6px; font-size: .6rem; }
+  .music-dock.tv-zzz .tv-eject { grid-area: ej; }
+  .music-dock.tv-zzz :is(.tv-power, .tv-eject) { width: 24px; height: 22px; }
+  /* Selectores pequeños, sin texto (queda en title y en el nombre accesible del botón). */
+  .music-dock.tv-zzz .tv-knob { align-self: center; --tv-knob-size: 22px; }
+  .music-dock.tv-zzz .tv-knob i { width: 2px; }
+  .music-dock.tv-zzz .tv-knob svg { width: 10px; height: 10px; }
+  .music-dock.tv-zzz .tv-knob span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+/* --- ZZZ: la tele CRT de la pantalla de inicio del juego (mueble oscuro, pantalla azul curva, ruedas y rejilla, vídeo VHS debajo). --- */
+.music-dock.tv-zzz { --tv-on: var(--zz-yellow, #ffdd00); --tv-r: 16px;
+  --tv-body: linear-gradient(180deg, #2f2c29 0%, #1d1b19 55%, #141312 100%);
+  --tv-body-sh: inset 0 1px 0 rgba(255, 255, 255, .14), inset 0 -3px 0 rgba(0, 0, 0, .55), 0 0 0 1px #070707, 0 18px 44px rgba(0, 0, 0, .65);
+  --tv-bezel: linear-gradient(160deg, #1b1a19, #050505 70%); --tv-bezel-sh: inset 0 0 0 2px #3b3834, inset 0 0 0 5px #0c0b0a, inset 0 8px 16px rgba(0, 0, 0, .9);
+  --tv-bezel-r: 22px / 18px; --tv-bezel-pad: 11px; --tv-screen-r: 16px / 13px;
+  --tv-screen-bg: radial-gradient(ellipse at 50% 40%, #4f95dd, #2a64ad 70%, #1b4682); --tv-screen-sh: 0 0 0 2px #000, 0 0 16px 2px rgba(90, 160, 255, .32);
+  --tv-side: linear-gradient(180deg, #1a1918, #0f0e0e); --tv-side-sh: inset 0 0 0 1px #34312d, inset 0 2px 6px rgba(0, 0, 0, .7);
+  --tv-knob: radial-gradient(circle at 38% 32%, #6b6862, #2c2a27 55%, #141312 100%);
+  --tv-knob-sh: 0 0 0 2px #0a0909, 0 0 0 3px #3a3733, 0 3px 6px rgba(0, 0, 0, .7), inset 0 1px 1px rgba(255, 255, 255, .25);
+  --tv-knob-on-sh: 0 0 0 2px #0a0909, 0 0 0 3px var(--tv-on), 0 0 10px rgba(255, 221, 0, .35), inset 0 1px 1px rgba(255, 255, 255, .25);
+  --tv-grille: repeating-linear-gradient(180deg, #050505 0 2px, #2a2825 2px 4px);
+  --tv-deck: linear-gradient(180deg, #24221f, #121110); --tv-btn: linear-gradient(180deg, #34312d, #1b1a18);
+  --tv-slot-glow: 0 0 6px rgba(255, 221, 0, .55); }
+/* Reflejo de la lámpara en el cristal: arriba a la izquierda, sobre el marco (no sobre el vídeo). */
+.tv-zzz .tv-bezel::before { content: ''; position: absolute; top: 4px; left: 14px; width: 58px; height: 5px; border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, .28), transparent 70%); pointer-events: none; }
+@media (max-width: 700px) { .music-dock.tv-zzz { --tv-r: 13px; --tv-bezel-r: 16px / 14px; } }
+
+/* ===== Temas compactos (todas menos ZZZ, .tv-mini): mismo HTML que la tele, pero cada skin con su propia silueta y casi sin marco
+   (≈ 215–255 px de ancho, igual en escritorio y móvil). Las piezas se colocan en la rejilla del reproductor con display: contents;
+   cada skin elige dónde va cada una (grid-template-areas: scr = vídeo, k1/k2 = modos, pwr = cerrar, ej = esquina, lcd = título).
+   Los selectores no muestran texto (sí en title y en el nombre accesible), salvo las pestañas de NIKKE. */
+.music-dock.tv-mini { display: grid; gap: 6px; padding: 6px; box-sizing: border-box; grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "scr scr scr scr scr" "pwr k1 k2 lcd ej"; }
+.tv-mini :is(.tv-set, .tv-side, .tv-knobs, .tv-deck) { display: contents; }
+.tv-mini .tv-grille { display: none; }
+.tv-mini :is(.tv-bezel, .tv-knob, .tv-power, .tv-slot, .tv-eject) { position: relative; z-index: 1; }
+.tv-mini .tv-bezel { grid-area: scr; padding: 5px; }
+.tv-mini .tv-power { grid-area: pwr; } .tv-mini .tv-eject { grid-area: ej; }
+.tv-mini .tv-knob:nth-child(1) { grid-area: k1; } .tv-mini .tv-knob:nth-child(2) { grid-area: k2; }
+.tv-mini .tv-slot { grid-area: lcd; width: 100%; height: 22px; padding: 0 6px; font-size: .6rem; }
+.tv-mini :is(.tv-power, .tv-eject) { width: 24px; height: 22px; }
+.tv-mini .tv-knob { align-self: center; justify-self: center; --tv-knob-size: 22px; }
+.tv-mini .tv-knob i { display: none; }
+.tv-mini .tv-knob svg { width: 10px; height: 10px; }
+.tv-mini .tv-knob span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.tv-mini .tv-deco { position: absolute; pointer-events: none; z-index: 0; }
+@media (max-width: 700px) { .music-dock.tv-mini { width: auto; } }
+
+/* --- HSR: funda de vinilo. Funda azul noche con filete dorado; el disco asoma por arriba y gira (etiqueta lila; los modos, vinilos
+   pequeños: el elegido con etiqueta dorada y girando). --- */
+.music-dock.tv-hsr { --tv-on: var(--hs-gold, #f3c76a); --tv-icon: #11152f; --tv-r: 14px;
+  --tv-body: linear-gradient(160deg, #262e66, #151a3c 55%, #0e1129);
+  --tv-body-sh: inset 0 0 0 1px rgba(243, 199, 106, .8), inset 0 0 0 3px #0e1129, inset 0 0 0 4px rgba(243, 199, 106, .3), 0 14px 34px rgba(0, 0, 0, .55);
+  --tv-bezel: linear-gradient(135deg, #f7d78e, #a87a2f 35%, #f3c76a 60%, #8a6222); --tv-bezel-sh: none; --tv-bezel-r: 10px; --tv-screen-r: 7px; --tv-screen-bg: #0a0d24;
+  --tv-vinyl: conic-gradient(from 20deg, transparent 0%, rgba(255, 255, 255, .14) 9%, transparent 20%, transparent 50%, rgba(255, 255, 255, .14) 59%, transparent 70%),
+    repeating-radial-gradient(circle, #141419 0 1px, #24242c 1.5px 2.5px);
+  --tv-knob: radial-gradient(circle, #b9a8ff 0 22%, #0b0b10 23% 27%, transparent 28%), var(--tv-vinyl);
+  --tv-knob-sh: 0 0 0 1px #000; --tv-knob-on-sh: 0 0 0 1px #000, 0 0 0 2px var(--tv-on), 0 0 8px rgba(243, 199, 106, .5);
+  --tv-btn: linear-gradient(180deg, #f6d68c, #b4842f); --tv-btn-ink: #1a1430; --tv-btn-sh: inset 0 1px 0 #fff3cf, 0 0 0 1px #3d2a0c; --tv-btn-r: 2px;
+  --tv-power: #1a1430; --tv-power-glow: transparent;
+  --tv-slot: #070919; --tv-slot-sh: inset 0 0 0 1px rgba(243, 199, 106, .45); --tv-slot-glow: 0 0 6px rgba(243, 199, 106, .4); --tv-slot-ico: '♫ '; --tv-slot-r: 2px;
+  --tv-font: 'DIN Next LT Pro', 'Barlow', 'Segoe UI', sans-serif; margin-top: 30px; }
+.tv-hsr .tv-knob.on { --tv-knob: radial-gradient(circle, #f3c76a 0 22%, #0b0b10 23% 27%, transparent 28%), var(--tv-vinyl); }
+.tv-hsr .tv-knob.on::before { animation: tv-spin 3.2s linear infinite; }
+.tv-hsr .tv-power:hover { color: #9b1520; } .tv-hsr .tv-eject:hover { color: #3b2414; }
+@keyframes tv-spin { to { transform: rotate(1turn); } }
+/* El disco que asoma por arriba de la funda, hacia la derecha (como al sacarlo): se ve algo más de un tercio, con el borde de la etiqueta
+   lila y dos brillos lilas suaves para que se note que gira (sin blancos ni cortes: cada brillo sube y baja en degradado; con un borde duro se veía como una línea). */
+/* La ventana que lo recorta deja 12 px de aire arriba y a los lados para que no se corten el canto ni el brillo; solo corta por abajo. */
+.tv-hsr .tv-deco { top: -63px; right: 6px; width: 160px; height: 64px; overflow: hidden; }
+.tv-hsr .tv-deco::before { content: ''; position: absolute; top: 12px; left: 12px; width: 136px; height: 136px; border-radius: 50%;
+  box-shadow: 0 0 0 1px #000, 0 0 0 2px rgba(185, 168, 255, .7), 0 0 14px rgba(185, 168, 255, .5);
+  background: radial-gradient(circle, #0a0d24 0 3%, #b9a8ff 3.5% 20%, #f3c76a 20% 21.5%, #0b0b10 22% 24%, transparent 25%),
+    conic-gradient(from 0deg, transparent 0%, rgba(185, 168, 255, .2) 9%, transparent 20%, transparent 50%, rgba(185, 168, 255, .2) 59%, transparent 70%),
+    repeating-radial-gradient(circle, #23232d 0 1px, #3a3a48 1.5px 2.5px); animation: tv-spin 4s linear infinite; }
+
+/* --- Genshin: pergamino. Papel crema de los menús del juego con doble filete dorado, varillas de madera arriba y abajo con remates
+   dorados; modos y botones redondos crema (el modo elegido, pizarra con aro dorado), título en píldora pizarra. --- */
+.music-dock.tv-genshin { --tv-on: #f8de97; --tv-icon: #495366; --tv-r: 2px;
+  --tv-body: linear-gradient(180deg, #f6f2e9, #ece5d8 40%, #e3d8c3);
+  --tv-body-sh: inset 0 0 0 1px #d3bc8e, inset 0 0 0 4px #ece5d8, inset 0 0 0 5px rgba(184, 156, 106, .6), 0 14px 30px rgba(0, 0, 0, .45);
+  --tv-bezel: #ece5d8; --tv-bezel-sh: inset 0 0 0 1px #b89c6a; --tv-bezel-r: 3px; --tv-screen-r: 2px; --tv-screen-bg: #3b4255;
+  --tv-knob: radial-gradient(circle at 40% 35%, #fbf8f1, #ece5d8 70%); --tv-knob-sh: 0 0 0 1px #b89c6a, 0 1px 2px rgba(0, 0, 0, .25);
+  --tv-knob-on-sh: 0 0 0 2px #d3bc8e, 0 0 6px rgba(211, 188, 142, .8);
+  --tv-btn: radial-gradient(circle at 40% 35%, #fbf8f1, #ece5d8 70%); --tv-btn-ink: #3b4255; --tv-btn-sh: 0 0 0 1px #b89c6a; --tv-btn-r: 999px;
+  --tv-power: #3b4255; --tv-power-glow: transparent;
+  --tv-slot: #3b4255; --tv-slot-ink: #f6f2e9; --tv-slot-sh: inset 0 0 0 1px #d3bc8e; --tv-slot-r: 999px; --tv-slot-ico: '♪ ';
+  --tv-font: 'Genshin UI', 'M PLUS Rounded 1c', 'Segoe UI', sans-serif; padding: 12px 8px 12px; margin-block: 8px; }
+.tv-genshin .tv-knob.on { --tv-knob: radial-gradient(circle at 40% 35%, #59627a, #3b4255 70%); }
+.tv-genshin .tv-knob.on svg { color: #f8de97; }
+.tv-genshin .tv-power:hover { color: #9b3b2a; } .tv-genshin .tv-eject:hover { color: #9b6a3e; }
+.tv-genshin .tv-slot { text-transform: none; letter-spacing: .02em; }
+/* Varillas del pergamino (arriba la de .tv-deco, abajo ::after), algo más anchas que el papel, con remates dorados. */
+.tv-genshin .tv-deco, .tv-genshin.music-dock::after { content: ''; position: absolute; left: -9px; right: -9px; height: 12px; border-radius: 6px; pointer-events: none;
+  background: radial-gradient(circle at 6px 50%, #f5d58b 0 3px, #a8762e 4.5px, transparent 5.5px), radial-gradient(circle at calc(100% - 6px) 50%, #f5d58b 0 3px, #a8762e 4.5px, transparent 5.5px),
+    linear-gradient(180deg, #9a6a3c, #6a4021 55%, #4e2e15); box-shadow: 0 2px 4px rgba(0, 0, 0, .45); }
+.tv-genshin .tv-deco { top: -6px; } .tv-genshin.music-dock::after { bottom: -6px; z-index: 0; }
+
+/* --- NIKKE: el teléfono del comandante. Teléfono oscuro con canto azul; arriba la barra de estado (título y botones como iconos), abajo
+   las dos pestañas con su texto (la elegida en azul) y la barra de inicio. --- */
+.music-dock.tv-nikke { --tv-on: #7fcbff; --tv-r: 24px;
+  --tv-body: linear-gradient(180deg, #1f232a, #121419); --tv-body-sh: inset 0 0 0 2px #3a414c, inset 0 0 0 3px #0b0d11, 0 0 0 1px rgba(26, 163, 240, .6), 0 0 14px rgba(26, 163, 240, .3), 0 14px 34px rgba(0, 0, 0, .55);
+  --tv-bezel: transparent; --tv-bezel-sh: none; --tv-screen-r: 6px; --tv-screen-bg: #0b0710;
+  --tv-btn: transparent; --tv-btn-ink: #e2e7ed; --tv-btn-sh: none; --tv-power: #ff6a60; --tv-power-glow: rgba(255, 106, 96, .6);
+  --tv-slot: transparent; --tv-slot-ink: #f2f4f7; --tv-slot-sh: none; --tv-slot-ico: '●  '; --tv-font: 'NIKKE UI', 'Saira Semi Condensed', 'Segoe UI', sans-serif;
+  grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-areas: "lcd lcd ej pwr" "scr scr scr scr" "k1 k1 k2 k2"; row-gap: 5px; padding: 8px 8px 14px; }
+.tv-nikke .tv-bezel { padding: 0; }
+.tv-nikke .tv-slot { padding: 0 4px; text-transform: none; letter-spacing: .03em; font-size: .62rem; }
+.tv-nikke .tv-slot span::before { color: #46e07a; font-size: .5rem; vertical-align: 1px; }
+.tv-nikke :is(.tv-power, .tv-eject) { justify-self: end; width: 22px; height: 18px; }
+/* Pestañas de abajo: icono + texto, como el menú inferior del juego. */
+.tv-nikke .tv-knob { justify-self: stretch; display: flex; align-items: center; justify-content: center; gap: 5px; height: 26px; margin: 0 2px; border-radius: 6px;
+  background: #24272d; box-shadow: inset 0 0 0 1px #3a414c; color: #c2c8d0; font-size: .64rem; font-weight: 700; }
+.tv-nikke .tv-knob::before { display: none; }
+.tv-nikke .tv-knob span { position: static; width: auto; height: auto; clip-path: none; overflow: hidden; text-overflow: ellipsis; }
+.tv-nikke .tv-knob svg { color: currentColor; }
+.tv-nikke .tv-knob.on { background: #0b72c4; box-shadow: inset 0 0 0 1px #1aa3f0, 0 0 10px rgba(26, 163, 240, .45); }
+.tv-nikke .tv-knob.on :is(svg, span) { color: #fff; }
+/* Barra de inicio del teléfono. */
+.tv-nikke .tv-deco { bottom: 5px; left: 50%; width: 56px; height: 3px; margin-left: -28px; border-radius: 2px; background: rgba(255, 255, 255, .45); }
+
+/* --- Wuthering Waves: panel holográfico. Cristal casi sin marco con esquineras doradas alrededor del vídeo; los mandos flotan en una
+   columna a la izquierda (modos en rombo) y bajo el título corre la onda de la Resonancia. --- */
+.music-dock.tv-wuwa { --tv-on: var(--ww-gold, #f1dc9b); --tv-icon: #9fd8d6; --tv-r: 2px;
+  --tv-body: linear-gradient(180deg, rgba(24, 40, 48, .9), rgba(11, 22, 27, .92)); --tv-body-sh: inset 0 0 0 1px rgba(240, 248, 250, .22), 0 14px 34px rgba(0, 0, 0, .5);
+  --tv-bezel: linear-gradient(#f1dc9b, #f1dc9b) 0 0 / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 0 0 / 2px 14px,
+    linear-gradient(#f1dc9b, #f1dc9b) 100% 0 / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 100% 0 / 2px 14px,
+    linear-gradient(#f1dc9b, #f1dc9b) 0 100% / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 0 100% / 2px 14px,
+    linear-gradient(#f1dc9b, #f1dc9b) 100% 100% / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 100% 100% / 2px 14px;
+  --tv-bezel-sh: none; --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #0b161b;
+  --tv-knob-r: 2px; --tv-knob: rgba(11, 22, 27, .9); --tv-knob-sh: 0 0 0 1px rgba(241, 220, 155, .65); --tv-knob-on-sh: 0 0 0 1px #fff0c4, 0 0 10px rgba(241, 220, 155, .75);
+  --tv-btn: transparent; --tv-btn-ink: #f1f5f5; --tv-btn-sh: inset 0 0 0 1px rgba(241, 220, 155, .5); --tv-btn-r: 1px;
+  --tv-power: #9fd8d6; --tv-power-glow: rgba(159, 216, 214, .6);
+  --tv-slot: transparent; --tv-slot-ink: #f1dc9b; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: '◈ '; --tv-font: 'Sora', 'Barlow', 'Segoe UI', sans-serif;
+  grid-template-columns: 22px auto; grid-template-rows: auto auto 1fr auto auto auto; grid-template-areas: "k1 scr" "k2 scr" ". scr" "pwr scr" "ej scr" "lcd lcd";
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.tv-wuwa .tv-bezel { background-repeat: no-repeat; padding: 4px; }
+.tv-wuwa .tv-knob { --tv-knob-size: 13px; margin-top: 6px; }
+.tv-wuwa .tv-knob::before { transform: rotate(45deg); }
+.tv-wuwa .tv-knob svg { display: none; }
+.tv-wuwa .tv-knob.on { --tv-knob: linear-gradient(135deg, #fff0c4, #e0c36f); }
+.tv-wuwa :is(.tv-power, .tv-eject) { width: 22px; }
+/* Onda bajo el título (se desplaza mientras está abierto). */
+.tv-wuwa .tv-slot { letter-spacing: .14em; padding-bottom: 4px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 3 Q6 0 12 3 T24 3' fill='none' stroke='%239fd8d6' stroke-width='1.2'/%3E%3C/svg%3E") 0 100% / 24px 6px repeat-x;
+  animation: tv-wave 1.6s linear infinite; }
+@keyframes tv-wave { to { background-position: 24px 100%; } }
+
+/* --- Arknights: ficha de PRTS. Chapa carbón con la esquina cortada y el canto blanco de los diálogos del juego; a la izquierda la pestaña
+   amarilla con el título en vertical; abajo, interruptores de palanca y la franja de precaución. --- */
+.music-dock.tv-arknights { --tv-on: var(--ak-yel, #ffd23f); --tv-r: 0;
+  --tv-body: linear-gradient(180deg, #2a2c31, #1b1c1f); --tv-body-sh: inset 2px 0 0 rgba(255, 255, 255, .85), inset 0 0 0 1px rgba(255, 255, 255, .12);
+  --tv-bezel: #121316; --tv-bezel-sh: inset 0 0 0 1px #3a3d43; --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #0c0d0f;
+  --tv-btn: #0c0d0f; --tv-btn-ink: #e8eaec; --tv-btn-sh: inset 0 0 0 1px #3a3d43; --tv-btn-r: 0; --tv-power: #ffd23f; --tv-power-glow: rgba(255, 210, 63, .6);
+  --tv-slot: #ffd23f; --tv-slot-ink: #15171a; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: 'PRTS // '; --tv-font: var(--ak-num, 'Barlow'), 'Barlow', sans-serif;
+  grid-template-columns: 24px 22px 22px minmax(0, 1fr) 24px; grid-template-areas: "lcd scr scr scr scr" "pwr k1 k2 st ej";
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
+.tv-arknights .tv-slot { width: auto; height: auto; padding: 8px 0; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg);
+  font-family: var(--ak-head, 'Barlow'); font-weight: 700; letter-spacing: .12em; }
+/* Tornillos del marco. */
+.tv-arknights .tv-bezel::before, .tv-arknights .tv-bezel::after { content: ''; position: absolute; width: 5px; height: 5px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #8a9099, #3a3d43 70%); }
+.tv-arknights .tv-bezel::before { top: 0; left: 0; } .tv-arknights .tv-bezel::after { bottom: 0; right: 0; }
+/* Interruptores de palanca: la palanca (i) sube al elegirla y se pone amarilla. */
+.tv-arknights .tv-knob::before { width: 14px; height: 22px; border-radius: 2px; background: #0c0d0f; box-shadow: inset 0 0 0 1px #3a3d43; }
+.tv-arknights .tv-knob.on::before { box-shadow: inset 0 0 0 1px #ffd23f; }
+.tv-arknights .tv-knob i { display: block; width: 10px; height: 8px; border-radius: 1px; background: linear-gradient(180deg, #9aa0a8, #4a5058); transform: translateY(5px); }
+.tv-arknights .tv-knob.on i { transform: translateY(-5px); background: linear-gradient(180deg, #ffe27a, #d9a91a); }
+.tv-arknights .tv-knob svg { display: none; }
+.tv-arknights .tv-power:hover { color: #ff8a8a; }
+.tv-arknights .tv-deco { grid-area: st; position: relative; align-self: center; width: 100%; height: 8px; background: repeating-linear-gradient(-45deg, #ffd23f 0 5px, #15171a 5px 10px); }
+
+/* --- Umamusume: entrada del Winning Live. Entrada blanca con el marco del vídeo en degradado verde-rosa, la matriz a la derecha
+   (rosa claro, separada por el troquel con sus muescas) con dos penlights como modos y los botones; abajo, el texto de la entrada. --- */
+.music-dock.tv-uma { --tv-on: #b0174f; --tv-r: 10px;
+  --tv-body: linear-gradient(90deg, #fff calc(100% - 41px), #ffe3ee calc(100% - 41px)); --tv-body-sh: inset 0 0 0 2px #e6b3c8;
+  --tv-bezel: linear-gradient(135deg, #7ecc08, #3b8200 45%, #ff6194); --tv-bezel-sh: none; --tv-bezel-r: 6px; --tv-screen-r: 3px; --tv-screen-bg: #3e3445;
+  --tv-btn: linear-gradient(180deg, #c8336c, #a3144a); --tv-btn-ink: #fff; --tv-btn-sh: inset 0 1px 0 rgba(255, 255, 255, .35); --tv-btn-r: 999px;
+  --tv-power: #fff; --tv-power-glow: transparent;
+  --tv-slot: transparent; --tv-slot-ink: #3d7d00; --tv-slot-sh: none; --tv-slot-ico: 'WINNING LIVE · '; --tv-font: 'M PLUS Rounded 1c', 'Segoe UI', sans-serif;
+  grid-template-columns: auto 30px; grid-template-rows: auto auto 1fr auto auto; grid-template-areas: "scr k1" "scr k2" "scr ." "scr pwr" "lcd ej"; column-gap: 11px;
+  -webkit-mask: radial-gradient(circle at calc(100% - 41px) 0, transparent 8px, #000 8.5px) top / 100% 51% no-repeat,
+    radial-gradient(circle at calc(100% - 41px) 100%, transparent 8px, #000 8.5px) bottom / 100% 51% no-repeat;
+  mask: radial-gradient(circle at calc(100% - 41px) 0, transparent 8px, #000 8.5px) top / 100% 51% no-repeat,
+    radial-gradient(circle at calc(100% - 41px) 100%, transparent 8px, #000 8.5px) bottom / 100% 51% no-repeat; }
+.tv-uma .tv-bezel { padding: 4px; }
+.tv-uma .tv-slot { padding: 0 2px; font-weight: 800; letter-spacing: .04em; }
+.tv-uma .tv-slot span::before { color: #b0174f; }
+.tv-uma :is(.tv-power, .tv-eject) { width: 24px; height: 24px; justify-self: center; }
+/* Penlights: tubo de luz; apagado lila, el elegido brilla en rosa. */
+.tv-uma .tv-knob { margin-top: 8px; }
+.tv-uma .tv-knob::before { width: 10px; height: 30px; border-radius: 5px; background: linear-gradient(180deg, #d9d2ea, #b9aecb 68%, #5b5266 68%); box-shadow: 0 0 0 1px #a99dbd; }
+.tv-uma .tv-knob.on::before { background: linear-gradient(180deg, #fff, #ff8fb2 30%, #ff6194 68%, #5b5266 68%); box-shadow: 0 0 0 1px #c8336c, 0 0 10px 2px rgba(255, 97, 148, .7); }
+.tv-uma .tv-knob svg { display: none; }
+/* Troquel entre la entrada y la matriz. */
+.tv-uma .tv-deco { top: 10px; bottom: 10px; right: 40px; border-left: 2px dashed #c8336c; opacity: .55; }
+

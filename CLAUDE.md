@@ -80,6 +80,11 @@ más capturas de pantalla, hasta que no quede ningún texto por debajo de 4.5:1.
 los destacados y a las cabeceras de sección de la ventana del evento (como Genshin y WuWa). Procedimiento y trampas conocidas en
 **`src/skins/README.md`** ("Regla: toda skin se revisa campo por campo").
 
+**Toda skin nueva lleva su reproductor de música temático** (`src/skins/SkinMusic.tsx`: su música en `MUSIC` y su id en `MINI`; su diseño en
+`src/skins/skins.css`, "Temas compactos"). Cada uno con **silueta propia y compacta** basada en un objeto de su juego, no la misma caja con otros
+colores: ZZZ la tele CRT (solo suya), HSR funda de vinilo con el disco girando, Genshin pergamino, NIKKE el teléfono del comandante, WuWa panel
+holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live. El vídeo siempre entero a 200×200 y sin nada encima (norma de YouTube).
+
 ## Otros detalles útiles
 
 - Los finales de línea dan avisos "LF will be replaced by CRLF": es ruido de Windows, no hay cambios de contenido.

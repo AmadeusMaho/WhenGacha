@@ -59,6 +59,10 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
   },
 }
 
+/** Skins con reproductor temático compacto (además de ZZZ, que tiene la tele): HSR funda de vinilo, Genshin pergamino, NIKKE el teléfono del
+ *  comandante, WuWa panel holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live. Las que no estén aquí usan la ventanita sencilla. */
+const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma'])
+
 type Mode = 'all' | 'top'
 const TXT: Record<Lang, { open: string; close: string; title: string; side: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
   es: { open: 'Música oficial del juego', close: 'Cerrar (para la música)', title: 'Banda sonora oficial', side: 'Cambiar de esquina',
@@ -132,13 +136,46 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
   const pick = (n: Mode) => { if (n !== mode) { setMode(n); write(MODE_KEY, n) } }
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
   const listen = () => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*')
+  const player = <iframe key={`${skin}:${mode}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
+    allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
   return (
     <>
       <button className={`btn sm lang-btn music-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-pressed={open} title={s.open} aria-label={s.open}>
         {/* Nota centrada en su caja (x 6–18, y 3–21) y del tamaño del pincel (18 px), para que los dos botones midan lo mismo. */}
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden><path fill="currentColor" d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg>
       </button>
-      {open && createPortal(
+      {open && (skin === 'zzz' || MINI.has(skin)) && createPortal(
+        /* ZZZ (13 nov 2026): el reproductor es la tele CRT de la pantalla de inicio del juego, dibujada solo con CSS. El vídeo va dentro
+           de la pantalla a su tamaño (200×200) y sin nada encima (YouTube no deja taparlo): el cristal curvo y el brillo van en el marco.
+           A la derecha, las dos ruedas son el selector de modo; abajo, el vídeo (VHS): encendido = cerrar, pantallita = título, ⇄ = esquina.
+           Las demás skins de MINI reutilizan este HTML con otra silueta, compacta y sin mueble de tele (skins.css, "Temas compactos"):
+           la primera versión les ponía a todas el mismo mueble y acababan pareciendo teles (13 nov 2026). */
+        <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}`} role="region" aria-label={`${s.title} · ${name}`}>
+          {skin !== 'zzz' && <span className="tv-deco" aria-hidden />}
+          <div className="tv-set">
+            <div className="tv-bezel"><div className="tv-screen">{player}</div></div>
+            <div className="tv-side">
+              <div className="tv-knobs" role="radiogroup" aria-label={s.mode}>
+                {(['all', 'top'] as const).map(k => (
+                  <button key={k} role="radio" aria-checked={mode === k} className={`tv-knob ${mode === k ? 'on' : ''}`} onClick={() => pick(k)} title={k === 'all' ? s.all : s.top}>
+                    <i aria-hidden />{k === 'all' ? SHUFFLE : STAR}<span>{k === 'all' ? s.allShort : s.topShort}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="tv-grille" aria-hidden />
+            </div>
+          </div>
+          <div className="tv-deck">
+            <button className="tv-power" onClick={() => setOpen(false)} title={s.close} aria-label={s.close}>
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg>
+            </button>
+            <div className="tv-slot" title={`${s.title} · ${name}`}><span>{name}</span></div>
+            <button className="tv-eject" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
+          </div>
+        </div>,
+        document.body,
+      )}
+      {open && skin !== 'zzz' && !MINI.has(skin) && createPortal(
         <div className={`music-dock ${side}`} role="region" aria-label={`${s.title} · ${name}`}>
           <div className="music-head">
             <span className="music-title" title={`${s.title} · ${name}`}><b>♪ {name}</b></span>
@@ -153,8 +190,7 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
               </button>
             ))}
           </div>
-          <iframe key={`${skin}:${mode}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
-            allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
+          {player}
         </div>,
         document.body,
       )}

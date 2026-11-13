@@ -370,6 +370,8 @@ export async function syncDiscord(gameId: string): Promise<GameSync> {
  */
 export function parseNotices(gameId: string, messages: Message[]): GameSync {
   const textOf = (m: Message) => discordStamps([m.content, ...(m.embeds ?? []).flatMap(e => [e.title ? `**${e.title}**` : '', e.description ?? '', ...(e.fields ?? []).flatMap(f => [`**${f.name}**`, f.value])])].join('\n'))
+    // Los embeds de vxtwitter escapan el Markdown ("Gift\: ABC", "23\:59 \(UTC\+8\)"): se quitan esas barras antes de leer.
+    .replace(/\\([^\w\s])/g, '$1')
   const imageOf = (m: Message) => m.attachments?.find(a => /^image\//.test(a.content_type ?? '') || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url
     ?? m.embeds?.find(e => e.image?.url)?.image?.url ?? m.embeds?.find(e => e.thumbnail?.url)?.thumbnail?.url
 
@@ -531,10 +533,13 @@ const NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|
 export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
   const out: PromoCode[] = []
   for (const { text, at } of msgs) {
-    if (Date.now() - at > 45 * DAY || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue
-    const found = new Set<string>()
-    for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1])
-    for (const line of text.split('\n')) {
+    // Honkai 3 da los de cumpleaños sin decir "code" ("Elysia's Gift: ZBL0W0QI8T"): solo con esa etiqueta y si mezcla letras y cifras.
+    const gifts = [...text.matchAll(/\bgift\s*[:：]\s*`?([A-Z0-9]{8,16})`?/gi)].map(m => m[1]).filter(c => /\d/.test(c) && /[A-Z]/.test(c))
+    const named = /\bcodes?\b/i.test(text)
+    if (Date.now() - at > 45 * DAY || (!named && !gifts.length) || /\b(expired|no longer valid)\b/i.test(text)) continue
+    const found = new Set<string>(gifts)
+    if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1])
+    for (const line of named ? text.split('\n') : []) {
       const c = line.replace(/[*_`>|]+/g, '').trim()
       if (/^[A-Z0-9]{6,24}$/.test(c) && /[A-Z]/.test(c) && !NOT_CODE.test(c)) found.add(c)
     }
@@ -543,6 +548,7 @@ export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
     const rewards = [...text.matchAll(/([A-Z][A-Za-z' ]{2,40}?)\s*[x×]\s?(\d(?:[\d,.]*\d)?\s*[kK]?)/g)]
       .map(m => `${clean(m[1]).replace(/^.*\b(?:for|get|obtain|receive|claim|rewards?:?)\s+/i, '')} ×${m[2].trim()}`)
     const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1]
+      ?? /validity\s*:[^\n]*?[~～]\s*(?:\d{1,2}:\d{2},?\s*)?([A-Za-z]{3,9}\.? \d{1,2})/i.exec(text)?.[1] // "Validity: Today ~ 23:59, DEC 11 (UTC+8)"
     for (const code of found) {
       if (out.some(c => c.code.toUpperCase() === code.toUpperCase()) || /^(?:code|codes)$/i.test(code)) continue
       out.push({ code, rewards: [...rewards.slice(0, 6), ...(until ? [`Until ${until}`] : [])] })
