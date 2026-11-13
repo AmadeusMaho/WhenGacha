@@ -67,6 +67,11 @@ export interface GameEvent {
   servers?: Record<string, { start: string; end: string }>
   /** Sale de un aviso oficial del juego (Kuro, STOVE…): sus horas mandan sobre las de cualquier agregador (gachafocus incluido). */
   official?: boolean
+  /**
+   * Solo en las copias del recolector: momento (ms) en que una fuente lo dio por última vez, si esta copia lo arrastra de la anterior porque
+   * su fuente falló (`carryOver` en collector.ts). Se descarta a las 24 h sin que ninguna fuente lo confirme.
+   */
+  seen?: number
   source: 'api' | 'manual' | 'feed'
 }
 

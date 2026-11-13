@@ -55,7 +55,8 @@ async function save(snap) {
 
 async function collectOne(g) {
   try {
-    const snap = await mod.collect(g.id)
+    // Si una fuente falló en este ciclo, sus eventos vigentes de la copia anterior se conservan (carryOver, src/collector.ts).
+    const snap = mod.carryOver(snapshots.get(g.id), await mod.collect(g.id))
     // Una copia sin nada (p. ej. todas las fuentes caídas) no pisa una buena anterior.
     const cur = snapshots.get(g.id)
     if (!snap.events.length && cur?.events.length) throw new Error('sin datos nuevos')

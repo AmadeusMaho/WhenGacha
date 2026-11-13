@@ -17,6 +17,27 @@ export interface Snapshot {
   codes: PromoCode[]
 }
 
+const DAY = 86_400_000
+const tkey = (t: string) => t.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, '')
+
+/**
+ * Cuando una fuente falla en un ciclo, sus eventos no desaparecen: se conservan los vigentes de la copia anterior que la nueva no tiene ni
+ * tiene con otro nombre (mismo tipo, uno de los nombres contiene al otro y fin a ±2 días). Caso real (12 nov 2026): GitHub Actions publicó la
+ * copia de DNA sin nada de Game8 (bloquea las IP de servidores) y desaparecieron sus banners, que solo da Game8.
+ * Cada evento arrastrado guarda `seen` (cuándo lo dio una fuente por última vez); a las 24 h sin confirmarse se suelta.
+ */
+export function carryOver(prev: Snapshot | null | undefined, next: Snapshot, now = Date.now()): Snapshot {
+  if (!prev?.events?.length) return next
+  const matches = (o: GameEvent) => next.events.some(n => n.id === o.id || ((n.kind === 'banner') === (o.kind === 'banner')
+    && (tkey(n.title) === tkey(o.title) || tkey(n.title).includes(tkey(o.title)) || tkey(o.title).includes(tkey(n.title)))
+    && Math.abs(Date.parse(n.end) - Date.parse(o.end)) <= 2 * DAY))
+  const kept = prev.events
+    .filter(o => Date.parse(o.end) > now && now - (o.seen ?? prev.updated) < DAY && !matches(o))
+    .map(o => ({ ...o, seen: o.seen ?? prev.updated }))
+  if (kept.length) console.warn(`[collector] ${next.id}: ${kept.length} elementos de la copia anterior (su fuente no respondió): ${kept.map(e => e.title).slice(0, 5).join(', ')}`)
+  return kept.length ? { ...next, events: [...next.events, ...kept] } : next
+}
+
 /** Trae la URL de una fuente (a través del proxy del servidor, con su caché y sus límites). */
 export type Fetcher = (url: string) => Promise<Response>
 

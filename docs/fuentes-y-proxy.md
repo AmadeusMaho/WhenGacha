@@ -646,3 +646,13 @@ o sin lanzar en global, con fecha, región, editor, plataformas, estado y botón
   - Límites: un juego sin ficha en la App Store de EE. UU. (solo PC/consola, o solo CN/JP/KR) no se descubre solo; para eso sigue la lista
     curada. Los RSS guardan poco (Gematsu ~8 h, GamingonPhone 10 titulares), de ahí el ciclo de 3 h. Como mucho 25 búsquedas nuevas por ciclo.
 - Botón **"Próximos gachas (n) ↓"** arriba de Parches (`UpcomingJump`), con los iconos de los más cercanos: baja a la sección, que va al final.
+
+## Copias que no pierden una fuente caída (`carryOver`, 13 nov 2026)
+
+- Caso: la copia de DNA de las 23:41 UTC del 12 nov la publicó **GitHub Actions**, cuya IP bloquea Game8 (como la de Botkeep). Salió solo con
+  lo de Steam (16 eventos) y sin los banners Myriad, que solo da Game8; como aún tenía bastantes eventos, la regla "no sustituir una copia
+  buena por una peor" (×1,4) la dejó pasar y la web se quedó sin banners de DNA. Lo mismo, en menos, en CZN (Game8) y Stella Sora.
+- Ahora (`carryOver` en `src/collector.ts`, usado por `scripts/snapshot.mjs` —tu PC y Actions— y por `server/collector.mjs`): los eventos
+  vigentes de la copia anterior que la nueva no tiene, ni con otro nombre (mismo tipo, un nombre contiene al otro, fin a ±2 días), se
+  conservan con `seen` = la última vez que una fuente los dio. A las 24 h sin confirmarse se sueltan. Sin fallos, no añade nada.
+- Recuerda actualizar el secreto `DISCORD_CHANNELS` de Actions con los 13 canales: si no, cada copia de Actions sale sin esos avisos.

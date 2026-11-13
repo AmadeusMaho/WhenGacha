@@ -48,8 +48,9 @@ async function previous(id) {
 const summary = {}
 for (const g of mod.games()) {
   try {
-    const snap = await mod.collect(g.id)
     const old = await previous(g.id)
+    // Si una fuente falló en este ciclo, sus eventos vigentes de la copia anterior se conservan (carryOver, src/collector.ts).
+    const snap = mod.carryOver(old, await mod.collect(g.id))
     // Sin datos y sin copia anterior (p. ej. Azur Lane, que solo tiene Discord y a veces ningún anuncio con fechas): se publica igualmente la copia
     // vacía, para que el servidor no reciba un 404 cada 20 min. No pisa nada: pullRemote no adopta una copia vacía si la suya tiene elementos.
     if (!snap.events.length && !old) {
