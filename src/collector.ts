@@ -62,7 +62,8 @@ export async function collect(id: string): Promise<Snapshot> {
   if (!game) throw new Error(`juego desconocido: ${id}`)
   const s = await syncSource(game)
   const withArt = await withWikiImages(game, s.events).catch(() => s.events)
-  const events = await withItemIcons(game, withArt).catch(() => withArt)
+  const withFaces = await withFeaturedIcons(game, withArt).catch(() => withArt)
+  const events = await withItemIcons(game, withFaces).catch(() => withFaces)
   return { id, updated: Date.now(), events, patches: s.patches, codes: s.codes }
 }
 
@@ -121,6 +122,70 @@ async function withWikiImages(game: Game, events: GameEvent[]): Promise<GameEven
 }
 
 /**
+ * Retratos de los destacados de los banners que su fuente no trae (13 nov 2026: faltaban en 15 juegos). Antes solo los buscaba cada navegador
+ * con la imagen principal de la página del personaje (`images.ts`, PageImages), que las wikis de wiki.gg (Arknights, Endfield, Limbus, Path
+ * to Nowhere, MONGIL) no tienen. Aquí se prueba, en este orden y en lotes de 50 archivos por consulta:
+ *  1. El archivo de icono según la convención de la wiki (`ICON_FILES`, comprobadas una a una) y los genéricos "<nombre> icon.png"/"Icon.png"
+ *     (Arknights, Endfield, Reverse: 1999, NTE).
+ *  2. La imagen principal de la página del personaje (PageImages; solo Fandom e iopwiki), con el nombre completo (`full`) si lo hay.
+ * Solo banners vigentes o próximos, como mucho 40 nombres por juego y ciclo; el proxy guarda las consultas 12 h. La copia ya sale con el
+ * retrato y los navegadores no repiten la búsqueda (`faceOf` usa `icon` primero).
+ */
+const ICON_FILES: Partial<Record<string, (n: string) => string[]>> = {
+  ptn: n => [`${n} Skin1 Icon.png`],
+  mongil: n => [`${n.replace(/\s+/g, '')}Portrait.png`],
+  gfl2: n => [`${n} Covenant Avatar.png`],
+  wuwa: n => [`Resonator ${n}.png`],
+}
+const MAX_FACES = 40
+
+async function withFeaturedIcons(game: Game, events: GameEvent[]): Promise<GameEvent[]> {
+  const host = game.wiki?.host
+  if (!host) return events
+  const now = Date.now()
+  const names = [...new Set(events.filter(e => e.kind === 'banner' && +new Date(e.end) > now).flatMap(e => e.featured.filter(f => !f.icon).map(f => f.full ?? f.name)))]
+    .filter(n => n.length > 1 && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES)
+  if (!names.length) return events
+  const own = ICON_FILES[game.id]
+  // Los archivos de icono llevan el nombre corto: "Groza (GFL2)" (página) → "Groza Covenant Avatar.png".
+  const candidates = (full: string) => [...new Set([full, full.replace(/\s*\((?:GFL2|character)\)$/i, '')])].flatMap(n => [...(own ? own(n) : []), `${n} icon.png`, `${n} Icon.png`])
+  const api = `https://${host}/${host === 'bluearchive.wiki' ? 'w/' : ''}api.php`
+  const found = new Map<string, string>() // nombre → URL
+  // 1) archivos de icono.
+  // Con su capitalización: MediaWiki solo ignora la de la primera letra ("Resonator Lily.png" ≠ "Resonator lily.png").
+  const list = [...new Set(names.flatMap(candidates))]
+  const urlOf = new Map<string, string>()
+  for (let i = 0; i < list.length; i += 50) {
+    const qs = new URLSearchParams({ action: 'query', titles: list.slice(i, i + 50).map(f => `File:${f}`).join('|'), prop: 'imageinfo', iiprop: 'url', iiurlwidth: '160', format: 'json', formatversion: '2', origin: '*' })
+    try {
+      const res = await fetch(`${api}?${qs}`)
+      const pages = (res.ok ? (await res.json())?.query?.pages ?? [] : []) as { title: string; imageinfo?: { thumburl?: string; url: string }[] }[]
+      for (const p of pages) { const info = p.imageinfo?.[0]; if (info) urlOf.set(p.title.replace(/^File:/, '').replace(/_/g, ' ').toLowerCase(), info.thumburl ?? info.url) }
+    } catch { /* sin iconos de este lote */ }
+  }
+  for (const n of names) { const u = candidates(n).map(f => urlOf.get(f.toLowerCase())).find(Boolean); if (u) found.set(n, u) }
+  // 2) imagen principal de la página (si la wiki tiene PageImages; en wiki.gg la consulta solo devuelve un aviso).
+  const rest = names.filter(n => !found.has(n))
+  for (let i = 0; i < rest.length; i += 50) {
+    const qs = new URLSearchParams({ action: 'query', titles: rest.slice(i, i + 50).join('|'), redirects: '1', prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '160', format: 'json', formatversion: '2', origin: '*' })
+    try {
+      const res = await fetch(`${api}?${qs}`)
+      const j = res.ok ? await res.json() : null
+      const back = new Map<string, string>() // título final → pedido (redirecciones y normalización)
+      for (const r of [...(j?.query?.normalized ?? []), ...(j?.query?.redirects ?? [])] as { from: string; to: string }[]) back.set(r.to, back.get(r.from) ?? r.from)
+      for (const p of (j?.query?.pages ?? []) as { title: string; thumbnail?: { source: string } }[]) {
+        const asked = back.get(p.title) ?? p.title
+        // Un logo o la imagen genérica de la wiki no es un retrato.
+        if (p.thumbnail && !/logo|wiki[-_ ]?(?:icon|wordmark)/i.test(p.thumbnail.source)) found.set(asked, p.thumbnail.source)
+      }
+    } catch { /* sin retratos de este lote */ }
+  }
+  if (!found.size) return events
+  return events.map(e => (e.kind === 'banner' && e.featured.some(f => !f.icon && found.has(f.full ?? f.name))
+    ? { ...e, featured: e.featured.map(f => (f.icon ? f : { ...f, icon: found.get(f.full ?? f.name) ?? f.icon })) } : e))
+}
+
+/**
  * Iconos de las recompensas que no los traen (todas salvo las de ennead): el archivo del objeto en la wiki del juego, probando sus convenciones
  * ("Item Primogem.png" en HoYoverse y WuWa, "Unilog.png" en R:1999, "Black Card.png" en PGR…). En lotes de 45 archivos por consulta;
  * el proxy las guarda 12 h. Si un objeto no tiene icono en la wiki, se queda sin él (la ficha muestra solo el nombre).
@@ -149,6 +214,22 @@ async function withItemIcons(game: Game, events: GameEvent[]): Promise<GameEvent
       }
     } catch { /* sin iconos de este lote */ }
   }
-  const icon = (n: string) => variants(n).map(v => found.get(v.toLowerCase())).find(Boolean)
+  const byFile = (n: string) => variants(n).map(v => found.get(v.toLowerCase())).find(Boolean)
+  // 2) Los que no tienen archivo de icono (aspectos, trajes, estigmas, objetos con nombre propio): la imagen principal de la página del objeto
+  //    (PageImages; Fandom e iopwiki, en wiki.gg no existe), como hace `withFeaturedIcons` con los retratos. Lotes de 50, redirecciones incluidas.
+  const pageIcon = new Map<string, string>()
+  const rest = names.filter(n => !byFile(n) && !/^(?:various|free)\b/i.test(n))
+  for (let i = 0; i < rest.length; i += 50) {
+    const qs = new URLSearchParams({ action: 'query', titles: rest.slice(i, i + 50).join('|'), redirects: '1', prop: 'pageimages', piprop: 'thumbnail', pithumbsize: '64', format: 'json', formatversion: '2', origin: '*' })
+    try {
+      const res = await fetch(`https://${host}/${host === 'bluearchive.wiki' ? 'w/' : ''}api.php?${qs}`)
+      const j = res.ok ? await res.json() : null
+      const back = new Map<string, string>()
+      for (const r of [...(j?.query?.normalized ?? []), ...(j?.query?.redirects ?? [])] as { from: string; to: string }[]) back.set(r.to, back.get(r.from) ?? r.from)
+      for (const p of (j?.query?.pages ?? []) as { title: string; thumbnail?: { source: string } }[])
+        if (p.thumbnail && !/logo|wiki[-_ ]?(?:icon|wordmark)/i.test(p.thumbnail.source)) pageIcon.set((back.get(p.title) ?? p.title).toLowerCase(), p.thumbnail.source)
+    } catch { /* sin iconos de este lote */ }
+  }
+  const icon = (n: string) => byFile(n) ?? pageIcon.get(n.toLowerCase())
   return events.map(e => (e.items.some(i => !i.icon) ? { ...e, items: e.items.map(i => (i.icon ? i : { ...i, icon: icon(i.name) })) } : e))
 }

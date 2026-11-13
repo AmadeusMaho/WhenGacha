@@ -25,7 +25,20 @@ Ese archivo **también se versiona**: el host no instala dependencias de desarro
 ## Añadir un juego: siempre completo
 
 Un gacha nuevo se añade de una vez con **todo** lo que tienen los demás: eventos, banners, desafíos, **códigos de canje** (`codes`) y
-**recompensas y tiradas** de los eventos (`items`/`pulls`; la equivalencia moneda→tirada va en `RULES` de `src/sources/pulls.ts`).
+**recompensas y tiradas** de los eventos (`items`/`pulls`; la equivalencia moneda→tirada va en `RULES` de `src/sources/pulls.ts`),
+**retratos** de los destacados (`withFeaturedIcons` en `src/collector.ts`: convención de iconos de su wiki en `ICON_FILES`) y **lo próximo** si existe:
+banners y eventos ya anunciados, y personajes anunciados sin fecha como banner `precision: 'estimated'` a continuación del actual
+(ejemplos: Lou en `mongil.ts`, Arman en `soc.ts`). Busca siempre la fuente de lo próximo (avisos oficiales, "upcoming" de Prydwen/GameWith, foros).
+
+## Iconos: toda recompensa con icono y todo destacado con retrato
+
+Siempre faltan iconos, así que se revisa en cada juego nuevo y en cada cambio de fuentes: `node scripts/check-icons.mjs` (copias locales en `.cache/snapshots`, o la carpeta
+que le pases) o `node scripts/check-icons.mjs --data` (las publicadas) lista por juego las recompensas sin icono y los destacados sin retrato. Orden para cubrirlos:
+1. **La propia fuente**: si el aviso o la guía pone la imagen junto a la recompensa o al personaje, guárdala ahí (`mongil.ts`: la imagen previa al nombre; `soc.ts`, `ptn.ts`).
+2. **El buscador del recolector** (`src/collector.ts`): `withItemIcons` (archivos "Item X.png", "X.png", "X Icon.png"… y, si no, la imagen principal de la página
+   del objeto) y `withFeaturedIcons` (convención de cada wiki en `ICON_FILES`, y la página del personaje). Si una wiki usa otro nombre de archivo, añádelo ahí.
+3. **Juegos sin wiki**: un mapa de iconos propio en `ITEM_ICONS` de `src/sources/index.ts` (MHO desde GameWith, BLEACH desde su web oficial).
+Lo que no tenga icono en ninguna fuente se deja dicho en `docs/fuentes-y-proxy.md` (hoy: CZN, sin wiki ni guía con iconos de objetos; algunos trajes y cosméticos).
 Si alguna parte no tiene fuente permitida, se deja dicho (en el código y en `docs/fuentes-y-proxy.md`), no se omite en silencio.
 
 ## Antes de tocar fuentes, proxy o recolector
@@ -50,7 +63,12 @@ Reglas que no se rompen:
 - Las fuentes se escriben para el navegador (`DOMParser`), pero también deben funcionar en Node con `linkedom`: no uses `table.rows`/`row.cells` ni APIs de layout.
 
 
-## Discord (Stella Sora y Blue Archive Global)
+## Discord (Stella Sora, Blue Archive Global y otros 12 juegos)
+
+Canales configurados (13 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane, infinitynikki, nikke, dna, trickcal, gfl2, mho, bleach, ptn y soc
+(este sigue #official-news y #social-media-news de SoC: sus parches pequeños no tienen aviso en la web). Onmyoji no: su Discord está abandonado y su web dejó de publicar en 2020.
+Al conectar un canal nuevo, prueba el lector (`parseNotices`) con avisos reales del juego y vuelve a pasar los canales que ya funcionan para ver que no cambia nada.
+Discord complementa, no sustituye: cada juego con canal debe tener también una fuente web (Azur Lane: avisos de azurlane.yo-star.com; PtN: avisos de ptn.aisnogames.com).
 
 - `src/sources/discord.ts` lee los canales de un servidor propio que "sigue" los anuncios oficiales. Solo con `DISCORD_TOKEN` y `DISCORD_CHANNELS` en el servidor
   (guía en `docs/discord-bot.md`). El token nunca va al repositorio ni al navegador: la fuente `discord` del proxy es interna.
@@ -71,6 +89,9 @@ los destacados y a las cabeceras de sección de la ventana del evento (como Gens
 - El recolector sustituye `globalThis.fetch` por el del proxy (lista cerrada, sin cabeceras). Todo lo que el servidor pida por su cuenta
   (GitHub, Resend…) usa `nativeFetch` de `server/native-fetch.mjs`; con `fetch` a secas responde "Fuente no permitida" (403).
 - Botkeep no pasa las variables del panel al proceso: las deja en un `.env` que carga `server/env.mjs` (importado el primero).
+- Anti-scraping (13 nov 2026): `public/robots.txt` cierra `/data/`, `/proxy` y `/api/` a todos los robots y la web entera a los de IA/SEO; `server/antiscrape.mjs`
+  responde 403 en `/data/*` y `/proxy` a esos rastreadores, a herramientas (curl, python-requests, Scrapy, navegadores sin interfaz…), a peticiones sin
+  User-Agent y a las `Sec-Fetch-Site: cross-site`, con límite por IP. Si algún servicio propio necesita leer `/data/`, que use un User-Agent de navegador o pásalo por GitHub.
 - `server/visits.mjs`: contador de visitas en el log (`[visitas] …` por cada carga de la página y resumen diario, GMT-3). No guarda IPs;
   descarta bots y monitores. Cada servidor cuenta lo suyo y se reinicia en cada deploy; las cifras históricas están en Cloudflare → Analytics.
 - `server/skin-live.mjs`: cada 12 h mira el vídeo/imagen de portada de las webs de Genshin, ZZZ y WuWa (fuentes `internal` del proxy) para el fondo de las skins (`/data/skin-live.json`). No descarga vídeos; ver "Fondos de las skins según la versión" en `docs/fuentes-y-proxy.md`.

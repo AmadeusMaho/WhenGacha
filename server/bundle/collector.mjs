@@ -20012,6 +20012,10 @@ var ART = {
 	gfl2: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/2e/99/76/2e99765a-2026-3376-86b1-61104ddf414d/01_U9996_U56fe-ios2778x1284.jpg/1280x1280bb.jpg",
 	mho: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/21/e2/80/21e28030-9552-d59e-b2ed-f263a2f46af1/_U5356_U70b9_U56fe-_U4e3bKV-2778x1284-_U82f1_U6587.jpg/1280x1280bb.jpg",
 	bleach: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/48/48/0d/48480dda-ba1c-c1f6-3994-16c5d83dcdf5/2778-1284-1.jpg/1280x1280bb.jpg",
+	onmyoji: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/b3/96/57/b396579a-d564-7809-8515-ea20d4782ff6/1_U56fe2688x1242.jpg/1280x1280bb.jpg",
+	ptn: "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/70/12/5a/70125a2c-ba9f-eb90-7fdf-836943e6e21d/a875fcb0-4b3d-44f5-8134-07fae21e2e33_2-_U6a2a_U677f2208x1242.jpg/1280x1280bb.jpg",
+	soc: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/21/68/e8/2168e8de-386c-ca73-5793-2c5b8a10d84f/35-_U843d_U7248-_U82f9_U679c-2868x1230.jpg/1280x1280bb.jpg",
+	mongil: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/bb/6c/a7/bb6ca74c-24c9-b87f-e4e6-0d47558723be/260901__Ubaac_Uae38_00__Ud0a4_Uc544_Ud2b8_2796x1290_EN.jpg/1280x1280bb.jpg",
 	azurlane: "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg"
 };
 var def = (id, name, short, publisher, color, color2, patchCycleDays, host, q, api, logo, wallpaper) => ({
@@ -20058,6 +20062,10 @@ var CATALOG = [
 	def("trickcal", "Trickcal: Chibi Go", "TC", "Epid Games", "#ffcc80", "#5a3a1a", 0, "", "Trickcal: Chibi Go", "trickcal", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/c4/dc/00/c4dc00ed-ef86-686b-0446-bbd6da0239b9/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 	def("gfl2", "Girls' Frontline 2: Exilium", "GFL2", "Sunborn", "#ffca28", "#3d3214", 0, "iopwiki.com", "Girls' Frontline 2", "gfl2", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/e2/e9/42/e2e942a6-474b-de24-3e8c-87e6f9d10525/AppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg"),
 	def("mho", "Monster Hunter Outlanders", "MHO", "Capcom · TiMi", "#9ccc65", "#2c3d17", 0, "", "Monster Hunter Outlanders", "mho", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/00/73/e0/0073e0c8-a9e4-1956-8966-f83a136ee71e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
+	def("onmyoji", "Onmyoji", "ONM", "NetEase", "#e57373", "#3d1214", 0, "onmyoji.fandom.com", "Onmyoji", "onmyoji", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/43/0c/51/430c51e8-47b8-7fe1-97cb-efe0b895c33a/AppIcon-1x_U007emarketing-0-7-0-85-220.png/256x256bb.jpg"),
+	def("ptn", "Path to Nowhere", "PtN", "Aisno Games", "#ef9a9a", "#3a1518", 0, "pathtonowhere.wiki.gg", "Path to Nowhere", "ptn", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7b/fa/92/7bfa928f-7101-b5f3-812d-94c66bf4741c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
+	def("soc", "Sword of Convallaria", "SoC", "XD", "#d4b26a", "#30260f", 0, "swordofconvallaria.wiki.gg", "Sword of Convallaria", "soc", "https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1d/d3/47/1dd34725-b946-1b9c-15ef-8b2600bf82ff/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/256x256bb.jpg"),
+	def("mongil", "MONGIL: STAR DIVE", "MSD", "Netmarble", "#80deea", "#143840", 0, "mongil.wiki.gg", "MONGIL: STAR DIVE", "mongil", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5f/7f/cd/5f7fcd25-7377-4c5e-b9d3-31da50600807/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 	{
 		...def("bleach", "BLEACH: Soul Resonance", "BSR", "Nuverse", "#ff8a65", "#3e1c12", 0, "", "BLEACH: Soul Resonance", "bleach", "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1c/63/de/1c63de28-b001-b1c3-ecb6-7fb9895ae0c1/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg"),
 		wip: true
@@ -20075,8 +20083,8 @@ var viaProxy = (url) => `/proxy?u=${encodeURIComponent(url)}`;
 * Se lee solo /en/<juego>/events y /en/<juego>/banners, que su robots.txt permite, a través del proxy con caché.
 * Las imágenes se cargan directo desde su sitio en el navegador (como al visitarlo); si fallan, se busca otra.
 */
-var SITE$3 = "https://gachafocus.com.br";
-var DAY$33 = 864e5;
+var SITE$4 = "https://gachafocus.com.br";
+var DAY$38 = 864e5;
 var GACHAFOCUS = {
 	arknights: {
 		slug: "arknights",
@@ -20109,10 +20117,10 @@ var REGIONS = [
 	"europe",
 	"asia"
 ];
-var abs = (src) => !src ? void 0 : src.startsWith("http") ? src : `${SITE$3}${src}`;
-var text$8 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var abs = (src) => !src ? void 0 : src.startsWith("http") ? src : `${SITE$4}${src}`;
+var text$10 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 async function loadPage(slug, section) {
-	const res = await fetch(viaProxy(`${SITE$3}/en/${slug}/${section}`));
+	const res = await fetch(viaProxy(`${SITE$4}/en/${slug}/${section}`));
 	if (!res.ok) throw new Error(`gachafocus ${slug}/${section} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
 }
@@ -20136,10 +20144,10 @@ function pickDates(tile) {
 }
 function parseUnits(tile) {
 	return [...tile.querySelectorAll(".strip-list .unit")].map((u) => {
-		const meta = text$8(u.querySelector(".unit-text small"));
+		const meta = text$10(u.querySelector(".unit-text small"));
 		const rank = Number(/(\d)/.exec(meta)?.[1] ?? /rarity-(\d)/.exec(u.className)?.[1] ?? 0);
 		return {
-			name: text$8(u.querySelector(".unit-text strong")),
+			name: text$10(u.querySelector(".unit-text strong")),
 			icon: abs(u.querySelector("img")?.getAttribute("src")),
 			rarity: rank || void 0,
 			tag: meta.split("·")[1]?.trim(),
@@ -20149,13 +20157,13 @@ function parseUnits(tile) {
 }
 function parseTiles(gameId, cfg, doc, section) {
 	const out = [];
-	const from = Date.now() - 3 * DAY$33;
+	const from = Date.now() - 3 * DAY$38;
 	doc.querySelectorAll("main article.tile").forEach((tile) => {
 		const dates = pickDates(tile);
-		const title = text$8(tile.querySelector(".tile-title"));
+		const title = text$10(tile.querySelector(".tile-title"));
 		if (!dates || !title || +new Date(dates.end) < from || +new Date(dates.end) <= +new Date(dates.start)) return;
 		const id = tile.getAttribute("data-card-id") ?? `${title}${dates.start}`;
-		const desc = text$8(tile.querySelector(".tile-desc")) || void 0;
+		const desc = text$10(tile.querySelector(".tile-desc")) || void 0;
 		const image = abs(tile.querySelector(".tile-art img")?.getAttribute("src"));
 		if (section === "banners") {
 			const units = parseUnits(tile);
@@ -20409,6 +20417,39 @@ var GAME8_CODES = {
 	mho: "Monster-Hunter-Outlanders/archives/634765"
 };
 var hasWikiCodes = (api) => api in PAGES || api in GAME8_CODES;
+/**
+* Listas de códigos de PocketGamer (pocketgamer.com/<juego>/codes/; robots.txt "Allow: /"), para juegos sin wiki ni Game8 que las mantenga
+* (revisado el 13 nov 2026). Cada lista: un `<h2>` "Active … codes" y, debajo, `<li><strong>CÓDIGO</strong> - recompensas</li>` hasta el
+* apartado "Expired". Las recompensas vienen como "10 Premium Salmon Puree, 1 Purple Upgrade Stone" o "Hope Luxite x300"; algunas solo dicen
+* "rewards" (sin detalle). 1 página por juego, caché de 6 h en el proxy.
+*/
+async function syncPocketGamerCodes(slug) {
+	const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/codes/`));
+	if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`);
+	return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), "text/html"));
+}
+function pocketGamerCodes(doc) {
+	const text = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
+	const head = [...doc.querySelectorAll("h2")].find((h) => /active/i.test(text(h)) && /codes?/i.test(text(h)));
+	if (!head) throw new Error("pocketgamer: no se encontró la lista de códigos activos");
+	const out = [];
+	for (let n = head.nextElementSibling; n && !/^H2$/.test(n.tagName); n = n.nextElementSibling) {
+		if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break;
+		for (const li of n.tagName === "LI" ? [n] : [...n.querySelectorAll("li")]) {
+			const line = text(li);
+			const code = (/^([A-Za-z0-9]{4,30})\b/.exec(line)?.[1] ?? "").trim();
+			if (!code || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
+			const rest = line.slice(code.length).replace(/^\s*[-–:]\s*/, "");
+			const until = /\((?:expires?|until)\s+([^)]+)\)/i.exec(rest)?.[1];
+			const rewards = rest.replace(/\([^)]*\)/g, "").split(/\s*,\s+|\s+and\s+/).map((r) => r.trim()).map((r) => r.replace(/^(\d[\d,.]*[kK]?)\s+(.+)$/, "$2 ×$1").replace(/\s+x\s?(\d[\d,.]*[kK]?)$/i, " ×$1")).filter((r) => r && !/^(rewards?|free rewards?|tba|-)$/i.test(r));
+			out.push({
+				code,
+				rewards: [...rewards.slice(0, 6), ...until ? [`Until ${until.trim()}`] : []]
+			});
+		}
+	}
+	return out;
+}
 async function syncGame8Codes(api) {
 	const path = GAME8_CODES[api];
 	if (!path) return [];
@@ -20708,6 +20749,31 @@ var RULES = {
 	}, {
 		item: /^limited gacha tickets?$/i,
 		per: 1
+	}],
+	onmyoji: [{
+		item: /^mystery amulets?$/i,
+		per: 1
+	}, {
+		item: /^jades?$/i,
+		per: 100
+	}],
+	ptn: [{
+		item: /^hypercubes?$/i,
+		per: 180
+	}],
+	soc: [{
+		item: /^(hope )?luxites?$/i,
+		per: 150
+	}, {
+		item: /^secret fates?$/i,
+		per: 1
+	}],
+	mongil: [{
+		item: /^compass(es)? of destiny$/i,
+		per: 1
+	}, {
+		item: /^starlight crystals?$/i,
+		per: 160
 	}]
 };
 var num$1 = (s) => Number(s.replace(/,/g, ""));
@@ -20940,7 +21006,7 @@ function shortDescription(d) {
 * Los banners ("Time-Limited … Banner") traen los personajes con RATE UP. Los paquetes y trajes de pago se omiten.
 */
 var API$9 = "https://re1999.bluepoch.com/activity/official/websites/information/query";
-var DAY$32 = 864e5;
+var DAY$37 = 864e5;
 var DATE$1 = "(\\d{4}-\\d{2}-\\d{2})";
 var RANGE$2 = new RegExp(`(?:After the version update on ${DATE$1}|${DATE$1} (\\d{1,2}):(\\d{2}))\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`, "i");
 var MAINT = new RegExp(`${DATE$1} (\\d{1,2}):(\\d{2})\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`);
@@ -20975,7 +21041,7 @@ async function syncBluepoch(gameId) {
 		const m = MAINT.exec(lines$4(n.content).join("\n"));
 		if (m) maintEnd.set(m[1], at$7(m[4], +m[5], +m[6], +m[7]));
 	}
-	const now = Date.now(), from = now - 3 * DAY$32, to = now + 120 * DAY$32;
+	const now = Date.now(), from = now - 3 * DAY$37, to = now + 120 * DAY$37;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const n of notices) {
@@ -21014,7 +21080,7 @@ async function syncBluepoch(gameId) {
 			const end = at$7(m[5], +m[6], +m[7], off) + 59e3;
 			const near = ls.slice(i + 1, i + 6).join(" ");
 			if (/Garment|Pack$/i.test(subtitle ?? "") || /^New Packs$/i.test(name) || /Price:/.test(near)) continue;
-			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$32) continue;
+			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$37) continue;
 			const banner = /Banner/i.test(subtitle ?? "");
 			const id = `${gameId}:${banner ? "banner" : "event"}:bp:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
@@ -21082,7 +21148,7 @@ function cardList(body) {
 		amount: qty && /^[\d,.\s]+[kK]?$/.test(qty) ? num(qty) : 1
 	}));
 }
-async function wikitext$2(host, page) {
+async function wikitext$3(host, page) {
 	const qs = new URLSearchParams({
 		action: "parse",
 		page,
@@ -21097,7 +21163,7 @@ async function wikitext$2(host, page) {
 }
 /** Primer Card List de la sección de totales de una página. */
 async function totalRewards(host, page, section = /=+\s*Total Rewards\s*=+/i) {
-	const text = await wikitext$2(host, page);
+	const text = await wikitext$3(host, page);
 	const at = text.search(section);
 	if (at < 0) return [];
 	const m = /\{\{\s*Card List\s*\|([^}]*)\}\}/i.exec(text.slice(at));
@@ -21133,8 +21199,8 @@ async function withChallengeRewards(s, host, game, pages) {
 * Rotatorios con calendario fijo documentado (sin fuente con fechas): se calcula el ciclo en curso y el siguiente.
 * Cada regla cita su origen; si el juego cambia el calendario, hay que actualizarla aquí.
 */
-var HOUR$4 = 36e5;
-var DAY$31 = 24 * HOUR$4;
+var HOUR$7 = 36e5;
+var DAY$36 = 24 * HOUR$7;
 var ev = (gameId, title, start, end, description, approx, now) => ({
 	id: `${gameId}:challenge:cycle:${title}:${new Date(start).toISOString().slice(0, 10)}`,
 	gameId,
@@ -21154,14 +21220,14 @@ var ev = (gameId, title, start, end, description, approx, now) => ({
 * Hora del servidor: como el resto de HI3 en la app, UTC+8 (Asia) y marcado "≈".
 */
 function hi3MemorialArena(gameId, now = Date.now()) {
-	const off = 8 * HOUR$4;
+	const off = 8 * HOUR$7;
 	const local = new Date(now + off);
 	const back = (local.getUTCDay() - 2 + 7) % 7;
 	let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 4) - off;
-	if (start > now) start -= 7 * DAY$31;
+	if (start > now) start -= 7 * DAY$36;
 	return [0, 1].map((k) => {
-		const s = start + k * 7 * DAY$31;
-		return ev(gameId, "Memorial Arena", s, s + 6 * DAY$31 - 2 * HOUR$4 - 1e3, "⟦d.hi3Arena⟧", true, now);
+		const s = start + k * 7 * DAY$36;
+		return ev(gameId, "Memorial Arena", s, s + 6 * DAY$36 - 2 * HOUR$7 - 1e3, "⟦d.hi3Arena⟧", true, now);
 	});
 }
 /**
@@ -21169,7 +21235,7 @@ function hi3MemorialArena(gameId, now = Date.now()) {
 * (wiki de Fandom, página "Artificial Somnambulism"). Las recompensas de Limbo Experiment se reinician con cada ciclo.
 */
 function r99Limbo(gameId, now = Date.now()) {
-	const off = 8 * HOUR$4;
+	const off = 8 * HOUR$7;
 	const at = (y, m, d) => Date.UTC(y, m, d, 5) - off;
 	const local = new Date(now + off);
 	const y = local.getUTCFullYear(), m = local.getUTCMonth();
@@ -21221,7 +21287,7 @@ var thumb$1 = (a) => sized(a.media_thumbnail_url ? a.media_thumbnail_url.startsW
 *  mantenimiento" = 00:00 UTC (el mantenimiento semanal empieza a las 00:00 UTC desde el 29/07, según su aviso oficial).
 *  Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$30 = 864e5;
+var DAY$35 = 864e5;
 var BOARDS = {
 	announcements: 139238,
 	events: 139240,
@@ -21341,7 +21407,7 @@ function fromUpdate(gameId, lines, ends, fallbackImage) {
 	});
 	return out;
 }
-var MONTHS$13 = [
+var MONTHS$16 = [
 	"jan",
 	"feb",
 	"mar",
@@ -21371,10 +21437,10 @@ function fromEventPost(gameId, a) {
 	const w = /Event Period\s*[-:]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*[–—-]\s*([A-Za-z]+)\.? (\d{1,2})\w* \([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*\(UTC\)/i.exec(s);
 	const c = /Claim Period\s*[-:]\s*(\d{1,2})\/(\d{1,2})[^■※]*?(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})/i.exec(s);
 	if (w) {
-		const sm = MONTHS$13.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$13.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
+		const sm = MONTHS$16.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$16.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
 		if (!sm || !em) return null;
 		start = utc$1(yearOf(sm, +w[2]), sm, +w[2], "00:00");
-		if (+start < posted && posted - +start < DAY$30) start = new Date(posted);
+		if (+start < posted && posted - +start < DAY$35) start = new Date(posted);
 		end = utc$1(yearOf(em, +w[4]) + (em < sm ? 1 : 0), em, +w[4], w[5]);
 		approx = true;
 		minor = true;
@@ -21409,7 +21475,7 @@ async function syncCznEvents(gameId) {
 	]);
 	if (upd.status === "rejected" && evs.status === "rejected") throw upd.reason;
 	const ends = ann.status === "fulfilled" ? maintenanceEnds$1(ann.value) : /* @__PURE__ */ new Map();
-	const from = Date.now() - 3 * DAY$30;
+	const from = Date.now() - 3 * DAY$35;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const add = (e) => {
@@ -21418,7 +21484,7 @@ async function syncCznEvents(gameId) {
 		seen.add(key);
 		out.push(e);
 	};
-	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$30).slice(0, RECENT_UPDATES)) try {
+	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$35).slice(0, RECENT_UPDATES)) try {
 		for (const e of fromUpdate(gameId, await bodyLines(a.article_id), ends, thumb$1(a))) add(e);
 	} catch {}
 	if (evs.status === "fulfilled") for (const a of evs.value) {
@@ -21442,8 +21508,8 @@ async function syncCznEvents(gameId) {
 * (UTC-7)", "11/9 (Mon) 19:00 ~ 11/16 (Mon) 18:59 (UTC)", "2026/11/03 04:00 - 2026/11/10 02:59 (UTC-7)") y les pone el nombre más cercano.
 */
 var API$8 = "https://discord.com/api/v10/channels";
-var DAY$29 = 864e5;
-var MONTHS$12 = [
+var DAY$34 = 864e5;
+var MONTHS$15 = [
 	"jan",
 	"feb",
 	"mar",
@@ -21487,9 +21553,9 @@ function dateIn(s, year) {
 		...t
 	};
 	m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/.exec(s);
-	if (m && MONTHS$12.includes(m[1].slice(0, 3).toLowerCase())) return {
+	if (m && MONTHS$15.includes(m[1].slice(0, 3).toLowerCase())) return {
 		y: m[3] ? +m[3] : year,
-		mo: MONTHS$12.indexOf(m[1].slice(0, 3).toLowerCase()),
+		mo: MONTHS$15.indexOf(m[1].slice(0, 3).toLowerCase()),
 		d: +m[2],
 		...t
 	};
@@ -21632,12 +21698,13 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 		const start = def(a, 0, 0, hours?.start);
 		return {
 			start,
-			end: start + +lasts[2] * DAY$29 - 1e3,
+			end: start + +lasts[2] * DAY$34 - 1e3,
 			afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null,
 			approx: !after && a.h === void 0
 		};
 	}
-	const parts = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, "").split(SEP);
+	let parts = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, "").split(SEP);
+	while (parts.length > 2 && !dateIn(parts[0], year)) parts = parts.slice(1);
 	if (parts.length < 2) return null;
 	if (OPEN_END.test(parts.slice(1).join(" "))) {
 		const a = dateIn(parts[0], year);
@@ -21646,7 +21713,7 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 		const start = def(a, 0, 0, hours?.start);
 		return {
 			start,
-			end: start + 42 * DAY$29,
+			end: start + 42 * DAY$34,
 			afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null,
 			approx: !after && a.h === void 0,
 			open: true
@@ -21707,14 +21774,15 @@ var LABEL$2 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|detail
 * daba nombres como "A new hotfix for Stella Sora").
 */
 function sentenceName(c, loose = true) {
-	return (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim();
+	const n = (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c) ?? /["“]([^"”]{3,60})["”]\s+(?:event|campaign)\s+(?:will|is|has|starts?|begins?)\b/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim().replace(/^[Tt]he\s+(?=[a-z])/, "").replace(/^(?:the\s+)?following\s+/i, "").replace(/^(?:(?:new|limited)\s+)+(?=\S)/i, "");
+	return n ? n.charAt(0).toUpperCase() + n.slice(1) : void 0;
 }
 /**
 * Quita del nombre lo que no es nombre: "Event Preview: When Steelwing Descends" (MHO) → "When Steelwing Descends"; "Limited-Time Gacha: Soi Fon" y
 * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
 */
 function tidyName(s) {
-	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
+	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/i, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
 }
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
@@ -21767,6 +21835,18 @@ function featuredIn(lines) {
 		}
 	}
 	if (!out.length) {
+		for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+((?:["“][^"”]{2,30}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) for (const n of m[1].matchAll(/["“]([^"”]+)["”]/g)) if (!out.some((f) => f.name === n[1].trim())) out.push({
+			name: n[1].trim(),
+			rarity: 5
+		});
+	}
+	if (!out.length) {
+		for (const l of lines) for (const m of l.matchAll(/\b([SA])-Class Sinners?\s+((?:\[[^\]]{1,30}\](?:\s*(?:,|or|and|&)\s*)?)+)/g)) for (const n of m[2].matchAll(/\[([^\]]+)\]/g)) if (!out.some((f) => f.name === n[1].trim())) out.push({
+			name: n[1].trim(),
+			rarity: m[1] === "S" ? 5 : 4
+		});
+	}
+	if (!out.length) {
 		for (const l of lines) for (const m of l.matchAll(/[★☆]\s*(\d)\s+([A-Z][\w'-]{1,20})(?=\s*[,&]|\s+and\b|\s+(?:limited|rate|pick)|$)/gi)) if (!/^(?:apostles?|limited|rate|pick)$/i.test(m[2]) && !out.some((f) => f.name === m[2])) out.push({
 			name: m[2],
 			rarity: +m[1]
@@ -21781,8 +21861,14 @@ function featuredIn(lines) {
 	}
 	return out.sort((a, b) => b.rarity - a.rarity);
 }
-/** Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts). */
-var SERVER_ZONE = { dna: -5 };
+/**
+* Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts).
+* Path to Nowhere: servidor global de América, UTC-7 (ptn.ts; "November 4th, 14:00 - December 2nd, 13:59 (Server Time)" en sus avisos de X).
+*/
+var SERVER_ZONE = {
+	dna: -5,
+	ptn: -7
+};
 /** Línea de un periodo por región: "Asia/HMT/SEA: July 23, 2026, 10:00 - …", "Europe: …", "America: …". */
 var REGION = /^(?:(?:asia|europe|eu|americas?|na|north america|sea|hmt|tw|hk|mo|jp|kr|global|other regions?)[\s/,&]*)+[:：]\s*/i;
 /**
@@ -21858,7 +21944,7 @@ function parseNotices(gameId, messages) {
 			break;
 		}
 	}
-	const now = Date.now(), from = now - 3 * DAY$29, to = now + 120 * DAY$29;
+	const now = Date.now(), from = now - 3 * DAY$34, to = now + 120 * DAY$34;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const m of messages) {
@@ -21923,13 +22009,14 @@ function parseNotices(gameId, messages) {
 					start = maintAt.get(r.afterMaint) ?? start;
 				}
 			}
-			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$29) continue;
+			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$34) continue;
 			const ctx = [
 				name,
 				label,
-				name === heading && !fromHead ? clean$2(raw[headAt]).slice(0, 120) : ""
+				name === heading && !fromHead ? clean$2(raw[headAt]).slice(0, 120) : "",
+				heading !== name && tidyName(heading) === name ? heading : ""
 			].join(" | ");
-			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(ctx) ? "banner" : "event";
+			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)|\b(?:exclusive|event|limited|rerun) arrests?\b|\bsummon(?:ing)? event\b|probability of summoning/i.test(ctx) ? "banner" : "event";
 			const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
 			seen.add(id);
@@ -21965,6 +22052,7 @@ function parseNotices(gameId, messages) {
 				source: "api",
 				precision: approx ? "approx" : void 0,
 				open: r.open || void 0,
+				minor: kind === "event" && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?)\b/i.test(name) || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : void 0,
 				description: kind === "event" ? summarize(section, { title: name }) : void 0
 			};
 			const stars = (name.match(/[★☆]\s*\d/g) ?? []).length;
@@ -22012,7 +22100,7 @@ var NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|UN
 function codesFrom(msgs) {
 	const out = [];
 	for (const { text, at } of msgs) {
-		if (Date.now() - at > 45 * DAY$29 || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue;
+		if (Date.now() - at > 45 * DAY$34 || !/\bcodes?\b/i.test(text) || /\b(expired|no longer valid)\b/i.test(text)) continue;
 		const found = /* @__PURE__ */ new Set();
 		for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
 		for (const line of text.split("\n")) {
@@ -22044,7 +22132,7 @@ function codesFrom(msgs) {
 * 3–4 consultas por ciclo (caché de 12 h en el proxy).
 */
 var API$7 = "https://afk-journey.fandom.com/api.php";
-var DAY$28 = 864e5;
+var DAY$33 = 864e5;
 async function query$1(params) {
 	const res = await fetch(viaProxy(`${API$7}?${new URLSearchParams({
 		...params,
@@ -22096,13 +22184,13 @@ async function events$4(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$28, to = now + 120 * DAY$28;
+	const now = Date.now(), from = now - 3 * DAY$33, to = now + 120 * DAY$33;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content$1(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$6(field$1(text, "time_start")), e = at$6(field$1(text, "time_end"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$28) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$33) continue;
 		const name = field$1(text, "name") || p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const groups = [field$1(text, "group"), field$1(text, "group2")].filter(Boolean);
 		const kind = /\/\d{4}-\d\d-\d\d$/.test(p.title) && groups.some((g) => /Guild|Strategy/i.test(g)) ? "challenge" : "event";
@@ -22148,7 +22236,7 @@ async function banners$5(gameId) {
 		const text = content$1(p);
 		const s = at$6(field$1(text, "time_start")), e = at$6(field$1(text, "time_end"));
 		const heroes = field$1(text, "hero").split(";").map((h) => h.trim()).filter(Boolean);
-		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$28) continue;
+		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$33) continue;
 		const ret = /return/i.test(field$1(text, "type")) || /Rate Up Return/.test(p.title);
 		rows.push({
 			p,
@@ -22237,8 +22325,8 @@ async function syncAfkJourney(gameId) {
 */
 var API$6 = "https://webapi.browndust2.com/api/notices";
 var LOCALE = "en-us";
-var DAY$27 = 864e5;
-var MONTHS$11 = [
+var DAY$32 = 864e5;
+var MONTHS$14 = [
 	"january",
 	"february",
 	"march",
@@ -22260,7 +22348,7 @@ var RELEVANT = /Events after the .+ Update|Contents Schedule after|Routine Maint
 /** Cupones de canje ("🎁 November 2026 Coupon", "🌝Full Moon Coupon"); no los descuentos de la tienda web. */
 var COUPON = /Coupon/i;
 var NOT_COUPON = /Web ?Shop|Webstore|Web Store|Discount|Withdrawal|Collab|Restriction/i;
-var monthIdx = (s) => MONTHS$11.findIndex((m) => m.startsWith(s.toLowerCase().slice(0, 3)));
+var monthIdx = (s) => MONTHS$14.findIndex((m) => m.startsWith(s.toLowerCase().slice(0, 3)));
 /** Año de una fecha sin año ("November 18") a partir de la fecha del aviso: si cae >6 meses antes, es del año siguiente. */
 function yearFor(mo, ref) {
 	const y = ref.getUTCFullYear();
@@ -22319,7 +22407,7 @@ function point(s, ref, m, side) {
 		const known = (after ? m.end : m.start).get(day);
 		if (known !== void 0) return [known, false];
 		const d = +new Date(day);
-		return [after ? d + DAY$27 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
+		return [after ? d + DAY$32 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
 	}
 	return [explicit(s, ref), false];
 }
@@ -22329,13 +22417,13 @@ var cleanTitle$1 = (s) => s.replace(/^@@H2\s*/, "").replace(/^\d+\.\s*/, "").rep
 * el arte de verdad (banners, trajes) se sube con nombre propio ("5.png", "01_PC_1280x250_02EN.jpg"). Solo se usa el segundo.
 */
 var isArt = (url) => !/\/image\.(png|jpe?g|webp|gif)$/i.test(url);
-var MINOR$1 = /Coupon|Survey|Attendance Check|Login Event/i;
+var MINOR$4 = /Coupon|Survey|Attendance Check|Login Event/i;
 var CHALLENGE$1 = /Colosseum|Tower of Salvation|Mirror War|Guild Raid|Arena/i;
 /** `art`: arte de cada traje ("1) Night of Betrayal Valze Costume: …" + su imagen), para los banners de pickup. */
 function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	const ref = new Date(n.publishedAt);
 	const ls = lines$3(n);
-	const now = Date.now(), from = now - 3 * DAY$27, to = now + 120 * DAY$27;
+	const now = Date.now(), from = now - 3 * DAY$32, to = now + 120 * DAY$32;
 	let section = "", img, pickup = "", usedSection = false;
 	/** Evento de la sección actual: su imagen suele venir después del periodo. */
 	let current;
@@ -22343,7 +22431,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	let costume = "";
 	const push = (kind, title, a, b, extra = {}) => {
 		const [start, s1] = point(a, ref, m, "start"), [end, e1] = point(b, ref, m, "end");
-		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$27) return;
+		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$32) return;
 		const id = `${gameId}:${kind}:${title.toLowerCase()}:${new Date(start).toISOString().slice(0, 10)}`;
 		if (seen.has(id)) return;
 		seen.add(id);
@@ -22361,7 +22449,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 			official: true,
 			source: "api",
 			precision: s1 || e1 ? "approx" : void 0,
-			minor: MINOR$1.test(title) || void 0,
+			minor: MINOR$4.test(title) || void 0,
 			...extra
 		};
 		out.push(ev);
@@ -22495,7 +22583,7 @@ function readCoupon(n) {
 	if (!code) return null;
 	const endTxt = /(?:Redemption Period|Expiry Date|Valid Until|Period)\s*:[^\n]*?(?:[-–]|Until)\s*([A-Z][a-z]+\.? \d{1,2},?\s*(?:\d{4},?\s*)?\d{1,2}:\d{2}(?:\s*[AP]M)?)/i.exec(text)?.[1];
 	const end = endTxt ? explicit(endTxt, ref) : NaN;
-	if ((isNaN(end) ? +ref + 31 * DAY$27 : end) < Date.now()) return null;
+	if ((isNaN(end) ? +ref + 31 * DAY$32 : end) < Date.now()) return null;
 	return {
 		code,
 		rewards: [/Rewards?\s*:\s*([^\n]+)/i.exec(text)?.[1]?.trim(), isNaN(end) ? void 0 : `Until ${new Date(end).toUTCString().slice(5, 16)} (UTC)`].filter((x) => !!x)
@@ -22563,7 +22651,7 @@ async function syncBd2(gameId) {
 * La web oficial (chaos.infoldgames.com) firma sus peticiones con una clave: no se usa. 4 consultas por ciclo (caché de 12 h).
 */
 var API$5 = "https://infinity-nikki.fandom.com/api.php";
-var DAY$26 = 864e5;
+var DAY$31 = 864e5;
 async function query(params) {
 	const res = await fetch(viaProxy(`${API$5}?${new URLSearchParams({
 		...params,
@@ -22609,13 +22697,13 @@ async function events$3(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$26, to = now + 120 * DAY$26;
+	const now = Date.now(), from = now - 3 * DAY$31, to = now + 120 * DAY$31;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$5(field(text, "time_start"), field(text, "time_start_offset")), e = at$5(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$26) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$31) continue;
 		const name = field(text, "title") || p.title.replace(/\s*\((Event)\)$/, "").replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const type = field(text, "type");
 		const r = rewards(text);
@@ -22656,7 +22744,7 @@ async function banners$4(gameId) {
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		const s = at$5(field(text, "time_start"), field(text, "time_start_offset")), e = at$5(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$26 || /^perm/i.test(field(text, "duration"))) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$31 || /^perm/i.test(field(text, "duration"))) continue;
 		const name = p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		out.push({
 			id: `${gameId}:banner:${p.title}`,
@@ -22727,7 +22815,7 @@ async function syncInfinityNikki(gameId) {
 *    el aviso "Maintenance Notice (Completed)" del tablón de mantenimientos (hora exacta de fin); si aún no existe, se estima y se marca "≈".
 *    Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$25 = 864e5;
+var DAY$30 = 864e5;
 var BANNERS$1 = "https://bannerhistory.app/en/e7-pickup-history";
 /** Hora (UTC) a la que se supone terminado un mantenimiento cuyo aviso de cierre aún no existe. */
 var FALLBACK_MAINTENANCE_END = "09:00";
@@ -22768,7 +22856,7 @@ async function syncBanners(gameId) {
 	if (!res.ok) throw new Error(`bannerhistory → HTTP ${res.status}`);
 	const list = arrayAfter(flightData(await res.text()), "\"banners\":");
 	if (!list?.length) throw new Error("bannerhistory: no se encontraron banners");
-	const from = Date.now() - 3 * DAY$25;
+	const from = Date.now() - 3 * DAY$30;
 	const out = [];
 	for (const b of list) {
 		const s = +new Date(b.startUtc), e = +new Date(b.endUtc);
@@ -22843,7 +22931,7 @@ var NOT_AN_EVENT = /\b(pack|sale|sales|bundle)\b/i;
 /** Máximo de avisos cuyo cuerpo completo se pide por no traer el periodo en el resumen (cada uno es una petición). */
 var MAX_DETAILS = 8;
 async function syncEvents(gameId, list, ends) {
-	const from = Date.now() - 3 * DAY$25;
+	const from = Date.now() - 3 * DAY$30;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	let details = 0;
@@ -22851,7 +22939,7 @@ async function syncEvents(gameId, list, ends) {
 		if (NOT_AN_EVENT.test(a.title)) continue;
 		let text = a.summary ?? "";
 		let p = period(text, a.create_datetime, ends);
-		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$25) {
+		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$30) {
 			details++;
 			try {
 				text = await bodyText(a.article_id);
@@ -22896,7 +22984,7 @@ async function syncEvents(gameId, list, ends) {
 * "New 5★ Hero, <nombre>" seguido del periodo de su invocación.
 */
 async function syncNewHeroes(gameId, list, ends, known) {
-	const from = Date.now() - 3 * DAY$25;
+	const from = Date.now() - 3 * DAY$30;
 	const out = [];
 	for (const a of list.filter((x) => /Update Content/i.test(x.title)).slice(0, 2)) {
 		let lines;
@@ -22913,7 +23001,7 @@ async function syncNewHeroes(gameId, list, ends, known) {
 			const p = period(after.filter((l) => !l.startsWith("@@IMG ")).join("\n"), a.create_datetime, ends);
 			if (!p || +p.end < from) return;
 			const nk = name.toLowerCase();
-			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$25 && b.featured.some((f) => {
+			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$30 && b.featured.some((f) => {
 				const fk = f.name.toLowerCase();
 				return fk.includes(nk) || nk.includes(fk);
 			}))) return;
@@ -22974,10 +23062,10 @@ async function syncEpic7(gameId) {
 * Servidores: Asia/SEA/HMT (UTC+8), Europa (UTC+1) y América (UTC-5) cambian a la misma hora LOCAL ("July 23, 2026, 10:00 - August 4, 2026, 05:00"
 * en los tres, aviso oficial). La app usa el de América, el más cercano a su público: inicio 10:00 y fin 05:00 (UTC-5).
 */
-var SITE$2 = "https://game8.co/games/Duet-Night-Abyss/archives";
-var HOUR$3 = 36e5;
-var DAY$24 = 24 * HOUR$3;
-var MONTHS$10 = [
+var SITE$3 = "https://game8.co/games/Duet-Night-Abyss/archives";
+var HOUR$6 = 36e5;
+var DAY$29 = 24 * HOUR$6;
+var MONTHS$13 = [
 	"january",
 	"february",
 	"march",
@@ -22991,12 +23079,12 @@ var MONTHS$10 = [
 	"november",
 	"december"
 ];
-var text$7 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$9 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 var at$4 = (y, m, d, h) => Date.UTC(y, m, d, h - -5);
 /** "November 10 – December 21, 2026", "October 20, 2026 – November 22, 2026" → [inicio, fin] (ms, hora de América); null sin fin. */
 function dnaRange(s) {
 	const found = [...s.matchAll(/([A-Z][a-z]+)\.? (\d{1,2})(?:(?:st|nd|rd|th)?,? (\d{4}))?/g)].map((m) => ({
-		m: MONTHS$10.indexOf(m[1].toLowerCase()),
+		m: MONTHS$13.indexOf(m[1].toLowerCase()),
 		d: +m[2],
 		y: m[3] ? +m[3] : NaN
 	})).filter((x) => x.m >= 0);
@@ -23006,8 +23094,8 @@ function dnaRange(s) {
 	if (isNaN(by)) return null;
 	return [at$4(isNaN(a.y) ? a.m > b.m ? by - 1 : by : a.y, a.m, a.d, 10), at$4(by, b.m, b.d, 5)];
 }
-async function page$4(id) {
-	const res = await fetch(viaProxy(`${SITE$2}/${id}`));
+async function page$5(id) {
+	const res = await fetch(viaProxy(`${SITE$3}/${id}`));
 	if (!res.ok) throw new Error(`game8 DNA ${id} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
 }
@@ -23017,21 +23105,21 @@ var imgOf = (el) => {
 };
 /** Eventos vigentes y próximos (tablas "Event | Schedule & Summary"); la tabla de pasados y la de permanentes no traen dos fechas útiles. */
 async function events$2(gameId) {
-	const doc = await page$4("559948");
-	const from = Date.now() - 3 * DAY$24, to = Date.now() + 120 * DAY$24;
+	const doc = await page$5("559948");
+	const from = Date.now() - 3 * DAY$29, to = Date.now() + 120 * DAY$29;
 	const out = [];
 	for (const tr of doc.querySelectorAll("table tr")) {
 		const cells = [...tr.children].filter((c) => /^T[DH]$/i.test(c.tagName));
 		if (cells.length < 2) continue;
-		const name = text$7(cells[0]).replace(/\s*\((?:New Event!|Returning Event)\)\s*$/i, "").replace(/\s+Returning Event$/i, "").trim();
-		const info = text$7(cells[1]);
+		const name = text$9(cells[0]).replace(/\s*\((?:New Event!|Returning Event)\)\s*$/i, "").replace(/\s+Returning Event$/i, "").trim();
+		const info = text$9(cells[1]);
 		if (!name || /^event$/i.test(name) || /tba|coming soon/i.test(info)) continue;
 		const phases = info.split(/Phase [IVX]+\s*:/i).slice(1);
 		const ranges = (phases.length ? phases : [info]).map(dnaRange).filter((r) => !!r);
 		const r = ranges.find((x) => x[1] > from) ?? ranges[0];
 		if (!r) continue;
 		const [start, end] = r;
-		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$24) continue;
+		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$29) continue;
 		const summary = info.replace(/^.*?\d{4}\s*/, "").trim();
 		out.push({
 			id: `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`,
@@ -23055,20 +23143,20 @@ async function events$2(gameId) {
 }
 /** Banners Myriad limitados (cosméticos) y la versión en que salieron. */
 async function banners$3(gameId) {
-	const doc = await page$4("554952");
+	const doc = await page$5("554952");
 	const out = [];
 	const patches = [];
-	const head = [...doc.querySelectorAll("h2")].find((h) => /Limited[- ]Time Myriad/i.test(text$7(h)));
+	const head = [...doc.querySelectorAll("h2")].find((h) => /Limited[- ]Time Myriad/i.test(text$9(h)));
 	const found = [];
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
 		if (n.tagName !== "H3") continue;
 		let info = "", image;
 		for (let k = n.nextElementSibling; k && !/^H[23]$/.test(k.tagName); k = k.nextElementSibling) {
 			image ??= imgOf(k);
-			info += " " + text$7(k);
+			info += " " + text$9(k);
 		}
 		found.push({
-			name: text$7(n),
+			name: text$9(n),
 			info,
 			image
 		});
@@ -23087,8 +23175,8 @@ async function banners$3(gameId) {
 	for (const b of parsed) {
 		if (b.s === void 0) continue;
 		const e = b.e ?? parsed.find((o) => o.e && o.s === b.s)?.e;
-		const end = e ?? b.s + 41 * DAY$24 - 5 * HOUR$3;
-		if (end < now - 3 * DAY$24) continue;
+		const end = e ?? b.s + 41 * DAY$29 - 5 * HOUR$6;
+		if (end < now - 3 * DAY$29) continue;
 		const skin = /\bskin for [^,.]+? called ([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /'s skin,\s+([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /Skin Drops\s+(.+?)(?=\s+\S+(?:\s+\S+)*\s+Banner and\b|$)/.exec(b.info)?.[1]?.trim();
 		const owner = /skin for ([A-Z][\w:' ]+?) called/.exec(b.info)?.[1] ?? /features ([A-Z][\w:' ]+?)'s skin/.exec(b.info)?.[1];
 		out.push({
@@ -23132,9 +23220,9 @@ async function banners$3(gameId) {
 */
 function dnaTheatre(gameId, now = Date.now()) {
 	const anchor = at$4(2026, 9, 20, 10);
-	const k = Math.floor((now - anchor) / (28 * DAY$24));
+	const k = Math.floor((now - anchor) / (28 * DAY$29));
 	return [k, k + 1].map((i) => {
-		const s = anchor + i * 28 * DAY$24;
+		const s = anchor + i * 28 * DAY$29;
 		return {
 			id: `${gameId}:challenge:cycle:Immersive Theatre:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
@@ -23142,7 +23230,7 @@ function dnaTheatre(gameId, now = Date.now()) {
 			title: "Immersive Theatre",
 			description: "⟦d.dnaTheatre⟧",
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 28 * DAY$24 - 5 * HOUR$3 - 1e3)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 28 * DAY$29 - 5 * HOUR$6 - 1e3)).toISOString(),
 			items: [{
 				name: "Secret Letter Clue",
 				amount: 280
@@ -23186,8 +23274,8 @@ async function syncDna(gameId) {
 * 2 páginas de lootandwaifus por ciclo (caché de 1 h en el proxy, 3 s entre peticiones).
 */
 var LOOT$1 = "https://lootandwaifus.com";
-var DAY$23 = 864e5;
-var MONTHS$9 = [
+var DAY$28 = 864e5;
+var MONTHS$12 = [
 	"jan",
 	"feb",
 	"mar",
@@ -23201,9 +23289,9 @@ var MONTHS$9 = [
 	"nov",
 	"dec"
 ];
-var monthOf$1 = (s) => MONTHS$9.indexOf(s.slice(0, 3).toLowerCase());
-var text$6 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-async function page$3(path) {
+var monthOf$1 = (s) => MONTHS$12.indexOf(s.slice(0, 3).toLowerCase());
+var text$8 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+async function page$4(path) {
 	const res = await fetch(viaProxy(`${LOOT$1}${path}`));
 	if (!res.ok) throw new Error(`lootandwaifus ${path} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
@@ -23215,18 +23303,18 @@ function trickcalRange(s) {
 	return [Date.UTC(+m[3], monthOf$1(m[1]), +m[2], 19), Date.UTC(+m[6], monthOf$1(m[4]), +m[5], 1, 59, 59)];
 }
 async function banners$2(gameId) {
-	const doc = await page$3("/trickcal-chibi-go-banner-history/");
-	const from = Date.now() - 3 * DAY$23, to = Date.now() + 120 * DAY$23;
+	const doc = await page$4("/trickcal-chibi-go-banner-history/");
+	const from = Date.now() - 3 * DAY$28, to = Date.now() + 120 * DAY$28;
 	const out = [];
 	doc.querySelectorAll(".bh-list[data-server=\"GLOBAL\"] .bh-row").forEach((row) => {
-		const name = text$6(row.querySelector("h3"));
-		const r = trickcalRange(text$6(row.querySelector(".bh-dates")));
+		const name = text$8(row.querySelector("h3"));
+		const r = trickcalRange(text$8(row.querySelector(".bh-dates")));
 		if (!name || !r) return;
 		const [start, end] = r;
 		if (end < from || start > to || end <= start) return;
 		const src = row.querySelector("img.bh-portrait")?.getAttribute("src");
 		const icon = src ? src.startsWith("http") ? src : `${LOOT$1}${src}` : void 0;
-		const badges = [...row.querySelectorAll(".bh-badge")].map(text$6);
+		const badges = [...row.querySelectorAll(".bh-badge")].map(text$8);
 		const eldyne = badges.some((b) => /eldyne/i.test(b));
 		const rerun = badges.some((b) => /re-?run/i.test(b));
 		const traits = [...row.querySelectorAll(".bh-icon")].map((i) => i.getAttribute("title")).filter(Boolean);
@@ -23256,17 +23344,17 @@ async function banners$2(gameId) {
 }
 /** Tabla "Active codes": código en `data-copy-text`; recompensas "Candy x1000, Star Candy x1000" (sin las fichas emergentes de cada objeto). */
 async function syncTrickcalCodes() {
-	const doc = await page$3("/guides/trickcal-revive-codes/");
-	const head = doc.querySelector("#active-codes") ?? [...doc.querySelectorAll("h2")].find((h) => /active codes/i.test(text$6(h)));
+	const doc = await page$4("/guides/trickcal-revive-codes/");
+	const head = doc.querySelector("#active-codes") ?? [...doc.querySelectorAll("h2")].find((h) => /active codes/i.test(text$8(h)));
 	const out = [];
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) for (const row of n.querySelectorAll(".modular-table-row")) {
 		if (row.classList.contains("modular-table-header")) continue;
 		const cells = [...row.children].filter((c) => c.classList.contains("modular-table-cell"));
-		const code = cells[0]?.getAttribute("data-copy-text")?.trim() || text$6(cells[0]);
+		const code = cells[0]?.getAttribute("data-copy-text")?.trim() || text$8(cells[0]);
 		if (!code || !/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
 		const cell = cells[1]?.cloneNode(true);
 		cell?.querySelectorAll(".tooltip-content").forEach((t) => t.remove());
-		const rewards = text$6(cell).split(/\s*,\s+(?=[A-Za-z])|\s+and\s+/).map((r) => r.trim().replace(/\s*x\s?(\d[\d,]*)$/i, " ×$1")).filter(Boolean);
+		const rewards = text$8(cell).split(/\s*,\s+(?=[A-Za-z])|\s+and\s+/).map((r) => r.trim().replace(/\s*x\s?(\d[\d,]*)$/i, " ×$1")).filter(Boolean);
 		out.push({
 			code,
 			rewards: rewards.slice(0, 6)
@@ -23289,7 +23377,7 @@ async function syncTrickcalNews(gameId) {
 	if (!res.ok) throw new Error(`biligames Trickcal → HTTP ${res.status}`);
 	const list = (await res.json())?.data?.list ?? [];
 	const at = (s) => Date.parse(`${s.replace(" ", "T")}+08:00`);
-	const wanted = list.filter((n) => /event notice|update|maintenance/i.test(n.title) && Date.now() - at(n.publish_time) < 40 * DAY$23).slice(0, 3);
+	const wanted = list.filter((n) => /event notice|update|maintenance/i.test(n.title) && Date.now() - at(n.publish_time) < 40 * DAY$28).slice(0, 3);
 	const messages = [];
 	for (const n of wanted) {
 		const html = (await fetch(viaProxy(`${BILI}/detail?${BILI_Q}&news_id=${n.news_id}`)).then((r) => r.ok ? r.json() : null).catch(() => null))?.data?.content ?? "";
@@ -23355,7 +23443,7 @@ function trickcalNotice(gameId, text, posted) {
 		const r = rangeIn(line, year, 9);
 		if (r) cur.r = r;
 	}
-	const now = Date.now(), from = now - 3 * DAY$23, to = now + 120 * DAY$23;
+	const now = Date.now(), from = now - 3 * DAY$28, to = now + 120 * DAY$28;
 	const out = [];
 	for (const p of parts) {
 		const apostle = /apostle|recruit/i.test(p.raw) && !/card|selection/i.test(p.raw);
@@ -23421,8 +23509,8 @@ async function syncTrickcal(gameId) {
 * 3 consultas a la wiki por ciclo (caché de 12 h en el proxy).
 */
 var WIKI$3 = "https://iopwiki.com";
-var DAY$22 = 864e5;
-var MONTHS$8 = [
+var DAY$27 = 864e5;
+var MONTHS$11 = [
 	"jan",
 	"feb",
 	"mar",
@@ -23447,7 +23535,7 @@ async function api(params) {
 	if (!res.ok) throw new Error(`iopwiki → HTTP ${res.status}`);
 	return res.json();
 }
-var wikitext$1 = async (page) => (await api({
+var wikitext$2 = async (page) => (await api({
 	action: "parse",
 	page,
 	prop: "wikitext"
@@ -23458,7 +23546,7 @@ var iso$2 = (s) => Date.parse(s.trim().replace(/([+-]\d{2})$/, "$1:00"));
 * URL real (`/images/thumb/…`) de los archivos de la wiki, en una sola consulta. `Special:FilePath` no sirve de `<img>`: la wiki responde 403
 * con `Cross-Origin-Resource-Policy: same-origin` a /wiki/ desde otro sitio; /images/ sí carga.
 */
-async function fileUrls(names) {
+async function fileUrls$1(names) {
 	const out = /* @__PURE__ */ new Map();
 	const titles = [...new Set(names)].slice(0, 50);
 	if (!titles.length) return out;
@@ -23522,8 +23610,8 @@ function gfl2Events(text) {
 	return out;
 }
 async function events$1(gameId) {
-	const now = Date.now(), from = now - 3 * DAY$22, to = now + 120 * DAY$22;
-	const found = gfl2Events(await wikitext$1("GFL2 Events")).filter((e) => e.end >= from && e.start <= to);
+	const now = Date.now(), from = now - 3 * DAY$27, to = now + 120 * DAY$27;
+	const found = gfl2Events(await wikitext$2("GFL2 Events")).filter((e) => e.end >= from && e.start <= to);
 	if (!found.length) throw new Error("iopwiki GFL2: no se encontraron eventos");
 	const shops = /* @__PURE__ */ new Map();
 	const titles = [...new Set(found.map((e) => e.page).filter(Boolean))].slice(0, 50);
@@ -23545,7 +23633,7 @@ async function events$1(gameId) {
 			}
 		}
 	}
-	const art = await fileUrls(found.map((e) => e.image).filter(Boolean));
+	const art = await fileUrls$1(found.map((e) => e.image).filter(Boolean));
 	return found.map((e) => {
 		const first = !found.some((o) => o !== e && o.page === e.page && o.start < e.start);
 		const items = e.page && first && shops.get(e.page.replace(/_/g, " ")) || [];
@@ -23573,7 +23661,7 @@ function gfl2Range(line, year) {
 	const zone = Number(/UTC\s*([+-]\d{1,2})/i.exec(line)?.[1] ?? -4);
 	const a = /([A-Z][a-z]{2})[a-z]*\.? (\d{1,2}),? (\d{1,2}):(\d{2})\s*[-–~]\s*([A-Z][a-z]{2})[a-z]*\.? (\d{1,2}),? (\d{1,2}):(\d{2})/.exec(line);
 	if (a) {
-		const m1 = MONTHS$8.indexOf(a[1].toLowerCase()), m2 = MONTHS$8.indexOf(a[5].toLowerCase());
+		const m1 = MONTHS$11.indexOf(a[1].toLowerCase()), m2 = MONTHS$11.indexOf(a[5].toLowerCase());
 		if (m1 < 0 || m2 < 0) return null;
 		return [Date.UTC(year, m1, +a[2], +a[3] - zone, +a[4]), Date.UTC(m2 < m1 ? year + 1 : year, m2, +a[6], +a[7] - zone, +a[8], 59)];
 	}
@@ -23593,10 +23681,10 @@ function doll(raw) {
 	};
 }
 async function banners$1(gameId) {
-	const text = await wikitext$1("GFL2 Banners");
+	const text = await wikitext$2("GFL2 Banners");
 	const en = text.slice(text.search(/^==\s*EN\s*==/m));
 	if (en.length === text.length) throw new Error("iopwiki GFL2: falta la sección EN de los banners");
-	const now = Date.now(), from = now - 3 * DAY$22, to = now + 120 * DAY$22;
+	const now = Date.now(), from = now - 3 * DAY$27, to = now + 120 * DAY$27;
 	const out = [];
 	const pages = /* @__PURE__ */ new Map();
 	for (const m of en.matchAll(/\[\[([^|\]]+)(?:\|([^\]]+))?\]\]|\{\{GFL2\|([^}|]+)/gi)) {
@@ -23694,10 +23782,10 @@ async function syncGfl2Official(gameId) {
 	const list = (await Promise.all(pages.map((r) => r.ok ? r.json().catch(() => null) : null))).flatMap((j) => j?.data?.list ?? []).filter((n, i, all) => all.findIndex((x) => x.Id === n.Id) === i);
 	const at = (s) => Date.parse(`${s.replace(" ", "T")}-04:00`);
 	const out = [];
-	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$22)) {
+	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$27)) {
 		const d = await fetch(viaProxy(`${SUNBORN}/news/${n.Id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
 		const e = d?.data?.Content ? gfl2Notice(gameId, n.Title, d.data.Content, new Date(at(n.Date)).getUTCFullYear()) : null;
-		if (e && +new Date(e.end) > Date.now() - 3 * DAY$22 && !out.some((o) => o.id === e.id)) out.push(e);
+		if (e && +new Date(e.end) > Date.now() - 3 * DAY$27 && !out.some((o) => o.id === e.id)) out.push(e);
 	}
 	if (!out.length && !list.length) throw new Error("sunborn GFL2: sin avisos");
 	return {
@@ -23732,9 +23820,9 @@ async function syncGfl2(gameId) {
 * hasta que el aviso por Discord da la hora exacta. La versión de Garena (KR/APAC/LatAm) es aparte y no se cubre.
 * 4 páginas de GameWith (caché de 6 h) y 1 de Game8 por ciclo.
 */
-var GW = "https://gamewith.ai/monster-hunter-outlanders/en/articles";
-var DAY$21 = 864e5;
-var MONTHS$7 = [
+var GW$1 = "https://gamewith.ai/monster-hunter-outlanders/en/articles";
+var DAY$26 = 864e5;
+var MONTHS$10 = [
 	"jan",
 	"feb",
 	"mar",
@@ -23748,22 +23836,22 @@ var MONTHS$7 = [
 	"nov",
 	"dec"
 ];
-var text$5 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$7 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 /**
 * Inicio y fin de un día de las guías. Aviso oficial "When Steelwing Descends" (@MHO_English, 12 nov 2026): "November 13, 2026, 03:00 to
 * November 26, 2026, 14:59 (UTC)". Se usan esas horas (03:00 y 14:59:59 UTC); siguen marcadas "≈" porque GameWith solo da el día.
 */
 var dayStart = (y, m, d) => Date.UTC(y, m, d, 3);
 var dayEnd = (y, m, d) => Date.UTC(y, m, d, 14, 59, 59);
-async function page$2(path) {
-	const res = await fetch(viaProxy(`${GW}/${path}`));
+async function page$3(path) {
+	const res = await fetch(viaProxy(`${GW$1}/${path}`));
 	if (!res.ok) throw new Error(`gamewith MHO ${path} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
 }
 /** "October 29, 2026 to November 13, 2026", "Thu, Oct 29 – Fri, Nov 27" (año: el más cercano a hoy) → [inicio, fin]; null si es permanente. */
 function mhoRange(s, now = Date.now()) {
 	const found = [...s.matchAll(/([A-Z][a-z]{2})[a-z]*\.? (\d{1,2})(?:,? (\d{4}))?/g)].map((m) => ({
-		m: MONTHS$7.indexOf(m[1].toLowerCase()),
+		m: MONTHS$10.indexOf(m[1].toLowerCase()),
 		d: +m[2],
 		y: m[3] ? +m[3] : NaN
 	})).filter((x) => x.m >= 0);
@@ -23799,12 +23887,12 @@ function mhoRewards(rows) {
 	}));
 }
 async function events(gameId) {
-	const doc = await page$2("event-list");
-	const now = Date.now(), from = now - 3 * DAY$21, to = now + 120 * DAY$21;
+	const doc = await page$3("event-list");
+	const now = Date.now(), from = now - 3 * DAY$26, to = now + 120 * DAY$26;
 	const heads = [...doc.querySelectorAll("h2")];
 	const key = (s) => s.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, "");
 	const out = [];
-	const list = heads.find((h) => /ongoing events/i.test(text$5(h)));
+	const list = heads.find((h) => /ongoing events/i.test(text$7(h)));
 	let table = null;
 	for (let n = list?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) if (n.tagName === "TABLE" || n.querySelector("table")) {
 		table = n.tagName === "TABLE" ? n : n.querySelector("table");
@@ -23812,15 +23900,15 @@ async function events(gameId) {
 	}
 	if (!table) throw new Error("gamewith MHO: no se encontró la lista de eventos");
 	for (const tr of table.querySelectorAll("tr")) {
-		const name = text$5(tr.querySelector("th"));
-		const r = mhoRange(text$5(tr.querySelector("td")), now);
+		const name = text$7(tr.querySelector("th"));
+		const r = mhoRange(text$7(tr.querySelector("td")), now);
 		if (!name || !r || r[1] < from || r[0] > to || r[1] <= r[0]) continue;
-		const head = heads.find((h) => key(text$5(h)).startsWith(key(name)));
+		const head = heads.find((h) => key(text$7(h)).startsWith(key(name)));
 		let image;
 		const rows = [];
 		for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
 			image ??= (n.tagName === "IMG" ? n : n.querySelector("img"))?.getAttribute("src") || void 0;
-			for (const row of (n.tagName === "TABLE" ? [n] : [...n.querySelectorAll("table")]).flatMap((t) => [...t.querySelectorAll("tr")])) rows.push([text$5(row.querySelector("th")), text$5(row.querySelector("td"))]);
+			for (const row of (n.tagName === "TABLE" ? [n] : [...n.querySelectorAll("table")]).flatMap((t) => [...t.querySelectorAll("tr")])) rows.push([text$7(row.querySelector("th")), text$7(row.querySelector("td"))]);
 		}
 		const items = mhoRewards(rows);
 		out.push({
@@ -23842,15 +23930,15 @@ async function events(gameId) {
 }
 /** Banners con fecha (destacado y rotatorio); el de principiante y el permanente no caducan y no salen. */
 async function banners(gameId) {
-	const doc = await page$2("current-banners");
-	const now = Date.now(), from = now - 3 * DAY$21;
+	const doc = await page$3("current-banners");
+	const now = Date.now(), from = now - 3 * DAY$26;
 	const out = [];
-	const table = [...doc.querySelectorAll("table")].find((t) => /banner/i.test(text$5(t.querySelector("th"))));
+	const table = [...doc.querySelectorAll("table")].find((t) => /banner/i.test(text$7(t.querySelector("th"))));
 	for (const tr of table?.querySelectorAll("tr") ?? []) {
 		const cells = [...tr.children].filter((c) => c.tagName === "TD");
 		if (cells.length < 2) continue;
-		const label = text$5(cells[0]);
-		const r = mhoRange(/Runs:\s*(.+?)(?=\s*(?:SSR|Rate-up|Guaranteed|Pick|10-pulls|Ends|$))/i.exec(text$5(cells[1]))?.[1] ?? "", now);
+		const label = text$7(cells[0]);
+		const r = mhoRange(/Runs:\s*(.+?)(?=\s*(?:SSR|Rate-up|Guaranteed|Pick|10-pulls|Ends|$))/i.exec(text$7(cells[1]))?.[1] ?? "", now);
 		if (!r || r[1] < from || r[1] <= r[0]) continue;
 		const who = /\(([^)]+)\)/.exec(label)?.[1]?.trim();
 		const rotating = /rotating/i.test(label);
@@ -23886,20 +23974,20 @@ async function banners(gameId) {
 async function challenges(gameId) {
 	const out = [];
 	const now = Date.now();
-	const doc = await page$2("season-guide").catch(() => null);
-	const body = text$5(doc?.querySelector("main") ?? doc?.body);
+	const doc = await page$3("season-guide").catch(() => null);
+	const body = text$7(doc?.querySelector("main") ?? doc?.body);
 	const season = /(Season \d+(?: \([^)]+\))?)[^.]*?runs from ([A-Z][a-z]+ \d{1,2}, \d{4}) to ([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(body);
 	const boss = /Season boss\s*([A-Z][\w' ]+?)(?=\s*Season \d)/.exec(body)?.[1]?.trim();
 	const sr = season && mhoRange(`${season[2]} - ${season[3]}`, now);
 	const heads = doc ? [...doc.querySelectorAll("h2, h3")] : [];
 	const imgAfter = (re) => {
-		const h = heads.find((x) => re.test(text$5(x)));
+		const h = heads.find((x) => re.test(text$7(x)));
 		for (let n = h?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) {
 			const src = (n.tagName === "IMG" ? n : n.querySelector("img"))?.getAttribute("src");
 			if (src) return src;
 		}
 	};
-	if (season && sr && sr[1] > now - 3 * DAY$21) {
+	if (season && sr && sr[1] > now - 3 * DAY$26) {
 		out.push({
 			id: `${gameId}:challenge:gw:${season[1]}:${new Date(sr[0]).toISOString().slice(0, 10)}`,
 			gameId,
@@ -23938,9 +24026,9 @@ async function challenges(gameId) {
 	}
 	const mcImage = imgAfter(/^monster challenge$/i);
 	const anchor = dayStart(2026, 10, 3);
-	const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY$21)));
+	const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY$26)));
 	for (const i of [k, k + 1]) {
-		const s = anchor + i * 14 * DAY$21;
+		const s = anchor + i * 14 * DAY$26;
 		out.push({
 			id: `${gameId}:challenge:cycle:Monster Challenge:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
@@ -23949,7 +24037,7 @@ async function challenges(gameId) {
 			description: "⟦d.mhoChallenge⟧",
 			image: mcImage,
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 14 * DAY$21 - 1e3)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 14 * DAY$26 - 1e3)).toISOString(),
 			items: [],
 			featured: [],
 			pulls: 0,
@@ -23961,15 +24049,15 @@ async function challenges(gameId) {
 }
 /** Códigos activos de GameWith: código en `<code>`, recompensas en la lista y la nota "Global version only…" se conserva. */
 async function syncMhoCodes() {
-	const head = [...(await page$2("redeem-codes")).querySelectorAll("h2")].find((h) => /active codes/i.test(text$5(h)));
+	const head = [...(await page$3("redeem-codes")).querySelectorAll("h2")].find((h) => /active codes/i.test(text$7(h)));
 	const out = [];
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) for (const tr of (n.tagName === "TABLE" ? [n] : [...n.querySelectorAll("table")]).flatMap((t) => [...t.querySelectorAll("tbody tr")])) {
 		const cells = [...tr.children].filter((c) => c.tagName === "TD");
-		const code = text$5(cells[0]?.querySelector("code"));
+		const code = text$7(cells[0]?.querySelector("code"));
 		if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
-		const rewards = [...cells[1]?.querySelectorAll("li") ?? []].map((li) => text$5(li).replace(/\s*×\s*/, " ×"));
-		const note = /global version only/i.test(text$5(cells[0])) ? ["Global only"] : [];
-		const until = /(?:Until|Ends?)\s+([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(text$5(cells[2]))?.[1];
+		const rewards = [...cells[1]?.querySelectorAll("li") ?? []].map((li) => text$7(li).replace(/\s*×\s*/, " ×"));
+		const note = /global version only/i.test(text$7(cells[0])) ? ["Global only"] : [];
+		const until = /(?:Until|Ends?)\s+([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(text$7(cells[2]))?.[1];
 		out.push({
 			code,
 			rewards: [
@@ -24004,7 +24092,7 @@ async function syncMhoNews(gameId) {
 	const res = await fetch(viaProxy(`${PI}/GetContentByLabel?get_num=6`));
 	if (!res.ok) throw new Error(`playerinfinite MHO → HTTP ${res.status}`);
 	const list = (await res.json())?.data?.info_content ?? [];
-	const recent = list.filter((n) => Date.now() - +n.pub_timestamp * 1e3 < 40 * DAY$21).slice(0, 4);
+	const recent = list.filter((n) => Date.now() - +n.pub_timestamp * 1e3 < 40 * DAY$26).slice(0, 4);
 	const messages = [];
 	for (const n of recent) {
 		const d = await fetch(viaProxy(`${PI}/GetContentInfoById?content_id=${n.content_id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
@@ -24057,7 +24145,7 @@ async function syncMho(gameId) {
 * 1 página de game.guide por ciclo (caché de 6 h en el proxy).
 */
 var PAGE$1 = "https://www.game.guide/bleach-soul-resonance-codes";
-var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$6 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 async function syncBleachCodes() {
 	const res = await fetch(viaProxy(PAGE$1));
 	if (!res.ok) throw new Error(`game.guide Bleach → HTTP ${res.status}`);
@@ -24066,11 +24154,11 @@ async function syncBleachCodes() {
 	if (!box || box.querySelector("#expired-codes")) throw new Error("game.guide Bleach: no se encontró la lista de códigos activos");
 	const out = [];
 	for (const row of box.querySelectorAll(".rcp-row")) {
-		const code = text$4(row.querySelector(".rcp-code"));
+		const code = text$6(row.querySelector(".rcp-code"));
 		if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
 		const cell = row.querySelector(".rcp-row-reward")?.cloneNode(true);
 		cell?.querySelectorAll("time").forEach((t) => t.remove());
-		const rewards = text$4(cell).split(/\s*,\s*/).map((r) => r.replace(/^(\d[\d,]*)\s+(.+)$/, "$2 ×$1")).filter((r) => r && !/^free rewards?$/i.test(r));
+		const rewards = text$6(cell).split(/\s*,\s*/).map((r) => r.replace(/^(\d[\d,]*)\s+(.+)$/, "$2 ×$1")).filter((r) => r && !/^free rewards?$/i.test(r));
 		out.push({
 			code,
 			rewards: rewards.slice(0, 6)
@@ -24098,6 +24186,1074 @@ async function syncBleach() {
 		codes: await syncBleachCodes()
 	};
 }
+// src/sources/wikifiles.ts
+/** Nombre de archivo normalizado para comparar ("File:Requiem_Skin1_Icon.png" → "requiem skin1 icon.png"). */
+var fileKey = (s) => s.replace(/^File:/i, "").replace(/_/g, " ").trim().toLowerCase();
+/**
+* URL (miniatura de `width` px) de cada archivo que exista en una wiki de MediaWiki (Fandom, wiki.gg), en lotes de 50 por consulta
+* (`prop=imageinfo`). Las wikis de wiki.gg no tienen PageImages, así que los iconos y las imágenes de eventos se piden por su nombre de
+* archivo. Devuelve nombre normalizado (`fileKey`) → URL; los que no existen no salen.
+*/
+async function fileUrls(host, files, width) {
+	const out = /* @__PURE__ */ new Map();
+	const list = [...new Set(files.filter(Boolean))];
+	for (let i = 0; i < list.length; i += 50) {
+		const qs = new URLSearchParams({
+			action: "query",
+			titles: list.slice(i, i + 50).map((f) => `File:${f}`).join("|"),
+			prop: "imageinfo",
+			iiprop: "url",
+			iiurlwidth: String(width),
+			format: "json",
+			formatversion: "2",
+			origin: "*"
+		});
+		const res = await fetch(viaProxy(`https://${host}/api.php?${qs}`));
+		if (!res.ok) throw new Error(`${host} imageinfo → HTTP ${res.status}`);
+		const pages = (await res.json())?.query?.pages ?? [];
+		for (const p of pages) {
+			const info = p.imageinfo?.[0];
+			if (info) out.set(fileKey(p.title), info.thumburl ?? info.url);
+		}
+	}
+	return out;
+}
+/** Texto (wikitext) de una página. */
+async function wikitext$1(host, page) {
+	const qs = new URLSearchParams({
+		action: "parse",
+		page,
+		prop: "wikitext",
+		format: "json",
+		redirects: "1",
+		origin: "*"
+	});
+	const res = await fetch(viaProxy(`https://${host}/api.php?${qs}`));
+	if (!res.ok) throw new Error(`${host} ${page} → HTTP ${res.status}`);
+	const j = await res.json();
+	if (j?.error) throw new Error(`${host} ${page}: ${j.error.code}`);
+	return j?.parse?.wikitext?.["*"] ?? "";
+}
+// src/sources/onmyoji.ts
+/**
+* Onmyoji (NetEase; servidor global/inglés). Fuentes revisadas el 13 nov 2026:
+*  - Wiki de Fandom (onmyoji.fandom.com, API de MediaWiki; robots.txt lo permite), página "Events/Global": una tabla por año con la imagen
+*    oficial de cada evento (`[[File:Silent Snowprayer.png|250px]]`) y su periodo ("November 11th - December 8th", "9th September - 22nd
+*    September", "August 3rd - April 2027"). El nombre del evento es el del archivo. La wiki la actualiza el mismo día de cada parche.
+*    Banners: las convocatorias con probabilidad aumentada ("Memory Scrolls <shikigami> & <shikigami>", "Starry Return - …"); el nombre de
+*    los shikigami sale del título y su retrato de su página en la wiki (recolector, `withFeaturedIcons`).
+*  - Recompensas: SIN fuente. Los eventos actuales no tienen página propia en la wiki (solo la imagen) y los avisos oficiales (web de NetEase,
+*    X) no se pueden leer: los eventos salen sin recompensas ni tiradas.
+*  - Códigos: SIN fuente. Onmyoji global no publica códigos de canje con regularidad y ninguna web (PocketGamer, Game8, la wiki) mantiene una lista.
+*  - Steam (app 551170): sus avisos se quedaron en 2022; no sirve.
+* Horas: la tabla solo da días. El servidor global va en UTC+8 y los eventos abren tras el mantenimiento del miércoles: inicio ≈ 12:00 y
+* fin 23:59 (UTC+8), marcados "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
+*/
+var HOST$1 = "onmyoji.fandom.com";
+var DAY$25 = 864e5;
+var MONTHS$9 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+/** Convocatorias (banners): "Memory Scrolls X & Y", "Starry Return - X", "… Summoning", "Rate Up". */
+var BANNER = /memory scrolls|starry return|summon(?:ing)?\b|rate[- ]up/i;
+/** Tiendas, packs, pases y aspectos: se muestran como campaña menor (ocultos por defecto). */
+var MINOR$3 = /\b(?:pass|gift|shop|vault|skins?|makeover|pack|accessories|follow us|tailor)\b/i;
+/** Un lado del periodo ("November 11th", "9th September", "April 2027", "Augutst 19th") → mes, día y año (si lo dice). */
+function side(s) {
+	const t = s.toLowerCase().replace(/(\d+)(?:st|nd|rd|th)\b/g, "$1");
+	const mon = /([a-z]{3,})/.exec(t)?.[1];
+	const m = mon ? MONTHS$9.indexOf(mon.slice(0, 3)) : -1;
+	if (m < 0) return null;
+	const year = /\b(20\d{2})\b/.exec(t)?.[1];
+	const day = /\b(\d{1,2})\b/.exec(t.replace(/\b20\d{2}\b/, ""))?.[1];
+	return {
+		m,
+		d: day ? +day : year ? 28 : 1,
+		y: year ? +year : void 0
+	};
+}
+/** "November 11th - December 8th" (año del apartado) → [inicio, fin] en ms. */
+function onmyojiRange(s, year) {
+	const parts = s.split(/\s+[-–~]\s+|\s+to\s+/i);
+	if (parts.length < 2) return null;
+	const a = side(parts[0]), b = side(parts[1]);
+	if (!a || !b) return null;
+	const ay = a.y ?? year;
+	const by = b.y ?? (b.m < a.m ? ay + 1 : ay);
+	return [Date.UTC(ay, a.m, a.d, 4), Date.UTC(by, b.m, b.d, 15, 59, 59)];
+}
+/** Shikigami del título de una convocatoria: "Memory Scrolls Iwanaga Hime & SP Hyakuwa Hououka" → ["Iwanaga Hime", "SP Hyakuwa Hououka"]. */
+function onmyojiFeatured(title) {
+	const m = /(?:memory scrolls|starry return)\s*[-–:]?\s*(.+)$/i.exec(title.replace(/["“”]/g, ""));
+	if (!m) return [];
+	return m[1].split(/\s*&\s*|\s*,\s*|\s+and\s+/).map((n) => n.trim()).filter((n) => n.length > 1 && !/^(rerun|summon)$/i.test(n)).map((name) => ({
+		name,
+		rarity: 5,
+		full: /^SP\s+\S+\s+\S+/.test(name) ? `SP ${name.split(/\s+/).pop()}` : void 0
+	}));
+}
+async function syncOnmyoji(gameId) {
+	const text = await wikitext$1(HOST$1, "Events/Global");
+	const now = Date.now(), from = now - 3 * DAY$25, to = now + 120 * DAY$25;
+	const rows = [];
+	for (const sec of text.split(/^==\s*(?=\d{4}\s*==)/m).slice(1)) {
+		const year = +sec.slice(0, 4);
+		if (year < new Date(now).getUTCFullYear() - 1) continue;
+		for (const row of sec.split(/\n\|-/)) {
+			const file = /\[\[File:([^|\]]+\.(?:png|jpe?g|gif|webp))/i.exec(row)?.[1]?.trim();
+			const when = row.split("\n").map((l) => l.replace(/^\|\s*/, "").trim()).find((l) => l && !/^\[\[|^!|^\{\|/.test(l) && /[a-z]{3,}/i.test(l));
+			const r = file && when ? onmyojiRange(when, year) : null;
+			if (!file || !r || r[1] < from || r[0] > to || r[1] <= r[0]) continue;
+			rows.push({
+				file,
+				title: file.replace(/\.(png|jpe?g|gif|webp)$/i, "").replace(/\s+/g, " ").replace(/^"|"$/g, "").trim(),
+				r
+			});
+		}
+	}
+	if (!rows.length && !/\{\|/.test(text)) throw new Error("onmyoji: no se encontró la tabla de eventos");
+	const images = await fileUrls(HOST$1, rows.map((x) => x.file), 480).catch(() => /* @__PURE__ */ new Map());
+	return {
+		events: rows.map(({ file, title, r }) => {
+			const banner = BANNER.test(title);
+			const featured = banner ? onmyojiFeatured(title) : [];
+			return {
+				id: `${gameId}:${banner ? "banner" : "event"}:wiki:${title}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+				gameId,
+				kind: banner ? "banner" : "event",
+				title,
+				image: images.get(fileKey(file)),
+				description: banner ? /starry return/i.test(title) ? "⟦d.onmyojiReturn⟧" : "⟦d.onmyojiScrolls⟧" : void 0,
+				start: new Date(r[0]).toISOString(),
+				end: new Date(r[1]).toISOString(),
+				items: [],
+				featured,
+				pulls: 0,
+				minor: !banner && MINOR$3.test(title) ? true : void 0,
+				source: "api",
+				precision: "approx"
+			};
+		}),
+		patches: [],
+		codes: []
+	};
+}
+// src/sources/ptn.ts
+/**
+* Path to Nowhere (Aisno Games; servidor global). Fuentes revisadas el 13 nov 2026:
+*  - Wiki de wiki.gg (pathtonowhere.wiki.gg, "DisPedia"; la de Fandom dejó de actualizar los eventos en 2024). Su portada se arma con la
+*    plantilla "MP/Middle", que el equipo de la wiki cambia en cada parche:
+*    - "Current Events" y "Current Arrests": `{{MPEvent|The Dying Echo|November 3rd, 14:00 - December 8th, 13:59 (Server Time)|Story}}` con
+*      hora exacta; el tercer campo es el tipo (Story/Event = evento, SO = Surveillance Order, el pase; EN/ML = modos de desafío;
+*      LA = Limited Arrest y EA = Event Arrest, los banners). Su imagen es "<nombre> Banner.png".
+*    - "New Sinners": `{{CharacterPortal|Requiem|S}}…`. Los Event Arrests traen una S nueva y una A nueva (página "Arrests/Info"); los Limited
+*      Arrests, una S limitada. La wiki no dice cuál es cuál: la S con "·" en el nombre (las variantes limitadas, como "Necresta·Hella") va al
+*      limitado y el resto al de evento. Retratos: "<nombre> Skin1 Icon.png".
+*    "Server Time" del servidor global de América: UTC-7 (la misma portada lo dice).
+*  - Recompensas de los eventos: SIN fuente con cifras (la wiki no tiene páginas de los eventos nuevos). Quedan sin tiradas.
+*  - Códigos: PocketGamer (`syncPocketGamerCodes`); su lista no detalla recompensas.
+* 2 consultas a la wiki por ciclo (plantilla e imágenes, caché de 12 h) y 1 página de PocketGamer.
+*/
+var HOST = "pathtonowhere.wiki.gg";
+var DAY$24 = 864e5;
+var TZ$2 = -7;
+var MONTHS$8 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+/** "November 3rd, 14:00" (año: el más cercano a `now`) → ms en UTC. */
+function when$2(s, now, after) {
+	const m = /([A-Za-z]{3,})\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(?:(\d{4}),?\s*)?(\d{1,2}):(\d{2})/.exec(s);
+	const mo = m ? MONTHS$8.indexOf(m[1].slice(0, 3).toLowerCase()) : -1;
+	if (!m || mo < 0) return null;
+	const at = (y) => Date.UTC(y, mo, +m[2], +m[4] - TZ$2, +m[5]);
+	if (m[3]) return at(+m[3]);
+	const y0 = new Date(after ?? now).getUTCFullYear();
+	if (after !== void 0) return [y0, y0 + 1].map(at).find((t) => t > after) ?? null;
+	return [
+		y0 - 1,
+		y0,
+		y0 + 1
+	].map(at).reduce((a, b) => Math.abs(b - now) < Math.abs(a - now) ? b : a);
+}
+function ptnRange(s, now = Date.now()) {
+	const [a, b] = s.split(/\s+[-–~]\s+/);
+	const start = a ? when$2(a, now) : null;
+	const end = start !== null && b ? when$2(b, now, start) : null;
+	return start !== null && end !== null ? [start, end + 59e3] : null;
+}
+var KIND = {
+	LA: "banner",
+	EA: "banner",
+	EN: "challenge",
+	ML: "challenge"
+};
+var DESC = {
+	LA: "⟦d.ptnLimited⟧",
+	EA: "⟦d.ptnEventArrest⟧",
+	SO: "⟦d.ptnPass⟧",
+	Story: "⟦d.ptnStory⟧"
+};
+async function syncPtnWiki(gameId) {
+	const text = await wikitext$1(HOST, "Template:MP/Middle");
+	const now = Date.now();
+	const items = [...text.matchAll(/\{\{MPEvent\|([^|}]+)\|([^|}]+)(?:\|([^|}=]+))?((?:\|[a-z]+=[^|}]*)*)\}\}/g)].map((m) => ({
+		name: m[1].trim(),
+		date: m[2].trim(),
+		type: (m[3] ?? "Event").trim(),
+		image: /\|image=([^|}]+)/.exec(m[4] ?? "")?.[1]?.trim()
+	}));
+	if (!items.length) throw new Error("ptn: no se encontraron eventos en la portada de la wiki");
+	const sinners = [...(/\{\{CharacterPortal[\s\S]*?(?=\n\|\s*\{\{Item|\n\|\})/.exec(text.slice(text.indexOf("New Sinners")))?.[0] ?? "").matchAll(/\{\{CharacterPortal\|([^|}]+)\|([SAB])/g)].map((m) => ({
+		name: m[1].trim(),
+		rank: m[2]
+	}));
+	const S = sinners.filter((s) => s.rank === "S"), A = sinners.filter((s) => s.rank === "A");
+	const limited = S.filter((s) => s.name.includes("·"));
+	const featuredOf = (type) => {
+		return (type === "LA" ? limited.length ? limited : S : type === "EA" ? [...S.filter((s) => !limited.includes(s)), ...A] : []).map((s) => ({
+			name: s.name,
+			rarity: s.rank === "S" ? 5 : 4
+		}));
+	};
+	const urls = await fileUrls(HOST, [...items.map((i) => i.image ?? `${i.name} Banner.png`), ...sinners.map((s) => `${s.name} Skin1 Icon.png`)], 480).catch(() => /* @__PURE__ */ new Map());
+	const events = [];
+	for (const it of items) {
+		const r = ptnRange(it.date, now);
+		if (!r || r[1] < now - 3 * DAY$24 || r[1] <= r[0]) continue;
+		const kind = KIND[it.type] ?? "event";
+		events.push({
+			id: `${gameId}:${kind}:wiki:${it.name}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind,
+			title: it.name,
+			description: DESC[it.type],
+			image: urls.get(fileKey(it.image ?? `${it.name} Banner.png`)),
+			start: new Date(r[0]).toISOString(),
+			end: new Date(r[1]).toISOString(),
+			items: [],
+			featured: featuredOf(it.type).map((f) => ({
+				...f,
+				icon: urls.get(fileKey(`${f.name} Skin1 Icon.png`))
+			})),
+			pulls: 0,
+			minor: it.type === "SO" ? true : void 0,
+			source: "api"
+		});
+	}
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
+/**
+* Avisos oficiales de la web (ptn.aisnogames.com): su página pide la lista a `/api/news?offset=0&limit=N&locale=en-EN` y cada aviso es
+* `/en-EN/news/<id>` (Next.js; el texto va en `__NEXT_DATA__`, `item.content_html`). Sale uno grande por versión ("[The Dying Echo] 4th Anniversary
+* Celebration Event") con todos sus eventos numerados: "4. [Suspect Pursuit] Sinner Exclusive Trial Event / ■ Event Duration: November 3rd, 14:00 -
+* December 8th, 13:59 (Server Time)". Los arrestos no van ahí (los da la wiki y, con canal, Discord). Hora del servidor: UTC-7.
+*/
+var WEB$1 = "https://ptn.aisnogames.com";
+var MINOR$2 = /attire|top-?up|offer|drop rate|exchange|pack|login milestone/i;
+function ptnNotice(gameId, html, now = Date.now()) {
+	const lines = html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#0?39;/g, "'").split("\n").map((l) => l.trim()).filter(Boolean);
+	const heads = lines.map((l, i) => /^\d{1,2}\.\s+\S/.test(l) ? i : -1).filter((i) => i >= 0);
+	const out = [];
+	heads.forEach((h, k) => {
+		const block = lines.slice(h, heads[k + 1] ?? lines.length);
+		const head = block[0].replace(/^\d{1,2}\.\s+/, "");
+		const title = /\[([^\]]{2,60})\]/.exec(head)?.[1]?.trim() ?? head;
+		const when = block.slice(1).map((l) => /^■?\s*(?:Event Duration|Available From|Available Time|Duration)\s*:\s*(.+)$/i.exec(l)?.[1]).find((w) => w && /\d{1,2}:\d{2}/.test(w))?.replace(/After the maintenance on ([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?)/i, "$1, 14:00");
+		const r = when ? ptnRange(when, now) : null;
+		if (!r || r[1] < now - 3 * DAY$24 || r[1] <= r[0]) return;
+		const desc = block.find((l) => /^■?\s*Event Description\s*:/i.test(l))?.replace(/^■?\s*Event Description\s*:\s*/i, "");
+		const rewards = pullsIn("ptn", block.slice(1));
+		out.push({
+			id: `${gameId}:event:web:${title}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "event",
+			title,
+			description: desc,
+			start: new Date(r[0]).toISOString(),
+			end: new Date(r[1]).toISOString(),
+			items: rewards.items,
+			featured: [],
+			pulls: rewards.pulls,
+			minor: MINOR$2.test(head) ? true : void 0,
+			source: "api",
+			official: true
+		});
+	});
+	return out;
+}
+async function syncPtnNews(gameId) {
+	const res = await fetch(viaProxy(`${WEB$1}/api/news?offset=0&limit=6&locale=en-EN`));
+	if (!res.ok) throw new Error(`aisno PtN → HTTP ${res.status}`);
+	const list = (await res.json())?.data?.data ?? [];
+	const recent = list.filter((n) => Date.now() - n.publish_time < 45 * DAY$24).slice(0, 2);
+	const events = [];
+	for (const n of recent) {
+		const html = await fetch(viaProxy(`${WEB$1}/en-EN/news/${n.id}`)).then((r) => r.ok ? r.text() : "").catch(() => "");
+		const raw = /__NEXT_DATA__" type="application\/json">([^<]+)/.exec(html)?.[1];
+		const item = raw ? JSON.parse(raw)?.props?.pageProps?.item : null;
+		if (item?.content_html) events.push(...ptnNotice(gameId, item.content_html));
+	}
+	if (!list.length) throw new Error("aisno PtN: sin avisos");
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
+/** Wiki (arrestos, imágenes, retratos) + avisos oficiales de la web (horas exactas y todos los eventos del parche, mandan) + códigos. */
+async function syncPtn(gameId) {
+	const [w, n, c] = await Promise.allSettled([
+		syncPtnWiki(gameId),
+		syncPtnNews(gameId),
+		syncPocketGamerCodes("path-to-nowhere")
+	]);
+	if (w.status === "rejected" && n.status === "rejected" && c.status === "rejected") throw w.reason;
+	for (const [what, r] of [
+		["wiki", w],
+		["avisos", n],
+		["códigos", c]
+	]) if (r.status === "rejected") console.warn(`[ptn] ${what}:`, r.reason?.message);
+	const wiki = w.status === "fulfilled" ? w.value.events : [];
+	const web = n.status === "fulfilled" ? n.value.events : [];
+	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+	return {
+		events: [...web.map((e) => {
+			const x = wiki.find((v) => v.kind === e.kind && key(v.title) === key(e.title));
+			return x ? {
+				...e,
+				image: x.image,
+				description: e.description ?? x.description
+			} : e;
+		}), ...wiki.filter((v) => !web.some((e) => e.kind === v.kind && key(v.title) === key(e.title)))],
+		patches: [],
+		codes: c.status === "fulfilled" ? c.value : []
+	};
+}
+// src/sources/soc.ts
+/**
+* Sword of Convallaria (XD; servidor global, horas UTC-4). Fuentes revisadas el 13 nov 2026:
+*  - Avisos oficiales: la web soc.xd.com pide su lista de noticias a poster-api.starforce.tw (`/api/v1.0/form/articles/list`, bloque
+*    "ssrpg-website-news") y cada aviso a website.xdcdn.net (`/form/website/news/<id>/en.json`). Los de mantenimiento (uno al mes) traen
+*    cada evento con su hora exacta: "2. [Wildfire Within] Limited-time Summon Event is now available / Event period: / 12:00, Oct 23, 2026 -
+*    23:59, Nov 5, 2026 (UTC-4)". Los parches pequeños entre medias (p. ej. el de SP Agata, 11 nov) no tienen aviso en la web.
+*  - GameWith (gamewith.net/sword-of-convallaria; robots.txt sin restricciones), actualizado a diario:
+*    - "List of Available Banners" (68920): tabla "Current Banners" ("SP Agata Rate-Up | Until November 19th, 11:59 PM (UTC -4)") y la lista
+*      de todos los personajes con su icono (`/article_tools/sword-of-convallaria/gacha/c143.png`), que da el retrato de los destacados.
+*    - "List of All Available Events" (68934): "List of Ongoing Events", un `<h3>` por evento con "Event Period | Until November 20, 2026" y
+*      un párrafo de descripción.
+*    GameWith solo da la fecha de FIN. El inicio sale del aviso oficial si lo hay (mismo nombre, o banner que acaba a la misma hora); si no, se
+*    estima (14 días antes del fin, sin pasar de hoy) y se marca como estimado.
+*  - Recompensas: SIN fuente con cifras (ni avisos ni GameWith las detallan). Tiradas: 150 Hope Luxite / Secret Fate (pulls.ts).
+*  - Códigos: PocketGamer (`syncPocketGamerCodes`). Steam (app 2526380) dejó de publicar avisos en 2025.
+* 1 lista + hasta 2 avisos oficiales y 2 páginas de GameWith por ciclo (caché de 6 h), más 1 de PocketGamer.
+*/
+var GW = "https://gamewith.net/sword-of-convallaria";
+var NEWS = "https://poster-api.starforce.tw/api/v1.0/form/articles/list";
+var HOUR$5 = 36e5;
+var DAY$23 = 24 * HOUR$5;
+var TZ$1 = -4;
+var MONTHS$7 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+var text$5 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
+async function page$2(id) {
+	const res = await fetch(viaProxy(`${GW}/${id}`));
+	if (!res.ok) throw new Error(`gamewith SoC ${id} → HTTP ${res.status}`);
+	return new DOMParser().parseFromString(await res.text(), "text/html");
+}
+/** "Until November 19th, 11:59 PM (UTC -4)", "Until November 20, 2026" → fin en ms (año: el más cercano a hoy). Sin hora, 23:59:59. */
+function socUntil(s, now = Date.now()) {
+	const m = /Until\s+([A-Za-z]{3,})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s*(\d{4}))?(?:,?\s*(\d{1,2}):(\d{2})\s*([AP]M)?)?/i.exec(s);
+	const mo = m ? MONTHS$7.indexOf(m[1].slice(0, 3).toLowerCase()) : -1;
+	if (!m || mo < 0) return null;
+	let h = m[4] ? +m[4] : 23;
+	if (m[6]) h = h % 12 + (/p/i.test(m[6]) ? 12 : 0);
+	const at = (y) => Date.UTC(y, mo, +m[2], h - TZ$1, m[5] ? +m[5] : 59, 59);
+	if (m[3]) return at(+m[3]);
+	const y = new Date(now).getUTCFullYear();
+	return [
+		y - 1,
+		y,
+		y + 1
+	].map(at).reduce((a, b) => Math.abs(b - now) < Math.abs(a - now) ? b : a);
+}
+/** Inicio estimado para lo que solo tiene fin: 14 días antes, sin pasar de hoy (a las 00:00 del servidor). */
+var guessStart = (end, now) => {
+	const t = Math.min(end - 14 * DAY$23, now);
+	const d = new Date(t + TZ$1 * HOUR$5);
+	return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - TZ$1 * HOUR$5;
+};
+/** Icono de cada personaje (la lista de la cabecera de las páginas de GameWith): nombre → URL. */
+function characterIcons(doc) {
+	const out = /* @__PURE__ */ new Map();
+	for (const td of doc.querySelectorAll("td")) {
+		const img = td.querySelector("img");
+		const src = img?.getAttribute("data-original") || img?.getAttribute("src") || "";
+		const name = text$5(td);
+		if (/\/sword-of-convallaria\/gacha\/c\d+\.png$/.test(src) && name && !out.has(name.toLowerCase())) out.set(name.toLowerCase(), src);
+	}
+	return out;
+}
+async function gwBanners(gameId, now) {
+	const doc = await page$2(68920);
+	const icons = characterIcons(doc);
+	const head = [...doc.querySelectorAll("h3")].find((h) => /current banners/i.test(text$5(h)));
+	let table = null;
+	for (let n = head?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) if (n.tagName === "TABLE" || n.querySelector("table")) {
+		table = n.tagName === "TABLE" ? n : n.querySelector("table");
+		break;
+	}
+	if (!table) throw new Error("gamewith SoC: no se encontró la tabla de banners");
+	const out = [];
+	for (const tr of table.querySelectorAll("tr")) {
+		const cells = [...tr.children].filter((c) => c.tagName === "TD");
+		if (cells.length < 2) continue;
+		const name = text$5(cells[0]), end = socUntil(text$5(cells[1]), now);
+		if (!name || !end || end < now - 3 * DAY$23) continue;
+		const gear = /gear|astral imprint|weapon/i.test(name);
+		const who = gear ? "" : name.replace(/\s*(?:Rate[- ]?Up|Rerun|Debut|Chance Up|Banner|Summon)\b.*$/i, "").trim();
+		const icon = icons.get(who.toLowerCase());
+		const img = cells[0].querySelector("img");
+		out.push({
+			id: `${gameId}:banner:gw:${name}:${new Date(end).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "banner",
+			title: name,
+			description: gear ? "⟦d.weaponBanner⟧" : /rerun/i.test(name) ? "⟦d.socRerun⟧" : "⟦d.charBanner⟧",
+			image: img?.getAttribute("data-original") || img?.getAttribute("src") || void 0,
+			start: new Date(guessStart(end, now)).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: who ? [{
+				name: who,
+				rarity: 5,
+				icon,
+				tag: /rerun/i.test(name) ? "Rerun" : void 0
+			}] : [],
+			pulls: 0,
+			source: "api",
+			precision: "estimated"
+		});
+	}
+	return out;
+}
+/**
+* Próximo personaje ("List of Upcoming and New Characters", 70901: el primer `<h3>` de "Upcoming Characters", p. ej. "Arman?"). GameWith no da
+* fecha; los banners nuevos salen cada 2 semanas ("a new character banner is introduced to the Global server every other Friday"), así que se
+* pone a continuación del banner de personaje en curso, 14 días, como estimado. Retrato: el de la tabla de personajes no publicados.
+*/
+async function gwUpcoming(gameId, after) {
+	if (!after) return [];
+	const doc = await page$2(70901);
+	const head = [...doc.querySelectorAll("h2")].find((h) => /^upcoming characters$/i.test(text$5(h)));
+	let name = "";
+	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) if (n.tagName === "H3") {
+		name = text$5(n).replace(/[?？]+$/, "").trim();
+		break;
+	}
+	if (!name || /every|server|ahead|release/i.test(name)) return [];
+	const cell = [...doc.querySelectorAll("tr > th, tr > td")].find((c) => text$5(c).toLowerCase() === name.toLowerCase());
+	const icon = /https:\/\/img\.gamewith\.net\/[^'"\s]+\.(?:png|jpe?g|webp)/.exec(cell?.innerHTML ?? "")?.[0];
+	const start = Date.parse(after.end) + 1e3;
+	return [{
+		id: `${gameId}:banner:gw:upcoming:${name}`,
+		gameId,
+		kind: "banner",
+		title: name,
+		description: "⟦d.socUpcoming⟧",
+		image: icon,
+		start: new Date(start).toISOString(),
+		end: (/* @__PURE__ */ new Date(start + 14 * DAY$23 - 1e3)).toISOString(),
+		items: [],
+		featured: [{
+			name,
+			rarity: 5,
+			icon
+		}],
+		pulls: 0,
+		source: "api",
+		precision: "estimated"
+	}];
+}
+async function gwEvents(gameId, now) {
+	const list = [...(await page$2(68934)).querySelectorAll("h2")].find((h) => /ongoing events/i.test(text$5(h)));
+	const out = [];
+	for (let n = list?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
+		if (n.tagName !== "H3") continue;
+		const title = text$5(n);
+		let end = null, description, image;
+		for (let s = n.nextElementSibling; s && !/^H[23]$/.test(s.tagName); s = s.nextElementSibling) {
+			const t = text$5(s);
+			end ??= /event period/i.test(t) ? socUntil(t, now) : null;
+			if (!description && s.tagName === "P" && t.length > 40) description = t;
+			const src = (s.tagName === "IMG" ? s : s.querySelector("img"))?.getAttribute("data-original") || void 0;
+			if (!image && src && !/\/gacha\/c\d+\.png$/.test(src)) image = src;
+		}
+		if (!title || !end || end < now - 3 * DAY$23) continue;
+		out.push({
+			id: `${gameId}:event:gw:${title}:${new Date(end).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: /season/i.test(title) ? "challenge" : "event",
+			title,
+			description,
+			image,
+			start: new Date(guessStart(end, now)).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "estimated"
+		});
+	}
+	if (!list) throw new Error("gamewith SoC: no se encontró la lista de eventos");
+	return out;
+}
+/** "12:00, Oct 23, 2026 - 23:59, Nov 5, 2026 (UTC-4)" → [inicio, fin]; null si es permanente o no se entiende. */
+function socPeriod(s) {
+	const zone = /\(UTC\s*([+-]\d{1,2})\)/i.exec(s);
+	if (!zone || /permanent/i.test(s)) return null;
+	const at = [...s.matchAll(/(\d{1,2}):(\d{2}),\s*([A-Za-z]{3,})\.?\s+(\d{1,2}),\s*(\d{4})/g)].map((m) => Date.UTC(+m[5], MONTHS$7.indexOf(m[3].slice(0, 3).toLowerCase()), +m[4], +m[1] - +zone[1], +m[2]));
+	return at.length >= 2 && at.every((t) => !isNaN(t)) ? [at[0], at[1] + 59e3] : null;
+}
+/** Eventos de los avisos de mantenimiento oficiales (últimos 40 días). */
+async function syncSocOfficial(gameId) {
+	const res = await fetch(viaProxy(`${NEWS}?block_code=ssrpg-website-news&language=en&page=1&page_size=6`));
+	if (!res.ok) throw new Error(`starforce SoC → HTTP ${res.status}`);
+	const list = (await res.json())?.data?.list ?? [];
+	const recent = list.filter((a) => a.category === "update" && Date.now() - Date.parse(a.time) < 40 * DAY$23 && /^https:\/\/website\.xdcdn\.net\//.test(a.content_url)).slice(0, 2);
+	const events = [];
+	for (const a of recent) {
+		const lines = htmlText((await fetch(viaProxy(a.content_url)).then((r) => r.ok ? r.json() : null).catch(() => null))?.content ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
+		for (let i = 0; i < lines.length; i++) {
+			const head = /^\d+\.\s*\[([^\]]+)\]\s*(.*)$/.exec(lines[i]);
+			if (!head) continue;
+			const r = socPeriod(lines.slice(i + 1, i + 4).find((l) => /\(UTC\s*-4\)/i.test(l)) ?? "");
+			if (!r || r[1] < Date.now() - 3 * DAY$23) continue;
+			const summon = /summon event/i.test(head[2]);
+			const title = head[1].trim();
+			events.push({
+				id: `${gameId}:${summon ? "banner" : "event"}:xd:${title}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+				gameId,
+				kind: summon ? "banner" : "event",
+				title,
+				description: head[2].replace(/\s*is now available\.?$/i, "").trim() || void 0,
+				start: new Date(r[0]).toISOString(),
+				end: new Date(r[1]).toISOString(),
+				items: [],
+				featured: [],
+				pulls: 0,
+				minor: /skin event/i.test(head[2]) ? true : void 0,
+				source: "api",
+				official: true
+			});
+		}
+	}
+	if (!list.length) throw new Error("starforce SoC: sin avisos");
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
+/**
+* GameWith + avisos oficiales. Los banners del aviso no dicen a quién traen y los de GameWith no dicen cuándo empiezan: si un banner oficial
+* acaba a la misma hora (±1 h) que uno de GameWith, el de GameWith toma su inicio y se quita el oficial (si varios acaban igual, el primero
+* con nombre parecido o, si no, el primero sin usar). Eventos: mismo nombre → la hora oficial manda.
+*/
+async function syncSoc(gameId) {
+	const now = Date.now();
+	const [b, e, o, c] = await Promise.allSettled([
+		gwBanners(gameId, now),
+		gwEvents(gameId, now),
+		syncSocOfficial(gameId),
+		syncPocketGamerCodes("sword-of-convallaria")
+	]);
+	for (const [what, r] of [
+		["banners", b],
+		["eventos", e],
+		["avisos", o],
+		["códigos", c]
+	]) if (r.status === "rejected") console.warn(`[soc] ${what}:`, r.reason?.message);
+	if (b.status === "rejected" && e.status === "rejected" && o.status === "rejected") throw b.reason;
+	const official = o.status === "fulfilled" ? o.value.events : [];
+	const used = /* @__PURE__ */ new Set();
+	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+	const fix = (g) => {
+		const same = official.filter((x) => !used.has(x) && x.kind === g.kind && Math.abs(Date.parse(x.end) - Date.parse(g.end)) <= HOUR$5);
+		const hit = same.find((x) => key(x.title) === key(g.title) || key(g.title).includes(key(x.title)) || key(x.title).includes(key(g.title))) ?? (g.kind === "banner" ? same[0] : void 0);
+		if (!hit) return g;
+		used.add(hit);
+		return {
+			...g,
+			start: hit.start,
+			end: hit.end,
+			precision: void 0,
+			official: true,
+			description: g.description ?? hit.description
+		};
+	};
+	const gw = [...b.status === "fulfilled" ? b.value : [], ...e.status === "fulfilled" ? e.value : []].map(fix);
+	const current = gw.filter((x) => x.kind === "banner" && x.featured.length && !/rerun/i.test(x.title)).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0];
+	const fresh = (await gwUpcoming(gameId, current).catch((err) => {
+		console.warn("[soc] próximos:", err?.message);
+		return [];
+	})).filter((n) => !gw.some((g) => g.featured.some((f) => f.name.toLowerCase() === n.title.toLowerCase())));
+	return {
+		events: [
+			...gw,
+			...official.filter((x) => !used.has(x)),
+			...fresh
+		],
+		patches: [],
+		codes: c.status === "fulfilled" ? c.value : []
+	};
+}
+// src/sources/prydwen.ts
+/**
+* Banners desde la página de banners de Prydwen (prydwen.gg), que publica el inicio y el fin de cada uno
+* como instantes ISO exactos en atributos `data-start-<región>` / `data-end-<región>`.
+* Su robots.txt permite estas páginas con Crawl-delay de 10 s: el proxy las pide de una en una y las cachea 2 h.
+* Los eventos (que no son banners) no están en esta fuente.
+*/
+var SITE$2 = "https://www.prydwen.gg";
+var DAY$22 = 864e5;
+var HOUR$4 = 36e5;
+/** NIKKE: los banners cierran a las 04:59:59 hora de Corea (UTC+9) del día de fin; Prydwen solo da un mediodía aproximado. */
+var nikkeEnd = (iso) => {
+	const kst = /* @__PURE__ */ new Date(+new Date(iso) + 9 * HOUR$4);
+	return (/* @__PURE__ */ new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 4, 59, 59) - 9 * HOUR$4)).toISOString();
+};
+var PRYDWEN = {
+	wuwa: {
+		slug: "wuthering-waves",
+		regions: [
+			"na",
+			"eu",
+			"asia"
+		]
+	},
+	nte: {
+		slug: "neverness-to-everness",
+		regions: [
+			"na",
+			"eu",
+			"asia"
+		]
+	},
+	czn: {
+		slug: "chaos-zero-nightmare",
+		regions: ["global"]
+	},
+	nikke: {
+		slug: "nikke",
+		regions: ["global"],
+		fixEnd: nikkeEnd
+	},
+	mongil: {
+		slug: "other-games/mongil-star-dive",
+		regions: [
+			"na",
+			"eu",
+			"asia"
+		]
+	}
+};
+var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+/** Rareza máxima de la tarjeta ("5-star", "SSR", "S-Class"...) como número de estrellas. */
+var stars = (s) => /5|SSR|S-?class|S$/i.test(s) ? 5 : /4|SR|A-?class/i.test(s) ? 4 : void 0;
+async function syncPrydwen(gameId, key) {
+	const cfg = PRYDWEN[key];
+	const res = await fetch(viaProxy(`${SITE$2}/${cfg.slug}/banners`));
+	if (!res.ok) throw new Error(`prydwen ${cfg.slug} → HTTP ${res.status}`);
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const from = Date.now() - 3 * DAY$22;
+	const out = [];
+	const seen = /* @__PURE__ */ new Set();
+	doc.querySelectorAll("article[data-banner-card]").forEach((card) => {
+		const timer = card.querySelector("[data-banner-timer]");
+		const name = text$4(card.querySelector(".banner-name"));
+		if (!timer || !name) return;
+		const region = cfg.regions.find((r) => timer.dataset[`start${cap(r)}`] && timer.dataset[`end${cap(r)}`]);
+		if (!region) return;
+		const start = new Date(timer.dataset[`start${cap(region)}`]).toISOString();
+		const end = cfg.fixEnd ? cfg.fixEnd(timer.dataset[`end${cap(region)}`]) : new Date(timer.dataset[`end${cap(region)}`]).toISOString();
+		if (+new Date(end) < from || +new Date(end) <= +new Date(start)) return;
+		const weapon = card.getAttribute("data-category") === "weapon";
+		const phase = text$4(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
+		const rank = stars(text$4(card.querySelector(".rarity")));
+		const featured = weapon ? [] : [{
+			name,
+			rarity: rank
+		}];
+		const id = `${gameId}:banner:${key}:${name}:${start}`;
+		if (seen.has(id)) return;
+		seen.add(id);
+		out.push({
+			id,
+			gameId,
+			kind: "banner",
+			title: name,
+			description: [weapon ? "⟦d.weaponBanner⟧" : "⟦d.charBanner⟧", phase].filter(Boolean).join(" · "),
+			image: card.querySelector(".banner-art img")?.getAttribute("src") ?? void 0,
+			start,
+			end,
+			items: [],
+			featured,
+			pulls: 0,
+			source: "api",
+			precision: timer.dataset[`unann${cap(region)}`] ? "estimated" : cfg.fixEnd ? "approx" : void 0
+		});
+	});
+	if (!out.length) throw new Error(`prydwen ${cfg.slug}: no se encontraron banners`);
+	return {
+		events: out,
+		patches: [],
+		codes: []
+	};
+}
+/** "na" -> "Na", para leer data-start-na con `dataset.startNa`. */
+var cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+// src/sources/mongil.ts
+/**
+* MONGIL: STAR DIVE (Netmarble; servidor global, horas UTC). Fuentes revisadas el 13 nov 2026:
+*  - Eventos: avisos oficiales del foro de Netmarble (forum.netmarble.com/stardive_gl, tablón "Events", menú 6). La web los pide a su API pública
+*    (`/api/game/monster2/official/forum/stardive_gl/article/list?menuSeq=6` y `/article/<id>?menuSeq=6`, sin claves). Cada aviso trae varios
+*    eventos: "🌠 Event 3. M.A.D.'s 7-Day Gifts", su imagen, "Event Period: After the 11/10 (Tue) maintenance - 12/1 (Tue) 23:59 (UTC)",
+*    "How to Participate" y las recompensas ("Day 1 / Compass of Destiny x1"). La lista mezcla idiomas: solo se leen los avisos en inglés.
+*    "After the … maintenance": la hora de fin del mantenimiento no viene; se usa el inicio del banner de esa versión (Prydwen) o, si no, las 03:30
+*    UTC del día siguiente (la hora a la que abrió la 1.5), marcado "≈".
+*  - Banners: Prydwen (/other-games/mongil-star-dive/banners), con inicio y fin exactos (`syncPrydwen`).
+*  - Códigos: PocketGamer (`syncPocketGamerCodes`). El canje oficial (coupon.netmarble.com) no lista los códigos.
+*  - Retratos: mongil.wiki.gg ("<Nombre>Portrait.png"), en el recolector (`withFeaturedIcons`); la wiki va atrasada y los nuevos no lo tienen.
+* 1 lista + hasta 3 avisos del foro, 1 página de Prydwen (10 s de Crawl-delay) y 1 de PocketGamer por ciclo.
+*/
+var FORUM = "https://forum.netmarble.com/api/game/monster2/official/forum/stardive_gl";
+var HOUR$3 = 36e5;
+var DAY$21 = 24 * HOUR$3;
+/** "11/10 (Tue) 23:59 (UTC)" → ms (año: el del aviso, o el siguiente si la fecha queda muy atrás). */
+function md(s, posted) {
+	const m = /(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?(?:\s*\([A-Za-z]{3}\))?(?:\s+(\d{1,2}):(\d{2}))?/.exec(s);
+	if (!m) return null;
+	const y0 = m[3] ? +m[3] : new Date(posted).getUTCFullYear();
+	const at = (y) => Date.UTC(y, +m[1] - 1, +m[2], m[4] ? +m[4] : 23, m[5] ? +m[5] : 59, m[4] ? 0 : 59);
+	return {
+		at: !m[3] && at(y0) < posted - 60 * DAY$21 ? at(y0 + 1) : at(y0),
+		time: !!m[4]
+	};
+}
+/** "After the 11/10 (Tue) maintenance - 12/1 (Tue) 23:59 (UTC)" → [inicio, fin, inicio aproximado]. */
+function mongilPeriod(line, posted, launch) {
+	const [a, b] = line.split(/\s+[-–~]\s+(?=\d)/);
+	if (!a || !b) return null;
+	const end = md(b, posted);
+	if (!end) return null;
+	const after = /after/i.test(a);
+	const s = md(a, posted);
+	if (!s) return null;
+	const day = Date.UTC(new Date(s.at).getUTCFullYear(), new Date(s.at).getUTCMonth(), new Date(s.at).getUTCDate());
+	return [
+		after ? launch && launch >= day && launch <= day + 2 * DAY$21 ? launch : day + DAY$21 + 3.5 * HOUR$3 : s.time ? s.at : day,
+		end.at + (end.time ? 59e3 : 0),
+		after && !(launch && launch >= day && launch <= day + 2 * DAY$21)
+	];
+}
+var isEnglish = (t) => !/[฀-๿぀-ヿ㐀-鿿가-힯]/.test(t);
+/** Eventos de un aviso: un bloque por "🌠 Event N. <nombre>". */
+function mongilNotice(gameId, a, launch) {
+	const lines = htmlText((a.content ?? "").replace(/<img[^>]*\bsrc="([^"]+)"[^>]*>/gi, "\n⟪img:$1⟫\n")).split("\n").map((l) => l.replace(/&#39;/g, "'").trim()).filter(Boolean);
+	const out = [];
+	const heads = lines.map((l, i) => /^🌠?\s*Event\s+\d+\.\s*\S/u.test(l) ? i : -1).filter((i) => i >= 0);
+	heads.forEach((h, k) => {
+		const block = lines.slice(h, heads[k + 1] ?? lines.length);
+		const title = block[0].replace(/^🌠?\s*Event\s+\d+\.\s*/u, "").trim();
+		const periodLine = block.find((l) => /\(UTC\)/i.test(l) && /\d{1,2}\/\d{1,2}/.test(l));
+		const r = periodLine && mongilPeriod(periodLine.replace(/^-\s*/, "").replace(/^[^:]*Available Period:\s*/i, ""), a.regDate, launch);
+		if (!title || !r || r[1] < Date.now() - 3 * DAY$21) return;
+		const image = block.map((l) => /^⟪img:(.+)⟫$/.exec(l)?.[1]).find(Boolean);
+		const how = block.findIndex((l) => /how to participate/i.test(l));
+		const description = how >= 0 ? block.slice(how + 1).filter((l) => /^-/.test(l)).slice(0, 2).map((l) => l.replace(/^-\s*/, "")).join(" ") || void 0 : void 0;
+		const rewards = pullsIn("mongil", block.filter((l) => !/^⟪img/.test(l) && !/^(?:craft|power up|complete|clear|reach|obtain|use|log in)\b/i.test(l)));
+		const named = rewards.items.length ? [] : block.slice(block.findIndex((l) => /key rewards|rewards$/i.test(l)) + 1).filter((l) => !/^⟪img|^-|^※|rewards$|^✨/i.test(l) && /^[A-Z]/.test(l) && l.length < 60).flatMap((l) => l.split(/\s*\/\s*/)).slice(0, 6);
+		const icons = /* @__PURE__ */ new Map();
+		block.forEach((l, j) => {
+			const src = /^⟪img:(.+)⟫$/.exec(l)?.[1];
+			const next = block[j + 1];
+			if (src && next && !/^⟪img/.test(next)) for (const n of next.replace(/\s*[x×]\s*[\d,]+$/i, "").split(/\s*\/\s*/)) icons.set(n.trim().toLowerCase(), src);
+		});
+		const withIcon = (i) => ({
+			...i,
+			icon: icons.get(i.name.toLowerCase())
+		});
+		out.push({
+			id: `${gameId}:event:nm:${title}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "event",
+			title,
+			image,
+			description,
+			start: new Date(r[0]).toISOString(),
+			end: new Date(r[1]).toISOString(),
+			items: (rewards.items.length ? rewards.items : named.map((name) => ({
+				name,
+				amount: 0
+			}))).map(withIcon),
+			featured: [],
+			pulls: rewards.pulls,
+			minor: /community|fan ?art|discord|sns|share/i.test(`${a.title} ${title}`) ? true : void 0,
+			source: "api",
+			official: true,
+			precision: r[2] ? "approx" : void 0
+		});
+	});
+	return out;
+}
+async function syncMongilNews(gameId, launch) {
+	const res = await fetch(viaProxy(`${FORUM}/article/list?menuSeq=6&start=1&rows=12`));
+	if (!res.ok) throw new Error(`netmarble MONGIL → HTTP ${res.status}`);
+	const list = (await res.json())?.articleList ?? [];
+	const recent = list.filter((a) => isEnglish(a.title) && Date.now() - a.regDate < 45 * DAY$21).slice(0, 3);
+	const events = [];
+	for (const a of recent) {
+		const d = await fetch(viaProxy(`${FORUM}/article/${a.id}?menuSeq=6`)).then((r) => r.ok ? r.json() : null).catch(() => null);
+		if (d?.article) events.push(...mongilNotice(gameId, d.article, launch));
+	}
+	if (!list.length) throw new Error("netmarble MONGIL: sin avisos");
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
+/**
+* Personajes anunciados sin fecha (Prydwen, tarjetas `data-section="teased"`: "Lou is the upcoming new limited 5-stars of Version 1.5"). Van a
+* continuación del banner de personaje en curso, con su misma duración, como estimados. Es la misma página que lee `syncPrydwen` (caché del proxy).
+*/
+async function teased(gameId, current) {
+	if (!current) return [];
+	const res = await fetch(viaProxy("https://www.prydwen.gg/other-games/mongil-star-dive/banners"));
+	if (!res.ok) return [];
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const len = Date.parse(current.end) - Date.parse(current.start);
+	return [...doc.querySelectorAll("article[data-banner-card][data-section=\"teased\"][data-category=\"character\"]")].map((card) => {
+		const name = card.querySelector(".banner-name")?.textContent?.trim() ?? "";
+		const start = Date.parse(current.end) + 1e3;
+		return {
+			id: `${gameId}:banner:prydwen:teased:${name}`,
+			gameId,
+			kind: "banner",
+			title: name,
+			description: "⟦d.mongilTeased⟧",
+			image: card.querySelector("img")?.getAttribute("src") ?? void 0,
+			start: new Date(start).toISOString(),
+			end: new Date(start + len).toISOString(),
+			items: [],
+			featured: [{
+				name,
+				rarity: 5
+			}],
+			pulls: 0,
+			source: "api",
+			precision: "estimated"
+		};
+	}).filter((e) => e.title);
+}
+async function syncMongil(gameId) {
+	const [b, c] = await Promise.allSettled([syncPrydwen(gameId, "mongil"), syncPocketGamerCodes("mongil-star-dive")]);
+	const dated = b.status === "fulfilled" ? b.value.events : [];
+	const current = dated.filter((e) => e.featured.length).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0];
+	const banners = [...dated, ...await teased(gameId, current).catch(() => [])];
+	const launch = banners.filter((e) => Date.parse(e.start) <= Date.now()).map((e) => Date.parse(e.start)).sort((x, y) => y - x)[0];
+	const n = await syncMongilNews(gameId, launch).then((v) => ({
+		ok: true,
+		v
+	}), (err) => ({
+		ok: false,
+		err
+	}));
+	if (b.status === "rejected" && c.status === "rejected" && !n.ok) throw b.reason;
+	if (b.status === "rejected") console.warn("[mongil] prydwen:", b.reason?.message);
+	if (c.status === "rejected") console.warn("[mongil] códigos:", c.reason?.message);
+	if (!n.ok) console.warn("[mongil] foro:", n.err?.message);
+	return {
+		events: [...banners, ...n.ok ? n.v.events : []],
+		patches: [],
+		codes: c.status === "fulfilled" ? c.value : []
+	};
+}
+// src/sources/azurlane.ts
+/**
+* Azur Lane (Yostar; servidor global/EN, horas UTC-7). Fuentes revisadas el 13 nov 2026:
+*  - Avisos de mantenimiento de su web oficial (azurlane.yo-star.com/news/, un WordPress; robots.txt sin reglas). Cada semana, "Maintenance
+*    Notice – 11/12, 12 A.M (UTC-7)" con todo lo nuevo en bloques `<p><strong>Tipo</strong><br><em>Available … between 11/12 – 11/26, 11:59 P.M.
+*    (UTC-7)</em><br>contenido…</p>`:
+*    - "New Event(s)" → eventos ("Collab Event – It's Showtime! Angels' Azur Stage (Participate to earn …)").
+*    - "New Characters" → los que dicen "(Rate up in event construction pool)" o "(Available in event construction pool)" forman el banner de
+*      construcción limitada; los que son "a reward for participating", recompensa del evento.
+*    - Skins, tienda, muebles, aspectos de equipo, secretos, JUUSTAGRAM…: campañas menores (ocultas por defecto).
+*    El inicio es el fin del mantenimiento (12:00 A.M. + "approximately 6 hours"), marcado "≈"; el fin, el del aviso.
+*  - Discord (canal "azurlane", tuits de @AzurLane_EN): `syncSource` lo une por encima; los avisos web cubren lo que el canal pierde.
+*  - Su wiki (azurlane.koumakan.jp) pone una barrera anti-bots: sin retratos ni iconos de esa fuente.
+*  - Códigos: no se publican con regularidad; los que lleguen por Discord.
+* 1 lista + hasta 3 avisos por ciclo (caché de 6 h en el proxy).
+*/
+var SITE$1 = "https://azurlane.yo-star.com/news/";
+var HOUR$2 = 36e5;
+var DAY$20 = 24 * HOUR$2;
+var TZ = -7;
+var text$3 = (s) => s.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&#8211;|&#8212;/g, "–").replace(/&#8217;|&#8216;/g, "'").replace(/&#8220;|&#8221;/g, "\"").replace(/&amp;/g, "&").replace(/&nbsp;|&#160;/g, " ").replace(/&#\d+;/g, "");
+/** "between 11/12 – 11/26, 11:59 P.M. (UTC-7)" → [inicio, fin]; el inicio, a la hora en que acaba el mantenimiento del aviso. */
+function azurPeriod(s, year, maintEnd) {
+	const m = /(\d{1,2})\/(\d{1,2})\s*[–-]\s*(\d{1,2})\/(\d{1,2})(?:,\s*(\d{1,2}):(\d{2})\s*([AP])\.?M\.?)?/i.exec(s);
+	if (!m) return null;
+	const h = m[5] ? +m[5] % 12 + (/p/i.test(m[7]) ? 12 : 0) : 23;
+	const mi = m[6] ? +m[6] : 59;
+	const day = Date.UTC(year, +m[1] - 1, +m[2]) - TZ * HOUR$2;
+	const start = maintEnd && maintEnd >= day && maintEnd < day + DAY$20 ? maintEnd : day;
+	let ey = year;
+	if (+m[3] < +m[1]) ey++;
+	const end = Date.UTC(ey, +m[3] - 1, +m[4], h - TZ, mi, 59);
+	return end > start ? [start, end] : null;
+}
+var MINOR$1 = /skins?|shop|furniture|gear ?box|gear skins?|secrets?|juustagram|meowfficers?|memory|fleetchat|cv update|outfits?|battle ui/i;
+/** Eventos de un aviso de mantenimiento. */
+function azurNotice(gameId, html, posted) {
+	const year = posted.getUTCFullYear();
+	const body = /<div class="entry-content"[^>]*>([\s\S]*?)<\/div>\s*(?:<footer|<div class="(?:sharedaddy|comments))/.exec(html)?.[1] ?? html;
+	const image = /<img[^>]+src="(https:\/\/azurlane\.yo-star\.com\/news\/wp-content\/uploads\/20\d\d\/[^"]+)"/.exec(body)?.[1];
+	const mt = /maintenance on (\d{1,2})\/(\d{1,2}),\s*(\d{1,2}):(\d{2})\s*([AP])\.?M\.?\s*\(UTC-7\)(?:[^.]*?approximately (\d+) hours?)?/i.exec(text$3(body));
+	const maintEnd = mt ? Date.UTC(year, +mt[1] - 1, +mt[2], +mt[3] % 12 + (/p/i.test(mt[5]) ? 12 : 0) - TZ + (mt[6] ? +mt[6] : 0), +mt[4]) : void 0;
+	const out = [];
+	const add = (e) => {
+		const id = `${gameId}:${e.kind}:yostar:${e.title}:${e.start.slice(0, 10)}`;
+		if (!out.some((o) => o.id === id)) out.push({
+			items: [],
+			featured: [],
+			pulls: 0,
+			...e,
+			id,
+			gameId,
+			source: "api",
+			official: true,
+			precision: "approx"
+		});
+	};
+	for (const p of body.matchAll(/<p>\s*<strong>([^<]+)<\/strong>\s*<br\s*\/?>([\s\S]*?)<\/p>/gi)) {
+		const label = text$3(p[1]).trim();
+		const lines = text$3(p[2]).split("\n").map((l) => l.trim()).filter(Boolean);
+		const when = lines.find((l) => /between\s+\d{1,2}\/\d{1,2}/i.test(l));
+		const r = when ? azurPeriod(when, year, maintEnd) : null;
+		if (!r || r[1] < Date.now() - 3 * DAY$20) continue;
+		const content = lines.filter((l) => l !== when);
+		const start = new Date(r[0]).toISOString(), end = new Date(r[1]).toISOString();
+		if (/^new events?$|^rerun events?$/i.test(label)) for (const [i, l] of content.entries()) {
+			if (l.startsWith("※")) continue;
+			const name = l.replace(/\s*\(.*\)\s*$/, "").replace(/^(?:[\w ]{0,25}?(?:event|rerun))\s*[–-]\s*/i, "").trim();
+			const notes = [/\((.*)\)\s*$/.exec(l)?.[1], ...content.slice(i + 1).filter((x) => x.startsWith("※")).map((x) => x.slice(1))].filter(Boolean).join(" ");
+			if (name.length > 2) add({
+				kind: "event",
+				title: name,
+				image,
+				start,
+				end,
+				description: notes || void 0
+			});
+		}
+		else if (/^new characters?$/i.test(label)) {
+			const featured = content.filter((l) => /construction/i.test(l)).map((l) => ({
+				name: l.replace(/\s*\(.*\)\s*$/, "").trim(),
+				rarity: /rate up/i.test(l) ? 5 : 4,
+				tag: /rate up/i.test(l) ? "Rate up" : void 0
+			}));
+			if (featured.length) add({
+				kind: "banner",
+				title: `Limited Construction: ${featured.filter((f) => f.tag).map((f) => f.name).join(", ") || featured[0].name}`,
+				image,
+				start,
+				end,
+				description: "⟦d.azurConstruction⟧",
+				featured
+			});
+			const rewards = content.filter((l) => !/construction/i.test(l) && !/^available/i.test(l)).map((l) => l.replace(/\s*\(.*\)\s*$/, "").trim());
+			if (/reward for participating/i.test(when ?? "") && rewards.length) {
+				const ev = out.find((o) => o.kind === "event" && o.start === start && o.end === end);
+				if (ev) ev.items = [...ev.items, ...rewards.map((name) => ({
+					name,
+					amount: 1
+				}))];
+			}
+		} else if (MINOR$1.test(label)) {
+			const what = content.filter((l) => !l.startsWith("※")).slice(0, 4).map((l) => l.replace(/\s*\(\d+ purchases? limited\)/i, ""));
+			add({
+				kind: "event",
+				title: `${label.replace(/^new\s+/i, "")}${what.length === 1 ? `: ${what[0]}` : ""}`,
+				image,
+				start,
+				end,
+				description: what.length > 1 ? what.join(" · ") : void 0,
+				minor: true
+			});
+		}
+	}
+	return out;
+}
+async function syncAzurLane(gameId) {
+	const res = await fetch(viaProxy(SITE$1));
+	if (!res.ok) throw new Error(`yostar Azur Lane → HTTP ${res.status}`);
+	const list = await res.text();
+	const urls = [...new Set([...list.matchAll(/https:\/\/azurlane\.yo-star\.com\/news\/(20\d\d)\/(\d\d)\/(\d\d)\/maintenance-notice[a-z0-9-]*\//g)].map((m) => m[0]))].map((u) => ({
+		u,
+		at: Date.UTC(+/\/(20\d\d)\//.exec(u)[1], +/\/20\d\d\/(\d\d)\//.exec(u)[1] - 1, +/\/20\d\d\/\d\d\/(\d\d)\//.exec(u)[1])
+	})).filter((x) => Date.now() - x.at < 40 * DAY$20).sort((a, b) => b.at - a.at).slice(0, 3);
+	if (!urls.length) throw new Error("yostar Azur Lane: sin avisos de mantenimiento recientes");
+	const events = [];
+	for (const { u, at } of urls) {
+		const html = await fetch(viaProxy(u)).then((r) => r.ok ? r.text() : "").catch(() => "");
+		if (html) events.push(...azurNotice(gameId, html, new Date(at)));
+	}
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
 // src/sources/fgo.ts
 /**
 * Fate/Grand Order (servidor NA) desde la API abierta de Atlas Academy (datos extraídos del propio juego).
@@ -24105,7 +25261,7 @@ async function syncBleach() {
 * 21:00 PDT / 20:00 PST, y eso ya viene en el dato.
 */
 var BASE$3 = "https://api.atlasacademy.io/export/NA";
-var DAY$20 = 864e5;
+var DAY$19 = 864e5;
 /** Arte del banner de invocación (mismo CDN de Atlas Academy; comprobado el 9 nov 2026 con los banners vigentes). */
 var summonArt = (imageId) => imageId ? `https://static.atlasacademy.io/NA/SummonBanners/img_summon_${imageId}.png` : void 0;
 /** Máximo de fichas de evento que se piden por ciclo (solo para su arte). */
@@ -24134,7 +25290,7 @@ async function syncFgo(gameId) {
 		getJson$1("nice_gacha"),
 		getJson$1("basic_servant").catch(() => [])
 	]);
-	const from = Date.now() / 1e3 - 3 * DAY$20 / 1e3, to = Date.now() / 1e3 + 120 * DAY$20 / 1e3;
+	const from = Date.now() / 1e3 - 3 * DAY$19 / 1e3, to = Date.now() / 1e3 + 120 * DAY$19 / 1e3;
 	const inWindow = (s, e) => e > s && e < LIMIT && e > from && s < to;
 	const svt = new Map(servants.map((s) => [s.id, s]));
 	const seen = /* @__PURE__ */ new Set();
@@ -24246,7 +25402,7 @@ function gamepressBanners(html) {
 	}
 }
 async function fromJp(gameId, naEvents, svt) {
-	const now = Date.now(), to = now + 120 * DAY$20;
+	const now = Date.now(), to = now + 120 * DAY$19;
 	const [jpRes, gpRes] = await Promise.allSettled([fetch(viaProxy("https://api.atlasacademy.io/export/JP/basic_event_lang_en.json")).then((r) => {
 		if (!r.ok) throw new Error(`atlas JP → HTTP ${r.status}`);
 		return r.json();
@@ -24273,19 +25429,19 @@ async function fromJp(gameId, naEvents, svt) {
 	})), ...jp.filter((e) => e.type === "eventQuest" && na.has(e.id) && !/revival|rerun|recollection/i.test(e.name)).map((e) => ({
 		at: pstDay(na.get(e.id).startedAt),
 		lag: pstDay(na.get(e.id).startedAt) - jstDay(e.startedAt)
-	}))].filter((p) => p.lag > 300 * DAY$20).sort((a, b) => b.at - a.at).slice(0, 5);
+	}))].filter((p) => p.lag > 300 * DAY$19).sort((a, b) => b.at - a.at).slice(0, 5);
 	const lag = median(pairs.map((p) => p.lag));
 	if (isNaN(lag)) return [];
-	const days = Math.round(lag / DAY$20);
+	const days = Math.round(lag / DAY$19);
 	const reached = Math.max(...pairs.map((p) => p.at - p.lag));
-	const open = (jpDay) => jpDay + lag + DAY$20 + 144e5;
-	const close = (jpDay) => jpDay + lag + DAY$20 + 144e5 - 6e4;
+	const open = (jpDay) => jpDay + lag + DAY$19 + 144e5;
+	const close = (jpDay) => jpDay + lag + DAY$19 + 144e5 - 6e4;
 	const out = [];
 	for (const e of jp) {
 		if (e.type !== "eventQuest" || na.has(e.id) || jstDay(e.startedAt) <= reached) continue;
 		const s = open(jstDay(e.startedAt)), en = close(jstDay(e.endedAt));
 		const title = clean$1(e.name);
-		if (!title || /^recollection quest$/i.test(title) || en < now || s > to || en - s > 60 * DAY$20 || en <= s) continue;
+		if (!title || /^recollection quest$/i.test(title) || en < now || s > to || en - s > 60 * DAY$19 || en <= s) continue;
 		const jpOnly = JP_TEXT.test(title);
 		const boost = /攻撃威力|アップ！?$/.test(title);
 		const hint = jpOnly && !boost ? list.find((b) => day(b.jp_start_date) === jstDay(e.startedAt) && !/lucky bag|weekly/i.test(b.name))?.name.replace(/^\[JP\]\s*/, "").trim() : void 0;
@@ -24313,7 +25469,7 @@ async function fromJp(gameId, naEvents, svt) {
 	for (const b of list) {
 		const js = day(b.jp_start_date), je = day(b.jp_end_date);
 		if (b.na_start_date || isNaN(js) || js <= reached || /lucky bag/i.test(b.name)) continue;
-		const s = open(js), en = close(isNaN(je) ? js + 14 * DAY$20 : je);
+		const s = open(js), en = close(isNaN(je) ? js + 14 * DAY$19 : je);
 		if (en < now || s > to || en <= s) continue;
 		const names = (b.servant_profile_future_banner ?? []).map((x) => x?.banner_servant?.name?.trim()).filter((n) => !!n);
 		const featured = [...new Set(names)].slice(0, 3).map((name) => {
@@ -24350,7 +25506,7 @@ async function fromJp(gameId, naEvents, svt) {
 * Blue Archive (Global). Las páginas las edita la comunidad, así que el
 * formato puede cambiar y las fechas pueden retrasarse respecto al juego.
 */
-var DAY$19 = 864e5;
+var DAY$18 = 864e5;
 async function parsePage(base, page) {
 	const qs = new URLSearchParams({
 		action: "parse",
@@ -24368,7 +25524,7 @@ async function parsePage(base, page) {
 	if (!html) throw new Error(`${new URL(base).hostname}: ${json?.error?.info ?? "respuesta vacía"}`);
 	return new DOMParser().parseFromString(html, "text/html");
 }
-var inWindow = (s, e) => e > s && e > Date.now() - 3 * DAY$19 && s < Date.now() + 120 * DAY$19;
+var inWindow = (s, e) => e > s && e > Date.now() - 3 * DAY$18 && s < Date.now() + 120 * DAY$18;
 var wikiImg = (src, from, to) => src ? `https:${src.replace(from, to)}` : void 0;
 /** Banners de reclutamiento del servidor Global: los de un mismo periodo se agrupan en una sola barra. */
 async function blueArchiveBanners(gameId) {
@@ -24376,7 +25532,7 @@ async function blueArchiveBanners(gameId) {
 	const groups = /* @__PURE__ */ new Map();
 	for (const row of doc.querySelectorAll("tr[data-server=\"gl\"]")) {
 		const dates = [...row.querySelectorAll(".datetime")].map((d) => +new Date(d.getAttribute("data-datetime") ?? ""));
-		if (dates.length < 2 || dates.some(isNaN) || !inWindow(dates[0], dates[1]) || dates[1] - dates[0] > 120 * DAY$19) continue;
+		if (dates.length < 2 || dates.some(isNaN) || !inWindow(dates[0], dates[1]) || dates[1] - dates[0] > 120 * DAY$18) continue;
 		const name = row.querySelector("td:nth-child(2) a")?.textContent?.trim();
 		if (!name) continue;
 		const key = `${dates[0]}-${dates[1]}`;
@@ -24473,7 +25629,7 @@ var RAID_DESC$1 = {
 /** "Decagrammaton: Hod (Grand Assault)" → "Hod". */
 var raidBoss = (name) => name.replace(/\s*\([^)]*\)\s*$/, "").split(": ").pop().trim();
 /** Fecha (AAAA-MM-DD) de hace 3 días: filtro de las consultas; cambia una vez al día para que la caché del proxy sirva. */
-var sinceDay = () => (/* @__PURE__ */ new Date(Date.now() - 3 * DAY$19)).toISOString().slice(0, 10);
+var sinceDay = () => (/* @__PURE__ */ new Date(Date.now() - 3 * DAY$18)).toISOString().slice(0, 10);
 /**
 * Eventos, ejercicios conjuntos y raids (Total Assault, Grand Assault, Final Restriction Release) del servidor Global
 * desde las tablas Bucket `events` y `raids` de bluearchive.wiki (horas exactas con zona). 3 peticiones.
@@ -24486,7 +25642,7 @@ async function blueArchiveBucket(gameId) {
 	for (const r of evs) {
 		const s = +new Date(String(r.start_date ?? "")), e = +new Date(String(r.end_date ?? ""));
 		const title = String(r.name_en ?? "").trim();
-		if (!title || isNaN(s) || isNaN(e) || skip.has(String(r.category)) || !inWindow(s, e) || e - s > 120 * DAY$19) continue;
+		if (!title || isNaN(s) || isNaN(e) || skip.has(String(r.category)) || !inWindow(s, e) || e - s > 120 * DAY$18) continue;
 		const id = Number(r.id), orig = Number(r.original_id);
 		rows.push({
 			id: `${gameId}:event:${r.id ?? title}:${s}`,
@@ -24689,7 +25845,7 @@ async function withGrayRavens(events, version, trials = /* @__PURE__ */ new Set(
 * Los avisos no traen arte por evento: se usa la imagen de cabecera del aviso (index.ts la sustituye por la de Reverie si coincide).
 */
 var CDN = "https://hw-media-cdn-mingchao.kurogame.com/akiwebsite/website2.0/json/G152/en";
-var DAY$18 = 864e5;
+var DAY$17 = 864e5;
 var AMERICA$2 = -5;
 var ASIA = 8;
 /** "2026-10-22 10:00" en la zona `offset` → ms UTC. */
@@ -24713,7 +25869,7 @@ async function syncKuro(gameId) {
 	const menu = await res.json();
 	if (!Array.isArray(menu)) throw new Error("kuro: lista inesperada");
 	const now = Date.now();
-	const notes = menu.filter((a) => /^Patch Notes for (?:Wuthering Waves )?Version/i.test(a.articleTitle) && at$3(a.startTime, ASIA) <= now + DAY$18).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
+	const notes = menu.filter((a) => /^Patch Notes for (?:Wuthering Waves )?Version/i.test(a.articleTitle) && at$3(a.startTime, ASIA) <= now + DAY$17).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
 	if (!notes) throw new Error("kuro: sin notas de parche");
 	const art = await fetch(viaProxy(`${CDN}/article/${notes.articleId}.json`));
 	if (!art.ok) throw new Error(`kuro article ${notes.articleId} → HTTP ${art.status}`);
@@ -24722,7 +25878,7 @@ async function syncKuro(gameId) {
 	const text = lines$2(html);
 	const maint = text.map((l) => /Maintenance Time:.*?-\s*(\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2})\s*\(UTC([+-]\d+)\)/i.exec(l)).find(Boolean);
 	const versionStart = maint ? at$3(maint[1], +maint[2]) : NaN;
-	const from = now - 3 * DAY$18, to = now + 120 * DAY$18;
+	const from = now - 3 * DAY$17, to = now + 120 * DAY$17;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	let current = null, currentAt = -1;
@@ -24743,7 +25899,7 @@ async function syncKuro(gameId) {
 		const end = at$3(d[2], offset) + 59e3;
 		const title = current;
 		current = null;
-		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$18) continue;
+		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$17) continue;
 		const id = `${gameId}:event:kuro:${title}:${new Date(start).toISOString().slice(0, 10)}`;
 		if (seen.has(id)) continue;
 		seen.add(id);
@@ -24966,7 +26122,7 @@ async function wuwaChallengeRewards() {
 */
 function wuwaMatrix(gameId, patches, info, now = Date.now()) {
 	const out = [];
-	const live = patches.filter((p) => p.end && +new Date(p.end) > now - 3 * DAY$18).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 2);
+	const live = patches.filter((p) => p.end && +new Date(p.end) > now - 3 * DAY$17).sort((a, b) => a.date.localeCompare(b.date)).slice(0, 2);
 	for (const p of live) {
 		const inCycle = !!info && info.versions.includes(p.version);
 		const phase = inCycle ? info.versions.indexOf(p.version) + 1 : 0;
@@ -24992,11 +26148,11 @@ function wuwaChallenges(gameId, now = Date.now(), rewards = {}) {
 	const out = [];
 	for (const c of CYCLES) {
 		const r = c.title === "Tower of Adversity" ? rewards.tower : rewards.wastes;
-		const anchor = +new Date(c.anchor), len = c.days * DAY$18, limit = +new Date(c.validUntil);
+		const anchor = +new Date(c.anchor), len = c.days * DAY$17, limit = +new Date(c.validUntil);
 		const k = Math.floor((now - anchor) / len);
 		for (const n of [k, k + 1]) {
 			const start = anchor + n * len, end = start + len - 1e3;
-			if (start > limit || end < now - 3 * DAY$18) continue;
+			if (start > limit || end < now - 3 * DAY$17) continue;
 			out.push({
 				id: `${gameId}:challenge:${c.title}:${new Date(start).toISOString().slice(0, 10)}`,
 				gameId,
@@ -25032,14 +26188,14 @@ async function syncPgr(gameId) {
 	if (!res.ok) throw new Error(`pgr ArticleMenu → HTTP ${res.status}`);
 	const menu = await res.json();
 	const now = Date.now();
-	const notes = menu.filter((a) => /UPDATE NOTE/i.test(a.articleTitle) && pgrAt(a.startTime.replace(/-/g, "/")) <= now + DAY$18).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
+	const notes = menu.filter((a) => /UPDATE NOTE/i.test(a.articleTitle) && pgrAt(a.startTime.replace(/-/g, "/")) <= now + DAY$17).sort((a, b) => b.startTime.localeCompare(a.startTime))[0];
 	if (!notes) throw new Error("pgr: sin notas de versión");
 	const art = await fetch(viaProxy(`${PGR_CDN}/article/${notes.articleId}.json`));
 	if (!art.ok) throw new Error(`pgr article ${notes.articleId} → HTTP ${art.status}`);
 	const text = lines$2((await art.json()).articleContent ?? "");
 	const mt = text.map((l) => /maintenance.*?(\d{4}\/\d{1,2}\/\d{1,2},?\s*\d{1,2}:\d{2})\s*[–-]\s*(\d{4}\/\d{1,2}\/\d{1,2},?\s*\d{1,2}:\d{2})\s*\(UTC\)/i.exec(l)).find(Boolean);
 	const versionStart = mt ? pgrAt(mt[2]) : NaN;
-	const from = now - 3 * DAY$18, to = now + 120 * DAY$18;
+	const from = now - 3 * DAY$17, to = now + 120 * DAY$17;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const titles = [], marks = [];
@@ -25071,7 +26227,7 @@ async function syncPgr(gameId) {
 		const end = pgrAt(range[3].replace(/at\s*/i, ""));
 		const name = (/\[([^\]]+)\]/.exec(title)?.[1] ?? title).replace(/:\s*Character Trial Stage$/i, "").trim();
 		const banner = /available via|Research Pool/i.test(l) || /Research$/i.test(title);
-		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$18) {
+		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$17) {
 			title = null;
 			continue;
 		}
@@ -25133,7 +26289,7 @@ async function syncPgr(gameId) {
 * Los gachapones ("Supply") la wiki ya no los registra: para ellos haría falta el Discord oficial (docs/discord-bot.md).
 */
 var API$4 = "https://honkaiimpact3.fandom.com/api.php";
-var DAY$17 = 864e5;
+var DAY$16 = 864e5;
 var SERVER$1 = 8;
 var at$2 = (s) => {
 	const m = /(\d{4})-(\d{2})-(\d{2})(?:\s+(\d{1,2}):(\d{2}))?/.exec(s);
@@ -25212,7 +26368,7 @@ async function syncHonkai3(gameId) {
 	const res = await fetch(viaProxy(`${API$4}?${qs}`));
 	if (!res.ok) throw new Error(`honkaiimpact3.fandom.com → HTTP ${res.status}`);
 	const pages = (await res.json())?.query?.pages ?? [];
-	const now = Date.now(), from = now - 3 * DAY$17, to = now + 120 * DAY$17;
+	const now = Date.now(), from = now - 3 * DAY$16, to = now + 120 * DAY$16;
 	const out = [];
 	for (const p of pages) {
 		const text = p.revisions?.[0]?.slots?.main?.content ?? "";
@@ -25220,7 +26376,7 @@ async function syncHonkai3(gameId) {
 		if (!entry) continue;
 		const field = (k) => new RegExp(`\\|\\s*${k}\\s*=\\s*([^|\\n}]+)`, "i").exec(entry)?.[1]?.trim() ?? "";
 		const start = at$2(field("start")), end = at$2(field("end"));
-		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$17) continue;
+		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$16) continue;
 		const title = p.title.replace(/\s*\((v[\d.]+|event)\)$/i, "").trim();
 		const r = PAID.test(title) ? {
 			items: [],
@@ -25261,7 +26417,7 @@ async function syncHonkai3(gameId) {
 * 2 consultas por juego (caché de 12 h en el proxy).
 */
 var SERVER = 8;
-var DAY$16 = 864e5;
+var DAY$15 = 864e5;
 /** Tipos que son desafíos rotativos (endgame). */
 var CHALLENGE = /Spiral Abyss|Stygian Onslaught|Imaginarium Theater|Memory of Chaos|Pure Fiction|Apocalyptic Shadow|Anomaly Arbitration|Shiyu Defense|Deadly Assault|Annihilation/i;
 var at$1 = (s) => {
@@ -25324,7 +26480,7 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 	const html = (await res.json())?.parse?.text?.["*"];
 	if (!html) throw new Error(`${host}: Event List vacío`);
 	const doc = new DOMParser().parseFromString(`<!DOCTYPE html><html><body>${html}</body></html>`, "text/html");
-	const now = Date.now(), from = now - 3 * DAY$16, to = now + 120 * DAY$16;
+	const now = Date.now(), from = now - 3 * DAY$15, to = now + 120 * DAY$15;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const pageOf = /* @__PURE__ */ new Map();
@@ -25334,7 +26490,7 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 		if (tds.length < 2 || times.length < 2) continue;
 		const [t0 = "", t1 = ""] = times;
 		const start = at$1(t0), end = at$1(t1);
-		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$16) continue;
+		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$15) continue;
 		const anchors = [...tds[0].querySelectorAll("a")];
 		const links = anchors.map((a) => a.textContent?.trim() ?? "").filter(Boolean);
 		const page = anchors.map((a) => a.getAttribute("title") ?? "").filter(Boolean).pop() ?? "";
@@ -25399,7 +26555,7 @@ var STEAM_APPS = {
 */
 var SERVER_TIME = { dna: "UTC-5" };
 var API$3 = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/";
-var DAY$15 = 864e5;
+var DAY$14 = 864e5;
 /** Las imágenes de los avisos van como "{STEAM_CLAN_IMAGE}/123/abc.png". */
 var CLAN_IMG = "https://clan.akamai.steamstatic.com/images";
 /** BBCode de Steam → texto por líneas; las cabeceras ([h1]–[h3], [b] en su propia línea) pasan a "**…**", que el lector toma como título. */
@@ -25415,7 +26571,7 @@ async function syncSteamNews(gameId) {
 	};
 	const res = await fetch(viaProxy(`${API$3}?appid=${app}&count=15&maxlength=0&format=json`));
 	if (!res.ok) throw new Error(`steam ${gameId} → HTTP ${res.status}`);
-	const s = parseNotices(gameId, ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$15).map((n) => {
+	const s = parseNotices(gameId, ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$14).map((n) => {
 		const img = /\{STEAM_CLAN_IMAGE\}(\S+?\.(?:png|jpe?g|gif|webp))/i.exec(n.contents)?.[1];
 		return {
 			id: n.gid,
@@ -25446,7 +26602,7 @@ async function syncSteamNews(gameId) {
 var DATA = "https://limbus-assets.eldritchtools.com/data";
 var WIKI$2 = "https://limbuscompany.wiki.gg/api.php";
 var ASSETS = "https://limbus-assets.eldritchtools.com/assets/banners";
-var DAY$14 = 864e5;
+var DAY$13 = 864e5;
 /** Días que se extiende la barra de un contenido sin fecha de fin, contados desde hoy. */
 var OPEN_DAYS = 45;
 /** "2026-10-29" -> 01:00 UTC de ese día; las fechas sin definir ("????-??-??", "Permanent") se descartan. */
@@ -25543,14 +26699,14 @@ async function syncLimbus(gameId) {
 	const [timers, identities] = await Promise.all([getJson("timers"), getJson("identities_mini").catch(() => ({}))]);
 	const extra = await wikiTimers(timers).catch(() => []);
 	const events = [];
-	const from = Date.now() - 3 * DAY$14;
+	const from = Date.now() - 3 * DAY$13;
 	const add = (t, kind) => {
 		if (!t?.name) return;
 		const s = day(t.startDate);
 		let e = day(t.endDate);
 		const open = isNaN(e) && !isNaN(s) && !!t.endDate;
-		if (open) e = Math.max(s + 30 * DAY$14, Date.now() + OPEN_DAYS * DAY$14);
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || open && s > Date.now() + 120 * DAY$14) return;
+		if (open) e = Math.max(s + 30 * DAY$13, Date.now() + OPEN_DAYS * DAY$13);
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || open && s > Date.now() + 120 * DAY$13) return;
 		const featured = (t.bannerConds?.ids ?? []).map((id) => identities[id]).filter(Boolean).slice(0, 3).map((i) => ({
 			name: i.name,
 			rarity: i.rank
@@ -25583,103 +26739,6 @@ async function syncLimbus(gameId) {
 		codes: []
 	};
 }
-// src/sources/prydwen.ts
-/**
-* Banners desde la página de banners de Prydwen (prydwen.gg), que publica el inicio y el fin de cada uno
-* como instantes ISO exactos en atributos `data-start-<región>` / `data-end-<región>`.
-* Su robots.txt permite estas páginas con Crawl-delay de 10 s: el proxy las pide de una en una y las cachea 2 h.
-* Los eventos (que no son banners) no están en esta fuente.
-*/
-var SITE$1 = "https://www.prydwen.gg";
-var DAY$13 = 864e5;
-var HOUR$2 = 36e5;
-/** NIKKE: los banners cierran a las 04:59:59 hora de Corea (UTC+9) del día de fin; Prydwen solo da un mediodía aproximado. */
-var nikkeEnd = (iso) => {
-	const kst = /* @__PURE__ */ new Date(+new Date(iso) + 9 * HOUR$2);
-	return (/* @__PURE__ */ new Date(Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate(), 4, 59, 59) - 9 * HOUR$2)).toISOString();
-};
-var PRYDWEN = {
-	wuwa: {
-		slug: "wuthering-waves",
-		regions: [
-			"na",
-			"eu",
-			"asia"
-		]
-	},
-	nte: {
-		slug: "neverness-to-everness",
-		regions: [
-			"na",
-			"eu",
-			"asia"
-		]
-	},
-	czn: {
-		slug: "chaos-zero-nightmare",
-		regions: ["global"]
-	},
-	nikke: {
-		slug: "nikke",
-		regions: ["global"],
-		fixEnd: nikkeEnd
-	}
-};
-var text$3 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-/** Rareza máxima de la tarjeta ("5-star", "SSR", "S-Class"...) como número de estrellas. */
-var stars = (s) => /5|SSR|S-?class|S$/i.test(s) ? 5 : /4|SR|A-?class/i.test(s) ? 4 : void 0;
-async function syncPrydwen(gameId, key) {
-	const cfg = PRYDWEN[key];
-	const res = await fetch(viaProxy(`${SITE$1}/${cfg.slug}/banners`));
-	if (!res.ok) throw new Error(`prydwen ${cfg.slug} → HTTP ${res.status}`);
-	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-	const from = Date.now() - 3 * DAY$13;
-	const out = [];
-	const seen = /* @__PURE__ */ new Set();
-	doc.querySelectorAll("article[data-banner-card]").forEach((card) => {
-		const timer = card.querySelector("[data-banner-timer]");
-		const name = text$3(card.querySelector(".banner-name"));
-		if (!timer || !name) return;
-		const region = cfg.regions.find((r) => timer.dataset[`start${cap(r)}`] && timer.dataset[`end${cap(r)}`]);
-		if (!region) return;
-		const start = new Date(timer.dataset[`start${cap(region)}`]).toISOString();
-		const end = cfg.fixEnd ? cfg.fixEnd(timer.dataset[`end${cap(region)}`]) : new Date(timer.dataset[`end${cap(region)}`]).toISOString();
-		if (+new Date(end) < from || +new Date(end) <= +new Date(start)) return;
-		const weapon = card.getAttribute("data-category") === "weapon";
-		const phase = text$3(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
-		const rank = stars(text$3(card.querySelector(".rarity")));
-		const featured = weapon ? [] : [{
-			name,
-			rarity: rank
-		}];
-		const id = `${gameId}:banner:${key}:${name}:${start}`;
-		if (seen.has(id)) return;
-		seen.add(id);
-		out.push({
-			id,
-			gameId,
-			kind: "banner",
-			title: name,
-			description: [weapon ? "⟦d.weaponBanner⟧" : "⟦d.charBanner⟧", phase].filter(Boolean).join(" · "),
-			image: card.querySelector(".banner-art img")?.getAttribute("src") ?? void 0,
-			start,
-			end,
-			items: [],
-			featured,
-			pulls: 0,
-			source: "api",
-			precision: timer.dataset[`unann${cap(region)}`] ? "estimated" : cfg.fixEnd ? "approx" : void 0
-		});
-	});
-	if (!out.length) throw new Error(`prydwen ${cfg.slug}: no se encontraron banners`);
-	return {
-		events: out,
-		patches: [],
-		codes: []
-	};
-}
-/** "na" -> "Na", para leer data-start-na con `dataset.startNa`. */
-var cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 // src/sources/nikke.ts
 /**
 * NIKKE (servidor Global).
@@ -27783,10 +28842,23 @@ function dedupeEvents(events) {
 	}
 	return out;
 }
+/**
+* Azur Lane: los tuits por Discord y los avisos de la web dan los mismos cosméticos con otro nombre ("Collab furniture" / "Furniture: Manga Club").
+* Si la web trae una campaña menor con el mismo periodo (inicio ±1 día, fin ±1 h), sobra la del tuit.
+*/
+function azurDedupe(id, s) {
+	if (id !== "azurlane") return s;
+	const web = s.events.filter((e) => e.minor && e.id.includes(":yostar:"));
+	const dup = (e) => e.minor && e.id.includes(":dc:") && web.some((w) => Math.abs(Date.parse(w.start) - Date.parse(e.start)) <= DAY$1 && Math.abs(Date.parse(w.end) - Date.parse(e.end)) <= HOUR);
+	return {
+		...s,
+		events: s.events.filter((e) => !dup(e))
+	};
+}
 async function syncSource(game) {
 	const raw = () => STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game);
 	const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), raw()) : await raw();
-	const s1 = await withItemIcons$1(game.id, s0);
+	const s1 = await withItemIcons$1(game.id, azurDedupe(game.id, s0));
 	const s = {
 		...s1,
 		events: dedupeEvents(s1.events.map((e) => e.description ? {
@@ -27844,6 +28916,10 @@ async function syncSourceRaw(game) {
 		case "gfl2": return officialFirst(syncGfl2Official(id), syncGfl2(id));
 		case "mho": return officialFirst(syncMhoNews(id), syncMho(id));
 		case "bleach": return syncBleach();
+		case "onmyoji": return syncOnmyoji(id);
+		case "ptn": return syncPtn(id);
+		case "soc": return syncSoc(id);
+		case "mongil": return syncMongil(id);
 		case "fgo": return syncFgo(id);
 		case "bluearchive": return withGachafocus(id, "bluearchive", syncBlueArchive(id));
 		case "limbus": return syncLimbus(id);
@@ -27881,11 +28957,7 @@ async function syncSourceRaw(game) {
 			...s,
 			events: [...s.events, ...hi3MemorialArena(id)]
 		}));
-		case "azurlane": return {
-			events: [],
-			patches: [],
-			codes: []
-		};
+		case "azurlane": return syncAzurLane(id);
 		default: throw new Error(`Sin fuente para ${game.name}`);
 	}
 }
@@ -27938,7 +29010,8 @@ async function collect(id) {
 	if (!game) throw new Error(`juego desconocido: ${id}`);
 	const s = await syncSource(game);
 	const withArt = await withWikiImages(game, s.events).catch(() => s.events);
-	const events = await withItemIcons(game, withArt).catch(() => withArt);
+	const withFaces = await withFeaturedIcons(game, withArt).catch(() => withArt);
+	const events = await withItemIcons(game, withFaces).catch(() => withFaces);
 	return {
 		id,
 		updated: Date.now(),
@@ -28015,6 +29088,96 @@ async function withWikiImages(game, events) {
 	});
 }
 /**
+* Retratos de los destacados de los banners que su fuente no trae (13 nov 2026: faltaban en 15 juegos). Antes solo los buscaba cada navegador
+* con la imagen principal de la página del personaje (`images.ts`, PageImages), que las wikis de wiki.gg (Arknights, Endfield, Limbus, Path
+* to Nowhere, MONGIL) no tienen. Aquí se prueba, en este orden y en lotes de 50 archivos por consulta:
+*  1. El archivo de icono según la convención de la wiki (`ICON_FILES`, comprobadas una a una) y los genéricos "<nombre> icon.png"/"Icon.png"
+*     (Arknights, Endfield, Reverse: 1999, NTE).
+*  2. La imagen principal de la página del personaje (PageImages; solo Fandom e iopwiki), con el nombre completo (`full`) si lo hay.
+* Solo banners vigentes o próximos, como mucho 40 nombres por juego y ciclo; el proxy guarda las consultas 12 h. La copia ya sale con el
+* retrato y los navegadores no repiten la búsqueda (`faceOf` usa `icon` primero).
+*/
+var ICON_FILES = {
+	ptn: (n) => [`${n} Skin1 Icon.png`],
+	mongil: (n) => [`${n.replace(/\s+/g, "")}Portrait.png`],
+	gfl2: (n) => [`${n} Covenant Avatar.png`],
+	wuwa: (n) => [`Resonator ${n}.png`]
+};
+var MAX_FACES = 40;
+async function withFeaturedIcons(game, events) {
+	const host = game.wiki?.host;
+	if (!host) return events;
+	const now = Date.now();
+	const names = [...new Set(events.filter((e) => e.kind === "banner" && +new Date(e.end) > now).flatMap((e) => e.featured.filter((f) => !f.icon).map((f) => f.full ?? f.name)))].filter((n) => n.length > 1 && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES);
+	if (!names.length) return events;
+	const own = ICON_FILES[game.id];
+	const candidates = (full) => [.../* @__PURE__ */ new Set([full, full.replace(/\s*\((?:GFL2|character)\)$/i, "")])].flatMap((n) => [
+		...own ? own(n) : [],
+		`${n} icon.png`,
+		`${n} Icon.png`
+	]);
+	const api = `https://${host}/${host === "bluearchive.wiki" ? "w/" : ""}api.php`;
+	const found = /* @__PURE__ */ new Map();
+	const list = [...new Set(names.flatMap(candidates))];
+	const urlOf = /* @__PURE__ */ new Map();
+	for (let i = 0; i < list.length; i += 50) {
+		const qs = new URLSearchParams({
+			action: "query",
+			titles: list.slice(i, i + 50).map((f) => `File:${f}`).join("|"),
+			prop: "imageinfo",
+			iiprop: "url",
+			iiurlwidth: "160",
+			format: "json",
+			formatversion: "2",
+			origin: "*"
+		});
+		try {
+			const res = await fetch(`${api}?${qs}`);
+			const pages = res.ok ? (await res.json())?.query?.pages ?? [] : [];
+			for (const p of pages) {
+				const info = p.imageinfo?.[0];
+				if (info) urlOf.set(p.title.replace(/^File:/, "").replace(/_/g, " ").toLowerCase(), info.thumburl ?? info.url);
+			}
+		} catch {}
+	}
+	for (const n of names) {
+		const u = candidates(n).map((f) => urlOf.get(f.toLowerCase())).find(Boolean);
+		if (u) found.set(n, u);
+	}
+	const rest = names.filter((n) => !found.has(n));
+	for (let i = 0; i < rest.length; i += 50) {
+		const qs = new URLSearchParams({
+			action: "query",
+			titles: rest.slice(i, i + 50).join("|"),
+			redirects: "1",
+			prop: "pageimages",
+			piprop: "thumbnail",
+			pithumbsize: "160",
+			format: "json",
+			formatversion: "2",
+			origin: "*"
+		});
+		try {
+			const res = await fetch(`${api}?${qs}`);
+			const j = res.ok ? await res.json() : null;
+			const back = /* @__PURE__ */ new Map();
+			for (const r of [...j?.query?.normalized ?? [], ...j?.query?.redirects ?? []]) back.set(r.to, back.get(r.from) ?? r.from);
+			for (const p of j?.query?.pages ?? []) {
+				const asked = back.get(p.title) ?? p.title;
+				if (p.thumbnail && !/logo|wiki[-_ ]?(?:icon|wordmark)/i.test(p.thumbnail.source)) found.set(asked, p.thumbnail.source);
+			}
+		} catch {}
+	}
+	if (!found.size) return events;
+	return events.map((e) => e.kind === "banner" && e.featured.some((f) => !f.icon && found.has(f.full ?? f.name)) ? {
+		...e,
+		featured: e.featured.map((f) => f.icon ? f : {
+			...f,
+			icon: found.get(f.full ?? f.name) ?? f.icon
+		})
+	} : e);
+}
+/**
 * Iconos de las recompensas que no los traen (todas salvo las de ennead): el archivo del objeto en la wiki del juego, probando sus convenciones
 * ("Item Primogem.png" en HoYoverse y WuWa, "Unilog.png" en R:1999, "Black Card.png" en PGR…). En lotes de 45 archivos por consulta;
 * el proxy las guarda 12 h. Si un objeto no tiene icono en la wiki, se queda sin él (la ficha muestra solo el nombre).
@@ -28070,7 +29233,30 @@ async function withItemIcons(game, events) {
 			}
 		} catch {}
 	}
-	const icon = (n) => variants(n).map((v) => found.get(v.toLowerCase())).find(Boolean);
+	const byFile = (n) => variants(n).map((v) => found.get(v.toLowerCase())).find(Boolean);
+	const pageIcon = /* @__PURE__ */ new Map();
+	const rest = names.filter((n) => !byFile(n) && !/^(?:various|free)\b/i.test(n));
+	for (let i = 0; i < rest.length; i += 50) {
+		const qs = new URLSearchParams({
+			action: "query",
+			titles: rest.slice(i, i + 50).join("|"),
+			redirects: "1",
+			prop: "pageimages",
+			piprop: "thumbnail",
+			pithumbsize: "64",
+			format: "json",
+			formatversion: "2",
+			origin: "*"
+		});
+		try {
+			const res = await fetch(`https://${host}/${host === "bluearchive.wiki" ? "w/" : ""}api.php?${qs}`);
+			const j = res.ok ? await res.json() : null;
+			const back = /* @__PURE__ */ new Map();
+			for (const r of [...j?.query?.normalized ?? [], ...j?.query?.redirects ?? []]) back.set(r.to, back.get(r.from) ?? r.from);
+			for (const p of j?.query?.pages ?? []) if (p.thumbnail && !/logo|wiki[-_ ]?(?:icon|wordmark)/i.test(p.thumbnail.source)) pageIcon.set((back.get(p.title) ?? p.title).toLowerCase(), p.thumbnail.source);
+		} catch {}
+	}
+	const icon = (n) => byFile(n) ?? pageIcon.get(n.toLowerCase());
 	return events.map((e) => e.items.some((i) => !i.icon) ? {
 		...e,
 		items: e.items.map((i) => i.icon ? i : {

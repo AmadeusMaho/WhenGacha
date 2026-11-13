@@ -73,6 +73,15 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // llaman también "Jades". El billete del banner limitado ("Limited Gacha Ticket", avisos oficiales) = 1; el de stamps ("Limited Stamp Gacha Ticket")
   // es del banner de armas y no cuenta.
   bleach: [{ item: /^(spiritual )?jades?$/i, per: 160 }, { item: /^limited gacha tickets?$/i, per: 1 }],
+  // Onmyoji (wiki de Fandom, "Summon"): una invocación con Mystery Amulet = 1; con Jade, 100 por invocación ("Jade with 100 Jade").
+  onmyoji: [{ item: /^mystery amulets?$/i, per: 1 }, { item: /^jades?$/i, per: 100 }],
+  // Path to Nowhere: 180 Hypercubes por arresto, 1800 el x10 (guías de appgamer y hostedgg, mismas cifras; la wiki no tiene la tabla de precios).
+  ptn: [{ item: /^hypercubes?$/i, per: 180 }],
+  // Sword of Convallaria (BlueStacks, "SoC gacha guide"; GameWith, "How To Get Secret Fate"): 150 Hope Luxite o 1 Secret Fate por invocación.
+  soc: [{ item: /^(hope )?luxites?$/i, per: 150 }, { item: /^secret fates?$/i, per: 1 }],
+  // MONGIL: STAR DIVE (GameWith y Prydwen): el banner limitado usa Compass of Destiny (1 por tirada); 160 Starlight Crystal = 1 Compass.
+  // Compass of Memory (artefactos) y Compass of Promise (permanente) no cuentan para el banner de personaje.
+  mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }
 
 const num = (s: string) => Number(s.replace(/,/g, ''))

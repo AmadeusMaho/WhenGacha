@@ -142,7 +142,10 @@ export function rangeIn(line: string, year: number, fallbackZone: number, posted
     return { start, end: start + +lasts[2] * DAY - 1000, afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null, approx: !after && a.h === undefined }
   }
   const body = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, '')
-  const parts = body.split(SEP)
+  let parts = body.split(SEP)
+  // Un guion dentro del nombre antes de las fechas ("New Battle UI - Angels' Stage is available between 11/12 - 11/26", Azur Lane): el trozo sin
+  // fecha del principio no es el inicio del periodo.
+  while (parts.length > 2 && !dateIn(parts[0], year)) parts = parts.slice(1)
   if (parts.length < 2) return null
   // Fin sin anunciar: se dibuja 6 semanas (`open`: la app no lo muestra como fecha).
   if (OPEN_END.test(parts.slice(1).join(' '))) {
@@ -214,8 +217,13 @@ function sentenceName(c: string, loose = true): string | undefined {
     // "Weekend Event [Trick Dice] begin! Participate for…" (Trickcal, 6 nov 2026): el nombre entre corchetes justo después de "Event".
     ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c)
     // "Limited collab gear skins will be available between 11/12 - 11/26…" (Azur Lane): sin esto el título era la frase entera cortada.
+    // 'Agata - Polaris of Winter's Live Skin "After the Midnight Snow" event will be available!' (Sword of Convallaria): el nombre entre comillas.
+    ?? /["“]([^"”]{3,60})["”]\s+(?:event|campaign)\s+(?:will|is|has|starts?|begins?)\b/i.exec(c)
     ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null)
-  return m?.[1].trim()
+  // "The following new Augment Modules" / "The collab furniture" / "New Battle UI - …" (Azur Lane) → "Augment Modules", "Collab furniture", "Battle UI - …".
+  // "The" solo se quita si sigue una minúscula: "The Frontier Line" (SoC) es el nombre del evento.
+  const n = m?.[1].trim().replace(/^[Tt]he\s+(?=[a-z])/, '').replace(/^(?:the\s+)?following\s+/i, '').replace(/^(?:(?:new|limited)\s+)+(?=\S)/i, '')
+  return n ? n.charAt(0).toUpperCase() + n.slice(1) : undefined
 }
 
 /**
@@ -226,6 +234,8 @@ export function tidyName(s: string): string {
   return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, '')
     .replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, '')
     .replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, '')
+    // "Upcoming Limited-Time Summon Event: Get Together" (Sword of Convallaria) → "Get Together".
+    .replace(/^(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/i, '')
     .replace(/\s+limited[- ]time (?:gacha|banner)$/i, '')
     // "Apex Challenge Starts Today!" (MHO) → "Apex Challenge".
     // Solo con "today/now" o con "!": "Execution Begins" (BLEACH) es el nombre del evento.
@@ -292,6 +302,14 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
       if (name && name.length <= 40 && !out.some(f => f.name === name)) out.push({ name, rarity })
     }
   }
+  // 'the probability of summoning "Lukamar" and "Pooch Runrun" will be significantly increased' (Sword of Convallaria).
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/probability of (?:summoning|obtaining|getting)\s+((?:["“][^"”]{2,30}["”](?:\s*(?:,|or|and|&)\s*)?)+)/gi)) {
+    for (const n of m[1].matchAll(/["“]([^"”]+)["”]/g)) if (!out.some(f => f.name === n[1].trim())) out.push({ name: n[1].trim(), rarity: 5 })
+  }
+  // "the S-Class Sinner [000] or [Shalom]" (avisos de Path to Nowhere en X, que siguen la misma forma en cada reposición).
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b([SA])-Class Sinners?\s+((?:\[[^\]]{1,30}\](?:\s*(?:,|or|and|&)\s*)?)+)/g)) {
+    for (const n of m[2].matchAll(/\[([^\]]+)\]/g)) if (!out.some(f => f.name === n[1].trim())) out.push({ name: n[1].trim(), rarity: m[1] === 'S' ? 5 : 4 })
+  }
   // "★3 Vivi,★3 Rohne Limited-Time Rate Up" (Trickcal): estrella y nombre sin tipo delante; solo si lo anterior no encontró nada.
   if (!out.length) for (const l of lines) for (const m of l.matchAll(/[★☆]\s*(\d)\s+([A-Z][\w'-]{1,20})(?=\s*[,&]|\s+and\b|\s+(?:limited|rate|pick)|$)/gi)) {
     if (!/^(?:apostles?|limited|rate|pick)$/i.test(m[2]) && !out.some(f => f.name === m[2])) out.push({ name: m[2], rarity: +m[1] })
@@ -303,8 +321,11 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
   return out.sort((a, b) => b.rarity - a.rarity)
 }
 
-/** Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts). */
-const SERVER_ZONE: Record<string, number> = { dna: -5 }
+/**
+ * Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts).
+ * Path to Nowhere: servidor global de América, UTC-7 (ptn.ts; "November 4th, 14:00 - December 2nd, 13:59 (Server Time)" en sus avisos de X).
+ */
+const SERVER_ZONE: Record<string, number> = { dna: -5, ptn: -7 }
 
 /** Línea de un periodo por región: "Asia/HMT/SEA: July 23, 2026, 10:00 - …", "Europe: …", "America: …". */
 const REGION = /^(?:(?:asia|europe|eu|americas?|na|north america|sea|hmt|tw|hk|mo|jp|kr|global|other regions?)[\s/,&]*)+[:：]\s*/i
@@ -444,8 +465,9 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       // "200 FREE RECRUITMENTS" (Blue Archive, 10 nov 2026) es un evento de inicio de sesión que regala tiradas, no un banner.
       // El tipo sale del nombre y, si no lo dice, del rótulo del periodo ("Recruitment Period") o de la frase de la que salió el nombre
       // ("Limited recruitment event: Boundless Journey, Endless Romance…").
-      const ctx = [name, label, name === heading && !fromHead ? clean(raw[headAt]).slice(0, 120) : ''].join(' | ')
-      const kind: Kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)/i.test(ctx) ? 'banner' : 'event'
+      // También la cabecera de la que salió el nombre al limpiarlo ("Upcoming Limited-Time Summon Event: Get Together" → "Get Together", SoC).
+      const ctx = [name, label, name === heading && !fromHead ? clean(raw[headAt]).slice(0, 120) : '', heading !== name && tidyName(heading) === name ? heading : ''].join(' | ')
+      const kind: Kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)|\b(?:exclusive|event|limited|rerun) arrests?\b|\bsummon(?:ing)? event\b|probability of summoning/i.test(ctx) ? 'banner' : 'event'
       const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
       if (seen.has(id)) continue
       seen.add(id)
@@ -470,6 +492,10 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
         items, featured, pulls, official: true, source: 'api',
         precision: approx ? 'approx' : undefined, open: r.open || undefined,
+        // Tienda de cosméticos (muebles, aspectos de equipo, interfaz de combate, módulos; Azur Lane): campaña menor, oculta por defecto.
+        // Y los sorteos de aspectos ('Agata - Polaris of Winter's Live Skin "After the Midnight Snow" event', SoC): la frase de la que salió el nombre lo dice.
+        minor: kind === 'event' && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?)\b/i.test(name)
+          || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : undefined,
         // Resumen del apartado ("Event Intro: …", requisitos): como las fichas de Endfield. Solo eventos; los banners ya dicen a quién destacan.
         description: kind === 'event' ? summarize(section, { title: name }) : undefined,
       }

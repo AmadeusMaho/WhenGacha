@@ -36,6 +36,11 @@ const ART: Record<string, string> = {
   gfl2: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/2e/99/76/2e99765a-2026-3376-86b1-61104ddf414d/01_U9996_U56fe-ios2778x1284.jpg/1280x1280bb.jpg',
   mho: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/21/e2/80/21e28030-9552-d59e-b2ed-f263a2f46af1/_U5356_U70b9_U56fe-_U4e3bKV-2778x1284-_U82f1_U6587.jpg/1280x1280bb.jpg',
   bleach: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/48/48/0d/48480dda-ba1c-c1f6-3994-16c5d83dcdf5/2778-1284-1.jpg/1280x1280bb.jpg',
+  // Onmyoji, Path to Nowhere, Sword of Convallaria y Mongil (13 nov 2026): primera captura de la App Store (horizontal).
+  onmyoji: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/b3/96/57/b396579a-d564-7809-8515-ea20d4782ff6/1_U56fe2688x1242.jpg/1280x1280bb.jpg',
+  ptn: 'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/70/12/5a/70125a2c-ba9f-eb90-7fdf-836943e6e21d/a875fcb0-4b3d-44f5-8134-07fae21e2e33_2-_U6a2a_U677f2208x1242.jpg/1280x1280bb.jpg',
+  soc: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/21/68/e8/2168e8de-386c-ca73-5793-2c5b8a10d84f/35-_U843d_U7248-_U82f9_U679c-2868x1230.jpg/1280x1280bb.jpg',
+  mongil: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/bb/6c/a7/bb6ca74c-24c9-b87f-e4e6-0d47558723be/260901__Ubaac_Uae38_00__Ud0a4_Uc544_Ud2b8_2796x1290_EN.jpg/1280x1280bb.jpg',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -73,7 +78,7 @@ export const CATALOG: Game[] = [
   // BrownDust2: avisos oficiales de browndust2.com (src/sources/bd2.ts). Actualiza cada 2 semanas (miércoles).
   def('bd2', 'BrownDust2', 'BD2', 'Neowiz', '#d4a373', '#4a2c17', 14, '', 'BrownDust2', 'bd2',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/11/b3/f8/11b3f84d-1f7e-67a7-7b85-916916f5743d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
-  // Azur Lane: solo vía Discord (su web es de Yostar y su wiki pone una barrera anti-bots). Sin canal configurado no muestra nada.
+  // Azur Lane: avisos de mantenimiento de su web oficial (src/sources/azurlane.ts) + tuits oficiales por Discord. Su wiki pone una barrera anti-bots.
   // AFK Journey: su wiki de Fandom (src/sources/afkjourney.ts). Sin códigos: la wiki no mantiene una lista fiable.
   def('afkjourney', 'AFK Journey', 'AFKJ', 'Farlight', '#e9c46a', '#3d3215', 0, 'afk-journey.fandom.com', 'AFK Journey', 'afkjourney',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/90/d2/2190d26d-73b6-74eb-9986-0eec5d7371bd/AppIcon-Global-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
@@ -92,6 +97,18 @@ export const CATALOG: Game[] = [
   // Monster Hunter Outlanders: GameWith (eventos, banners, temporada, códigos) + códigos de Game8 (src/sources/mho.ts).
   def('mho', 'Monster Hunter Outlanders', 'MHO', 'Capcom · TiMi', '#9ccc65', '#2c3d17', 0, '', 'Monster Hunter Outlanders', 'mho',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/00/73/e0/0073e0c8-a9e4-1956-8966-f83a136ee71e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Onmyoji: "Events/Global" de su wiki de Fandom (src/sources/onmyoji.ts). Sin códigos ni recompensas (sin fuente).
+  def('onmyoji', 'Onmyoji', 'ONM', 'NetEase', '#e57373', '#3d1214', 0, 'onmyoji.fandom.com', 'Onmyoji', 'onmyoji',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/43/0c/51/430c51e8-47b8-7fe1-97cb-efe0b895c33a/AppIcon-1x_U007emarketing-0-7-0-85-220.png/256x256bb.jpg'),
+  // Path to Nowhere: portada de su wiki.gg (eventos, arrestos, Sinners nuevos) + códigos de PocketGamer (src/sources/ptn.ts).
+  def('ptn', 'Path to Nowhere', 'PtN', 'Aisno Games', '#ef9a9a', '#3a1518', 0, 'pathtonowhere.wiki.gg', 'Path to Nowhere', 'ptn',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7b/fa/92/7bfa928f-7101-b5f3-812d-94c66bf4741c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Sword of Convallaria: GameWith + avisos oficiales de XD + códigos de PocketGamer (src/sources/soc.ts). Su wiki.gg apenas tiene contenido.
+  def('soc', 'Sword of Convallaria', 'SoC', 'XD', '#d4b26a', '#30260f', 0, 'swordofconvallaria.wiki.gg', 'Sword of Convallaria', 'soc',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/1d/d3/47/1dd34725-b946-1b9c-15ef-8b2600bf82ff/AppIcon-1x_U007emarketing-0-11-0-85-220-0.png/256x256bb.jpg'),
+  // MONGIL: STAR DIVE: banners de Prydwen + códigos de PocketGamer; eventos por Discord (src/sources/mongil.ts). Wiki.gg para los retratos.
+  def('mongil', 'MONGIL: STAR DIVE', 'MSD', 'Netmarble', '#80deea', '#143840', 0, 'mongil.wiki.gg', 'MONGIL: STAR DIVE', 'mongil',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/5f/7f/cd/5f7fcd25-7377-4c5e-b9d3-31da50600807/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

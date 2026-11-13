@@ -33,6 +33,42 @@ const GAME8_CODES: Record<string, string> = {
 
 export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
 
+/**
+ * Listas de códigos de PocketGamer (pocketgamer.com/<juego>/codes/; robots.txt "Allow: /"), para juegos sin wiki ni Game8 que las mantenga
+ * (revisado el 13 nov 2026). Cada lista: un `<h2>` "Active … codes" y, debajo, `<li><strong>CÓDIGO</strong> - recompensas</li>` hasta el
+ * apartado "Expired". Las recompensas vienen como "10 Premium Salmon Puree, 1 Purple Upgrade Stone" o "Hope Luxite x300"; algunas solo dicen
+ * "rewards" (sin detalle). 1 página por juego, caché de 6 h en el proxy.
+ */
+export async function syncPocketGamerCodes(slug: string): Promise<PromoCode[]> {
+  const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/codes/`))
+  if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`)
+  return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), 'text/html'))
+}
+
+export function pocketGamerCodes(doc: Document): PromoCode[] {
+  const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
+  const head = [...doc.querySelectorAll('h2')].find(h => /active/i.test(text(h)) && /codes?/i.test(text(h)))
+  if (!head) throw new Error('pocketgamer: no se encontró la lista de códigos activos')
+  const out: PromoCode[] = []
+  for (let n = head.nextElementSibling; n && !/^H2$/.test(n.tagName); n = n.nextElementSibling) {
+    if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break
+    for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
+      const line = text(li)
+      const code = (/^([A-Za-z0-9]{4,30})\b/.exec(line)?.[1] ?? '').trim()
+      if (!code || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
+      const rest = line.slice(code.length).replace(/^\s*[-–:]\s*/, '')
+      const until = /\((?:expires?|until)\s+([^)]+)\)/i.exec(rest)?.[1]
+      // "10 Premium Salmon Puree" → "Premium Salmon Puree ×10"; "Hope Luxite x300" → "Hope Luxite ×300"; "300k Gold" → "Gold ×300k".
+      // Separador: la coma seguida de espacio ("10,000 Gold" es una sola cifra).
+      const rewards = rest.replace(/\([^)]*\)/g, '').split(/\s*,\s+|\s+and\s+/).map(r => r.trim())
+        .map(r => r.replace(/^(\d[\d,.]*[kK]?)\s+(.+)$/, '$2 ×$1').replace(/\s+x\s?(\d[\d,.]*[kK]?)$/i, ' ×$1'))
+        .filter(r => r && !/^(rewards?|free rewards?|tba|-)$/i.test(r))
+      out.push({ code, rewards: [...rewards.slice(0, 6), ...(until ? [`Until ${until.trim()}`] : [])] })
+    }
+  }
+  return out
+}
+
 export async function syncGame8Codes(api: string): Promise<PromoCode[]> {
   const path = GAME8_CODES[api]
   if (!path) return []

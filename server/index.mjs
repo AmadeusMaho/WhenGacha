@@ -11,7 +11,8 @@ import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 import { gzip as gzipCb } from 'node:zlib'
 import { getSnapshot, startCollector } from './collector.mjs'
-import { MAX_BYTES, flushCache, handleProxy } from './proxy.mjs'
+import { MAX_BYTES, clientIp, flushCache, handleProxy, limited } from './proxy.mjs'
+import { scraperReason } from './antiscrape.mjs'
 import { handleApi, supportProblems } from './supporter.mjs'
 import { getSkinLive, startSkinLive } from './skin-live.mjs'
 import { getUpcomingLive, startUpcomingLive } from './upcoming-live.mjs'
@@ -114,6 +115,13 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname.startsWith('/api/')) return await handleApi(req, res, url)
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { allow: 'GET, HEAD' }, 'Método no permitido')
     if (url.pathname === '/healthz') return send(res, 200, { 'content-type': 'text/plain' }, 'ok')
+    // Datos (copias y proxy): sin robots ni herramientas de scraping (server/antiscrape.mjs), con límite por IP y sin indexar.
+    if (url.pathname === '/proxy' || url.pathname.startsWith('/data/')) {
+      const why = scraperReason(req)
+      if (why) return send(res, 403, { 'content-type': 'text/plain; charset=utf-8', 'x-robots-tag': 'noindex, noai' }, 'No se permite la recolección automatizada de datos.')
+      if (url.pathname.startsWith('/data/') && limited(clientIp(req))) return send(res, 429, { 'retry-after': '60' }, 'Demasiadas peticiones')
+      res.setHeader('x-robots-tag', 'noindex, noai')
+    }
     if (url.pathname === '/proxy') return await handleProxy(req, res, url)
     if (url.pathname === '/data/skin-live.json') { // vídeo/imagen de portada actual de cada juego, para las skins (server/skin-live.mjs)
       const body = JSON.stringify(getSkinLive())

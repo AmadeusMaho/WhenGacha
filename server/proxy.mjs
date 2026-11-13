@@ -70,7 +70,7 @@ const SOURCES = [
   // Una sola ruta y caché de un día: la lista apenas cambia.
   { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && u.pathname === '/api/v1/character/list' && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
-  { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke)\/banners$/.test(u.pathname) },
+  { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive)\/banners$/.test(u.pathname) },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765)$/.test(u.pathname) },
   // Monster Hunter Outlanders: guía de GameWith en inglés (eventos con recompensas, banners, temporada y códigos; robots.txt solo cierra /api/).
   { name: 'gamewith', ttl: 6 * HOUR, test: u => u.hostname === 'gamewith.ai' && /^\/monster-hunter-outlanders\/en\/(articles\/(event-list|current-banners|season-guide|redeem-codes)|items)$/.test(u.pathname) && !u.search },
@@ -90,6 +90,25 @@ const SOURCES = [
   // GFL2: avisos oficiales de la web global (la lista de eventos, tipo 4, y cada aviso). Los avisos no cambian: caché larga.
   { name: 'sunborn', ttl: 6 * HOUR, test: u => u.hostname === 'gf2-web-us-api.sunborngame.com' && (/^\/website\/news\/\d{1,6}$/.test(u.pathname) && !u.search
     || u.pathname === '/website/news_list/4' && [...u.searchParams.keys()].every(k => ['page', 'limit'].includes(k)) && Number(u.searchParams.get('limit')) <= 10) },
+  // Sword of Convallaria: guía de GameWith en gamewith.net (robots.txt sin restricciones): banners (68920) y eventos (68934). Solo esas dos páginas.
+  { name: 'gamewith-net', ttl: 6 * HOUR, test: u => u.hostname === 'gamewith.net' && /^\/sword-of-convallaria\/(68920|68934|70901)$/.test(u.pathname) && !u.search },
+  // Sword of Convallaria: avisos oficiales (la API de noticias que usa soc.xd.com; sin claves) y el texto de cada aviso en el CDN de XD.
+  { name: 'starforce', ttl: 3 * HOUR, test: u => u.hostname === 'poster-api.starforce.tw' && u.pathname === '/api/v1.0/form/articles/list'
+    && u.searchParams.get('block_code') === 'ssrpg-website-news' && u.searchParams.get('language') === 'en' && Number(u.searchParams.get('page_size') ?? 0) <= 12
+    && [...u.searchParams.keys()].every(k => ['block_code', 'language', 'page', 'page_size'].includes(k)) },
+  { name: 'xdcdn', ttl: 12 * HOUR, test: u => u.hostname === 'website.xdcdn.net' && /^\/form\/website\/news\/[A-Za-z0-9]{6,20}\/en\.json$/.test(u.pathname) && !u.search },
+  // MONGIL: STAR DIVE: avisos oficiales del tablón "Events" (menú 6) del foro de Netmarble, la API pública que usa su web. Lista (máx. 12) y aviso suelto.
+  { name: 'netmarble', ttl: 3 * HOUR, test: u => u.hostname === 'forum.netmarble.com' && u.searchParams.get('menuSeq') === '6' && (
+    (u.pathname === '/api/game/monster2/official/forum/stardive_gl/article/list' && Number(u.searchParams.get('rows')) <= 12 && [...u.searchParams.keys()].every(k => ['menuSeq', 'start', 'rows'].includes(k)))
+    || (/^\/api\/game\/monster2\/official\/forum\/stardive_gl\/article\/\d{1,6}$/.test(u.pathname) && [...u.searchParams.keys()].every(k => k === 'menuSeq'))) },
+  // Azur Lane: avisos de mantenimiento de su web oficial (WordPress; robots.txt sin reglas). La lista de noticias y cada aviso, sin parámetros.
+  { name: 'yostar-al', ttl: 6 * HOUR, test: u => u.hostname === 'azurlane.yo-star.com' && (u.pathname === '/news/' || /^\/news\/20\d\d\/\d\d\/\d\d\/maintenance-notice[a-z0-9-]*\/$/.test(u.pathname)) && !u.search },
+  // Path to Nowhere: avisos oficiales de su web (la API de la lista que usa la propia página, máx. 10, y la página de cada aviso).
+  { name: 'aisno', ttl: 6 * HOUR, test: u => u.hostname === 'ptn.aisnogames.com' && (
+    (u.pathname === '/api/news' && u.searchParams.get('locale') === 'en-EN' && Number(u.searchParams.get('limit')) <= 10 && [...u.searchParams.keys()].every(k => ['offset', 'limit', 'locale', 'section'].includes(k)))
+    || (/^\/en-EN\/news\/\d{1,6}$/.test(u.pathname) && !u.search)) },
+  // Códigos de Sword of Convallaria, Path to Nowhere y MONGIL de PocketGamer (robots.txt "Allow: /"). Una página por juego.
+  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && /^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive)\/codes\/$/.test(u.pathname) && !u.search },
   // BLEACH: Soul Resonance: lista de códigos de game.guide (robots.txt solo cierra /api/). Una sola página.
   { name: 'gameguide', ttl: 6 * HOUR, test: u => u.hostname === 'www.game.guide' && u.pathname === '/bleach-soul-resonance-codes' && !u.search },
   { name: 'stellasora', ttl: 3 * HOUR, test: u => u.hostname === 'stellasora.miraheze.org' && u.pathname === '/wiki/Stella_Sora_Wiki' },
@@ -239,7 +258,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]
@@ -426,7 +445,7 @@ export async function sourceFetch(url) {
 
 /* ---------- límite de peticiones por IP ---------- */
 const buckets = new Map()
-function limited(ip) {
+export function limited(ip) {
   const now = Date.now()
   let b = buckets.get(ip)
   if (!b || now > b.reset) { b = { n: 0, reset: now + MIN }; buckets.set(ip, b) }
@@ -435,7 +454,7 @@ function limited(ip) {
 }
 setInterval(() => { const now = Date.now(); for (const [k, b] of buckets) if (now > b.reset) buckets.delete(k) }, MIN).unref()
 
-const clientIp = req => (req.headers['x-forwarded-for']?.toString().split(',')[0].trim()) || req.socket.remoteAddress || 'unknown'
+export const clientIp = req => (req.headers['x-forwarded-for']?.toString().split(',')[0].trim()) || req.socket.remoteAddress || 'unknown'
 
 /* ---------- respuesta ---------- */
 const COMPRESSIBLE = /^(text\/|application\/(json|javascript|manifest\+json)|image\/svg)/

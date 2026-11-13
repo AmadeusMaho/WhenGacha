@@ -473,6 +473,71 @@ añade a `DISCORD_CHANNELS`) mandan en nombres y horas (`officialFirst`). Fuente
   Por eso va como `wip` ("En construcción") hasta que su copia traiga eventos vigentes.
 - Tiradas: 160 Spiritual Jade (también "Jades" en los códigos); billete = 1; pity 80 sin 50/50. Sin tabla fiable de ingresos diarios.
 
+## Onmyoji, Path to Nowhere, Sword of Convallaria y MONGIL: STAR DIVE (añadidos el 13 nov 2026)
+
+Fuentes nuevas en la lista del proxy: `gamewith-net` (gamewith.net, 2 páginas de SoC, 6 h, 3 s), `starforce` + `xdcdn` (avisos oficiales de SoC),
+`pocketgamer` (códigos de SoC, PtN y MONGIL; 1 página por juego, 6 h, 3 s; robots.txt "Allow: /") y la página `other-games/mongil-star-dive` de Prydwen.
+Las wikis (Fandom y wiki.gg) ya entraban por `wiki`. Steam se probó y no sirve: SoC dejó de publicar avisos en 2025 y Onmyoji en 2022; PtN y MONGIL no están.
+
+**Azur Lane** (`src/sources/azurlane.ts`; 13 nov 2026). El canal de Discord (tuits de @AzurLane_EN) perdía avisos y daba títulos malos, así que se le sumó la web oficial:
+los avisos de mantenimiento de azurlane.yo-star.com/news/ (fuente `yostar-al`; WordPress, robots.txt sin reglas), con bloques `<strong>New Events</strong>`,
+`New Characters` ("Rate up in event construction pool" → banner de construcción limitada), skins, tienda, muebles… (menores) y su periodo. Hasta 3 avisos de los
+últimos 40 días. Si un cosmético llega por las dos vías, se queda el de la web (`azurDedupe` en index.ts). Lector de Discord: títulos sacados de frases sin "The
+following new …" y guiones dentro del nombre ("Battle UI - Angels' Stage is available between 11/12 - 11/26").
+
+**Onmyoji** (`src/sources/onmyoji.ts`; servidor global). Sin avisos oficiales legibles: su web en inglés (en.onmyojigame.com) dejó de publicar noticias en abril
+de 2020 y su Discord está abandonado. Wiki de Fandom, página "Events/Global": una tabla por año con la imagen de cada evento
+(el nombre es el del archivo) y su periodo solo en días ("November 11th - December 8th"). Horas supuestas 12:00 → 23:59 (UTC+8), todo "≈".
+- Banners: "Memory Scrolls …" y "Starry Return - …", con los shikigami del título; retrato de su página en la wiki ("SP Hyakuwa Hououka" → página "SP Hououka").
+- Tiendas, packs, pases y aspectos: campaña menor (ocultos por defecto).
+- **Sin fuente**: recompensas (los eventos nuevos no tienen página; los avisos oficiales no se pueden leer) y **códigos** (Onmyoji global no los publica con
+  regularidad y nadie mantiene una lista).
+- Tiradas: Mystery Amulet = 1; 100 Jade por invocación (wiki, "Summon"). Sin pity fijo.
+
+**Path to Nowhere** (`src/sources/ptn.ts`; servidor global de América, UTC-7). La wiki de Fandom dejó de seguir los eventos en 2024; la de wiki.gg
+(pathtonowhere.wiki.gg) los pone en su portada, plantilla "MP/Middle": `{{MPEvent|nombre|fecha con hora (Server Time)|tipo}}` (Story/Event, SO = pase,
+LA = arresto limitado, EA = arresto de evento) y los Sinners nuevos (`{{CharacterPortal|Requiem|S}}`). Imagen "<nombre> Banner.png", retrato "<nombre> Skin1 Icon.png".
+- Reparto de los Sinners nuevos (la wiki no dice cuál va en cada arresto): la S con "·" (variantes limitadas) al limitado; el resto, y la A nueva, al de evento.
+- Códigos: PocketGamer (sin el detalle de recompensas). **Sin fuente** de recompensas de eventos.
+- **Avisos oficiales de la web** (fuente `aisno`): ptn.aisnogames.com pide su lista a `/api/news?offset=0&limit=6&locale=en-EN` y cada aviso es `/en-EN/news/<id>`
+  (Next.js, texto en `__NEXT_DATA__`). Sale uno grande por versión con todos sus eventos numerados y hora exacta (`ptnNotice`); mandan sobre la wiki, que aporta la
+  imagen y los arrestos (no van en esos avisos). El 13 nov 2026 dio 12 eventos de "The Dying Echo".
+- **Próximos banners y reposiciones** (p. ej. una vuelta de Clementine): la wiki no los anuncia; solo salen en el X oficial (@PathtoNowhereEN), que no se puede
+  leer. Con un canal de Discord "ptn" en `DISCORD_CHANNELS` (siguiendo sus anuncios) entran solos: el lector entiende "Rerun Exclusive Arrest", "S-Class Sinner
+  [Clementine] or [Shalom]" y "(Server Time)" = UTC-7.
+- Tiradas: 180 Hypercubes por arresto (dos guías coinciden; la wiki no tiene los precios). Pity 80.
+
+**Sword of Convallaria** (`src/sources/soc.ts`; servidor global, UTC-4).
+- GameWith (gamewith.net): "List of Available Banners" (banners en curso con su fecha de FIN y los iconos de todos los personajes) y "List of All Available
+  Events" (eventos en curso con fin y descripción).
+- Avisos oficiales de mantenimiento (la API de noticias de soc.xd.com): cada evento con inicio y fin exactos. Si un banner oficial acaba a la misma hora que uno de
+  GameWith, este toma su inicio; si no hay aviso (los parches pequeños no lo tienen), el inicio se estima (14 días antes del fin, sin pasar de hoy) y se marca estimado.
+- Códigos: PocketGamer. **Sin fuente** de recompensas con cifras.
+- Discord (canal `soc`, 13 nov 2026, sigue #official-news y #social-media-news): los tuits dan la hora exacta de lo que la web no avisa. El lector entiende
+  "A new event, The Frontier Line, will be available…", "Upcoming Limited-Time Summon Event: Get Together" (banner; destacados de 'the probability of summoning
+  "Lukamar" and "Pooch Runrun"') y los sorteos de aspectos ('Live Skin "After the Midnight Snow" event', menor). Periodo "12:00, Nov 13, 2026 – 23:59, Dec 3, 2026 (UTC-4)".
+- Próximo personaje: "List of Upcoming and New Characters" de GameWith (70901; p. ej. "Arman?"), sin fecha: banner estimado de 14 días tras el de personaje en curso.
+- Tiradas: 150 Hope Luxite o 1 Secret Fate (BlueStacks, GameWith). Calculadora con meta 180 (destacado garantizado).
+
+**MONGIL: STAR DIVE** (`src/sources/mongil.ts`). Banners de Prydwen (hora exacta, misma lectura que WuWa o NTE) y códigos de PocketGamer.
+- Eventos: avisos oficiales del tablón "Events" del foro de Netmarble (fuente `netmarble` del proxy: la API pública que usa la web, lista y aviso suelto; la
+  lista mezcla idiomas y solo se leen los avisos en inglés). Cada aviso trae varios eventos ("🌠 Event 3. M.A.D.'s 7-Day Gifts") con periodo en UTC, imagen,
+  cómo participar y recompensas ("Compass of Destiny x1" → tiradas). "After the 11/10 maintenance" no da hora: se usa el inicio del banner de la versión.
+  GameWith y la wiki.gg se quedaron en mayo/octubre de 2026 y no se usan para eventos.
+- Próximo personaje anunciado sin fecha (tarjeta "teased" de Prydwen, p. ej. Lou): banner estimado a continuación del actual, con su misma duración.
+- Retratos de mongil.wiki.gg ("<Nombre>Portrait.png") cuando la wiki los tiene (M.A.D. aún no).
+- Tiradas: Compass of Destiny = 1; 160 Starlight Crystal = 1 Compass. Pity 90.
+
+**Retratos de los destacados** (`withFeaturedIcons` en `src/collector.ts`, 13 nov 2026). Antes solo los buscaba cada navegador con la imagen principal de la página del
+personaje (PageImages), que las wikis de wiki.gg no tienen: faltaban en 15 juegos. Ahora el recolector prueba el archivo de icono de cada wiki ("<nombre> icon.png",
+"Resonator <nombre>.png" en WuWa, "<nombre> Covenant Avatar.png" en la IOP Wiki, "<nombre> Skin1 Icon.png" en PtN…) y después PageImages, en lotes de 50, y la copia
+ya sale con el retrato. Juegos sin wiki (BD2, MHO, Stella Sora) siguen sin retrato salvo que su fuente lo traiga.
+
+**Iconos de recompensas** (13 nov 2026). `withItemIcons` (recolector) prueba primero los archivos de icono y, si no hay, la imagen principal de la página del objeto
+(PageImages, para aspectos, trajes y objetos con nombre propio). MONGIL toma el icono de la imagen que su aviso pone delante de cada recompensa. Revisión:
+`node scripts/check-icons.mjs`. **Sin fuente de iconos**: CZN (su wiki de Fandom está vacía y ni Game8 ni GameWith listan sus objetos con imagen), "Radiant Coin"
+y los sellos de MHO (no están en la lista de objetos de GameWith), y algunos trajes y cosméticos sin página en su wiki (Infinity Nikki, Honkai 3rd, AFK Journey).
+
 ## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
 
 - **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith

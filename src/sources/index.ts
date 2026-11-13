@@ -16,6 +16,11 @@ import { syncTrickcal, syncTrickcalNews } from './trickcal'
 import { syncGfl2, syncGfl2Official } from './gfl2'
 import { mhoIcons, syncMho, syncMhoNews } from './mho'
 import { BLEACH_ICONS, syncBleach } from './bleach'
+import { syncOnmyoji } from './onmyoji'
+import { syncPtn } from './ptn'
+import { syncSoc } from './soc'
+import { syncMongil } from './mongil'
+import { syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
@@ -269,12 +274,23 @@ function dedupeEvents(events: GameEvent[]): GameEvent[] {
   return out
 }
 
+/**
+ * Azur Lane: los tuits por Discord y los avisos de la web dan los mismos cosméticos con otro nombre ("Collab furniture" / "Furniture: Manga Club").
+ * Si la web trae una campaña menor con el mismo periodo (inicio ±1 día, fin ±1 h), sobra la del tuit.
+ */
+function azurDedupe(id: string, s: GameSync): GameSync {
+  if (id !== 'azurlane') return s
+  const web = s.events.filter(e => e.minor && e.id.includes(':yostar:'))
+  const dup = (e: GameEvent) => e.minor && e.id.includes(':dc:') && web.some(w => Math.abs(Date.parse(w.start) - Date.parse(e.start)) <= DAY && Math.abs(Date.parse(w.end) - Date.parse(e.end)) <= HOUR)
+  return { ...s, events: s.events.filter(e => !dup(e)) }
+}
+
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
   // Avisos oficiales publicados en Steam (steam.ts): mandan sobre las fuentes de siempre, como los de Discord.
   const raw = () => (STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game))
   const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), raw()) : await raw()
-  const s1 = await withItemIcons(game.id, s0)
+  const s1 = await withItemIcons(game.id, azurDedupe(game.id, s0))
   // Descripciones sin HTML y breves (resúmenes al estilo de Endfield; summary.ts).
   const s = { ...s1, events: dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e))) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
@@ -331,6 +347,14 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'mho': return officialFirst(syncMhoNews(id), syncMho(id))
     // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"), sin fuente web permitida.
     case 'bleach': return syncBleach()
+    // Onmyoji: "Events/Global" de su wiki de Fandom (eventos y convocatorias con imagen; solo días, "≈"). Sin recompensas ni códigos (sin fuente).
+    case 'onmyoji': return syncOnmyoji(id)
+    // Path to Nowhere: portada de su wiki.gg (eventos y arrestos con hora exacta, Sinners nuevos con retrato) + códigos de PocketGamer.
+    case 'ptn': return syncPtn(id)
+    // Sword of Convallaria: GameWith (banners con retrato, eventos; solo fin) + avisos oficiales de XD (hora exacta) + códigos de PocketGamer.
+    case 'soc': return syncSoc(id)
+    // MONGIL: STAR DIVE: banners de Prydwen + códigos de PocketGamer; eventos solo por Discord (canal "mongil"), sin fuente web al día.
+    case 'mongil': return syncMongil(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
@@ -359,7 +383,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // Honkai Impact 3rd: eventos de su wiki (Fandom); banners solo vía Discord.
     case 'honkai3': return syncHonkai3(id).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))
     // Azur Lane: solo anuncios oficiales vía Discord (syncSource los añade si hay canal); sin fuente web permitida.
-    case 'azurlane': return { events: [], patches: [], codes: [] }
+    // + los avisos de mantenimiento de su web oficial (azurlane.ts): eventos, construcción limitada y cosméticos con fechas, aunque el canal falle.
+    case 'azurlane': return syncAzurLane(id)
     default: throw new Error(`Sin fuente para ${game.name}`)
   }
 }

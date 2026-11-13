@@ -204,6 +204,15 @@ const ECON: Record<string, Econ> = {
   // BLEACH: Soul Resonance: 160 Spiritual Jade por tirada; pity de 80 sin 50/50 (BlueStacks, BitTopup). Sin tabla fiable de ingresos diarios.
   // Icono oficial de la web global (bleach.ts, BLEACH_ICONS).
   bleach: { currency: 'Spiritual Jade', icon: 'Spiritual Jade', iconUrl: 'https://game-cdn.aplusjapan-game.com/bleach_web/web/reg_0.png', ticket: 'Gacha Ticket', per: 160, pass: 0, pity: 80, sources: [] },
+  // Juegos añadidos el 13 nov 2026 (ver pulls.ts para las equivalencias). Ninguna guía coincide en los ingresos diarios: sin `sources`, cada
+  // jugador pone los suyos. Onmyoji: 100 Jade = 1 invocación, sin pity fijo (la wiki solo da las probabilidades: SSR 1 %, SP 0,25 %).
+  onmyoji: { currency: 'Jade', icon: 'Jade', ticket: 'Mystery Amulet', per: 100, pass: 0, pity: 0, sources: [] },
+  // Path to Nowhere: 180 Hypercubes por arresto; S garantizada a los 80 (wiki, "Arrests/Info").
+  ptn: { currency: 'Hypercube', icon: 'Hypercube', per: 180, pass: 0, pity: 80, sources: [] },
+  // Sword of Convallaria: 150 Hope Luxite = 1 Secret Fate; el destacado del banner de debut está garantizado a las 180 (GameWith).
+  soc: { currency: 'Hope Luxite', icon: 'Hope Luxite', ticket: 'Secret Fate', per: 150, pass: 0, pity: 180, sources: [] },
+  // MONGIL: STAR DIVE: 160 Starlight Crystal = 1 Compass of Destiny; 5★ garantizado a las 90 en el banner de personaje (Prydwen).
+  mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [] },
 }
 
 /** Juegos sin economía conocida (los que añades a mano): moneda genérica a 160 por tirada, que se puede cambiar. */
