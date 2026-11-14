@@ -29,10 +29,18 @@ const isDown = (res, env) => res.status >= 500 || (env.REQUIRE_MARKER === '1' &&
 // que son difíciles de deshacer). El certificado lo pone Cloudflare (Let's Encrypt, *.whengacha.site).
 const HSTS = 'max-age=15552000'
 
-function withVia(res, via) {
+// Botkeep (su nginx) añade "X-Robots-Tag: noindex, nofollow" a TODO lo que sirve, para que no se indexen sus subdominios gratuitos.
+// Pasado tal cual, Google no indexaba whengacha.site (Search Console, 14 nov 2026: "noindex en el encabezado X-Robots-Tag").
+// Se quita en las páginas y solo quedan sin indexar los datos (/data/, /proxy, /api/), como pone server/index.mjs.
+const PRIVATE = /^\/(data\/|proxy|api\/)/
+
+function withVia(res, via, pathname) {
   const out = new Response(res.body, res)
   out.headers.set('x-whengacha-via', via)
   out.headers.set('strict-transport-security', HSTS)
+  out.headers.delete('x-robots-tag')
+  if (PRIVATE.test(pathname)) out.headers.set('x-robots-tag', 'noindex, noai')
+  out.headers.set('x-content-type-options', 'nosniff') // nginx y el servidor la ponían dos veces
   return out
 }
 
@@ -53,14 +61,14 @@ export default {
     let why
     try {
       const res = await fetch(upstreamRequest(request, env.PRIMARY, body), { signal: AbortSignal.timeout(timeout) })
-      if (!isDown(res, env)) return withVia(res, 'primary')
+      if (!isDown(res, env)) return withVia(res, 'primary', url.pathname)
       why = `HTTP ${res.status}${res.headers.get('x-served-by') ? '' : ' sin x-served-by'}`
     } catch (err) {
       why = err?.name === 'TimeoutError' ? `sin respuesta en ${timeout} ms` : String(err?.message ?? err)
     }
     console.log(`[failover] ${request.method} ${new URL(request.url).pathname} → respaldo (${why})`)
     try {
-      return withVia(await fetch(upstreamRequest(request, env.BACKUP, body)), 'backup')
+      return withVia(await fetch(upstreamRequest(request, env.BACKUP, body)), 'backup', url.pathname)
     } catch (err) {
       return new Response('WhenGacha no está disponible ahora mismo. Vuelve a intentarlo en unos minutos.', {
         status: 503, headers: { 'content-type': 'text/plain; charset=utf-8', 'retry-after': '60' } })
