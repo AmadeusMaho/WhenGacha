@@ -67,6 +67,8 @@ const REGIONS: Record<string, Regions> = {
  * (UTC-5 en sus avisos), Blue Archive, Umamusume, FGO (NA), Limbus, BrownDust2 y Azur Lane (EN).
  * Revisados el 13 nov 2026: Onmyoji (un servidor global, EST UTC-5), Sword of Convallaria (global, sus avisos dan el mismo instante en UTC-4 y
  * en hora del Pacífico), MONGIL (servicio mundial, avisos en UTC y Prydwen con las mismas horas en NA/EU/Asia), Suikoden STAR LEAP (solo Japón, JST). Path to Nowhere sí tiene regiones (arriba).
+ * Revisado el 14 nov 2026: Wizardry Variants Daphne, un solo servicio mundial (la misma app en todos los países, con varios idiomas); sus avisos
+ * en japonés y en inglés dan las mismas horas en JST (Ver 2.2.0: "11/12/2026 17:30 – 12/2/2026 23:59 JST" en los dos).
  */
 export const regionsOf =(g: Game): Regions | undefined => (g.api ? REGIONS[g.api] : undefined)
 

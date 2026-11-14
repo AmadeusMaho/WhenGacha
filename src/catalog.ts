@@ -44,6 +44,9 @@ const ART: Record<string, string> = {
   // Suikoden STAR LEAP (13 nov 2026): la ilustración principal de su web oficial (konami.com, "mainv_pc"), sin texto. Sus capturas de la
   // App Store son pantallas de juego con interfaz y como portada se veían raras.
   suikoden: 'https://img.konami.com/games/suikoden/star_leap/s/images/mainv_pc.jpg',
+  // Wizardry Variants Daphne (14 nov 2026): sus capturas de la App Store son verticales; la ilustración principal de su web oficial
+  // (wizardry.info, "mv_en.png", 3840×2272), servida a 1280 px por el CDN de imágenes de la propia web (i0.wp.com).
+  daphne: 'https://i0.wp.com/wizardry.info/wp-content/themes/wizardry-info/assets/img/daphne/mv_en.png?w=1280&ssl=1',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -116,6 +119,11 @@ export const CATALOG: Game[] = [
   // Sin códigos: el juego no tiene canje. Retratos desde la propia fuente (sin wiki).
   def('suikoden', 'Suikoden STAR LEAP', 'SSL', 'Konami', '#e0b45a', '#3a2a10', 0, '', 'Suikoden STAR LEAP', 'suikoden',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/47/c6/9a/47c69aa8-4c29-c992-cf98-6bb165472253/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Wizardry Variants Daphne: feed RSS oficial de wizardry.info (banners, eventos y campañas en JST, con recompensas), retratos de su lista
+  // oficial de aventureros y códigos de PocketGamer (src/sources/daphne.ts). Un solo servidor mundial. Sin wiki utilizable (wizardry.wiki.gg es
+  // de toda la saga y pone una barrera anti-bots).
+  def('daphne', 'Wizardry Variants Daphne', 'WVD', 'Drecom', '#c9a45c', '#2a2117', 0, '', 'Wizardry Variants Daphne', 'daphne',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a8/49/da/a849da17-e4fd-40e5-535a-1b126e314d6c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

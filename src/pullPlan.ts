@@ -252,6 +252,17 @@ const ECON: Record<string, Econ> = {
   // por piso cada semana, pero el número de pisos depende de cada uno: campo propio.
   suikoden: { currency: 'Fantasy Stone', icon: 'Fantasy Stone', iconUrl: 'https://www.kaiden.gg/img/suikoden-star-leap/assets/cmn_item_icon_30000.webp', ticket: 'Season Gacha Ticket', per: 150, pass: 0, pity: 200, sources: [daily(60), weekly(180)],
     inputs: [{ id: 'ikyo', name: '異境の宝求', per: 'week' }] },
+  // Wizardry Variants Daphne: 200 Gems of Org por "Unique Remains" (tirada del banner limitado; 11 por 2000). Cada tirada da 1 marca del banner y
+  // 100 marcas canjean al legendario destacado (60 si no es legendario): pity de 100 (guía de la comunidad, wizardry.fasterthoughts.io,
+  // "Free-to-Play Resources", y los avisos oficiales: "Remains of … : 100 Marks").
+  // Ingresos (14 nov 2026, la misma guía): diarias 20 de las misiones + 10 del lote diario del joyero (100 de oro); semanales 200 de las misiones
+  // + 50 gratis en la tienda oficial (sigue en pie tras su renovación de julio de 2026: "初回800個＋毎週50個"); 200 de "Today's Supplies" cada
+  // dos semanas (≈ 400 al mes); canjes mensuales de Guild Points (2 × 250) y Bounty Medals (5 × 100). No se cuentan las compensaciones, las
+  // misiones de evento (ya salen con sus recompensas) ni Old Castle Ruins (hasta 3000 según el puesto, cada 3–4 meses, sin fechas fijas).
+  daphne: { currency: 'Gems of Org', icon: 'Gems of Org', iconUrl: 'https://wizardry-static.synapse-lm.com/items/DJlaeJ5YRzq4/2a7373e3eb9b4886cb79fe9acd4a19a5b65d736b405bdc245858c4fea511fb75.png', ticket: 'Unique Remains', per: 200, pass: 0, pity: 100, sources: [daily(30), weekly(250),
+    { name: "Today's Supplies", amount: 400, per: 'month', day: 1 },
+    { name: 'Guild Points exchange', amount: 500, per: 'month', day: 1 },
+    { name: 'Bounty Medal exchange', amount: 500, per: 'month', day: 1 }] },
   // Ingresos (13 nov 2026, GameWith "How to Farm Starlight Crystals", act. 12 nov 2026): diarias 75 (Adventurer Quests 50 + 5 Requests de 5).
   // Dimensional Rift solo paga la primera vez de cada nivel por temporada y la guía no da su duración: no se cuenta.
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },

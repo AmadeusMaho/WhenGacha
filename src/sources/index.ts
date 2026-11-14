@@ -21,6 +21,7 @@ import { syncPtn } from './ptn'
 import { syncSoc } from './soc'
 import { syncMongil } from './mongil'
 import { syncSuikoden } from './suikoden'
+import { syncDaphne, DAPHNE_ICONS } from './daphne'
 import { syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -245,7 +246,7 @@ const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail:
  * Iconos de recompensas de los juegos sin wiki (el recolector los busca en la wiki del juego, `withItemIcons` de collector.ts): MHO, la lista de objetos
  * de GameWith; BLEACH, los iconos oficiales de su web. Se aplica después de unir Discord, así también los avisos oficiales salen con icono.
  */
-const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS }
+const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS }
 async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
   const load = ITEM_ICONS[id]
   if (!load || !s.events.some(e => e.items.some(i => !i.icon))) return s
@@ -358,6 +359,9 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'mongil': return syncMongil(id)
     // Suikoden STAR LEAP: Kaiden.gg (banners con retrato, Event RPG con recompensas, regalos de la caja, Transient Chamber y lo próximo, estimado).
     case 'suikoden': return syncSuikoden(id)
+    // Wizardry Variants Daphne: feed RSS oficial de wizardry.info (banners, eventos y campañas en JST exacto, con recompensas) + retratos de su
+    // lista de aventureros + códigos de PocketGamer. Un solo servidor mundial.
+    case 'daphne': return syncDaphne(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

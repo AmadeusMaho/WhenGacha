@@ -555,6 +555,28 @@ y sus avisos). 6–7 páginas por ciclo.
 - La web oficial (konami.com/games/suikoden/star_leap/jp/ja/) no tiene lista de noticias: los avisos salen solo en X (@GensoSuikodenSP).
 - Tiradas: 150 Fantasy Stones o 1 "Season N Gacha Ticket". Calculadora con meta 200 (los puntos del banner compran al destacado).
 
+## Wizardry Variants Daphne (añadido el 14 nov 2026)
+
+`src/sources/daphne.ts`. Drecom, un solo servicio mundial (la misma app en todos los países, con varios idiomas): los avisos en japonés y en inglés dan
+las mismas horas en JST (UTC+9), así que no hay selector de servidor. Fuentes nuevas del proxy: `wizardry` (el feed RSS de noticias en inglés,
+`wizardry.info/en/daphne/news/feed/` y `?paged=2`; 3 h de caché) y `wizardry-adv` (la lista oficial de aventureros, 5 páginas; 24 h). 3 s entre páginas.
+Sin robots.txt que los cierre (WordPress.com). Hasta 8 páginas por ciclo, casi siempre desde la caché.
+- **Banners**: los avisos de /news/adventures/ ("Clearwater Bride Lanavaille Arrives", "Chronicle of Battlefront Heroes [Season 2]") con su "Featured Period".
+  Destacados: los del título ("A and B") o la lista "Only the legendary adventurers listed below will appear".
+- **Eventos**: cada sección `<h2>`/`<h3>` de los avisos de versión, datos, campaña y evento con su periodo ("Event Period", "Campaign Period", "Season Dates":
+  "11/12/2026 17:30 – 12/2/2026 23:59 JST"). Fuera: ventas, pases, intercambios y lo que cuelga de "Limited-Time Items". "Day of Blessing", descuentos,
+  bonificaciones y la encuesta van como menores. Battlefront of Heroes es el desafío (temporadas de ~2 meses). Sin hora de inicio y del día del aviso:
+  empieza a la hora de publicación (tras el mantenimiento), no a las 00:00 JST.
+- **Recompensas y tiradas**: del propio aviso ("such as a total of 2 Unique Remains: …, a total of 400 Gems of Org"). 200 Gems of Org o 1 Unique Remains = 1 tirada.
+- **Retratos**: la imagen de la tarjeta de cada aventurero en la lista oficial (epíteto + nombre; `legend` = 5★).
+- **Iconos**: Gems of Org y Unique Remains, imágenes de la tienda oficial (`DAPHNE_ICONS`). **Sin icono**: el resto de objetos (Clock Tomes, "Remains of …"
+  del intercambio, oro): ni la web ni la tienda los publican, y wizardry.wiki.gg (de toda la saga) pone una barrera anti-bots y apenas cubre Daphne.
+- **Códigos**: PocketGamer (se canjean en la tienda oficial con el User ID).
+- **Lo próximo**: solo lo que los avisos ya fechan ("[Announcement] …"). Los adelantos de personajes salen solo en X (@Wiz_Daphne_en), sin fuente legible:
+  no hay banners estimados.
+- Calculadora: 200 por tirada, meta 100 (marcas del banner), diarias 30 (misiones 20 + joyero 10), semanales 250 (misiones 200 + tienda oficial 50) y al
+  mes Today's Supplies 400, Guild Points 500 y Bounty Medals 500 (wizardry.fasterthoughts.io, "Free-to-Play Resources").
+
 ## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
 
 - **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith

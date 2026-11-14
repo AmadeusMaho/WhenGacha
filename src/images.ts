@@ -271,7 +271,8 @@ function eventItemIcon(state: AppState, gameId: string, name: string): string | 
   const n = name.toLowerCase()
   for (const e of state.events) {
     if (e.gameId !== gameId) continue
-    const it = e.items.find(i => i.icon && (i.name.toLowerCase() === n || i.name.toLowerCase() === `${n}s`))
+    // "Unique Remains: Clearwater Princess Knight" (Daphne) también vale para "Unique Remains".
+    const it = e.items.find(i => i.icon && (i.name.toLowerCase() === n || i.name.toLowerCase() === `${n}s` || i.name.toLowerCase().startsWith(`${n}:`)))
     if (it) return it.icon
   }
   return undefined

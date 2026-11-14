@@ -83,6 +83,10 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Compass of Memory (artefactos) y Compass of Promise (permanente) no cuentan para el banner de personaje.
   // Suikoden STAR LEAP (Kaiden.gg): 150 Fantasy Stones por tirada ("1,500 Fantasy Stones, enough for a 10-pull"; "24,000 … worth 160 gacha pulls").
   // Los billetes de temporada ("Season 1 Gacha Ticket") = 1. Los "Guaranteed Ticket" de los puntos no son tiradas.
+  // Wizardry Variants Daphne: cada "Unique Remains" (limitado) cuesta 200 Gems of Org o se recibe suelto = 1 tirada (guía de la comunidad,
+  // wizardry.fasterthoughts.io "Free-to-Play Resources"; la tienda oficial vende 11 por 2000). Los "Remains of …" del intercambio son el
+  // destacado garantizado, no una tirada.
+  daphne: [{ item: /^gems? of org$/i, per: 200 }, { item: /^unique remains$/i, per: 1 }],
   suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }
