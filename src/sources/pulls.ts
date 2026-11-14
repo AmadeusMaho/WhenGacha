@@ -87,6 +87,9 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // wizardry.fasterthoughts.io "Free-to-Play Resources"; la tienda oficial vende 11 por 2000). Los "Remains of …" del intercambio son el
   // destacado garantizado, no una tirada.
   daphne: [{ item: /^gems? of org$/i, per: 200 }, { item: /^unique remains$/i, per: 1 }],
+  // Aniimo: el único gacha es Lightweave (trajes); cada tirada es 1 Lightweave Ticket, que la tienda vende por 38 Glimmer (o 38 Lumin Crystals).
+  // Glimmer solo compra 20 sueltos más un pack de 5 por traje (allthings.how, gurugamer, oct 2026): la cifra es orientativa.
+  aniimo: [{ item: /^glimmer$/i, per: 38 }, { item: /^lightweave tickets?$/i, per: 1 }],
   suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }

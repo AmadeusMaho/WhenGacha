@@ -58,6 +58,11 @@ const REGIONS: Record<string, Regions> = {
   // Path to Nowhere (13 nov 2026): tres servidores con su propio "Server Time", los relojes de la portada de su wiki (pathtonowhere.wiki.gg,
   // plantilla MP/Middle): América UTC-7, Europa UTC+2 y Asia UTC+7. Los avisos ("November 3rd, 14:00 (Server Time)") y ptn.ts van en hora de
   // América; cada región abre a la misma hora LOCAL, parches incluidos ("after the maintenance… 14:00 (Server Time)"): todo se desplaza.
+  // Aniimo (14 nov 2026): tres servidores, "Aniimo-Europe" (UTC+0), "Aniimo-Americas" (UTC-4) y "Aniimo-Apac" (UTC+8); sus avisos de Steam
+  // dan cada evento en las tres, casi siempre a la misma hora LOCAL (04:00, el reinicio). La versión y el fin de temporada son a la vez en todo
+  // el mundo (11/12: mantenimiento 06:00–11:00 UTC+0 = 02:00–07:00 UTC-4 = 14:00–19:00 UTC+8). aniimo.ts guarda las tres (`servers`); lo que
+  // solo trae Game8 ("≈") va en hora de América y se desplaza.
+  aniimo: { base: 'na', list: [{ id: 'na', label: 'Americas (UTC-4)', offset: -4 }, { id: 'eu', label: 'Europe (UTC+0)', offset: 0 }, { id: 'asia', label: 'Apac (UTC+8)', offset: 8 }] },
   ptn: { base: 'na', localLaunch: true, list: [{ id: 'na', label: 'America (UTC-7)', offset: -7 }, { id: 'eu', label: 'Europe (UTC+2)', offset: 2 }, { id: 'asia', label: 'Asia (UTC+7)', offset: 7 }] },
 }
 

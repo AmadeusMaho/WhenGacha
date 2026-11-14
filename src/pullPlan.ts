@@ -265,6 +265,11 @@ const ECON: Record<string, Econ> = {
     { name: 'Bounty Medal exchange', amount: 500, per: 'month', day: 1 }] },
   // Ingresos (13 nov 2026, GameWith "How to Farm Starlight Crystals", act. 12 nov 2026): diarias 75 (Adventurer Quests 50 + 5 Requests de 5).
   // Dimensional Rift solo paga la primera vez de cada nivel por temporada y la guía no da su duración: no se cuenta.
+  // Aniimo: las criaturas no salen de banners; el único gacha es Lightweave (trajes). 1 Lightweave Ticket por tirada = 38 Glimmer o 38 Lumin
+  // Crystals (de pago). Sin pity confirmado (las guías hablan de canjear el traje por 3000 Lightweave Fragments; ~1500 por traje repetido).
+  // Ingresos (14 nov 2026): 30 Glimmer al día por la Daily Activity (games.gg, mmodude, nerdschalk; Mobalytics dice 400, parece un error). Lo demás
+  // (Aniilog, Elite Training, Alphas, cofres) es de una sola vez y baja mucho pasado el nivel 60: no se cuenta.
+  aniimo: { currency: 'Glimmer', icon: 'Glimmer', iconUrl: 'https://img.game8.co/4622704/d376c11890317af3680c75d5276f4e89.png/show', ticket: 'Lightweave Ticket', per: 38, pass: 0, pity: 0, sources: [daily(30)] },
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },
 }
 

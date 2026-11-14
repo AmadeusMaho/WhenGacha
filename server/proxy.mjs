@@ -71,7 +71,7 @@ const SOURCES = [
   { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && u.pathname === '/api/v1/character/list' && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive)\/banners$/.test(u.pathname) },
-  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765)$/.test(u.pathname) },
+  { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765|Aniimo\/archives\/(622475|619365))$/.test(u.pathname) },
   // Monster Hunter Outlanders: guía de GameWith en inglés (eventos con recompensas, banners, temporada y códigos; robots.txt solo cierra /api/).
   { name: 'gamewith', ttl: 6 * HOUR, test: u => u.hostname === 'gamewith.ai' && /^\/monster-hunter-outlanders\/en\/(articles\/(event-list|current-banners|season-guide|redeem-codes)|items)$/.test(u.pathname) && !u.search },
   // Trickcal: avisos oficiales de su web (trickcal.biligames.com/news/en/ pide aquí la lista y cada aviso). Solo el servidor 113406 y estos parámetros.
@@ -107,8 +107,8 @@ const SOURCES = [
   { name: 'aisno', ttl: 6 * HOUR, test: u => u.hostname === 'ptn.aisnogames.com' && (
     (u.pathname === '/api/news' && u.searchParams.get('locale') === 'en-EN' && Number(u.searchParams.get('limit')) <= 10 && [...u.searchParams.keys()].every(k => ['offset', 'limit', 'locale', 'section'].includes(k)))
     || (/^\/en-EN\/news\/\d{1,6}$/.test(u.pathname) && !u.search)) },
-  // Códigos de Sword of Convallaria, Path to Nowhere, MONGIL y Wizardry Variants Daphne de PocketGamer (robots.txt "Allow: /"). Una página por juego.
-  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && /^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne)\/codes\/$/.test(u.pathname) && !u.search },
+  // Códigos de Sword of Convallaria, Path to Nowhere, MONGIL, Wizardry Variants Daphne y Aniimo (respaldo de Game8) de PocketGamer (robots.txt "Allow: /"). Una página por juego.
+  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && /^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne|aniimo)\/codes\/$/.test(u.pathname) && !u.search },
   // Wizardry Variants Daphne: feed RSS oficial de noticias en inglés (páginas 1 y 2, texto completo) y la lista oficial de aventureros (retratos).
   { name: 'wizardry', ttl: 3 * HOUR, test: u => u.hostname === 'wizardry.info' && u.pathname === '/en/daphne/news/feed/' && (!u.search || /^\?paged=[12]$/.test(u.search)) },
   { name: 'wizardry-adv', ttl: 24 * HOUR, test: u => u.hostname === 'wizardry.info' && /^\/en\/daphne\/adventurers\/(?:page\/[2-5]\/)?$/.test(u.pathname) && !u.search },

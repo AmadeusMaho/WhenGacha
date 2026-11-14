@@ -47,6 +47,8 @@ const ART: Record<string, string> = {
   // Wizardry Variants Daphne (14 nov 2026): sus capturas de la App Store son verticales; la ilustración principal de su web oficial
   // (wizardry.info, "mv_en.png", 3840×2272), servida a 1280 px por el CDN de imágenes de la propia web (i0.wp.com).
   daphne: 'https://i0.wp.com/wizardry.info/wp-content/themes/wizardry-info/assets/img/daphne/mv_en.png?w=1280&ssl=1',
+  // Aniimo (14 nov 2026): el fondo de la portada de su web oficial (aniimo.com, "hero-bg"), sin texto. Las capturas de la App Store son verticales.
+  aniimo: 'https://kg-web-cdn.akamaized.net/master/official-website/worldx_office_frontend/images/first-page/pc/1p/hero-bg-20261023.webp',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -124,6 +126,10 @@ export const CATALOG: Game[] = [
   // de toda la saga y pone una barrera anti-bots).
   def('daphne', 'Wizardry Variants Daphne', 'WVD', 'Drecom', '#c9a45c', '#2a2117', 0, '', 'Wizardry Variants Daphne', 'daphne',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/a8/49/da/a849da17-e4fd-40e5-535a-1b126e314d6c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Aniimo: avisos oficiales de Steam (horas exactas de Europe, Americas y Apac; Lightweave, el gacha de trajes; temporadas) + eventos de Game8
+  // con recompensas e iconos + códigos de Game8 (src/sources/aniimo.ts). Tres regiones (servers.ts).
+  def('aniimo', 'Aniimo', 'ANI', 'Pawprint Studio', '#7cc7a1', '#173037', 0, '', 'Aniimo', 'aniimo',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/71/69/87/716987bc-c98f-d85e-1803-e96f08e1a067/FPX_AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

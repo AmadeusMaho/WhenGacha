@@ -29,6 +29,7 @@ const GAME8_CODES: Record<string, string> = {
   dna: 'Duet-Night-Abyss/archives/557781',
   // Monster Hunter Outlanders (12 nov 2026): segunda lista, junto a la de GameWith (mho.ts).
   mho: 'Monster-Hunter-Outlanders/archives/634765',
+  aniimo: 'Aniimo/archives/619365',
 }
 
 export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES

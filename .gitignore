@@ -28,3 +28,6 @@ dist-ssr
 
 # caché del proxy en disco
 .cache/
+
+# Caché local de Wrangler (despliegue del Worker de Cloudflare)
+.wrangler/

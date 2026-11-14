@@ -577,6 +577,31 @@ Sin robots.txt que los cierre (WordPress.com). Hasta 8 páginas por ciclo, casi 
 - Calculadora: 200 por tirada, meta 100 (marcas del banner), diarias 30 (misiones 20 + joyero 10), semanales 250 (misiones 200 + tienda oficial 50) y al
   mes Today's Supplies 400, Guild Points 500 y Bounty Medals 500 (wizardry.fasterthoughts.io, "Free-to-Play Resources").
 
+## Aniimo (añadido el 14 nov 2026)
+
+`src/sources/aniimo.ts`. Pawprint Studio / Kingsglory, global desde el 16 sep 2026 (PC, PS5, Xbox; móvil el 23 sep). **Tres servidores**: "Aniimo-Europe"
+(UTC+0), "Aniimo-Americas" (UTC-4) y "Aniimo-Apac" (UTC+8), con selector (`servers.ts`, base Americas). Casi todo cambia a la misma hora LOCAL de
+cada uno (04:00, el reinicio diario), pero la actualización de versión y el fin de temporada son a la vez en todo el mundo.
+Sin fuentes nuevas en el proxy: la API de noticias de Steam (`steam`), dos páginas más de `game8` (archives/622475 y 619365) y `pocketgamer` (`aniimo`) de respaldo.
+1 consulta a Steam y 2 páginas de Game8 por ciclo.
+- **Eventos (oficial)**: los avisos de Steam (app 4126040) dan cada evento con las tres regiones («「Aniimo-Europe」2026/11/20 04:00 ~ 2026/12/10 03:59
+  (UTC+0)», «"Aniimo-Americas" After the version update ~ 2026/12/9 19:59 UTC-4»): se guardan las tres en `servers`, así que no hay desfase calculado.
+  "After the version update" = fin del mantenimiento de ese aviso; "After the November 26 version update" = ese día a la misma hora UTC ("≈").
+  Fases ("Phase 1:") → un evento por fase. Vein Abundance → uno por región con su Prismana. Varias tandas sin rótulo (las pistas de Aniimo Dash) → un
+  solo periodo. Steam y Game8 traducen distinto algunos nombres ("Prismana Photo"/"Prismana Snapshots", "Aniimo Go!"/"Aniimo Dash"): `ALIAS`.
+- **Eventos (Game8)**: "List of Events and Schedule" aporta la imagen y las recompensas con icono, y los eventos que no salen en Steam (marcados "≈":
+  Game8 solo da el día, "11/6 ~ 11/19").
+- **Banners**: el juego **no tiene gacha de criaturas**. El único gacha es **Lightweave** (trajes): sale en el aviso de versión («go to "Lightweave" to
+  obtain the new appearance set»). Su fin no se publica: se estima en 4 semanas (de versión a versión) y lo corta el siguiente.
+  **Sin retrato**: ninguna fuente permitida publica la imagen del traje a tiempo (la lista de trajes de GameWith va atrasada; metabot.gg es de fans y no está en el proxy).
+- **Desafíos**: Glamour Star (por fases, de Steam) y Holo-Battle Interlink (cada semana, jueves 04:00 → lunes 03:59 de cada servidor, calculado).
+- **Versiones**: la temporada ("S1 Departure with the Wind: Part 2", Companion Handbook) con su fin; la siguiente (S2) estimada al acabar.
+- **Recompensas y tiradas**: de Game8. 38 Glimmer = 1 Lightweave Ticket = 1 tirada (Glimmer solo compra 20 sueltos y un pack de 5 por traje:
+  la cifra es orientativa).
+- **Códigos**: Game8 ("Redeem Codes"); PocketGamer si Game8 no da ninguno.
+- Calculadora: 38 por tirada, sin pity confirmado (las guías hablan de canjear el traje por 3000 Lightweave Fragments), diarias 30 Glimmer (Daily
+  Activity; games.gg, mmodude y nerdschalk; Mobalytics dice 400, parece un error).
+
 ## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
 
 - **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith
