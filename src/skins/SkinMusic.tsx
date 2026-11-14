@@ -15,62 +15,99 @@ import type { Lang } from '../i18n'
  *  - "Toda la banda sonora" (por defecto): una LISTA OFICIAL del juego en orden aleatorio. La mantiene el propio estudio, así que las
  *    canciones nuevas entran solas, sin tocar esto. Wuthering Waves no tiene lista oficial (solo de fans): sus 20 pistas más vistas del canal
  *    oficial "Wuthering Waves - Topic", barajadas aquí.
- *  - "Populares": las 4 subidas oficiales más vistas del juego, de más a menos vistas.
+ *  - "Populares": las 15 subidas oficiales más vistas del juego (las de su lista oficial y los MV de otros canales oficiales), de más a menos vistas.
  * Para cambiar la música de una skin basta con tocar su entrada de `MUSIC`: `list` (id de una lista oficial, "PL…") o `ids` (vídeos sueltos).
  */
 type Source = { list: string } | { ids: string[] }
 const MUSIC: Record<string, { top: string[]; all: Source }> = {
   genshin: {
-    // La vaguelette (HOYO-MiX, 16,5 M visitas), Nod-Krai Main Theme Live (canal Genshin Impact, 16,4 M), Flares of the Blazing Sun (10 M), Main Theme.
-    top: ['lm3t3myPspk', 'RuXa_yxZMGI', 'o4ne1Xzp8m8', 'EEYMlUVKmyE'],
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): La vaguelette (16.5 M), Nod-Krai Main Theme Live Performance (16.5 M),
+    // Flares of the Blazing Sun (10.1 M), Genshin Impact Main Theme (1.8 M), 【原神】「輝く星々 The Stellar Moments」 (1.7 M), 【原神】「輝く星々Vol.2 The Stellar
+    // Moments Vol (1.1 M), 【原神】「寂々たる無妄の国」Disc 1 - 稲光と雷櫻の大地 (1.1 M), 【原神】「輝く星々Vol. 3」 (0.8 M), 【原神】「渦巻、落星と雪山 Vortex of Legends」 (0.8 M),
+    // 【原神】「ジュニャーナとヴィディヤーの森」Disc 1 - 緑に囲まれた住処 (0.8 M), 【原神】ドラゴンスパインOSTイメージ楽曲MV「雪深き山頂の記憶」 (0.8 M), 【原神】「白露澄明の泉」Disc 1 - 律令の頌歌 (0.8 M), 【原神】ストーリーOST
+    // selection「さざ波」MV (0.7 M), 【原神】「輝く星々Vol. 4」 (0.6 M), 【原神】「流星の軌跡Vol. 2」 (0.5 M)
+    top: ['lm3t3myPspk', 'RuXa_yxZMGI', 'o4ne1Xzp8m8', 'EEYMlUVKmyE', 'VkbOdPoMlZ8', '9RGH1j_PIrE', '_CnLbWsxAfA', 'UOh6nvmFc2o', 'iYs8Fv7hrzA', 'y2qPVXmwSiQ', 'h_wb3LfOMw4', 'rxIB4nXIpmg', 'RT7aKhGnsjk', 'y9Rqa8arWo8', 'kPxh-Vx7jhI'],
     all: { list: 'PLdni05PnuscvEM17RtWoy1jraPhumpdjV' }, // "原神OST" del canal oficial japonés (原神-Genshin-公式), 110 pistas
   },
   hsr: {
-    // WHITE NIGHT (canal Honkai: Star Rail, 31,6 M), Wildfire (HOYO-MiX, 21,7 M), Hope Is the Thing With Feathers (19,3 M), Sway to My Beat in Cosmos (14,5 M).
-    top: ['U7W8QR9fsFw', 'SxlW79tDhCA', 'aPyt41nnM0k', 'npyiiInMA0w'],
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): Version 2.0 Music Video — "WHITE NIGHT (31.6 M), Wildfire (21.7 M), Hope
+    // Is the Thing With Feathers (19.3 M), Sway to My Beat in Cosmos (14.5 M), Honkai: Star Rail EP: Proi Proi (11.6 M), EP: Hope Is the Thing With
+    // Feathers (8.0 M), EP: Samudrartha (6.7 M), EP: If I Can Stop One Heart From Break (5.3 M), Honkai: Star Rail EP: Beyond This Stat (4.0 M), EP:
+    // Of Snow and Ember (1.4 M), Honkai: Star Rail EP: Allegory of the  (1.2 M), EP: Out of Control (1.0 M), Honkai: Star Rail EP: Ex Nihilo (0.6 M),
+    // EP: The Flapper Sinthome (Part 1) (0.3 M), EP: The Flapper Sinthome (Part 2) (0.3 M)
+    top: ['U7W8QR9fsFw', 'SxlW79tDhCA', 'aPyt41nnM0k', 'npyiiInMA0w', 'loWA5o1RdTY', 'l8-v7ZnNB_c', 'qWXPNyt6oTE', 'xFHNWJVsjmY', '2wIubFgXlyk', 'J9wcfTVUZNE', 'fao9fjeAGEI', 'sQT8kCDOz_U', 'C8DuPjxUaAk', 'J-cn3BPK2cw', '7-Q3ieKKgKA'],
     all: { list: 'PLi18Roijwy3PjC4rvb6W8fq5HFFvhPV_8' }, // "Honkai: Star Rail - EP" del canal oficial
   },
   zzz: {
-    // MoeChakkaFire (MV oficial de issey con HoYoFair, 108 M), ZENLESS – Tiësto (canal ZZZ, 20 M), Come Alive (Sān-Z, 11,7 M), Burning Desires (10 M).
-    top: ['wZlv3qDPfjk', 'GkgtQOlJp0Y', 'R3tZmmiKi0o', 'LCo0KdbVIJM'],
+    // Las 14 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): モエチャッカファイア / 弌誠：MUSIC VIDEO (108.6 M), ZENLESS – Tiësto x Zenless Zone
+    // Zero (20.3 M), Come Alive (11.7 M), Burning Desires (10.0 M), Lucia EP - "DAMIDAMI" (6.6 M), Zhao EP - "Tiny Giant" (6.6 M), Caesar EP -
+    // "pinKing" (6.2 M), Phoenix EP - "1% Battery Girl" (5.8 M), "ReDreaming Angel" - Angels of Delusio (5.7 M), Ellen EP - "Shark's Gotta Bite" (4.3
+    // M), Starlight - Billy EP - "Billy Mode" (4.0 M), Claret EP - "Link Up" (3.6 M), Lighter EP - "Fearless" (3.5 M), Norma EP - "chaos.exe" (3.2 M)
+    top: ['wZlv3qDPfjk', 'GkgtQOlJp0Y', 'R3tZmmiKi0o', 'LCo0KdbVIJM', 'NCzUV95VIEI', 'TU5Bt8MLPjk', 'FaxI5oNATLE', 'AkWvzeXDUxY', '7wMz8mDyHgM', 'cK1ABiGuiG0', 'JNfm_nR4OWo', 'Ln0ilmPqXU0', 't_Ng_b28uxM', 'QBGEahKfeco'],
     all: { list: 'PL_DB7Cdpj4lLd9yDVGlLpMf6-VGIvKFJf' }, // "MV" del canal oficial de Zenless Zone Zero
   },
   wuwa: {
-    // Wuthering Waves - Topic (KURO GAMES): With Glory I Shall Fall (11,1 M), Against the Tide (8,7 M), Voyaging Star's Farewell (7,5 M), Ode to the Nameless Martyr (4,2 M).
-    top: ['4ZKgq7Aw34s', 'Yr1RlcoqXTg', '0HrdRGuF2Y8', 'AuMcCiwNazo'],
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): With Glory I Shall Fall (11.1 M), Against the Tide (Original Game Soundt
+    // (8.7 M), Voyaging Star's Farewell (7.5 M), Ode to the Nameless Martyr (4.2 M), Heart of Lahai-Roi (4.1 M), Dancing Through Fantasies (4.0 M),
+    // Chasing Daylight (3.7 M), Running For Your Life (3.5 M), A Small Miracle (3.2 M), Saving Light（Original Game Soundtrack） (3.1 M), Catch Me If
+    // You Can (2.7 M), Reveries in the Crimson Beyond (2.5 M), Chains of Oath, Echoes of Promise (2.4 M), Vernal Days Dreamed by the Star (2.3 M),
+    // Homecoming Star from the Unbound (2.3 M)
+    top: ['4ZKgq7Aw34s', 'Yr1RlcoqXTg', '0HrdRGuF2Y8', 'AuMcCiwNazo', 'Gp0Jbhu0FWA', '0hC73MsFBv8', 'Vd_zk_wj9b0', 'mWxP-sQmNMU', 'bPS8Ii6Ef14', 'nl_vdjf-jM0', 'Lixpftlm0Eo', 'Se95CIbDWLc', 'eyb1h5LVHhg', '0gSyy50n6vc', '7nwzaBOmiYc'],
     // Sin lista oficial: las 20 más vistas de "Wuthering Waves - Topic" (13 nov 2026).
     all: { ids: ['4ZKgq7Aw34s', 'Yr1RlcoqXTg', '0HrdRGuF2Y8', 'AuMcCiwNazo', 'Gp0Jbhu0FWA', '0hC73MsFBv8', 'Vd_zk_wj9b0', 'mWxP-sQmNMU', 'bPS8Ii6Ef14', 'nl_vdjf-jM0',
       'Lixpftlm0Eo', 'Se95CIbDWLc', 'eyb1h5LVHhg', '0gSyy50n6vc', '7nwzaBOmiYc', 'fL-izkjgm14', 'omUQ53VQwUw', 'uQLzhisQtgo', '6Axc3ezh290', 'yb4Dm666vSU'] },
   },
   nikke: {
-    // Cosmograph (compositor oficial): THE REDHOOD (3,3 M), Stronghold Land Eater (3,3 M), Goddess of Victory (3,2 M), Inferno of Nihilist (3,2 M).
-    top: ['rErd6UAXgBU', 'lSt_6SiAUwo', 'hK_6T-LzdbE', 'MTogyN87-L4'],
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): THE REDHOOD (3.3 M), Stronghold Land Eater (3.3 M), Goddess of Victory
+    // (3.2 M), Inferno of Nihilist / Burn it All (3.2 M), Crystal Chamber Boss - We're Never Giv (2.5 M), The Harvester (2.5 M), WE RISE (Full
+    // Length) (2.2 M), RE DASH : THE REDHOOD (2.0 M), A.C.P.U.! FREEZE! (1.8 M), Last Kingdom Main Theme OST : The Clar (1.7 M), Ominous Cross (1.6
+    // M), REDASH : Daybreak (ULTRA) (1.6 M), Indivillia Boss 2nd Phase : Absolute M (1.6 M), EEEEEEEEE-ntertainment (1.5 M), Lovely Lonely Cat (1.4
+    // M)
+    top: ['rErd6UAXgBU', 'lSt_6SiAUwo', 'hK_6T-LzdbE', 'MTogyN87-L4', 'OcNZMW03318', 'jdZ5DEnSanw', 'LKAs-FqqCmo', 'RB7i6JnIdlE', '7b0esAbfcGc', 'W1DALeSLLus', 'UWu-GTEajok', 'y6VXdT8m4dM', 'DxfHZHgmvl4', '5VX6i6PKtlk', 'S-bOBwuBRdU'],
     all: { list: 'PL1KsHejR9xB-a1PMEvlBlXbALTpF-Wwtv' }, // "[GODDESS OF VICTORY: NIKKE]" de Cosmograph, 307 pistas
   },
   uma: {
-    // Topic de los personajes (distribución oficial): めにしゅき♡ラッシュっしゅ！ (9,8 M), BRIGHTEST HEART (8 M), うまぴょい伝説 (8 M), GIRLS' LEGEND U (3,9 M).
-    top: ['8ULbYqRtlMQ', 'YExL2ilCMLs', 'VFOg6mHtZcA', 'G7RmGsHxv-Q'],
+    // Las 14 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): めにしゅき♡ラッシュっしゅ！ (9.8 M), BRIGHTEST HEART (8.0 M), うまぴょい伝説 (8.0 M), GIRLS'
+    // LEGEND U (3.9 M), Umamusume: Pretty Derby – Umapyoi Lege (1.7 M), Winning Concert Video Short Version: " (96 k), Winning Concert Video Short
+    // Version: " (44 k), Winning Concert Video Short Version: " (22 k), Winning Concert Medley Promotional Vid (22 k), Winning Concert Video Short
+    // Version: " (18 k), Winning Concert Video Short Version: " (13 k), Winning Concert Medley Promotional Vid (13 k), Winning Concert Video Short
+    // Version: " (13 k), Winning Concert Video Short Version: " (12 k)
+    top: ['8ULbYqRtlMQ', 'YExL2ilCMLs', 'VFOg6mHtZcA', 'G7RmGsHxv-Q', 'eAkxxgEHEmg', 'h4kgHAp-HLo', 'hDy2ww5MVh8', '60qtuyy7xjs', '2R1IoTrfRJU', '1vsGxmIX6Co', 'LVfT8sU48Pg', 'TL75-qmY1Eo', '2jlTePl8xjU', '7e7rUU7k7gc'],
     all: { list: 'PLbRq7_wpPI8nZHTi9t6Hd5nAQN_gdIY4S' }, // "Winning Concert Video" del canal oficial en inglés, 22 canciones
   },
+  bluearchive: {
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): Main OST 'Target for love' Full ver. (5.7 M), Usagi Flap | Rabbit of
+    // Caerbannog! RAB (1.3 M), X DJ TAK BGM REMIX_2021 Ver. (1.0 M), Echoes of Longing MV | Ex. Decagrammat (0.7 M), Unwelcome School_Piano Jazz Ver.
+    // (Feat (0.7 M), Highlander Railroad Academy Special OS (0.5 M), Main OST 'Target for love' Covered by  (0.5 M), Aris \u0026 Kei - Protocol
+    // SUPERNOVA M (0.4 M), KAGEROU (Full Version) | OST (0.3 M), SUGAR RUSH - Kokoro Gradation (JP Ver. (0.3 M), BGM Playlist _Theme l Winter ❄ l
+    // (0.3 M), BGM Playlist _Theme l Dreamer🚀 l (0.3 M), Kisaki - Following Petals (Japanese Ve (0.2 M), Main OST Piano ver. l Coverd by FONZI  (0.2
+    // M), Sakurako – Twinkle☆Magic MV (0.2 M)
+    top: ['aTU-osotD8k', 'wFvj8P3c9T0', 'iWy_8f1LmTU', 'AgcbWyKM-Tc', 'iWKXKcGVjxA', 'sOwnhE0Easg', '8Q4rflTedwQ', 'Pm4KSlf19pI', 'aQiNBLWvynk', 'xQcjgqtxDuA', 'hskgnjHp4uI', 'fO3VPOEQXNM', '4Rki7khVcZ0', 'ExYvqpziqgg', 'zTX1HSo9JUE'],
+    all: { list: 'PLJQeatpi7jHiFWx2YUj_jD_WjSVOFbR22' }, // "MUSIC" del canal oficial, 54 vídeos
+  },
   arknights: {
-    // Radiant (Monster Siren Records, 7,7 M), Speed of Light (DJ OKAWARI, 6,7 M), Operation Pyrite (5,7 M), Operation Blade (5,3 M).
-    top: ['eImNc6AIViQ', 'L2LB12IxLDU', 'saOnB_CRG9Y', 'hpI5vMxYJ_k'],
+    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): Radiant (7.7 M), DJ OKAWARI feat. 二宮愛 「Speed of Light」 (6.7 M), Operation
+    // Pyrite (5.7 M), Operation Blade (5.3 M), Arknights EP - Dormant Craving (2.2 M), Arknights EP - Mystic Light Quest (1.1 M), Arknights EP -
+    // Ständchen (1.1 M), Arknights EP - All hail Savior! (0.8 M), Arknights EP - Stainless Heart (0.8 M), Arknights EP   Morning Dew (0.7 M),
+    // Arknights EP - Ensheath (0.7 M), Arknights EP - Sentenced (0.7 M), Arknights EP - Echoism (0.7 M), Arknights EP - Thorns In You (0.6 M),
+    // Arknights EP - Here in Vernal Terrene (0.6 M)
+    top: ['eImNc6AIViQ', 'L2LB12IxLDU', 'saOnB_CRG9Y', 'hpI5vMxYJ_k', 'geHKKSHzk00', '7AtD9EjJXKo', '6BL_kNVBZGs', 'Y8x5KSy74Ck', 'ZJbt47PhAf4', 'iU9qCC1dP4Q', 'TG1VhmtmdOc', '5lHsnpajCds', 'n--yUlyoQPk', '1x9E38IfDm0', '4IfAU5DcZJ4'],
     all: { list: 'PLbuSQ8SJFnFEHL4_T9S0whD-TevceJIsl' }, // "Arknights Official EP" de Arknights Official - Yostar, 156 pistas
   },
 }
 
 /** Skins con reproductor temático compacto (además de ZZZ, que tiene la tele): HSR funda de vinilo, Genshin pergamino, NIKKE el teléfono del
- *  comandante, WuWa panel holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live. Las que no estén aquí usan la ventanita sencilla. */
-const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma'])
+ *  comandante, WuWa panel holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk. Las que no estén aquí usan la ventanita sencilla. */
+const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive'])
 
 type Mode = 'all' | 'top'
 const TXT: Record<Lang, { open: string; close: string; title: string; side: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
   es: { open: 'Música oficial del juego', close: 'Cerrar (para la música)', title: 'Banda sonora oficial', side: 'Cambiar de esquina',
-    all: 'Toda la banda sonora oficial, en orden aleatorio', top: 'Las 4 canciones oficiales más vistas', allShort: 'Todas', topShort: 'Populares', mode: 'Qué música suena' },
+    all: 'Toda la banda sonora oficial, en orden aleatorio', top: 'Las canciones oficiales más vistas', allShort: 'Todas', topShort: 'Populares', mode: 'Qué música suena' },
   en: { open: "Game's official music", close: 'Close (stops the music)', title: 'Official soundtrack', side: 'Switch corner',
-    all: 'The whole official soundtrack, shuffled', top: 'The 4 most viewed official songs', allShort: 'All', topShort: 'Popular', mode: 'What plays' },
+    all: 'The whole official soundtrack, shuffled', top: 'The most viewed official songs', allShort: 'All', topShort: 'Popular', mode: 'What plays' },
   zh: { open: '游戏官方音乐', close: '关闭（停止音乐）', title: '官方原声', side: '切换角落',
-    all: '全部官方原声，随机播放', top: '观看次数最多的 4 首官方歌曲', allShort: '全部原声', topShort: '热门', mode: '播放内容' },
+    all: '全部官方原声，随机播放', top: '观看次数最多的官方歌曲', allShort: '全部原声', topShort: '热门', mode: '播放内容' },
 }
 
 /** Iconos del selector (trazo en `currentColor`: toman el color de cada skin). */

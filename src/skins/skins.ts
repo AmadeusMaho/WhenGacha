@@ -69,6 +69,12 @@ export const FONDOS: Record<string, string[]> = {
     'spark-in-the-eyes-exusiai', 'skadi-blood-moon-ocean', 'mizuki-and-caerula-arbor', 'kaltsit-esperanta', 'mon3tr', 'texas-x-exusiai',
     'lappland-x-texas', 'amiya-midnight-blue-city', 'umbrella-anime-girl-flower-shop', 'collapse', 'melantha', 'amiya-nightmare-chen'
   ],
+  bluearchive: [
+    'misono-mika-angel-wings', 'ushio-noa-starlight-float', 'yutori-natsu', 'iroha-sunset-summer', 'tendou-arisu-maid', 'mutsuki',
+    'hina-demon-queen', 'arona-cloudscape', 'arona-ruined-classroom', 'hina-cosmic-nocturne-piano', 'tsukatsuki-rio', 'shiroko-terror',
+    'hinomiya-chinatsu-shy', 'misono-mika-angel', 'waraku-chise-moonlit-night-sky', 'kasumizawa-miyu-sniper', 'ajitani-hifumi-summer',
+    'sorasaki-hina-piano', 'chise-swimsuit', 'izuna-swimsuit', 'wakamo', 'ako'
+  ],
 }
 // </fondos>
 
@@ -99,6 +105,9 @@ export const SKINS: SkinDef[] = [
   { id: 'uma', game: 'uma', name: 'Umamusume', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800', live: [...cdn('uma'), ...stills('uma', ['kv', 'stadium', 'race'])] },
   // arknights.css (3.ª versión): piezas de interfaz y fuentes de la extracción del cliente en public/skins/arknights/.
   { id: 'arknights', game: 'arknights', name: 'Arknights', fonts: 'family=Barlow:wght@400;500;600;700', ...(FONDOS.arknights?.length ? { live: cdn('arknights'), liveAllTabs: true } : {}) },
+  // bluearchive.css (13 nov 2026): piezas de los atlas de interfaz que aportó el dueño en public/skins/bluearchive/ (ver la cabecera del CSS).
+  // Fondos animados de fans (MoeWalls…) que elige el dueño con Wallpaureka; mientras no haya, el cielo y el facetado del vestíbulo en CSS.
+  { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive') } : {}) },
 ]
 
 const KEY = 'whengacha:skin'

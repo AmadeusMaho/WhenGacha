@@ -327,7 +327,7 @@ Botón 🎵 a la izquierda del pincel (mismo tamaño y línea), solo con una ski
 este diseño: el reproductor tiene que verse mientras suena y no se puede ocultar ni quedarse solo con el audio.
 
 Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en el color de cada skin; se recuerda): **toda la banda sonora** (por defecto), una lista OFICIAL del juego barajada al abrir
-(la API de la ventana: `setShuffle` + `playVideoAt` al azar), que mantiene el propio estudio, así que lo nuevo entra solo; y **populares**, las 4
-subidas oficiales más vistas. Wuthering Waves no tiene lista oficial: usa sus 20 pistas más vistas de "Wuthering Waves - Topic".
+(la API de la ventana: `setShuffle` + `playVideoAt` al azar), que mantiene el propio estudio, así que lo nuevo entra solo; y **populares**, las 15
+subidas oficiales más vistas (13 nov 2026; antes eran 4). Wuthering Waves no tiene lista oficial: usa sus 20 pistas más vistas de "Wuthering Waves - Topic".
 Para cambiar la música de una skin, su entrada de `MUSIC`: `list` (id "PL…" de una lista oficial) o `ids` (vídeos sueltos). Comprobación de
 que es oficial y se puede incrustar: `https://www.youtube.com/oembed?url=…` (200 con el canal; 401 si la inserción está desactivada).

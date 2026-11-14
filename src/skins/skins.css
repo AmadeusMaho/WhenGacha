@@ -462,3 +462,36 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 /* Troquel entre la entrada y la matriz. */
 .tv-uma .tv-deco { top: 10px; bottom: 10px; right: 40px; border-left: 2px dashed #c8336c; opacity: .55; }
 
+
+/* --- Blue Archive: una conversación de MomoTalk. Cabecera rosa con el logo y el globo de no leídos; Arona escribe (avatar a la
+   izquierda) y el vídeo va dentro de su burbuja de chat gris con la colita; los modos son las respuestas de Sensei (azul la elegida).
+   Piezas de public/skins/bluearchive/ (ic-momo, arona). --- */
+.music-dock.tv-bluearchive { --tv-on: #0b6bd6; --tv-r: 12px;
+  --tv-body: linear-gradient(180deg, #d42e64, #c8285b) top / 100% 34px no-repeat, url(/skins/bluearchive/tri.webp) right -30px bottom -30px / 160px no-repeat, #fff;
+  --tv-body-sh: inset 0 0 0 1px #c9dcef, 0 14px 34px rgba(30, 80, 140, .35);
+  --tv-bezel: #eef2f7; --tv-bezel-sh: inset 0 0 0 1px #d5dde8; --tv-bezel-r: 4px 12px 12px 12px; --tv-screen-r: 8px; --tv-screen-bg: #dfe9f5;
+  --tv-btn: transparent; --tv-btn-ink: #fff; --tv-btn-sh: none; --tv-power: #fff; --tv-power-glow: transparent;
+  --tv-slot: transparent; --tv-slot-ink: #fff; --tv-slot-sh: none; --tv-slot-ico: 'MomoTalk · '; --tv-font: 'Noto Sans JP', 'Segoe UI', sans-serif;
+  grid-template-columns: 30px repeat(2, minmax(0, 1fr)) 22px 22px; grid-template-areas: "lcd lcd lcd ej pwr" "av scr scr scr scr" "k1 k1 k2 k2 k2";
+  row-gap: 8px; column-gap: 5px; padding: 6px 8px 10px; }
+.tv-bluearchive .tv-slot { padding-left: 22px; text-transform: none; letter-spacing: .02em; font-weight: 700; font-size: .66rem;
+  background: url(/skins/bluearchive/ic-momo.webp) 0 50% / 16px auto no-repeat; }
+.tv-bluearchive :is(.tv-power, .tv-eject) { width: 22px; height: 20px; }
+.tv-bluearchive :is(.tv-power, .tv-eject):hover { color: #ffe680; }
+.tv-bluearchive .tv-power:hover svg { filter: none; }
+/* Arona, la que escribe: avatar redondo arriba a la izquierda de su burbuja. */
+.tv-bluearchive .tv-deco { grid-area: av; position: relative; align-self: start; width: 30px; height: 30px; border-radius: 50%;
+  background: url(/skins/bluearchive/arona.webp) 50% 20% / 120% auto no-repeat, #cfe8ff; box-shadow: 0 0 0 2px #fff, 0 0 0 3px #c9dcef; }
+/* Globo de no leídos sobre el logo de la cabecera. */
+.music-dock.tv-bluearchive::after { content: "1"; position: absolute; z-index: 2; top: -3px; left: 3px; min-width: 13px; height: 13px; padding: 0 3px; border-radius: 7px;
+  background: #ff3b30; color: #fff; font: 700 9px/13px system-ui, sans-serif; text-align: center; box-shadow: 0 0 0 1.5px #fff; }
+/* Burbuja de Arona: la colita apunta al avatar. */
+.tv-bluearchive .tv-bezel::before { content: ''; position: absolute; left: -6px; top: 8px; width: 0; height: 0; border: 6px solid transparent; border-right-color: #eef2f7; border-left: 0; }
+/* Respuestas de Sensei: botones con texto; la elegida en azul con el texto blanco. */
+.tv-bluearchive .tv-knob { justify-self: stretch; display: flex; align-items: center; justify-content: center; gap: 5px; height: 26px; border-radius: 8px;
+  background: #fff; box-shadow: inset 0 0 0 1px #9cc6f0; color: #0b6bd6; font-size: .66rem; font-weight: 700; }
+.tv-bluearchive .tv-knob::before { display: none; }
+.tv-bluearchive .tv-knob span { position: static; width: auto; height: auto; clip-path: none; overflow: hidden; text-overflow: ellipsis; }
+.tv-bluearchive .tv-knob svg { display: block; color: currentColor; }
+.tv-bluearchive .tv-knob.on { background: #0b6bd6; box-shadow: inset 0 0 0 1px #0b6bd6, 0 2px 6px rgba(11, 107, 214, .35); }
+.tv-bluearchive .tv-knob.on :is(svg, span) { color: #fff; }

@@ -141,10 +141,19 @@ const ECON: Record<string, Econ> = {
     daily(90), weekly(100),
     // Limbo se reinicia los días 1 y 16 de cada mes (dotgg y las notas de la 2.4: 1 y 16 mar 2025), hasta 600 por reinicio.
     { name: 'Limbo', amount: 600, per: 'month', days: [1, 16], endgame: true }] },
-  bluearchive: { currency: 'Pyroxene', icon: 'Pyroxene', per: 120, pass: 0, pity: 200, sources: [daily(20), weekly(120)] },
+  // Blue Archive: Tactical Challenge (al día, según tu puesto) y Total/Grand Assault (por temporada, según tu puesto) no tienen una tabla
+  // pública fiable (13 nov 2026: las guías dan de 70 a 300 al mes y de 400 a 2400): cada jugador pone lo suyo.
+  bluearchive: { currency: 'Pyroxene', icon: 'Pyroxene', per: 120, pass: 0, pity: 200, sources: [daily(20), weekly(120)],
+    inputs: [{ id: 'tc', name: 'Tactical Challenge', per: 'day' }, { id: 'raid', name: 'Total / Grand Assault', per: 'month', day: 1 }] },
   nikke: { currency: 'Gems', icon: 'Gem', ticket: 'Advanced Recruit Voucher', per: 300, pass: 0, pity: 200, sources: [daily(100), weekly(100)] },
-  endfield: { currency: 'Oroberyl', icon: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200),
-    { name: 'Umbral Monument', amount: 1200, per: 'patch', endgame: true }] },
+  // Endfield (13 nov 2026; TopUpLive "1.6 Pull Count" y el recuento por fuente de Neptune Impact para la 1.6): semanales 500 (3000 en las 6
+  // semanas de la versión), compensación de la actualización 1800, regalo del directo 1000, la pista gratuita del Originium Supply Pass 1200
+  // y Echoes of War (Phantasia + Fervor) 300 + 300 por versión.
+  endfield: { currency: 'Oroberyl', icon: 'Oroberyl', per: 500, pass: 0, pity: 0, sources: [daily(200), weekly(500),
+    { name: 'Umbral Monument', amount: 1200, per: 'patch', endgame: true },
+    { name: 'Echoes of War', amount: 600, per: 'patch', endgame: true },
+    { name: 'Originium Supply Pass (free)', amount: 1200, per: 'patch' },
+    ...version(1800, 1000)] },
   uma: { currency: 'Carats', more: { name: 'Uma Carat Calculator', url: 'https://umacaratcalculator.com/app' }, icon: 'Carat', iconUrl: '/icons/uma-carat.webp', per: 150, pass: 0, pity: 200, sources: [
     daily(75), weekly(150),
     { key: 'monthly', amount: 500, per: 'month', day: 1 },
@@ -165,8 +174,12 @@ const ECON: Record<string, Econ> = {
     // 280 días = 10 ciclos de 28. "Full-Scale Offensive" (30 sep → 10 nov 2026 en los datos) es OTRO modo, de las seasons de CZN
     // (confirmado por el dueño): no se junta con este aunque terminen el mismo día.
     { name: 'Basin of Hyperspace', amount: 1000, per: 'every', every: 28, anchor: '2026-11-11T00:00:00Z', endgame: true, aliases: ['basin of hyperspace', 'dimensional twilight'] }] },
+  // NTE (13 nov 2026, Kaiden.gg "Version 1.3 Income"): Beyond the Rails da 2400 por versión en sus tres fases (antes 700, de Icy Veins y
+  // GameWith, que contaban una sola ruta); Hunter Exchange 500 y compensación de mantenimiento 900 por versión. Sin directo con códigos fijos.
   nte: { currency: 'Annulith', icon: 'Annulith', per: 160, pass: 0, pity: 0, sources: [daily(60),
-    { name: 'Beyond the Rails', amount: 700, per: 'patch', endgame: true }] },
+    { name: 'Beyond the Rails', amount: 2400, per: 'patch', endgame: true },
+    { name: 'Hunter Exchange', amount: 500, per: 'patch' },
+    { key: 'maint', amount: 900, per: 'patch' }] },
   fgo: { currency: 'Saint Quartz', icon: 'Saint Quartz', ticket: 'Summon Ticket', per: 3, pass: 0, pity: 0, sources: [weekly(3), { key: 'login', amount: 4, per: 'week' }, tickets('login', 1, 'week'), tickets('ticketShop', 5, 'month', 1)] },
   limbus: { currency: 'Lunacy', icon: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [], note: 'limbus' },
   epic7: { currency: 'Skystones', icon: 'Skystone', per: 100, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }], sources: [daily(50)] },
@@ -174,20 +187,30 @@ const ECON: Record<string, Econ> = {
     { key: 'monthly', amount: 100, per: 'month', day: 25 },
     { key: 'maint', amount: 450, per: 'patch' }],
     choices: [{ id: 'blitz', name: 'Boss Blitz', per: 'patch', options: [{ label: '—', amount: 0 }, { label: 'Top 50 %+', amount: 1000 }, { label: 'Top 20–50 %', amount: 1100 }, { label: 'Top 10–20 %', amount: 1200 }, { label: 'Top 10 %', amount: 1300 }] }] },
-  pgr: { currency: 'Black Cards', icon: 'Black Card', per: 250, pass: 0, pity: 0, sources: [daily(30)] },
+  // PGR (13 nov 2026, FandomSpot "How To Farm Black Cards"): tareas semanales hasta 1000 (jugar Phantom Pain Cage y War Zone y llegar a sus
+  // puntos; por eso no van aparte) y al menos 500 de compensación tras cada versión grande.
+  pgr: { currency: 'Black Cards', icon: 'Black Card', per: 250, pass: 0, pity: 0, sources: [daily(30), weekly(1000), { key: 'maint', amount: 500, per: 'patch' }] },
   honkai3: { currency: 'Crystals', icon: 'Crystal', per: 280, pass: 0, pity: 0, sources: [daily(40),
     { name: 'Elysian Realm', amount: 500, per: 'week', endgame: true },
     { name: 'Memorial Arena', amount: 140, per: 'week', endgame: true }] },
-  azurlane: { currency: 'Wisdom Cubes', icon: 'Wisdom Cube', per: 2, pass: 0, pity: 0, sources: [daily(4)] },
+  // Azur Lane (13 nov 2026, wiki de koumakan, "Missions"): misiones semanales 12 cubos; el calendario de inicio de sesión, 30 al mes.
+  azurlane: { currency: 'Wisdom Cubes', icon: 'Wisdom Cube', per: 2, pass: 0, pity: 0, sources: [daily(4), weekly(12), { key: 'monthly', amount: 30, per: 'month', day: 1 }] },
   bd2: { currency: 'Dia', icon: 'Dia', per: 200, pass: 0, pity: 0, inputs: [{ id: 'mirror', name: 'Mirror Wars', per: 'week' }], sources: [daily(60)] },
   afkjourney: { currency: 'Diamonds', icon: 'Diamonds', ticket: 'Invite Letter', per: 300, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }, { id: 'honor', name: 'Honor Duel', per: 'week' }], sources: [daily(100), tickets('dailyTicket', 1, 'day')] },
   // Duet Night Abyss: 160 Phoxene / Phoxene Plumule = 1 Prismatic Hourglass (banner limitado); pity de 90 (Game8). El pase mensual da
   // 90 Plumule al día (allthings.how). Sin ingresos diarios fijos de Phoxene: llega de eventos, códigos y el Trial Rank (sin tabla fiable).
+  // Las diarias dan 15 Secret Letter Clues (el dueño, 13 nov 2026), pero no son tiradas: 10 Clues = 1 Secret Letter, que desbloquea personajes en
+  // las Covert Commissions (allthings.how); los banners Myriad usan Hourglasses/Phoxene. Por eso no se cuentan aquí.
   dna: { currency: 'Phoxene', icon: 'Phoxene', ticket: 'Prismatic Hourglass', per: 160, pass: 90, pity: 90, sources: [] },
   // Trickcal: Chibi Go: 100 Crystal Leaf = 1 reclutamiento (pulls.ts). Sin pity: el "Devotion" (mileage) canjea el Apóstol a las 200 tiradas (300 si es
   // Eldyne; lootandwaifus, "Gacha System"). Sin pase ni ingresos diarios fijos documentados: llegan de eventos, códigos y PvP ("500 gems" por temporada).
-  trickcal: { currency: 'Crystal Leaf', icon: 'Crystal Leaf', ticket: 'Recruitment Ticket', per: 100, pass: 0, pity: 200, sources: [] },
-  infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90)] },
+  // Diarias (las dio el dueño, 13 nov 2026): 10 Crystal Leaf al día de la tienda gratis.
+  trickcal: { currency: 'Crystal Leaf', icon: 'Crystal Leaf', ticket: 'Recruitment Ticket', per: 100, pass: 0, pity: 200, sources: [{ name: 'Free shop', amount: 10, per: 'day' }] },
+  // Infinity Nikki (13 nov 2026; Game Rant, recuento de la 1.3, y games.gg): Mira Crown, dos Pinnacle Contest por versión con 900 cada uno
+  // (todas las rondas perfectas) y 500 de mantenimiento. "Monthly Reset" y "Mira Store" del recuento no dicen qué son: no se cuentan.
+  infinitynikki: { currency: 'Diamonds', icon: 'Diamond', ticket: 'Revelation Crystal', per: 120, pass: 0, pity: 0, sources: [daily(90),
+    { name: 'Mira Crown', amount: 1800, per: 'patch', endgame: true },
+    { key: 'maint', amount: 500, per: 'patch' }] },
   // Girls' Frontline 2 (IOP Wiki, "Monthly currency income" y "Recruitment", 12 nov 2026): 150 Collapse Piece por tirada; pity de 80 (el limitado
   // está garantizado a las 160 si se pierde el 50/50). Diarias 110 (Daily Patrol 20 + Combat Exercise 30 + Daily Activity 60); semanales 345
   // (Boundary Push 120 + Peak Value Assessment 225); al mes, 120 de inicios de sesión y 55 del pase gratuito, y Military Simulation 300 (15 partidas).
@@ -203,18 +226,35 @@ const ECON: Record<string, Econ> = {
   mho: { currency: 'Rutacoin', icon: 'Rutacoin', iconUrl: 'https://img.gamewith.jp/article_tools/mhoutlanders/gacha/item_3.png', ticket: 'Featured Contract', per: 150, pass: 0, pity: 120, sources: [daily(50), weekly(100)] },
   // BLEACH: Soul Resonance: 160 Spiritual Jade por tirada; pity de 80 sin 50/50 (BlueStacks, BitTopup). Sin tabla fiable de ingresos diarios.
   // Icono oficial de la web global (bleach.ts, BLEACH_ICONS).
-  bleach: { currency: 'Spiritual Jade', icon: 'Spiritual Jade', iconUrl: 'https://game-cdn.aplusjapan-game.com/bleach_web/web/reg_0.png', ticket: 'Gacha Ticket', per: 160, pass: 0, pity: 80, sources: [] },
+  // Frenzied Feast (jefe semanal, 5 intentos al día): hasta 450 por semana con la puntuación alta (Vortex Gaming). Diarias y semanales sin cifra fiable.
+  bleach: { currency: 'Spiritual Jade', icon: 'Spiritual Jade', iconUrl: 'https://game-cdn.aplusjapan-game.com/bleach_web/web/reg_0.png', ticket: 'Gacha Ticket', per: 160, pass: 0, pity: 80, sources: [
+    { name: 'Frenzied Feast', amount: 450, per: 'week', endgame: true }] },
   // Juegos añadidos el 13 nov 2026 (ver pulls.ts para las equivalencias). Ninguna guía coincide en los ingresos diarios: sin `sources`, cada
   // jugador pone los suyos. Onmyoji: 100 Jade = 1 invocación, sin pity fijo (la wiki solo da las probabilidades: SSR 1 %, SP 0,25 %).
-  onmyoji: { currency: 'Jade', icon: 'Jade', ticket: 'Mystery Amulet', per: 100, pass: 0, pity: 0, sources: [] },
+  onmyoji: { currency: 'Jade', icon: 'Jade', ticket: 'Mystery Amulet', per: 100, pass: 0, pity: 0, sources: [],
+    // El Duel paga Jade cada semana según el tier (hasta 500, guía de la comunidad de 2019): campo propio.
+    inputs: [{ id: 'duel', name: 'Duel', per: 'week' }] },
   // Path to Nowhere: 180 Hypercubes por arresto; S garantizada a los 80 (wiki, "Arrests/Info").
-  ptn: { currency: 'Hypercube', icon: 'Hypercube', per: 180, pass: 0, pity: 80, sources: [] },
+  // Diarias (las dio el dueño, 13 nov 2026): 40 Hypercubes.
+  ptn: { currency: 'Hypercube', icon: 'Hypercube', per: 180, pass: 0, pity: 80, sources: [daily(40)] },
   // Sword of Convallaria: 150 Hope Luxite = 1 Secret Fate; el destacado del banner de debut está garantizado a las 180 (GameWith).
-  soc: { currency: 'Hope Luxite', icon: 'Hope Luxite', ticket: 'Secret Fate', per: 150, pass: 0, pity: 180, sources: [] },
+  // Ingresos (13 nov 2026, GameWith "How to Farm Hope Luxite", act. 17 oct 2025): diarias 60 + 5 de la actividad diaria de Clash; Tower of
+  // Conquest 380/semana (5 pisos); check-in 100 por cada 7 inicios seguidos (400 al mes) y 250 de la pista gratuita del Cornucopia al mes;
+  // Clash al final de la temporada según la división (GameWith la cuenta al mes).
+  soc: { currency: 'Hope Luxite', icon: 'Hope Luxite', ticket: 'Secret Fate', per: 150, pass: 0, pity: 180, sources: [daily(65),
+    { name: 'Tower of Conquest', amount: 380, per: 'week', endgame: true },
+    { key: 'monthly', amount: 400, per: 'month', day: 1 },
+    { name: 'Cornucopia (free)', amount: 250, per: 'month', day: 1 }],
+    choices: [{ id: 'clash', name: 'Clash', per: 'month', day: 1, options: [['—', 0], ['Bronze', 100], ['Silver', 150], ['Gold', 200], ['Platinum', 250], ['Radiance', 300]].map(([label, amount]) => ({ label: String(label), amount: Number(amount) })) }] },
   // MONGIL: STAR DIVE: 160 Starlight Crystal = 1 Compass of Destiny; 5★ garantizado a las 90 en el banner de personaje (Prydwen).
   // Suikoden STAR LEAP: 150 Fantasy Stones por tirada; 200 puntos del banner compran el destacado que elijas (Kaiden.gg, "How Gacha Points work").
-  suikoden: { currency: 'Fantasy Stone', icon: 'Fantasy Stone', iconUrl: 'https://www.kaiden.gg/img/suikoden-star-leap/assets/cmn_item_icon_30000.webp', ticket: 'Season Gacha Ticket', per: 150, pass: 0, pity: 200, sources: [] },
-  mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [] },
+  // Ingresos (13 nov 2026, GameWith JP "幻想石の効率的な集め方", act. 7 oct 2026, y kamigame): diarias 60, semanales 180; 異境の宝求 da 50
+  // por piso cada semana, pero el número de pisos depende de cada uno: campo propio.
+  suikoden: { currency: 'Fantasy Stone', icon: 'Fantasy Stone', iconUrl: 'https://www.kaiden.gg/img/suikoden-star-leap/assets/cmn_item_icon_30000.webp', ticket: 'Season Gacha Ticket', per: 150, pass: 0, pity: 200, sources: [daily(60), weekly(180)],
+    inputs: [{ id: 'ikyo', name: '異境の宝求', per: 'week' }] },
+  // Ingresos (13 nov 2026, GameWith "How to Farm Starlight Crystals", act. 12 nov 2026): diarias 75 (Adventurer Quests 50 + 5 Requests de 5).
+  // Dimensional Rift solo paga la primera vez de cada nivel por temporada y la guía no da su duración: no se cuenta.
+  mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },
 }
 
 /** Juegos sin economía conocida (los que añades a mano): moneda genérica a 160 por tirada, que se puede cambiar. */

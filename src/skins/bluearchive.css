@@ -1,0 +1,420 @@
+/* ===== Skin "Blue Archive" (13 nov 2026; con capturas del juego: vestíbulo, menú de misiones, lista de alumnas, ficha de admisión) =====
+   Como la interfaz del juego: tema CLARO, cielo azul y blanco con el triángulo facetado de sus paneles;
+   - paneles blancos con el facetado azul pálido (tri.webp) en una esquina, borde azul claro y sombra azulada suave;
+   - etiquetas de sección = la placa marino inclinada del nombre de las alumnas ("アコ"), texto blanco;
+   - pestañas Línea/Cuadrícula = "All | STRIKER | SPECIAL": inclinadas, la activa en marino;
+   - botón principal amarillo con texto marino (como "お仕事"); el resto, blancos con texto marino;
+   - destacados = ficha de la lista de alumnas (foto, franja oscura con las estrellas, nombre debajo) con su halo encima.
+   El azul del juego (#128cff) no llega a 4.5:1 como texto: el texto azul usa #0b6bd6 y el rosa #d42e64.
+   public/skins/bluearchive/: piezas de los atlas de interfaz que aportó el dueño (13 nov 2026; extraídas del cliente, © NEXON Games / Yostar;
+   el dueño decidió usarlas): iconos de las pestañas (ic-mission, ic-student, ic-notice, ic-pyroxene), el sobre del correo (ic-mail), MomoTalk
+   (ic-momo) y Arona para el reproductor, la pegatina "BOSS", la franja de advertencia (stripe) y el facetado (tri; recortado con los bordes
+   desvanecidos, porque el original tenía bordes rectos y en los paneles parecía un corte). Cursor del juego al final del archivo.
+   Solo aplica con <html data-skin="bluearchive">. */
+
+html[data-skin="bluearchive"] {
+  --ba-blue: #128cff;    /* azul del juego: rellenos y adornos */
+  --ba-blue-t: #0b6bd6;  /* azul para TEXTO sobre blanco y para fondos con texto blanco (≥ 4.5:1) */
+  --ba-navy: #2d4263;    /* marino de las placas y la pestaña activa */
+  --ba-navy2: #1f3354;
+  --ba-ink: #2d4263;
+  --ba-ink2: #4a5b78;
+  --ba-sky: #e6f3ff;
+  --ba-line: #c9dcef;
+  --ba-yel: #ffd84a;
+  --ba-pink: #f0477b;
+  --ba-pink-t: #d42e64;  /* rosa con texto blanco / rosa de texto */
+  --ba-tri: url(/skins/bluearchive/tri.webp);
+  --bg: #e9f4ff;
+  --panel: #fff;
+  --panel2: #f3f8fe;
+  --line: rgba(45, 66, 99, .12);
+  --text: var(--ba-ink);
+  --muted: var(--ba-ink2);
+  --acc: var(--ba-blue);
+  --acc2: var(--ba-blue-t);
+  --warn: #8a5d00;
+  --good: #1d6b3a;
+  --bad: #b3261e;
+  color-scheme: light;
+}
+html[data-skin="bluearchive"] body { font-family: 'Noto Sans JP', 'Segoe UI', system-ui, sans-serif; font-weight: 500; color: var(--ba-ink); }
+/* Títulos en cursiva gruesa, como "Mission", "Story", "Total Assault" del menú del juego. */
+html[data-skin="bluearchive"] :is(h1, h2, .brand h1, .sec-title, .kind-head, .modal-title h2, .gsec-head h2) { font-family: 'Exo 2', 'Noto Sans JP', sans-serif; font-style: italic; font-weight: 800; letter-spacing: .01em; }
+html[data-skin="bluearchive"] :is(b, strong, h3, h4) { font-weight: 700; }
+html[data-skin="bluearchive"] ::selection { background: rgba(18, 140, 255, .25); }
+html[data-skin="bluearchive"] * { scrollbar-color: rgba(18, 140, 255, .55) transparent; }
+
+/* --- Fondo: el cielo del vestíbulo con el facetado de triángulos --- */
+html[data-skin="bluearchive"] .aurora { background: var(--ba-tri) right -40px top 40px / 520px no-repeat, var(--ba-tri) left -80px bottom -60px / 620px no-repeat,
+  linear-gradient(180deg, #b9e0ff 0%, #dcefff 38%, #f4faff 75%, #fff 100%); }
+html[data-skin="bluearchive"] .aurora::after { display: none; }
+html[data-skin="bluearchive"] .skin-live { opacity: .4; }
+
+/* --- Cabecera: barra blanca como la superior del juego, con la línea azul; pestañas como los botones del vestíbulo (icono encima del
+   texto: misiones, alumnas, avisos, piroxeno); la activa, en marino con el texto blanco --- */
+html[data-skin="bluearchive"] header { background: rgba(255, 255, 255, .94); border-bottom: 2px solid var(--ba-line); box-shadow: 0 2px 12px rgba(30, 80, 140, .12); backdrop-filter: blur(6px); }
+html[data-skin="bluearchive"] .brand h1 { color: var(--ba-navy); }
+html[data-skin="bluearchive"] header nav { gap: 6px; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; }
+html[data-skin="bluearchive"] header nav button { position: relative; padding-left: 40px !important; border-radius: 8px !important; border: 1px solid var(--ba-line) !important;
+  color: var(--ba-navy) !important; background: linear-gradient(180deg, #fff, #f1f7fd) !important; box-shadow: 0 2px 0 #c3d4e8; }
+html[data-skin="bluearchive"] header nav button::before { content: ""; position: absolute; left: 6px; top: 50%; width: 28px; height: 28px; transform: translateY(-50%);
+  background: center / contain no-repeat; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .2)); transition: transform .2s; }
+html[data-skin="bluearchive"] header nav button:nth-of-type(1)::before { background-image: url(/skins/bluearchive/ic-mission.webp); }
+html[data-skin="bluearchive"] header nav button:nth-of-type(2)::before { background-image: url(/skins/bluearchive/ic-student.webp); }
+html[data-skin="bluearchive"] header nav button:nth-of-type(3)::before { background-image: url(/skins/bluearchive/ic-notice.webp); }
+html[data-skin="bluearchive"] header nav button:nth-of-type(4)::before { background-image: url(/skins/bluearchive/ic-pyroxene.webp); width: 20px; left: 10px; }
+html[data-skin="bluearchive"] header nav button:is(:hover, .on)::before { transform: translateY(-50%) scale(1.12) rotate(-4deg); }
+html[data-skin="bluearchive"] header nav button.on { color: #fff !important; border-color: var(--ba-navy2) !important; background: linear-gradient(180deg, #3a5480, var(--ba-navy)) !important; box-shadow: 0 2px 0 var(--ba-navy2); }
+html[data-skin="bluearchive"] header nav .nav-ind { display: none; }
+@media (max-width: 700px) {
+  html[data-skin="bluearchive"] header nav { gap: 4px; }
+  html[data-skin="bluearchive"] header nav button { padding: 6px 6px 6px 27px !important; font-size: .76rem; }
+  html[data-skin="bluearchive"] header nav button::before { left: 3px; width: 21px; height: 21px; }
+  html[data-skin="bluearchive"] header nav button:nth-of-type(4)::before { width: 15px; left: 6px; }
+}
+
+/* --- Botones: blancos con el borde azul claro y el "labio" de abajo, texto marino; principal amarillo; apoyar en rosa --- */
+html[data-skin="bluearchive"] .btn { border: 1px solid var(--ba-line); border-radius: 8px; background: linear-gradient(180deg, #fff, #f1f7fd); color: var(--ba-navy);
+  text-shadow: none; box-shadow: 0 2px 0 #c3d4e8; font-weight: 700; }
+html[data-skin="bluearchive"] .btn::after { display: none; }
+html[data-skin="bluearchive"] .btn:hover:not(:disabled) { background: #fff !important; border-color: var(--ba-blue); color: var(--ba-navy); transform: translateY(-1px); box-shadow: 0 3px 0 #a9c4e2, 0 0 0 2px rgba(18, 140, 255, .18); }
+html[data-skin="bluearchive"] .btn:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 0 #c3d4e8; }
+html[data-skin="bluearchive"] :is(.btn.primary), html[data-skin="bluearchive"] .btn.primary:hover:not(:disabled) {
+  border: 1px solid #d9ac00; color: var(--ba-navy2); background: linear-gradient(180deg, #ffe680, var(--ba-yel)) !important; box-shadow: 0 2px 0 #c99d00; }
+html[data-skin="bluearchive"] .site-foot a.btn.donate, html[data-skin="bluearchive"] .site-foot a.btn.donate:hover:not(:disabled) {
+  border: 1px solid #a8204e; color: #fff; background: linear-gradient(180deg, var(--ba-pink-t), #c8285b) !important; box-shadow: 0 2px 0 #a8204e; }
+html[data-skin="bluearchive"] .btn:disabled { opacity: 1; filter: grayscale(1); color: var(--ba-ink2); }
+html[data-skin="bluearchive"] .btn.mark .spark { color: #8a5d00; }
+html[data-skin="bluearchive"] .btn.primary .spark { color: var(--ba-navy2); }
+html[data-skin="bluearchive"] .btn.mark:not(.primary) { filter: grayscale(.6); color: var(--ba-ink2); }
+html[data-skin="bluearchive"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 3px solid var(--ba-blue); outline-offset: 2px; }
+html[data-skin="bluearchive"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 8px; border: 1px solid var(--ba-line); background: #fff; color: var(--ba-ink); }
+html[data-skin="bluearchive"] :is(input, select):focus { border-color: var(--ba-blue); box-shadow: 0 0 0 3px rgba(18, 140, 255, .2); outline: none; }
+html[data-skin="bluearchive"] :is(input, textarea)::placeholder { color: #66748d; opacity: 1; }
+html[data-skin="bluearchive"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--ba-blue-t); }
+
+/* --- Chips y filtros: cápsulas blancas; el activo en azul con texto blanco --- */
+html[data-skin="bluearchive"] :is(.chip, .ichip, .fopt) { border: 1px solid var(--ba-line); border-radius: 999px; background: #fff; color: var(--ba-navy); box-shadow: 0 1px 0 #c3d4e8; }
+html[data-skin="bluearchive"] :is(.chip, .ichip, .fopt):hover { background: var(--ba-sky) !important; transform: none; }
+html[data-skin="bluearchive"] :is(.soon-toggle, .up-chip, .codes-chip, .jump-chip) { border: 1px solid var(--ba-line); border-radius: 8px; background: linear-gradient(180deg, #fff, #f1f7fd); color: var(--ba-navy); box-shadow: 0 2px 0 #c3d4e8; }
+html[data-skin="bluearchive"] :is(.soon-toggle, .up-chip, .codes-chip, .jump-chip):hover { background: #fff !important; border-color: var(--ba-blue); }
+html[data-skin="bluearchive"] :is(.chip.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on) { border-color: var(--ba-blue-t); color: #fff; background: var(--ba-blue-t) !important; }
+html[data-skin="bluearchive"] :is(.up-chip .up-chip-t, .up-chip b, .up-chip.more, .codes-chip *) { color: var(--ba-navy) !important; text-shadow: none; }
+/* Línea / Cuadrícula: como "All | STRIKER | SPECIAL": pestañas inclinadas unidas, la activa en marino. */
+html[data-skin="bluearchive"] .seg { border-radius: 6px; border: 1px solid var(--ba-line); background: #fff; padding: 3px; gap: 2px; }
+html[data-skin="bluearchive"] .seg button { border-radius: 0; color: var(--ba-navy); clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); padding-inline: 16px; }
+html[data-skin="bluearchive"] .seg button.on, html[data-skin="bluearchive"] .seg button.on:hover { background: var(--ba-navy) !important; color: #fff; box-shadow: none; }
+html[data-skin="bluearchive"] .pick-search { border-radius: 8px; border: 1px solid var(--ba-line); background: #fff; color: var(--ba-ink); }
+
+/* --- Etiquetas: cápsulas azul pálido con texto marino; lo urgente en rosa con texto blanco ("In Progress") --- */
+html[data-skin="bluearchive"] .tag { border-radius: 4px; border: 0; background: var(--ba-sky); color: var(--ba-navy); font-weight: 700; }
+html[data-skin="bluearchive"] :is(.tag.great, .tag.good) { background: #dff5e7; color: #1d6b3a; }
+html[data-skin="bluearchive"] .tag.mid { background: #fff3c4; color: #7a5200; }
+html[data-skin="bluearchive"] .tag.bad { background: var(--ba-pink-t); color: #fff; }
+html[data-skin="bluearchive"] .pill.hot { background: var(--ba-pink-t); color: #fff; }
+html[data-skin="bluearchive"] .pill.new { background: var(--ba-yel); color: var(--ba-navy2); }
+html[data-skin="bluearchive"] .today-flag { border-radius: 4px; background: var(--ba-pink-t); color: #fff; }
+html[data-skin="bluearchive"] .soon-card em { border-radius: 4px; background: var(--ba-sky); color: var(--ba-navy); }
+html[data-skin="bluearchive"] .soon-card.urgent em { background: var(--ba-pink-t); color: #fff; }
+
+/* --- Etiquetas de sección: la placa marino inclinada del nombre de las alumnas, con la línea azul delante --- */
+html[data-skin="bluearchive"] h3 { color: #fff; font-size: .9rem; padding: 3px 26px 3px 14px; border-radius: 4px; background: linear-gradient(90deg, var(--ba-navy2), var(--ba-navy));
+  clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%); box-shadow: inset 4px 0 0 var(--ba-blue); }
+html[data-skin="bluearchive"] h3 small { color: #d6e6ff; }
+html[data-skin="bluearchive"] :is(.bcard, .ecard, .soon-card, .up-card) h3 { background: none; clip-path: none; padding: 0; color: inherit; border-radius: 0; box-shadow: none; }
+
+/* ===== Paneles: blancos, el facetado azul pálido abajo a la derecha, borde azul claro y sombra azulada ===== */
+html[data-skin="bluearchive"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 10px; border: 1px solid var(--ba-line); background: var(--ba-tri) right -30px bottom -30px / 220px no-repeat, #fff; box-shadow: 0 6px 18px rgba(30, 80, 140, .13); }
+html[data-skin="bluearchive"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: transparent; }
+html[data-skin="bluearchive"] :is(.gcard-hero, .ecard-img) { background-color: #cfe4f8; }
+html[data-skin="bluearchive"] .gcard-hero .fade { background: linear-gradient(transparent 30%, rgba(20, 35, 60, .82)); }
+/* Nombre del juego sobre el arte: en blanco. */
+html[data-skin="bluearchive"] .gcard-head { --text: #fff; --muted: #e6eefa; color: #fff; }
+html[data-skin="bluearchive"] .gcard-head :is(h2, h3, b, strong) { color: #fff; text-shadow: 0 1px 4px rgba(0, 0, 0, .6); }
+html[data-skin="bluearchive"] .gcard-head p { color: #ffe680; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+html[data-skin="bluearchive"] .gcard-hero { --acc2: #ffe680; --acc: #ffe680; --text: #fff; --muted: #e6eefa; }
+html[data-skin="bluearchive"] .gcard-hero .head-meta, html[data-skin="bluearchive"] .gcard-hero .head-meta * { color: #ffe680; text-shadow: 0 1px 3px rgba(0, 0, 0, .75); }
+html[data-skin="bluearchive"] :is(.gcard, .ecard, .up-card, .soon-card, .plist li):hover { border-color: var(--ba-blue); box-shadow: 0 0 0 2px rgba(18, 140, 255, .45), 0 8px 22px rgba(30, 80, 140, .18); transform: translateY(-2px); }
+/* Cabecera de cada juego (Parches, cuadrícula): la barra marino de las ventanas ("生徒リスト"), con el facetado. */
+html[data-skin="bluearchive"] .gsec-head { --text: #fff; --muted: #d6e6ff; color: #fff; border-radius: 9px 9px 0 0; background: var(--ba-tri) right -20px center / 200px no-repeat, linear-gradient(90deg, var(--ba-navy2), #3a5480); box-shadow: inset 0 -3px 0 var(--ba-blue); }
+html[data-skin="bluearchive"] .gsec-head h2 { color: #fff; }
+html[data-skin="bluearchive"] .gsec-head .fold { color: #fff; border: 1px solid rgba(255, 255, 255, .6); background: var(--ba-navy2); }
+html[data-skin="bluearchive"] .gsec-head .stats > div { border-radius: 8px; background: #fff; border: 0; --text: var(--ba-ink); --muted: var(--ba-ink2); color: var(--ba-ink); }
+html[data-skin="bluearchive"] .gsec-head .stats b { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .stats > div { border-radius: 8px; background: var(--panel2); border: 1px solid var(--ba-line); }
+html[data-skin="bluearchive"] .stats b { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] :is(.list li, .hist li) { margin: 0 0 6px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--ba-line); background: var(--panel2); }
+html[data-skin="bluearchive"] :is(.list li, .hist li):hover { border-color: var(--ba-blue); }
+html[data-skin="bluearchive"] .ev-title { color: var(--ba-ink); }
+html[data-skin="bluearchive"] .progress { border-radius: 999px; background: #dbe8f5; }
+html[data-skin="bluearchive"] .progress i { border-radius: 999px; background: linear-gradient(90deg, #5cc0ff, var(--ba-blue)) !important; box-shadow: none; }
+html[data-skin="bluearchive"] :is(.ev-loc, .gcard-head p) { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .up-lbl { color: var(--ba-ink2); }
+
+/* --- Ventana del evento: la ficha de admisión de S.C.H.A.L.E (papel blanco con el facetado); × como el botón de volver del juego --- */
+html[data-skin="bluearchive"] .modal { overflow: hidden; }
+html[data-skin="bluearchive"] .modal-hero { background: linear-gradient(135deg, #9fd3ff, #4f8fd8); }
+html[data-skin="bluearchive"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(20, 35, 60, .86)); }
+html[data-skin="bluearchive"] .modal-title h2 { color: #fff; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+html[data-skin="bluearchive"] .modal-title :is(p, small, span) { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+html[data-skin="bluearchive"] :is(.modal > .close, .modal .x, .support-x, .modal-close, .gcard-hero .x.corner) { width: 34px; height: 34px; border: 2px solid #fff; border-radius: 50%;
+  background: var(--ba-navy) !important; color: #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .3); }
+/* Destacados: la ficha de la lista de alumnas (foto, franja oscura abajo, nombre en marino debajo) con el halo encima. */
+html[data-skin="bluearchive"] .featured { gap: 12px; padding-top: 6px; }
+html[data-skin="bluearchive"] .portrait { position: relative; width: 92px; gap: 0; overflow: visible; border-radius: 6px; border: 1px solid var(--ba-line); background: #fff; box-shadow: 0 2px 8px rgba(30, 80, 140, .18); }
+html[data-skin="bluearchive"] .portrait img { width: 100%; height: 104px; border: 0; border-radius: 5px 5px 0 0; object-position: 50% 10%; background: linear-gradient(180deg, #d6ecff, #9fcdf5);
+  box-shadow: inset 0 -16px 0 rgba(31, 51, 84, .75); }
+html[data-skin="bluearchive"] .portrait::before { content: ""; position: absolute; z-index: 1; left: 50%; top: -6px; width: 44px; height: 12px; transform: translateX(-50%); border-radius: 50%;
+  border: 2px solid var(--ba-pink); box-shadow: 0 0 6px rgba(240, 71, 123, .6); pointer-events: none; }
+html[data-skin="bluearchive"] .portrait:hover { border-color: var(--ba-blue); }
+html[data-skin="bluearchive"] .portrait:hover img { transform: none; }
+html[data-skin="bluearchive"] .portrait span { margin: 4px 4px 2px; padding: 0 2px 2px; color: var(--ba-navy); font-weight: 700; font-size: .76rem; line-height: 1.25; border-bottom: 1px dashed var(--ba-line); }
+html[data-skin="bluearchive"] .portrait small { padding: 1px 4px 5px; color: var(--ba-ink2); font-size: .68rem; }
+
+/* --- Ventanas emergentes: blancas; la de apoyo y el menú de skins con la barra marino --- */
+html[data-skin="bluearchive"] .support-dialog { padding-top: 0; }
+html[data-skin="bluearchive"] .support-dialog h2 { margin: 0 -22px; padding: 12px 52px 12px 22px; color: #fff; text-align: center; background: linear-gradient(90deg, var(--ba-navy2), #3a5480); box-shadow: inset 0 -3px 0 var(--ba-blue); }
+html[data-skin="bluearchive"] .support-dialog .support-x { top: 6px; right: 8px; }
+html[data-skin="bluearchive"] .skin-panel .skin-title { margin: -6px -6px 6px; border-radius: 9px 9px 0 0; background: linear-gradient(90deg, var(--ba-navy2), #3a5480); color: #fff !important; }
+html[data-skin="bluearchive"] :is(.lang-menu, .skin-panel) button { color: var(--ba-ink); border-radius: 6px; }
+html[data-skin="bluearchive"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: var(--ba-sky); }
+html[data-skin="bluearchive"] :is(.lang-menu, .skin-panel) button.on { background: var(--ba-sky); color: var(--ba-navy2); box-shadow: inset 3px 0 0 var(--ba-blue); }
+html[data-skin="bluearchive"] :is(.lang-menu, .skin-panel) button.on i, html[data-skin="bluearchive"] .lang-menu i { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--ba-blue-t); border-color: rgba(11, 107, 214, .45); opacity: 1; }
+html[data-skin="bluearchive"] :is(a:not(.btn), .linkbtn, .link-btn) { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .skin-panel .skin-unlock .linkbtn { color: var(--ba-ink2); }
+html[data-skin="bluearchive"] :is(.skin-account p, .skin-msg.good) { color: #1d6b3a; }
+html[data-skin="bluearchive"] :is(.skin-msg.bad, .support-error) { color: #b3261e; }
+
+/* ===== Retratos de banners ("Mis gachas") y selector de juegos ===== */
+html[data-skin="bluearchive"] .bport { border-radius: 6px; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(30, 80, 140, .28); }
+html[data-skin="bluearchive"] .bport:hover { transform: translateY(-2px); box-shadow: 0 0 0 3px var(--ba-blue); }
+html[data-skin="bluearchive"] .bport .p-time { border-radius: 4px; border: 0; background: var(--ba-navy); color: #fff; backdrop-filter: none; }
+html[data-skin="bluearchive"] .bport .p-time.hot { background: var(--ba-pink-t); color: #fff; }
+html[data-skin="bluearchive"] .pick { border-radius: 8px; border: 1px solid var(--ba-line); background: #fff; color: var(--ba-ink); }
+html[data-skin="bluearchive"] .pick-art img { opacity: .8; }
+html[data-skin="bluearchive"] .pick:hover:not(:disabled) .pick-art img { opacity: .95; }
+html[data-skin="bluearchive"] .pick-art::after { background: linear-gradient(90deg, rgba(255, 255, 255, .92) 0, rgba(255, 255, 255, .8) 40%, rgba(255, 255, 255, .35) 70%, rgba(255, 255, 255, 0) 100%); }
+html[data-skin="bluearchive"] .pick.on .pick-art::after { background: linear-gradient(90deg, rgba(230, 243, 255, .94) 0, rgba(230, 243, 255, .82) 40%, rgba(230, 243, 255, .35) 70%, rgba(230, 243, 255, 0) 100%); }
+html[data-skin="bluearchive"] .pick-txt strong { color: var(--ba-ink); text-shadow: 0 0 3px #fff, 0 0 6px #fff, 0 0 10px rgba(255, 255, 255, .9); }
+html[data-skin="bluearchive"] .pick-txt small { color: var(--ba-ink); font-weight: 700; text-shadow: 0 0 3px #fff, 0 0 6px #fff; }
+html[data-skin="bluearchive"] .pick .check { background: #fff; border: 1px solid var(--ba-line); color: var(--ba-navy); }
+html[data-skin="bluearchive"] .pick.on { border-color: var(--ba-blue); box-shadow: 0 0 0 2px var(--ba-blue); }
+html[data-skin="bluearchive"] .pick.on .check { background: var(--ba-blue-t); border-color: var(--ba-blue-t); color: #fff; }
+html[data-skin="bluearchive"] .pick:hover:not(:disabled) { border-color: var(--ba-blue); box-shadow: 0 4px 14px rgba(30, 80, 140, .2); }
+html[data-skin="bluearchive"] .pick.wip .pick-txt { opacity: 1; }
+/* Tarjetas de banner: texto sobre el arte (franja oscura), así que ahí es claro. Clase doble: la regla de paneles pesa más. */
+html[data-skin="bluearchive"] .bcard.bcard { --text: #fff; --muted: #e6eefa; --warn: #ffd36b; --good: #9be7b4; --bad: #ff9fbe; color: #fff; background: #243552; }
+html[data-skin="bluearchive"] .bcard.bcard :is(.prog span, h3, b, strong) { color: #fff; }
+html[data-skin="bluearchive"] .bcard.bcard :is(small, .muted) { color: #e6eefa; }
+html[data-skin="bluearchive"] .bcard.bcard .ev-loc { color: #ffe680; }
+html[data-skin="bluearchive"] .ecard-img .fade { background: linear-gradient(transparent 60%, rgba(0, 0, 0, .2)); }
+html[data-skin="bluearchive"] .ecard-body small { color: var(--ba-blue-t); }
+
+/* ===== Línea de tiempo: panel blanco azulado; barras como cápsulas blancas con la franja de color de cada tipo ===== */
+html[data-skin="bluearchive"] [style*="--c:"] { --c: #128cff !important; --c2: #2d4263 !important; }
+html[data-skin="bluearchive"] .tl.tl { background: var(--ba-tri) right -40px bottom -40px / 300px no-repeat, rgba(236, 245, 255, .9); backdrop-filter: blur(2px); border-color: var(--ba-line); }
+html[data-skin="bluearchive"] :is(.tl-corner, .tl-label, .tl-axis) { background: #dcebfa; color: var(--ba-ink); }
+html[data-skin="bluearchive"] .tl-label { border-left: 0; border-right: 2px solid #bcd3ea; }
+html[data-skin="bluearchive"] .tl-axis { border-bottom: 2px solid #bcd3ea; }
+html[data-skin="bluearchive"] .tl-lane { border-color: rgba(45, 66, 99, .1); }
+html[data-skin="bluearchive"] .grid-line { background: rgba(18, 140, 255, .12); }
+html[data-skin="bluearchive"] .tick { color: var(--ba-ink2); }
+html[data-skin="bluearchive"] .month b { color: var(--ba-ink); }
+html[data-skin="bluearchive"] .lane-empty { color: var(--ba-ink2); }
+html[data-skin="bluearchive"] .bar { border-radius: 6px; border: 1px solid #c1d6ec; background: #f7fbff !important; color: var(--ba-ink); box-shadow: 0 2px 4px rgba(30, 80, 140, .16); }
+html[data-skin="bluearchive"] .bar-clip { border-radius: 6px; }
+/* Arte de cada evento desde donde acaba el texto, nítido; solo se funde al empezar (como en Uma). */
+html[data-skin="bluearchive"] .bar-clip::after { display: none; }
+html[data-skin="bluearchive"] .bar .bar-txt { width: fit-content; max-width: 100%; padding-right: 26px; margin-right: -12px; background: linear-gradient(90deg, rgba(247, 251, 255, .97) calc(100% - 26px), rgba(247, 251, 255, 0)); }
+html[data-skin="bluearchive"] .bar .bar-bg { --o: .95 !important; inset: 0 auto 0 300px; width: calc(100% - 300px); max-width: none; height: 100%; object-fit: cover; object-position: 50% 28%;
+  -webkit-mask: linear-gradient(90deg, transparent 0, #000 70px); mask: linear-gradient(90deg, transparent 0, #000 70px); }
+html[data-skin="bluearchive"] .bar:hover .bar-bg { --o: 1 !important; transform: scale(1.04); }
+html[data-skin="bluearchive"] .bar.past { opacity: 1; filter: grayscale(.8) brightness(.95); }
+html[data-skin="bluearchive"] .bar-prog { background: var(--ba-blue); opacity: 1; }
+html[data-skin="bluearchive"] .bar.banner { border-left: 6px solid var(--ba-pink); }
+html[data-skin="bluearchive"] .bar.event { border-left: 6px solid var(--ba-blue); }
+html[data-skin="bluearchive"] .bar.challenge { border-left: 6px solid var(--ba-navy); }
+html[data-skin="bluearchive"] .bar.live { box-shadow: 0 0 0 2px var(--ba-yel), 0 2px 8px rgba(255, 216, 74, .5); }
+html[data-skin="bluearchive"] .bar:hover { border-color: var(--ba-blue); }
+html[data-skin="bluearchive"] :is(.bar-in b, .bar .bar-in b, .bar .bar-txt b) { color: var(--ba-ink) !important; text-shadow: none; }
+html[data-skin="bluearchive"] .bar-in em { color: var(--ba-ink2); text-shadow: none; opacity: 1; }
+html[data-skin="bluearchive"] .bar .bar-txt small { color: var(--ba-ink2) !important; text-shadow: none !important; }
+html[data-skin="bluearchive"] .bar .bar-txt :is(.when, .when.upcoming) { color: var(--ba-blue-t) !important; }
+html[data-skin="bluearchive"] .bar .bar-txt .when.soon { color: #7a5200 !important; }
+html[data-skin="bluearchive"] .bar .bar-txt .when.urgent { color: #b3261e !important; }
+html[data-skin="bluearchive"] .when.ended { color: var(--ba-ink2); }
+html[data-skin="bluearchive"] .sec-title { color: var(--ba-ink) !important; }
+html[data-skin="bluearchive"] .sec-band.banner .sec-title { color: #b8204f !important; } /* el rosa de texto se quedaba en 4,36:1 sobre el panel azulado */
+html[data-skin="bluearchive"] .sec-band.challenge .sec-title { color: var(--ba-navy) !important; }
+html[data-skin="bluearchive"] .sec-ico { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .patch-mark { opacity: 1; color: var(--ba-pink-t); }
+html[data-skin="bluearchive"] .kind-head { color: #fff; border-color: transparent; }
+html[data-skin="bluearchive"] .kind-head small { color: #d6e6ff; }
+html[data-skin="bluearchive"] .gcard-hero .pill.hot { color: #fff; }
+html[data-skin="bluearchive"] .soon-card :is(.soon-txt b, .soon-txt strong, .soon-t, b) { color: var(--ba-ink); }
+html[data-skin="bluearchive"] .soon-card .soon-txt small { color: var(--ba-ink2); }
+
+/* ===== Textos con color claro FIJO en la hoja base (pensada para fondo oscuro) ===== */
+html[data-skin="bluearchive"] :is(.hist .pname, .cur-name, .next-top em, .desc) { color: var(--ba-ink); }
+html[data-skin="bluearchive"] .up-ver { color: var(--ba-pink-t); }
+html[data-skin="bluearchive"] :is(.code-until, .prec) { color: #7a5200; }
+html[data-skin="bluearchive"] .cc-new { background: var(--ba-pink-t); color: #fff; }
+html[data-skin="bluearchive"] :is(.prog span) { color: var(--ba-ink); text-shadow: none; }
+html[data-skin="bluearchive"] .prog.urgent span { color: #b3261e; }
+html[data-skin="bluearchive"] .stars { color: #8a5d00; text-shadow: none; }
+html[data-skin="bluearchive"] :is(.bport, .bcard-top) .stars { color: #ffd36b; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+html[data-skin="bluearchive"] .site-foot { border-top: 2px solid var(--ba-line); color: var(--ba-ink2); }
+html[data-skin="bluearchive"] .site-foot .donate-note { color: var(--ba-ink); opacity: 1; }
+/* Sincronizar: las flechas azules del juego no están en los atlas; el ⟳ en azul. */
+html[data-skin="bluearchive"] header .btn .spin { color: var(--ba-blue-t); }
+
+/* Pestaña "Tiradas": cifras en el azul de texto; iconos y número de paso en blanco sobre la placa marino. */
+html[data-skin="bluearchive"] .plan .plan-total b { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .plan h3 .plan-ico { color: #fff; }
+html[data-skin="bluearchive"] .plan h3 .plan-step { color: #fff; border-color: #fff; }
+html[data-skin="bluearchive"] .plan .plan-sum-n b { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .plan :is(.plan-ev .plan-val b, .plan-evhead b, .plan-ev.soon .plan-ev-t > small, .plan-sum-ev .plan-ico) { color: var(--ba-blue-t); }
+html[data-skin="bluearchive"] .fbtn .badge { color: #fff; background: var(--ba-pink-t); }
+/* "+1" del nombre sobre el arte del retrato: claro, como el nombre (la tinta de la skin no se leía, 1,96:1). */
+html[data-skin="bluearchive"] .bport .p-name small { color: #e6eefa; }
+
+/* ===== Modo oscuro (baDark.ts, <html data-ba-dark>; encendido por defecto, interruptor en el menú de skins) =====
+   Azul noche como los menús de noche del juego: fondo #121d31, paneles #1b2a44 con el mismo facetado en luz suave (blend), texto claro;
+   las placas pasan al azul del juego con la línea amarilla; el azul de TEXTO sube a #6cb8ff y los rellenos con texto blanco usan #0b6bd6. */
+html[data-skin="bluearchive"][data-ba-dark] {
+  --ba-ink: #eaf2ff; --ba-ink2: #b9c8de; --ba-line: #34496b; --ba-sky: #22385a; --ba-blue-t: #6cb8ff; --ba-fill: #0b6bd6;
+  --bg: #121d31; --panel: #1b2a44; --panel2: #22345a; --line: rgba(255, 255, 255, .12); --text: #eaf2ff; --muted: #b9c8de;
+  --warn: #ffd970; --good: #9be7b4; --bad: #ff8a8a; color-scheme: dark; }
+html[data-skin="bluearchive"][data-ba-dark] body { color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] .aurora { background: radial-gradient(ellipse at 80% 0%, rgba(18, 140, 255, .28), transparent 55%), radial-gradient(ellipse at 0% 100%, rgba(240, 71, 123, .12), transparent 50%),
+  linear-gradient(180deg, #16243d 0%, #121d31 60%, #0e1728 100%); }
+html[data-skin="bluearchive"][data-ba-dark] header { background: rgba(18, 29, 49, .94); border-bottom-color: var(--ba-line); box-shadow: 0 2px 12px rgba(0, 0, 0, .35); }
+html[data-skin="bluearchive"][data-ba-dark] .brand h1 { color: #fff; }
+/* Botones y pestañas: baldosa azul noche con el labio oscuro; la pestaña activa, en el azul del juego. */
+html[data-skin="bluearchive"][data-ba-dark] :is(header nav button, .btn, .soon-toggle, .up-chip, .codes-chip, .jump-chip) { color: var(--ba-ink) !important; border-color: var(--ba-line) !important;
+  background: linear-gradient(180deg, #2a3f66, #1f3152) !important; box-shadow: 0 2px 0 #0d1627; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.btn, .soon-toggle, .up-chip, .codes-chip, .jump-chip):hover:not(:disabled) { background: #2f4773 !important; border-color: var(--ba-blue) !important; }
+html[data-skin="bluearchive"][data-ba-dark] header nav button.on { color: #fff !important; border-color: #0a55aa !important; background: linear-gradient(180deg, var(--ba-fill), #0a5bb8) !important; box-shadow: 0 2px 0 #08458a; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.up-chip .up-chip-t, .up-chip b, .up-chip.more, .codes-chip *) { color: var(--ba-ink) !important; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.btn.primary, .btn.primary:hover:not(:disabled)) { color: var(--ba-navy2) !important; border-color: #d9ac00 !important; background: linear-gradient(180deg, #ffe680, var(--ba-yel)) !important; box-shadow: 0 2px 0 #c99d00; }
+html[data-skin="bluearchive"][data-ba-dark] .site-foot a.btn.donate { color: #fff !important; border-color: #a8204e !important; background: linear-gradient(180deg, var(--ba-pink-t), #c8285b) !important; }
+html[data-skin="bluearchive"][data-ba-dark] :is(select, input:not([type="checkbox"]):not([type="range"]), .pick-search) { background: #121d31; color: var(--ba-ink); border-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] :is(input, textarea)::placeholder { color: #8ea2c0; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.chip, .ichip, .fopt) { background: #1b2a44; color: var(--ba-ink); border-color: var(--ba-line); box-shadow: 0 1px 0 #0d1627; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.chip, .ichip, .fopt):hover { background: #22385a !important; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.chip.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on) { border-color: var(--ba-fill); background: var(--ba-fill) !important; color: #fff; }
+html[data-skin="bluearchive"][data-ba-dark] .seg { background: #1b2a44; border-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .seg button { color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.seg button.on, .seg button.on:hover) { background: var(--ba-fill) !important; color: #fff; }
+html[data-skin="bluearchive"][data-ba-dark] .tag { background: #22385a; color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.tag.great, .tag.good) { background: #1d4d33; color: #c9f5d8; }
+html[data-skin="bluearchive"][data-ba-dark] .tag.mid { background: #4d3d10; color: #ffe39a; }
+html[data-skin="bluearchive"][data-ba-dark] .soon-card em { background: #22385a; color: var(--ba-ink); }
+/* Placas de sección: el azul del juego con la línea amarilla delante. */
+html[data-skin="bluearchive"][data-ba-dark] h3 { background: linear-gradient(90deg, var(--ba-fill), #1a5fae); box-shadow: inset 4px 0 0 var(--ba-yel); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.bcard, .ecard, .soon-card, .up-card) h3 { background: none; box-shadow: none; }
+/* Paneles: azul noche con el facetado en luz suave. */
+html[data-skin="bluearchive"][data-ba-dark] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-color: var(--ba-line); background: var(--ba-tri) right -30px bottom -30px / 220px no-repeat, #1b2a44; background-blend-mode: soft-light, normal; box-shadow: 0 6px 18px rgba(0, 0, 0, .35); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.gcard-hero, .ecard-img) { background-color: #22345a; }
+html[data-skin="bluearchive"][data-ba-dark] .gsec-head { background: var(--ba-tri) right -20px center / 200px no-repeat, linear-gradient(90deg, #0f3f78, #1a5fae); background-blend-mode: soft-light, normal; box-shadow: inset 0 -3px 0 var(--ba-yel); }
+html[data-skin="bluearchive"][data-ba-dark] .gsec-head .fold { background: #0f3f78; }
+html[data-skin="bluearchive"][data-ba-dark] .gsec-head .stats > div { background: #1b2a44; --text: var(--ba-ink); --muted: var(--ba-ink2); color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.list li, .hist li) { background: #22345a; border-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .progress { background: #2a3c5e; }
+html[data-skin="bluearchive"][data-ba-dark] .portrait { background: #1b2a44; border-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .portrait span { color: var(--ba-ink); border-bottom-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .support-dialog h2, html[data-skin="bluearchive"][data-ba-dark] .skin-panel .skin-title { background: linear-gradient(90deg, #0f3f78, #1a5fae); box-shadow: inset 0 -3px 0 var(--ba-yel); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.lang-menu, .skin-panel) button.on { background: #22385a; color: #fff; }
+html[data-skin="bluearchive"][data-ba-dark] .skin-panel :is(.skin-try, .skin-lock) { border-color: rgba(108, 184, 255, .45); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.skin-account p, .skin-msg.good) { color: #9be7b4; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.skin-msg.bad, .support-error) { color: #ff8a8a; }
+html[data-skin="bluearchive"][data-ba-dark] .pick { background: #1b2a44; border-color: var(--ba-line); color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] .pick-art::after { background: linear-gradient(90deg, rgba(27, 42, 68, .94) 0, rgba(27, 42, 68, .82) 40%, rgba(27, 42, 68, .35) 70%, rgba(27, 42, 68, 0) 100%); }
+html[data-skin="bluearchive"][data-ba-dark] .pick.on .pick-art::after { background: linear-gradient(90deg, rgba(15, 63, 120, .94) 0, rgba(15, 63, 120, .82) 40%, rgba(15, 63, 120, .35) 70%, rgba(15, 63, 120, 0) 100%); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.pick-txt strong, .pick-txt small) { color: #fff; text-shadow: 0 0 3px #000, 0 0 6px rgba(0, 0, 0, .8); }
+html[data-skin="bluearchive"][data-ba-dark] .pick .check { background: #1b2a44; border-color: var(--ba-line); color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] .pick.on .check { background: var(--ba-fill); border-color: var(--ba-fill); }
+/* Línea de tiempo. */
+html[data-skin="bluearchive"][data-ba-dark] .tl.tl { background: var(--ba-tri) right -40px bottom -40px / 300px no-repeat, rgba(20, 32, 54, .92); background-blend-mode: soft-light, normal; border-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.tl-corner, .tl-label, .tl-axis) { background: #1f3150; color: var(--ba-ink); }
+html[data-skin="bluearchive"][data-ba-dark] .tl-label { border-right-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .tl-axis { border-bottom-color: var(--ba-line); }
+html[data-skin="bluearchive"][data-ba-dark] .tl-lane { border-color: rgba(255, 255, 255, .07); }
+html[data-skin="bluearchive"][data-ba-dark] .bar { background: #22345a !important; border-color: #3a5480; color: var(--ba-ink); box-shadow: 0 2px 4px rgba(0, 0, 0, .35); }
+html[data-skin="bluearchive"][data-ba-dark] .bar .bar-txt { background: linear-gradient(90deg, rgba(34, 52, 90, .97) calc(100% - 26px), rgba(34, 52, 90, 0)); }
+html[data-skin="bluearchive"][data-ba-dark] .bar .bar-txt .when.soon { color: #ffd970 !important; }
+html[data-skin="bluearchive"][data-ba-dark] .bar .bar-txt .when.urgent { color: #ff8a8a !important; }
+html[data-skin="bluearchive"][data-ba-dark] .bar.challenge { border-left-color: #9fc2ff; }
+html[data-skin="bluearchive"][data-ba-dark] .sec-band.banner .sec-title { color: #ff8fb2 !important; }
+html[data-skin="bluearchive"][data-ba-dark] .sec-band.challenge .sec-title { color: #9fc2ff !important; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.patch-mark, .up-ver) { color: #ff8fb2; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.code-until, .prec) { color: #ffd970; }
+html[data-skin="bluearchive"][data-ba-dark] .prog.urgent span { color: #ff8a8a; }
+html[data-skin="bluearchive"][data-ba-dark] .stars { color: #ffd36b; }
+html[data-skin="bluearchive"][data-ba-dark] .btn.mark .spark { color: #ffd970; }
+html[data-skin="bluearchive"][data-ba-dark] .fbtn .badge { background: var(--ba-pink-t); }
+/* MomoTalk en azul noche: la burbuja de Arona y las respuestas también. */
+html[data-skin="bluearchive"][data-ba-dark] .music-dock.tv-bluearchive { --tv-body: linear-gradient(180deg, #d42e64, #c8285b) top / 100% 34px no-repeat, #1b2a44; --tv-body-sh: inset 0 0 0 1px #34496b, 0 14px 34px rgba(0, 0, 0, .5);
+  --tv-bezel: #2a3c5e; --tv-bezel-sh: inset 0 0 0 1px #3a5480; }
+html[data-skin="bluearchive"][data-ba-dark] .tv-bluearchive .tv-bezel::before { border-right-color: #2a3c5e; }
+html[data-skin="bluearchive"][data-ba-dark] .tv-bluearchive .tv-knob { background: #1f3152; box-shadow: inset 0 0 0 1px #3a5480; color: #6cb8ff; }
+html[data-skin="bluearchive"][data-ba-dark] .tv-bluearchive .tv-knob.on { background: var(--ba-fill); box-shadow: inset 0 0 0 1px var(--ba-fill); }
+html[data-skin="bluearchive"][data-ba-dark] :is(h3 small, .kind-head small) { color: #fff; } /* sobre el azul de la placa, el azul pálido quedaba en 4,07:1 */
+
+/* ===== Más piezas del atlas (13 nov 2026, a petición del dueño) =====
+   Se probaron las texturas de las baldosas del menú (card-white / card-blue) en las pestañas de la cabecera y se quitaron: estiradas a
+   ese ancho se veían de baja resolución. */
+/* Códigos: el sobre del correo del juego en lugar del regalo. */
+html[data-skin="bluearchive"] summary.codes-chip .cc-ico { background: url(/skins/bluearchive/ic-mail.webp) center / 22px auto no-repeat !important; }
+html[data-skin="bluearchive"] summary.codes-chip .cc-ico svg { display: none; }
+/* Rotatorios: la pegatina "BOSS" del juego junto al título de la sección. */
+html[data-skin="bluearchive"] .sec-band.challenge .sec-title::after { content: ""; display: inline-block; width: 30px; height: 25px; margin-left: 6px; vertical-align: -7px;
+  background: url(/skins/bluearchive/boss.webp) center / contain no-repeat; }
+/* Lo que termina pronto: la franja roja y amarilla de advertencia arriba de la tarjeta. */
+html[data-skin="bluearchive"] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, var(--ba-tri) right -30px bottom -30px / 220px no-repeat, #fff; }
+html[data-skin="bluearchive"][data-ba-dark] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, #1b2a44; }
+
+/* --- Cursor del juego (13 nov 2026, D:\descargas\OOTlue-archive-real-cursor-*.webp que aportó el dueño). Venía como mosaico de 3×3 sobre un
+   fondo de cuadros pegado (sin transparencia). Como las 9 copias caen sobre cuadros distintos, la transparencia se calculó exacta comparando
+   el mismo píxel sobre el cuadro claro y el oscuro (así se conservan el borde y el brillo suaves, que con un umbral salían cortados), y se
+   limpiaron las motas de la compresión. cursor.png 40 px / cursor@2x.png 80 px (el original mide ~85). Punta en (2, 0). --- */
+html[data-skin="bluearchive"], html[data-skin="bluearchive"] body {
+  cursor: url(/skins/bluearchive/cursor.png) 2 0, auto;
+  cursor: image-set(url(/skins/bluearchive/cursor.png) 1x, url(/skins/bluearchive/cursor@2x.png) 2x) 2 0, auto; }
+html[data-skin="bluearchive"] :is(a, button, [role="button"], [role="link"], [role="radio"], summary, select, label, .bar, .clickable) {
+  cursor: url(/skins/bluearchive/cursor.png) 2 0, pointer !important;
+  cursor: image-set(url(/skins/bluearchive/cursor.png) 1x, url(/skins/bluearchive/cursor@2x.png) 2x) 2 0, pointer !important; }
+html[data-skin="bluearchive"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* Línea de tiempo translúcida para que se vea el fondo animado (13 nov 2026, el dueño): el panel deja pasar la imagen; las barras, la
+   columna de juegos y el eje conservan su fondo (algo translúcido y con desenfoque) para que el texto se siga leyendo. */
+html[data-skin="bluearchive"] .skin-live { opacity: .75; }
+html[data-skin="bluearchive"][data-ba-dark] .skin-live { opacity: 1; filter: brightness(.72) saturate(1.05); }
+html[data-skin="bluearchive"] .tl.tl { background: rgba(236, 245, 255, .45); backdrop-filter: blur(1px); }
+html[data-skin="bluearchive"] :is(.tl-corner, .tl-label, .tl-axis) { background: rgba(220, 235, 250, .82); backdrop-filter: blur(6px); }
+html[data-skin="bluearchive"][data-ba-dark] .tl.tl { background: rgba(18, 29, 49, .45); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.tl-corner, .tl-label, .tl-axis) { background: rgba(27, 42, 68, .84); backdrop-filter: blur(6px); }
+/* Textos que quedan sobre el fondo animado (fuera de los paneles o en la parte translúcida de la línea de tiempo): con halo, para leerse
+   sobre cualquier imagen. */
+html[data-skin="bluearchive"] :is(.soon-strip > .muted, .sec-title, .lane-empty, .tick) { text-shadow: 0 0 3px #fff, 0 0 6px #fff, 0 0 10px rgba(255, 255, 255, .9); }
+html[data-skin="bluearchive"] .soon-strip > .muted { color: var(--ba-ink); font-weight: 700; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.soon-strip > .muted, .sec-title, .lane-empty, .tick) { text-shadow: 0 0 3px #000, 0 0 6px #000, 0 0 10px rgba(0, 0, 0, .9); }
+
+/* Placas de sección del modo oscuro (13 nov 2026, el dueño: "ese color plano se ve un poco mal"): en vez del azul liso, la placa de cristal
+   del juego: azul que se funde hacia el azul noche a la derecha, un reflejo arriba, rayas diagonales muy suaves y la línea amarilla delante.
+   El texto blanco va sobre la parte azul (≥ 5:1) y la parte oscura. La cabecera de cada juego, a juego. */
+html[data-skin="bluearchive"][data-ba-dark] h3 {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, 0) 55%),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, .05) 0 6px, transparent 6px 14px),
+    linear-gradient(90deg, #0b6bd6 0%, #1658a8 45%, #1c3a66 80%, rgba(27, 42, 68, .85) 100%);
+  box-shadow: inset 4px 0 0 var(--ba-yel), inset 0 -1px 0 rgba(108, 184, 255, .45); text-shadow: 0 1px 2px rgba(0, 0, 0, .35); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.bcard, .ecard, .soon-card, .up-card) h3 { background: none; box-shadow: none; text-shadow: none; }
+html[data-skin="bluearchive"][data-ba-dark] .gsec-head {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, 0) 50%),
+    repeating-linear-gradient(-60deg, rgba(255, 255, 255, .04) 0 6px, transparent 6px 14px),
+    linear-gradient(90deg, #0e4f9c 0%, #173f75 55%, #1b2f52 100%);
+  background-blend-mode: normal; box-shadow: inset 0 -3px 0 var(--ba-yel), inset 0 1px 0 rgba(255, 255, 255, .12); }
