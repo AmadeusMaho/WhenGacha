@@ -418,3 +418,15 @@ html[data-skin="bluearchive"][data-ba-dark] .gsec-head {
     repeating-linear-gradient(-60deg, rgba(255, 255, 255, .04) 0 6px, transparent 6px 14px),
     linear-gradient(90deg, #0e4f9c 0%, #173f75 55%, #1b2f52 100%);
   background-blend-mode: normal; box-shadow: inset 0 -3px 0 var(--ba-yel), inset 0 1px 0 rgba(255, 255, 255, .12); }
+
+/* Tarjetas y paneles translúcidos para que se vea el fondo animado (13 nov 2026, el dueño), con desenfoque detrás para que el texto se lea
+   igual. Las ventanas emergentes (evento, apoyo, menús) siguen opacas: van encima de todo. */
+html[data-skin="bluearchive"] :is(.gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .ecard) {
+  background: var(--ba-tri) right -30px bottom -30px / 220px no-repeat, rgba(255, 255, 255, .78); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+html[data-skin="bluearchive"] :is(.list li, .hist li, .stats > div) { background: rgba(243, 248, 254, .72); }
+html[data-skin="bluearchive"][data-ba-dark] :is(.gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .plist li, .ecard) {
+  background: var(--ba-tri) right -30px bottom -30px / 220px no-repeat, rgba(27, 42, 68, .74); background-blend-mode: soft-light, normal; }
+html[data-skin="bluearchive"][data-ba-dark] :is(.list li, .hist li) { background: rgba(34, 52, 90, .7); }
+html[data-skin="bluearchive"][data-ba-dark] .stats > div { background: rgba(34, 52, 90, .7); }
+html[data-skin="bluearchive"] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, rgba(255, 255, 255, .78); }
+html[data-skin="bluearchive"][data-ba-dark] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, rgba(27, 42, 68, .74); }

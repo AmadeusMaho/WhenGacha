@@ -106,8 +106,8 @@ export const SKINS: SkinDef[] = [
   // arknights.css (3.ª versión): piezas de interfaz y fuentes de la extracción del cliente en public/skins/arknights/.
   { id: 'arknights', game: 'arknights', name: 'Arknights', fonts: 'family=Barlow:wght@400;500;600;700', ...(FONDOS.arknights?.length ? { live: cdn('arknights'), liveAllTabs: true } : {}) },
   // bluearchive.css (13 nov 2026): piezas de los atlas de interfaz que aportó el dueño en public/skins/bluearchive/ (ver la cabecera del CSS).
-  // Fondos animados de fans (MoeWalls…) que elige el dueño con Wallpaureka; mientras no haya, el cielo y el facetado del vestíbulo en CSS.
-  { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive') } : {}) },
+  // Fondos animados de fans (MoeWalls…) que elige el dueño con Wallpaureka (22, 13 nov 2026); en todas las pestañas, uno distinto en cada una.
+  { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive'), liveAllTabs: true } : {}) },
 ]
 
 const KEY = 'whengacha:skin'
