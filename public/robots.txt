@@ -8,6 +8,14 @@ Disallow: /proxy
 Disallow: /api/
 Allow: /
 
+# Buscadores que ejecutan la página (Google y Bing): pueden leer /data/ para ver la web como un visitante (los eventos salen de ahí).
+# Esas respuestas llevan "X-Robots-Tag: noindex", así que los JSON no se indexan. Google-Extended (IA) sigue cerrado más abajo.
+User-agent: Googlebot
+User-agent: Bingbot
+Disallow: /proxy
+Disallow: /api/
+Allow: /
+
 # Rastreadores de IA y de recolección masiva: nada.
 User-agent: GPTBot
 User-agent: ChatGPT-User
@@ -34,3 +42,5 @@ User-agent: SemrushBot
 User-agent: MJ12bot
 User-agent: PetalBot
 Disallow: /
+
+Sitemap: https://whengacha.site/sitemap.xml
