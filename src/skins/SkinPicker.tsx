@@ -18,6 +18,7 @@ import './arknights.css'
 import './bluearchive.css'
 import { setTiltEnabled, subscribeTilt, tiltEnabled } from './akTilt'
 import { baDark, setBaDark, subscribeBaDark } from './baDark'
+import { liveState, setLiveMode, subscribeLive, type LiveMode } from './liveMode'
 
 /** Textos propios (no van en locales.ts para que quitar las skins no toque nada más). */
 const TXT: Record<Lang, Record<string, string>> = {
@@ -30,7 +31,9 @@ const TXT: Record<Lang, Record<string, string>> = {
     try: 'Vista previa', haveLink: '¿Ya apoyaste? Entra con tu correo →', back: '← Volver', loginTitle: 'Entrar a Premium',
     codeHint: '¿El correo se abrió dentro de Gmail u otra app? Escribe tu correo arriba y aquí el código de 6 cifras que viene en él.', code: 'Código', enter: 'Entrar', codeBad: 'Código incorrecto o caducado. Pide otro correo.',
     tilt: 'Efecto giroscopio', tiltHint: 'Las tarjetas y botones se inclinan con el ratón o al girar el móvil',
-    dark: 'Modo oscuro', darkHint: 'Paneles azul noche en lugar de blancos' },
+    dark: 'Modo oscuro', darkHint: 'Paneles azul noche en lugar de blancos',
+    live: 'Fondos animados', liveAuto: 'Auto', liveOn: 'Siempre', liveOff: 'Estáticos',
+    liveHint: 'Auto: se mueven con Wi‑Fi y quedan quietos con datos móviles o conexión lenta (ahorra datos)', liveNow: 'Ahora:', liveMoving: 'en movimiento', liveStill: 'estáticos' },
   en: { title: 'Site skin', none: 'Original', locked: "Skins come with WhenGacha Premium. Support once and they're yours forever 💛",
     support: 'Support and unlock', have: "Enter the email you used to support and I will send you a link to turn on Premium here. It only goes to supporters' emails.",
     email: 'Your email', send: 'Send link', busy: 'Sending…', sent: 'If that email supported the project, a one-time link valid for 30 minutes will arrive in a few minutes (check spam too). Otherwise nothing is sent.',
@@ -40,7 +43,9 @@ const TXT: Record<Lang, Record<string, string>> = {
     try: 'Preview', haveLink: 'Already supported? Sign in with your email →', back: '← Back', loginTitle: 'Sign in to Premium',
     codeHint: 'Did the email open inside Gmail or another app? Enter your email above and the 6-digit code from it here.', code: 'Code', enter: 'Sign in', codeBad: 'Wrong or expired code. Ask for a new email.',
     tilt: 'Gyroscope effect', tiltHint: 'Cards and buttons tilt with the mouse or when you turn your phone',
-    dark: 'Dark mode', darkHint: 'Night-blue panels instead of white ones' },
+    dark: 'Dark mode', darkHint: 'Night-blue panels instead of white ones',
+    live: 'Animated backgrounds', liveAuto: 'Auto', liveOn: 'Always', liveOff: 'Still',
+    liveHint: 'Auto: they move on Wi‑Fi and stay still on mobile data or slow connections (saves data)', liveNow: 'Now:', liveMoving: 'moving', liveStill: 'still' },
   zh: { title: '网站皮肤', none: '原版', locked: '皮肤包含在 WhenGacha 高级版中。支持一次，永久拥有 💛',
     support: '支持并解锁', have: '输入支持时使用的邮箱，我会发给你在此设备开启高级版的链接。只会发给支持者的邮箱。',
     email: '你的邮箱', send: '发送链接', busy: '发送中…', sent: '如果该邮箱支持过本项目，几分钟内会收到一次性链接，30 分钟内有效（也请查看垃圾邮件）。否则不会发送任何内容。',
@@ -50,7 +55,9 @@ const TXT: Record<Lang, Record<string, string>> = {
     try: '预览', haveLink: '已经支持过？用邮箱登录 →', back: '← 返回', loginTitle: '登录高级版',
     codeHint: '邮件在 Gmail 或其他应用内打开了？在上面输入你的邮箱，在这里输入邮件中的 6 位验证码。', code: '验证码', enter: '登录', codeBad: '验证码错误或已过期，请重新获取邮件。',
     tilt: '陀螺仪效果', tiltHint: '卡片和按钮会随鼠标或手机转动而倾斜',
-    dark: '深色模式', darkHint: '使用夜蓝色面板代替白色' },
+    dark: '深色模式', darkHint: '使用夜蓝色面板代替白色',
+    live: '动态背景', liveAuto: '自动', liveOn: '始终', liveOff: '静态',
+    liveHint: '自动：Wi‑Fi 下播放，移动数据或网速慢时保持静止（节省流量）', liveNow: '当前：', liveMoving: '播放中', liveStill: '静止' },
 }
 
 /**
@@ -75,6 +82,8 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
   const tilt = useSyncExternalStore(subscribeTilt, tiltEnabled)
   // Modo oscuro de la skin Blue Archive (baDark.ts): mismo patrón, solo con esa skin elegida.
   const dark = useSyncExternalStore(subscribeBaDark, baDark)
+  // Fondos animados en movimiento o estáticos (liveMode.ts): selector solo si la skin puesta trae fondos.
+  const liveMode = useSyncExternalStore(subscribeLive, liveState)
   const [open, setOpen] = useState(false)
   // Vista del menú: las skins, o "entrar con el correo" (aparte, para no llenar el menú de texto).
   const [view, setView] = useState<'skins' | 'login'>('skins')
@@ -194,6 +203,19 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
                 <input type="checkbox" checked={tilt} onChange={e => setTiltEnabled(e.target.checked)} />
                 <span>{s.tilt}<small>{s.tiltHint}</small></span>
               </label>
+            </li>
+          )}
+          {skin && SKINS.find(k => k.id === skin)?.live && (
+            <li className="skin-opt live-opt" role="none">
+              <span>{s.live}<small>{s.liveHint}</small></span>
+              <div className="live-seg" role="radiogroup" aria-label={s.live}>
+                {(['auto', 'on', 'off'] as LiveMode[]).map(m => (
+                  <button key={m} role="radio" aria-checked={liveMode.mode === m} className={liveMode.mode === m ? 'on' : ''} onClick={() => setLiveMode(m)}>
+                    {m === 'auto' ? s.liveAuto : m === 'on' ? s.liveOn : s.liveOff}
+                  </button>
+                ))}
+              </div>
+              {liveMode.mode === 'auto' && <small className="live-now">{s.liveNow} {liveMode.animated ? s.liveMoving : s.liveStill}</small>}
             </li>
           )}
           {skin === 'bluearchive' && (

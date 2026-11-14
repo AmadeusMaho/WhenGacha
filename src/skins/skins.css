@@ -495,3 +495,21 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 .tv-bluearchive .tv-knob svg { display: block; color: currentColor; }
 .tv-bluearchive .tv-knob.on { background: #0b6bd6; box-shadow: inset 0 0 0 1px #0b6bd6, 0 2px 6px rgba(11, 107, 214, .35); }
 .tv-bluearchive .tv-knob.on :is(svg, span) { color: #fff; }
+
+/* Selector "Fondos animados: Auto | Siempre | Estáticos" del menú de skins (liveMode.ts). */
+.live-opt { display: grid; gap: 6px; padding-bottom: 8px; }
+.live-opt > span { display: grid; gap: 2px; font-weight: 600; font-size: .85rem; color: var(--text); }
+.live-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; padding: 3px; border-radius: 9px; background: rgba(127, 127, 127, .14); }
+.live-seg button { padding: 5px 4px; border: 0; border-radius: 7px; background: none; color: var(--text); font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; }
+.live-seg button:hover { background: rgba(127, 127, 127, .14); }
+.live-seg button.on { background: var(--acc2, var(--acc)); color: #fff; }
+.live-seg button:focus-visible { outline: 2px solid var(--acc); outline-offset: 1px; }
+.live-opt .live-now { font-size: .72rem; color: var(--muted); }
+
+/* Bucle con fundido de los fondos animados (LiveWallpaper.tsx): los dos vídeos van opacos dentro del contenedor `.skin-live` (que es el que
+   atenúa cada skin); el de arriba aparece o desaparece con una máscara. */
+html[data-skin] .skin-live-pair > .skin-live-v { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+@property --live-b { syntax: '<number>'; inherits: false; initial-value: 0; }
+html[data-skin] .skin-live-v.skin-live-b { --live-b: 0; -webkit-mask-image: linear-gradient(rgba(0, 0, 0, var(--live-b)), rgba(0, 0, 0, var(--live-b)));
+  mask-image: linear-gradient(rgba(0, 0, 0, var(--live-b)), rgba(0, 0, 0, var(--live-b))); transition: --live-b .8s linear; }
+html[data-skin] .skin-live-v.skin-live-b.on { --live-b: 1; }

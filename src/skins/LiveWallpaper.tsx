@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
+import { liveState, subscribeLive } from './liveMode'
 import type { LiveClip, SkinDef } from './skins'
 
 const store = {
@@ -21,13 +22,15 @@ function nextClip(skin: string, n: number): number {
 const remote = (c: LiveClip) => /^https?:/.test(c.video ?? c.poster)
 /** Tiempo máximo para que un vídeo de fuera empiece a reproducirse antes de cambiarlo por uno propio. */
 const STALL_MS = 10_000
+/** Duración del fundido entre una vuelta del bucle y la siguiente (s). */
+const FADE = 0.8
 
 /**
  * Fondo animado de una skin (solo en la línea de tiempo). Va en <body>, fuera de la cabecera (su backdrop-filter atraparía `position: fixed`).
  * Vídeo en bucle, sin audio; si la skin trae varios, cada visita a la pestaña usa el siguiente. Un fondo sin vídeo (solo `poster`)
  * se mueve despacio (acercamiento y desplazamiento lentos, clase `kb`), como un fondo animado. Se queda en el fotograma fijo, sin
- * movimiento, solo con "ahorro de datos" o "reducir movimiento" (en móvil se reproduce el vídeo; si el navegador bloquea la
- * reproducción automática, su póster con movimiento lento); el vídeo se pausa mientras la pestaña no se ve.
+ * movimiento según el modo de liveMode.ts (por defecto según la conexión) o con "reducir movimiento"; si el navegador bloquea la
+ * reproducción automática, su póster con movimiento lento. El vídeo se pausa mientras la pestaña no se ve.
  * Si el fondo de la versión (de fuera) falla —el vídeo da error o no arranca en 10 s, o su imagen no carga—, se cambia por uno de
  * los que trae la skin (un vídeo si lo hay).
  */
@@ -36,12 +39,10 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
   // Se elige al montar: SkinPicker lo monta al entrar en la línea de tiempo y lo desmonta al salir.
   const [clip, setClip] = useState(() => clips[nextClip(skin, clips.length)])
   const video = useRef<HTMLVideoElement>(null)
-  // Fijo del todo solo con "ahorro de datos" o "reducir movimiento". En móvil antes también (max-width: 700px) y los fondos se veían
-  // siempre quietos (13 nov 2026); ahora el móvil reproduce el vídeo (0,4–2 MB) como el escritorio.
-  const [still] = useState(() => {
-    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
-    return !!conn?.saveData || matchMedia('(prefers-reduced-motion: reduce)').matches
-  })
+  // Estático (solo el póster, sin descargar el vídeo) según el modo del menú de skins (liveMode.ts): "auto" mira la conexión (datos móviles,
+  // conexión lenta o ahorro de datos → estático), o siempre en movimiento / siempre estático. "Reducir movimiento" lo deja estático.
+  // Cambia al momento si se toca el selector o cambia la conexión.
+  const still = !useSyncExternalStore(subscribeLive, liveState).animated
   // Si el navegador no deja reproducir el vídeo solo (iPhone en modo de bajo consumo, ahorro de batería de Android…), se queda su
   // póster con el recorrido de cámara lento en vez de un fotograma quieto.
   const [blocked, setBlocked] = useState(false)
@@ -65,22 +66,48 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
     return () => { img.onerror = null }
   }, [clip, still, fallback])
 
-  // Vídeo de fuera: si no empieza a reproducirse a tiempo, se cambia.
+  // Vídeo de fuera: si no ARRANCA a tiempo, se cambia. Solo se mira una vez por fondo y solo si nunca llegó a reproducirse: antes el plazo
+  // se reiniciaba en cada redibujado (la lista de Genshin/ZZZ/WuWa se rehace en cada render) y un atasco momentáneo a media reproducción
+  // cambiaba el vídeo por su imagen fija ("salta cada x tiempo", 13 nov 2026).
+  const fallbackRef = useRef(fallback); fallbackRef.current = fallback
+  const started = useRef(false)
   useEffect(() => {
+    started.current = false
     if (still || !clip.video || !remote(clip)) return
-    const t = setTimeout(() => { if (!video.current || video.current.readyState < 3) fallback() }, STALL_MS)
+    const t = setTimeout(() => { if (!started.current) fallbackRef.current() }, STALL_MS)
     return () => clearTimeout(t)
-  }, [clip, still, fallback])
+  }, [clip, still])
 
+  // Bucle con fundido (13 nov 2026): muchos fondos no cierran el bucle limpio (el último fotograma no es el primero) y al volver a empezar
+  // se veía un salto. Hay dos <video> con el mismo archivo (el segundo sale de la caché: no gasta datos); el de abajo (A) se ve siempre y el
+  // de arriba (B) aparece o desaparece con un fundido. FADE segundos antes del final del que suena, el otro arranca desde 0 y se funde.
+  const videoB = useRef<HTMLVideoElement>(null)
+  const [topOn, setTopOn] = useState(false)
   useEffect(() => {
-    const v = video.current
-    if (!v) return
-    // NotAllowedError = reproducción automática bloqueada; otros errores (cambio de vídeo a medias) no cuentan.
-    v.play().catch(e => { if ((e as DOMException)?.name === 'NotAllowedError') setBlocked(true) })
-    const sync = () => { if (document.hidden) v.pause(); else v.play().catch(() => {}) }
+    const a = video.current, b = videoB.current
+    if (!a || !b) return
+    let active: HTMLVideoElement = a, raf = 0, stopT = 0, alive = true
+    a.play().catch(e => { if ((e as DOMException)?.name === 'NotAllowedError') setBlocked(true) })
+    const tick = () => {
+      if (!alive) return
+      const d = active.duration
+      if (d && isFinite(d) && d <= FADE * 3) active.loop = true // demasiado corto para el fundido: bucle normal
+      if (d && isFinite(d) && d > FADE * 3 && active.currentTime >= d - FADE) {
+        const prev = active, next = active === a ? b : a
+        next.currentTime = 0
+        next.play().catch(() => {})
+        setTopOn(next === b) // B aparece encima, o se desvanece dejando ver A, que ya empezó
+        active = next
+        clearTimeout(stopT)
+        stopT = window.setTimeout(() => { prev.pause() }, FADE * 1000 + 100)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    const sync = () => { if (document.hidden) { a.pause(); b.pause() } else active.play().catch(() => {}) }
     document.addEventListener('visibilitychange', sync)
-    return () => document.removeEventListener('visibilitychange', sync)
-  }, [still, clip])
+    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(stopT); document.removeEventListener('visibilitychange', sync) }
+  }, [still, clip, blocked])
 
   // Fondo fijo animado: la imagen hace un recorrido de cámara (clase `kb`) y encima va una capa de luz (`skin-live-fx`: motas que suben
   // y un haz que la cruza; color por skin con --live-fx). Antes solo había un acercamiento del 7 % en 48 s y parecía una imagen quieta.
@@ -90,8 +117,13 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
           <div key={clip.poster} className={`skin-live${still ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
           {!still && <div className="skin-live-fx" aria-hidden />}
         </>
-      : <video key={clip.video} ref={video} className="skin-live" src={clip.video} poster={clip.poster} autoPlay muted loop playsInline preload="auto"
-          onError={remote(clip) ? fallback : undefined} aria-hidden />,
+      // Los dos vídeos van dentro de UN contenedor `.skin-live`, que es el que atenúa cada skin (opacity/filter): si cada vídeo llevara su
+      // propia opacidad, al alternarse se sumarían las dos capas y el fondo cambiaba de tono cada vuelta ("un fondo transparente por encima").
+      : <div key={clip.video} className="skin-live skin-live-pair" aria-hidden>
+          <video ref={video} className="skin-live-v" src={clip.video} poster={clip.poster} autoPlay muted playsInline preload="auto"
+            onPlaying={() => { started.current = true }} onError={remote(clip) ? fallback : undefined} />
+          <video ref={videoB} className={`skin-live-v skin-live-b${topOn ? ' on' : ''}`} src={clip.video} muted playsInline preload="auto" />
+        </div>,
     document.body,
   )
 }

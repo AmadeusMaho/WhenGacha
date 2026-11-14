@@ -331,3 +331,16 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
 subidas oficiales más vistas (13 nov 2026; antes eran 4). Wuthering Waves no tiene lista oficial: usa sus 20 pistas más vistas de "Wuthering Waves - Topic".
 Para cambiar la música de una skin, su entrada de `MUSIC`: `list` (id "PL…" de una lista oficial) o `ids` (vídeos sueltos). Comprobación de
 que es oficial y se puede incrustar: `https://www.youtube.com/oembed?url=…` (200 con el canal; 401 si la inserción está desactivada).
+
+## Fondos animados: en movimiento o estáticos, y bucle sin saltos (13 nov 2026)
+
+- **Selector "Fondos animados: Auto | Siempre | Estáticos"** en el menú de skins (solo con una skin que tenga fondos; `liveMode.ts`, se guarda en
+  `whengacha:live-mode`). **Auto** (por defecto) mira la conexión (Network Information API): estáticos con ahorro de datos, datos móviles
+  (`type: cellular`) o conexión lenta (2g/3g); si el navegador no informa (Safari/iPhone, Firefox), estáticos en móvil y en movimiento en
+  escritorio. "Reducir movimiento" los deja siempre estáticos. Estático = solo el póster (~45 KB), sin descargar el vídeo. Cambia al momento.
+- **Bucle con fundido** (`LiveWallpaper.tsx`): muchos fondos no cierran el bucle limpio y al volver a empezar se veía un salto. Hay dos `<video>`
+  con el mismo archivo (el segundo sale de la caché) dentro de UN contenedor `.skin-live` (el que atenúa cada skin: con la opacidad en cada vídeo se sumaban las dos capas y el tono cambiaba en cada vuelta); 0,8 s antes del final el otro arranca desde 0 y se funde (máscara `--live-b` en
+  `skins.css`, no `opacity`, que ya usa cada skin). Medido: el vídeo estaba entero en memoria y la parada al reiniciar era de 2 ms, así que el
+  salto era el corte del propio vídeo, no la red.
+- La comprobación "el vídeo de fuera no arranca en 10 s → cambiarlo" se hace una sola vez y solo si nunca llegó a reproducirse (antes se
+  reiniciaba en cada redibujado y podía cambiar el fondo por su imagen fija a media reproducción).
