@@ -326,11 +326,22 @@ Botón 🎵 a la izquierda del pincel (mismo tamaño y línea), solo con una ski
 (`youtube-nocookie.com`) del mínimo que permite YouTube, 200×200; empieza cerrado y al cerrarlo la música para. Normas de YouTube que obligan a
 este diseño: el reproductor tiene que verse mientras suena y no se puede ocultar ni quedarse solo con el audio.
 
-Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en el color de cada skin; se recuerda): **toda la banda sonora** (por defecto), una lista OFICIAL del juego barajada al abrir
-(la API de la ventana: `setShuffle` + `playVideoAt` al azar), que mantiene el propio estudio, así que lo nuevo entra solo; y **populares**, las 15
-subidas oficiales más vistas (13 nov 2026; antes eran 4). Wuthering Waves no tiene lista oficial: usa sus 20 pistas más vistas de "Wuthering Waves - Topic".
-Para cambiar la música de una skin, su entrada de `MUSIC`: `list` (id "PL…" de una lista oficial) o `ids` (vídeos sueltos). Comprobación de
-que es oficial y se puede incrustar: `https://www.youtube.com/oembed?url=…` (200 con el canal; 401 si la inserción está desactivada).
+Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en el color de cada skin; se recuerda):
+
+- **Toda la banda sonora** (por defecto; ampliada el 14 nov 2026). `all.lists` de cada skin: listas de YouTube con su número de vídeos, una por
+  álbum o versión. Al abrir, y cada vez que acaba una canción (o falla, o se pulsa "siguiente"), se carga otra pista al azar de entre todas
+  (`pickTrack`: cada pista pesa lo mismo; `loadPlaylist` con su posición). Al acabar una canción la lista pasa sola a la siguiente sin avisar de
+  "terminado": se detecta por el cambio de `playlistIndex`.
+  - **Límite de YouTube**: la ventana solo carga las **200 primeras** de cada lista (comprobado: pedirle la posición 1500 o poner `index=` en la URL
+    vuelve a la primera). Por eso la música va repartida en listas pequeñas (las de más de 200 cuentan como 200).
+  - Fuentes, por orden de preferencia: listas oficiales del estudio, álbumes de pistas "- Topic" (el audio que YouTube genera de la distribuidora;
+    NightBunny8 sube cada álbum como lista: Genshin, HSR, ZZZ, NIKKE, Arknights, aniversarios de Blue Archive), y si no hay, recopilaciones de
+    canales alternativos (WuWa: Omen Cat, Gud, yuriwaves; Uma: 荻風 y otras; Blue Archive: MO2, porque su música no está en "- Topic").
+  - Pistas alcanzables (suma de las listas, con algunas repetidas entre ellas): Genshin 2148, Arknights 1295, Uma 1213, NIKKE 1199,
+    Blue Archive 1015, HSR 895, WuWa 785, ZZZ 583.
+  - Para buscar más: `youtube.com/results?search_query=…&sp=EgIQAw%3D%3D` (solo listas). Comprobar que la lista se puede insertar con
+    `https://www.youtube.com/oembed?url=https://www.youtube.com/playlist?list=…` (200; 401 = inserción desactivada).
+- **Populares**: las 15 subidas oficiales más vistas (13 nov 2026), en `top`.
 
 ## Fondos animados: en movimiento o estáticos, y bucle sin saltos (13 nov 2026)
 
