@@ -549,17 +549,22 @@ html[data-skin] .skin-live-v.skin-live-b.on { --live-b: 1; }
    cuyas marcas se encienden en rojo en una franja que lo recorre. Todo con curvas suaves (giro continuo, entradas con desaceleración, vaivén alterno), nada a pasos.
    El disco y el brazo sobresalen de la caja: sin clip-path en el reproductor (la sombra va con filter). --- */
 .music-dock.tv-pgr { --tv-on: #ff6b72; --tv-icon: #c9ced5; --tv-r: 0;
-  --tv-body: url(/skins/pgr/pl-case.webp) 0 0 / 100% auto no-repeat, linear-gradient(180deg, #1d2024, #121417); --tv-body-sh: none;
+  --tv-body: url(/skins/pgr/pl-case.webp) 0 0 / 100% auto no-repeat, url(/skins/pgr/pl-base.webp) center bottom / 100% auto no-repeat, linear-gradient(180deg, #1d2024, #121417); --tv-body-sh: none;
   --tv-bezel: #050607; --tv-bezel-sh: 0 0 0 1px rgba(255, 255, 255, .22); --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #050607;
   --tv-knob-r: 0; --tv-knob: #0b0c0f; --tv-knob-sh: 0 0 0 1px rgba(255, 255, 255, .4); --tv-knob-on-sh: 0 0 0 1px #ff9aa0, 0 0 8px rgba(224, 48, 60, .7);
   --tv-btn: rgba(11, 12, 15, .85); --tv-btn-ink: #eceef1; --tv-btn-sh: inset 0 0 0 1px rgba(255, 255, 255, .28); --tv-btn-r: 0;
   --tv-power: #ff6b72; --tv-power-glow: rgba(224, 48, 60, .6);
   --tv-slot: rgba(5, 6, 7, .85); --tv-slot-ink: #f4f5f7; --tv-slot-sh: inset 2px 0 0 #e0303c, inset 0 0 0 1px rgba(255, 255, 255, .12); --tv-slot-r: 0; --tv-slot-ico: '▶ ';
-  --tv-font: 'Barlow Condensed', 'Rajdhani', 'Barlow', sans-serif; padding: 9px 8px 8px 31px; gap: 4px 5px; margin-right: 58px;
-  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: 'scr scr scr scr scr scr' 'dl dl dl dl dl dl' 'k1 k2 lcd nx ej pwr';
+  --tv-font: 'Barlow Condensed', 'Rajdhani', 'Barlow', sans-serif; padding: 9px 8px 8px; gap: 6px 5px; margin-right: 58px;
+  /* Abajo (15 nov 2026, "muy cuadrado"): la base curva de la consola del juego (pl-base.webp, uimusicplayermainzsbg01) de fondo; el dial con su
+     Compacto: una sola fila de mandos bajo la caja. El dial en arco se quitó (abajo alargaba el reproductor y, con los modos redondos a los
+     lados, parecía una carita feliz); pl-dial.webp queda en public/ por si se recupera. */
+  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: 'scr scr scr scr scr scr' 'k1 k2 lcd nx ej pwr';
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .65)); }
 .music-dock.tv-pgr.left { margin-right: 0; margin-left: 0; }
-.tv-pgr .tv-bezel { padding: 4px; }
+/* El margen del lomo de la caja va solo en el vídeo: así la parte de abajo usa todo el ancho y queda centrada. */
+.tv-pgr .tv-bezel { padding: 4px; margin-left: 22px; justify-self: end; }
+
 /* El disco: detrás de la caja (z-index -1 dentro del reproductor), asomando por la derecha; sale al abrir y gira sin parar. */
 .tv-pgr .tv-deco { top: 26px; right: -78px; width: 160px; height: 160px; z-index: -1; border-radius: 50%;
   /* Cara del disco: la miniatura del vídeo que suena (--tv-thumb, la pone SkinMusic.tsx) recortada en círculo, con el aro y el centro del CD
@@ -579,26 +584,28 @@ html[data-skin] .skin-live-v.skin-live-b.on { --live-b: 1; }
   animation: pg-arm-in 1.1s cubic-bezier(.3, .7, .2, 1) .35s both, pg-arm-sway 3.6s ease-in-out 1.5s infinite alternate; }
 @keyframes pg-arm-in { from { transform: rotate(-32deg); } to { transform: rotate(0); } }
 @keyframes pg-arm-sway { from { transform: rotate(0); } to { transform: rotate(1.6deg); } }
-/* El dial en arco con la aguja roja, que barre a un lado y a otro con suavidad (la .tv-grille de la tele). */
-.music-dock.tv-pgr .tv-grille { display: block; grid-area: dl; justify-self: stretch; position: relative; z-index: 1; height: 32px; min-height: 0; margin: 0; border-radius: 0;
-  overflow: hidden; box-shadow: none; background: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat; }
-/* Arco aplanado a 32 px para que no alargue el reproductor. Sin aguja (oscilando desde arriba parecía un metrónomo): las marcas del propio arco se encienden en rojo en una franja que lo recorre
-   de lado a lado, con la imagen del dial como máscara. */
-.music-dock.tv-pgr .tv-grille::before { content: ''; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(90deg, transparent 38%, rgba(224, 48, 60, .35) 44%, #ff5a64 50%, rgba(224, 48, 60, .35) 56%, transparent 62%) 0 0 / 250% 100% no-repeat;
-  -webkit-mask: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat; mask: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat;
-  filter: drop-shadow(0 0 3px rgba(224, 48, 60, .9)); animation: pg-dial 5s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
-.music-dock.tv-pgr .tv-grille::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .25), transparent); }
-@keyframes pg-dial { from { background-position: 100% 0; } to { background-position: 0 0; } }
-.tv-pgr .tv-knob { --tv-knob-size: 14px; }
+/* El pulso rojizo: en vez del dial, la parte de abajo se ilumina con un resplandor rojo que la recorre de lado a lado: una línea brillante
+   en el borde inferior y un halo suave detrás de los mandos. Va absoluta detrás de ellos (la .tv-grille de la tele, fuera de la rejilla).
+   Con la base del juego como máscara apenas se veía (es muy tenue). */
+.music-dock.tv-pgr .tv-grille { display: block; position: absolute; left: 0; right: 0; bottom: 0; height: 46px; z-index: 0; min-height: 0; border-radius: 0; box-shadow: none;
+  pointer-events: none; overflow: hidden;
+  background: linear-gradient(90deg, transparent 40%, rgba(255, 90, 100, .5) 46%, #ff6b72 50%, rgba(255, 90, 100, .5) 54%, transparent 60%) 0 100% / 260% 2px no-repeat,
+    radial-gradient(closest-side, rgba(224, 48, 60, .42), rgba(224, 48, 60, .12) 60%, transparent) 0 100% / 45% 200% no-repeat;
+  animation: pg-pulse 4.5s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
+@keyframes pg-pulse { from { background-position: 100% 100%, 100% 0; } to { background-position: 0 100%, 0 0; } }
+/* Modos: botones redondos con aro. */
+.tv-pgr .tv-knob { --tv-knob-size: 18px; --tv-knob-r: 50%; align-self: center; justify-self: center; }
+.tv-pgr .tv-knob::before { box-shadow: 0 0 0 1px rgba(255, 255, 255, .45), inset 0 0 0 3px #0b0c0f, inset 0 0 0 4px rgba(255, 255, 255, .25); }
+.tv-pgr .tv-knob.on::before { box-shadow: 0 0 0 1px #ff9aa0, inset 0 0 0 3px #0b0c0f, 0 0 8px rgba(224, 48, 60, .7); }
 .tv-pgr .tv-knob svg { display: none; }
 .tv-pgr .tv-knob.on { --tv-knob: #e0303c; }
 .tv-pgr :is(.tv-power, .tv-eject) { width: 22px; clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px); }
 .tv-pgr .tv-eject:hover { color: #fff; background: #2e3238; }
-.tv-pgr .tv-slot { letter-spacing: .1em; font-size: .7rem; font-weight: 700; text-transform: uppercase; contain: inline-size; }
+.tv-pgr .tv-slot { letter-spacing: .1em; font-size: .7rem; font-weight: 700; text-transform: uppercase; contain: inline-size;
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px); }
 .tv-pgr .tv-slot span::before { color: #ff6b72; }
 @media (max-width: 700px) { .music-dock.tv-pgr { margin-right: 50px; } .tv-pgr .tv-deco { right: -66px; width: 136px; height: 136px; top: 34px; } .tv-pgr.music-dock::after { right: -56px; height: 112px; } }
-@media (prefers-reduced-motion: reduce) { .tv-pgr .tv-deco, .tv-pgr.music-dock::after, .music-dock.tv-pgr .tv-grille::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tv-pgr .tv-deco, .tv-pgr.music-dock::after, .music-dock.tv-pgr .tv-grille { animation: none; } }
 /* Selector de la ventanita sencilla (por si acaso). */
 html[data-skin="pgr"] .music-modes button { border-radius: 0; }
 html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303c; }

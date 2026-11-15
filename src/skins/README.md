@@ -432,3 +432,7 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   El disco lleva la **miniatura del vídeo que suena** (`--tv-thumb`, de `SkinMusic.tsx`: la ventana de YouTube manda `videoData.video_id` en sus
   mensajes; `i.ytimg.com/vi/<id>/hqdefault.jpg`) con el aro del CD encima (`pl-cd-ring.webp`); si no hay, la portada de "Crossing Eternities".
   El dial ya no tiene aguja (oscilando parecía un metrónomo): sus marcas se encienden en rojo en una franja que lo recorre (máscara con el dial).
+  Parte de abajo: compacta, una fila de mandos sobre la base curva (`pl-base.webp`). El dial en arco se quitó a petición del dueño (alargaba el
+  reproductor y con los modos redondos al lado parecía una carita feliz); `pl-dial.webp` sigue en public/ por si se recupera.
+  Después: modos redondos en la fila de mandos y, en lugar del dial, un pulso rojo que recorre la parte de abajo (línea brillante en el borde
+  y halo detrás de los mandos; con la base como máscara no se veía).
