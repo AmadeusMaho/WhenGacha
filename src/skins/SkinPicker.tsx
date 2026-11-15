@@ -22,6 +22,9 @@ import './nikkeShots'
 import { baDark, setBaDark, subscribeBaDark } from './baDark'
 import { liveState, setLiveMode, subscribeLive, type LiveMode } from './liveMode'
 
+/** Pestañas sin fondo animado: muestran el fondo propio de la skin (o el de su tabLive). */
+const NO_LIVE_TABS = new Set(['mine'])
+
 /** Textos propios (no van en locales.ts para que quitar las skins no toque nada más). */
 const TXT: Record<Lang, Record<string, string>> = {
   es: { title: 'Skin del sitio', none: 'Original', locked: 'Las skins vienen con WhenGacha Premium. Apoyas una vez y son tuyas para siempre 💛',
@@ -79,7 +82,12 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
   // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), en TODAS las pestañas (15 nov 2026; antes solo Arknights y Blue Archive):
   // cada pestaña muestra el siguiente fondo de la lista (LiveWallpaper se vuelve a montar con la pestaña en la key).
   const def = SKINS.find(k => k.id === active)
-  const live = useLiveWithFeed(active, def?.live)
+  const feedLive = useLiveWithFeed(active, def?.live)
+  // Pestaña con fondo propio (tabLive; PGR en "Mis gachas": el arte de inicio de sesión del juego): ese, en lugar de la rotación.
+  // "Mis gachas" no lleva fondo animado en ninguna skin (15 nov 2026, petición del dueño): se ve el fondo propio de cada una (el de antes:
+  // la noche de WuWa, los menús de Genshin, "KEEP OUT" de NIKKE…), salvo que la skin defina el suyo en tabLive.
+  const tabBg = tab ? def?.tabLive?.[tab] : undefined
+  const live = tabBg ? (Array.isArray(tabBg) ? tabBg : [tabBg]) : tab && NO_LIVE_TABS.has(tab) ? undefined : feedLive
   // Giroscopio de la skin Arknights (akTilt.ts): se puede apagar; el interruptor solo sale con esa skin elegida (Premium).
   const tilt = useSyncExternalStore(subscribeTilt, tiltEnabled)
   // Modo oscuro de la skin Blue Archive (baDark.ts): mismo patrón, solo con esa skin elegida.

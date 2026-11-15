@@ -436,3 +436,6 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   reproductor y con los modos redondos al lado parecía una carita feliz); `pl-dial.webp` sigue en public/ por si se recupera.
   Después: modos redondos en la fila de mandos y, en lugar del dial, un pulso rojo que recorre la parte de abajo (línea brillante en el borde
   y halo detrás de los mandos; con la base como máscara no se veía).
+- **Fondo propio por pestaña** (`tabLive` en `SkinDef`; `fixed` en `LiveClip` = sin recorrido de cámara ni motas): PGR usa en "Mis gachas" el arte
+  de la pantalla de inicio de sesión del juego (`still-login.webp`), quieto; las demás pestañas siguen rotando sus vídeos.
+  "Mis gachas" no lleva fondo animado en ninguna skin (`NO_LIVE_TABS` en SkinPicker): se ve el fondo propio de cada una; PGR, su `tabLive`.

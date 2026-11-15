@@ -114,8 +114,8 @@ export default function LiveWallpaper({ skin, live }: { skin: string; live: NonN
   return createPortal(
     still || !clip.video || blocked
       ? <>
-          <div key={clip.poster} className={`skin-live${still ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
-          {!still && <div className="skin-live-fx" aria-hidden />}
+          <div key={clip.poster} className={`skin-live${still || clip.fixed ? '' : ' kb'}`} style={{ backgroundImage: `url(${clip.poster})` }} aria-hidden />
+          {!still && !clip.fixed && <div className="skin-live-fx" aria-hidden />}
         </>
       // Los dos vídeos van dentro de UN contenedor `.skin-live`, que es el que atenúa cada skin (opacity/filter): si cada vídeo llevara su
       // propia opacidad, al alternarse se sumarían las dos capas y el fondo cambiaba de tono cada vuelta ("un fondo transparente por encima").

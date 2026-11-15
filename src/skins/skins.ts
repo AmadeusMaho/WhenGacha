@@ -17,6 +17,9 @@ export interface SkinDef {
   /** Fondo animado de la línea de tiempo: vídeo (sin audio) y su fotograma fijo (ahorro de datos, "reducir movimiento", vídeo bloqueado).
    *  Con una lista, cada pestaña (y cada visita) usa el siguiente (LiveWallpaper.tsx; desde el 15 nov 2026 en todas las pestañas y todas las skins). */
   live?: LiveClip | LiveClip[]
+  /** Fondo propio de una pestaña en lugar de los de `live` (id de la pestaña: timeline, mine, patches, pulls). PGR: en "Mis gachas" el arte
+   *  de inicio de sesión del juego, quieto (petición del dueño, 15 nov 2026). */
+  tabLive?: Record<string, LiveClip | LiveClip[]>
 }
 
 /** Un fondo de la línea de tiempo: vídeo con su fotograma fijo, o solo una imagen (`poster`), que se mueve despacio. */
@@ -25,6 +28,8 @@ export interface LiveClip {
   poster: string
   /** URL original en la web oficial (para no repetirlo si /data/skin-live.json trae el mismo; ver liveFeed.ts). */
   official?: string
+  /** Fondo fijo de verdad: sin el recorrido de cámara ni las motas de luz de los fondos sin vídeo. */
+  fixed?: boolean
 }
 
 /** Fondos fijos (sin vídeo, se mueven despacio) de public/skins/<skin>/still-*.webp. */
@@ -42,12 +47,14 @@ export const LIVE_CDN = 'https://pub-f0ae309961c44cf990b8708e645b1aa8.r2.dev'
 export const FONDOS: Record<string, string[]> = {
   wuwa: [
     'iuno-moonlight-lantern', 'suisui-yangyang-xuanling-lotus-lanterns', 'suoming', 'hiyuki-entrust-your-wishes-to-me',
-    'qingxiao-sword-riding', 'changli-autumn-umbrella', 'mornye-sofa-chilling', 'aemeath-cherry-blossom', 'aemeath-neon-rain'
+    'qingxiao-sword-riding', 'changli-autumn-umbrella', 'mornye-sofa-chilling', 'aemeath-cherry-blossom', 'aemeath-neon-rain',
+    'hsin-moon-fox', 'jingran-underworld', 'denia-celestial-sea', 'yangyang', 'hiyuki-sakura', 'aemeath-x-rover', 'augusta-broadblade',
+    'chisa-kumokiri', 'cartethyia-and-adanto', 'phrolova', 'the-shorekeeper-cosmic-meadow', 'shorekeeper-flower-butterflies',
+    'yangyang-x-rover'
   ],
   genshin: [
     'columbina-blue-flower-fields', 'arlecchino-crimson-moon', 'bride-furina', 'hu-tao-mid-autumn-festival', 'sea-of-flowers',
-    'yae-miko-sakura-cherry-blossoms', 'yae-miko-sakura-sunset', 'aether-vs-ronova-boss-fight', 'columbina-luminous-moon',
-    'lonely-ganyu-in-the-rain', 'sumeru'
+    'yae-miko-sakura-sunset', 'aether-vs-ronova-boss-fight', 'columbina-luminous-moon', 'lonely-ganyu-in-the-rain', 'sumeru'
   ],
   zzz: [
     'v33', 'claret-and-roxy', 'miyabi-fox', 'remielle-dan', 'yuzuha-x-alice', 'yixuan', 'yidhari', 'hoshimi-miyabi', 'ye-shunguang',
@@ -114,7 +121,8 @@ export const SKINS: SkinDef[] = [
   { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive') } : {}) },
   // pgr.css (15 nov 2026): piezas y retratos del cliente (explorador público de assets.huaxu.app) en public/skins/pgr/. Sus fondos animados los
   // añade el dueño con Wallpaureka (FONDOS.pgr); mientras esté vacío, lleva el arte de la pantalla de inicio de sesión del juego.
-  { id: 'pgr', game: 'pgr', name: 'Punishing: Gray Raven', fonts: 'family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Barlow:wght@400;500;600;700', live: FONDOS.pgr?.length ? cdn('pgr') : stills('pgr', ['login']) },
+  { id: 'pgr', game: 'pgr', name: 'Punishing: Gray Raven', fonts: 'family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Barlow:wght@400;500;600;700', live: FONDOS.pgr?.length ? cdn('pgr') : stills('pgr', ['login']),
+    tabLive: { mine: { poster: '/skins/pgr/still-login.webp', fixed: true } } },
 ]
 
 const KEY = 'whengacha:skin'
