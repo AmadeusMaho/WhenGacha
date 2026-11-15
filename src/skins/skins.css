@@ -242,6 +242,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 .tv-power svg { filter: drop-shadow(0 0 3px var(--tv-power-glow)); }
 .tv-power:hover { color: #ff6a5a; } .tv-power:hover svg { filter: drop-shadow(0 0 3px rgba(255, 106, 90, .7)); }
 .tv-eject:hover { color: var(--tv-on); }
+/* "Otra canción" (.tv-next) lleva también .tv-eject: mismo botón en cada skin; cada rejilla le da su sitio (área nx). */
 .tv-power:active, .tv-eject:active { transform: translateY(1px); }
 .tv-power:focus-visible, .tv-eject:focus-visible { outline: 2px solid var(--tv-on); outline-offset: 1px; }
 .tv-slot { flex: 1; min-width: 0; height: 24px; display: flex; align-items: center; padding: 0 8px; overflow: hidden; border-radius: var(--tv-slot-r); background: var(--tv-slot);
@@ -254,7 +255,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
    HTML; el fondo de esa fila lo pone ::after. */
 @media (max-width: 700px) {
   .music-dock { bottom: 8px; } .music-dock.right { right: 8px; } .music-dock.left { left: 8px; }
-  .music-dock.tv-zzz { display: grid; grid-template-columns: auto auto auto minmax(0, 1fr) auto; grid-template-areas: "scr scr scr scr scr" "pwr k1 k2 lcd ej";
+  .music-dock.tv-zzz { display: grid; grid-template-columns: auto auto auto minmax(0, 1fr) auto auto; grid-template-areas: "scr scr scr scr scr scr" "pwr k1 k2 lcd nx ej";
     column-gap: 5px; row-gap: 10px; padding: 6px 6px 9px; box-sizing: border-box; width: 226px; /* = pantalla (200) + marco (2×7) + borde (2×6); min-content no sirve con la columna 1fr */ }
   .music-dock.tv-zzz::after { content: ''; grid-row: 2; grid-column: 1 / -1; margin: -4px -2px; border-radius: var(--tv-deck-r); z-index: 0; background: var(--tv-deck); box-shadow: var(--tv-deck-sh); }
   .music-dock.tv-zzz :is(.tv-set, .tv-side, .tv-knobs, .tv-deck) { display: contents; }
@@ -265,7 +266,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   .music-dock.tv-zzz .tv-knob:nth-child(1) { grid-area: k1; }
   .music-dock.tv-zzz .tv-knob:nth-child(2) { grid-area: k2; }
   .music-dock.tv-zzz .tv-slot { grid-area: lcd; width: 100%; height: 22px; padding: 0 6px; font-size: .6rem; }
-  .music-dock.tv-zzz .tv-eject { grid-area: ej; }
+  .music-dock.tv-zzz .tv-eject { grid-area: ej; } .music-dock.tv-zzz .tv-next { grid-area: nx; }
   .music-dock.tv-zzz :is(.tv-power, .tv-eject) { width: 24px; height: 22px; }
   /* Selectores pequeños, sin texto (queda en title y en el nombre accesible del botón). */
   .music-dock.tv-zzz .tv-knob { align-self: center; --tv-knob-size: 22px; }
@@ -297,13 +298,13 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
    (≈ 215–255 px de ancho, igual en escritorio y móvil). Las piezas se colocan en la rejilla del reproductor con display: contents;
    cada skin elige dónde va cada una (grid-template-areas: scr = vídeo, k1/k2 = modos, pwr = cerrar, ej = esquina, lcd = título).
    Los selectores no muestran texto (sí en title y en el nombre accesible), salvo las pestañas de NIKKE. */
-.music-dock.tv-mini { display: grid; gap: 6px; padding: 6px; box-sizing: border-box; grid-template-columns: auto auto auto minmax(0, 1fr) auto;
-  grid-template-areas: "scr scr scr scr scr" "pwr k1 k2 lcd ej"; }
+.music-dock.tv-mini { display: grid; gap: 6px; padding: 6px; box-sizing: border-box; grid-template-columns: auto auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas: "scr scr scr scr scr scr" "pwr k1 k2 lcd nx ej"; }
 .tv-mini :is(.tv-set, .tv-side, .tv-knobs, .tv-deck) { display: contents; }
 .tv-mini .tv-grille { display: none; }
 .tv-mini :is(.tv-bezel, .tv-knob, .tv-power, .tv-slot, .tv-eject) { position: relative; z-index: 1; }
 .tv-mini .tv-bezel { grid-area: scr; padding: 5px; }
-.tv-mini .tv-power { grid-area: pwr; } .tv-mini .tv-eject { grid-area: ej; }
+.tv-mini .tv-power { grid-area: pwr; } .tv-mini .tv-eject { grid-area: ej; } .tv-mini .tv-next { grid-area: nx; }
 .tv-mini .tv-knob:nth-child(1) { grid-area: k1; } .tv-mini .tv-knob:nth-child(2) { grid-area: k2; }
 .tv-mini .tv-slot { grid-area: lcd; width: 100%; height: 22px; padding: 0 6px; font-size: .6rem; }
 .tv-mini :is(.tv-power, .tv-eject) { width: 24px; height: 22px; }
@@ -358,6 +359,8 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 .tv-genshin .tv-knob.on svg { color: #f8de97; }
 .tv-genshin .tv-power:hover { color: #9b3b2a; } .tv-genshin .tv-eject:hover { color: #9b6a3e; }
 .tv-genshin .tv-slot { text-transform: none; letter-spacing: .02em; }
+/* El título no ensancha el aparato (con el botón "otra canción" la fila pasaba del ancho del vídeo y éste quedaba descentrado): se recorta. */
+:is(.tv-genshin, .tv-hsr) .tv-slot { contain: inline-size; }
 /* Varillas del pergamino (arriba la de .tv-deco, abajo ::after), algo más anchas que el papel, con remates dorados. */
 .tv-genshin .tv-deco, .tv-genshin.music-dock::after { content: ''; position: absolute; left: -9px; right: -9px; height: 12px; border-radius: 6px; pointer-events: none;
   background: radial-gradient(circle at 6px 50%, #f5d58b 0 3px, #a8762e 4.5px, transparent 5.5px), radial-gradient(circle at calc(100% - 6px) 50%, #f5d58b 0 3px, #a8762e 4.5px, transparent 5.5px),
@@ -371,7 +374,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   --tv-bezel: transparent; --tv-bezel-sh: none; --tv-screen-r: 6px; --tv-screen-bg: #0b0710;
   --tv-btn: transparent; --tv-btn-ink: #e2e7ed; --tv-btn-sh: none; --tv-power: #ff6a60; --tv-power-glow: rgba(255, 106, 96, .6);
   --tv-slot: transparent; --tv-slot-ink: #f2f4f7; --tv-slot-sh: none; --tv-slot-ico: '●  '; --tv-font: 'NIKKE UI', 'Saira Semi Condensed', 'Segoe UI', sans-serif;
-  grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-areas: "lcd lcd ej pwr" "scr scr scr scr" "k1 k1 k2 k2"; row-gap: 5px; padding: 8px 8px 14px; }
+  grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas: "lcd lcd lcd nx ej pwr" "scr scr scr scr scr scr" "k1 k1 k1 k2 k2 k2"; row-gap: 5px; padding: 8px 8px 14px; }
 .tv-nikke .tv-bezel { padding: 0; }
 .tv-nikke .tv-slot { padding: 0 4px; text-transform: none; letter-spacing: .03em; font-size: .62rem; }
 .tv-nikke .tv-slot span::before { color: #46e07a; font-size: .5rem; vertical-align: 1px; }
@@ -400,7 +403,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   --tv-btn: transparent; --tv-btn-ink: #f1f5f5; --tv-btn-sh: inset 0 0 0 1px rgba(241, 220, 155, .5); --tv-btn-r: 1px;
   --tv-power: #9fd8d6; --tv-power-glow: rgba(159, 216, 214, .6);
   --tv-slot: transparent; --tv-slot-ink: #f1dc9b; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: '◈ '; --tv-font: 'Sora', 'Barlow', 'Segoe UI', sans-serif;
-  grid-template-columns: 22px auto; grid-template-rows: auto auto 1fr auto auto auto; grid-template-areas: "k1 scr" "k2 scr" ". scr" "pwr scr" "ej scr" "lcd lcd";
+  grid-template-columns: 22px auto; grid-template-rows: auto auto 1fr auto auto auto auto; grid-template-areas: "k1 scr" "k2 scr" ". scr" "nx scr" "pwr scr" "ej scr" "lcd lcd";
   -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .tv-wuwa .tv-bezel { background-repeat: no-repeat; padding: 4px; }
 .tv-wuwa .tv-knob { --tv-knob-size: 13px; margin-top: 6px; }
@@ -421,7 +424,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   --tv-bezel: #121316; --tv-bezel-sh: inset 0 0 0 1px #3a3d43; --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #0c0d0f;
   --tv-btn: #0c0d0f; --tv-btn-ink: #e8eaec; --tv-btn-sh: inset 0 0 0 1px #3a3d43; --tv-btn-r: 0; --tv-power: #ffd23f; --tv-power-glow: rgba(255, 210, 63, .6);
   --tv-slot: #ffd23f; --tv-slot-ink: #15171a; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: 'PRTS // '; --tv-font: var(--ak-num, 'Barlow'), 'Barlow', sans-serif;
-  grid-template-columns: 24px 22px 22px minmax(0, 1fr) 24px; grid-template-areas: "lcd scr scr scr scr" "pwr k1 k2 st ej";
+  grid-template-columns: 24px 22px 22px minmax(0, 1fr) 24px 24px; grid-template-areas: "lcd scr scr scr scr scr" "pwr k1 k2 st nx ej";
   clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%); }
 .tv-arknights .tv-slot { width: auto; height: auto; padding: 8px 0; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg);
   font-family: var(--ak-head, 'Barlow'); font-weight: 700; letter-spacing: .12em; }
@@ -445,7 +448,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   --tv-btn: linear-gradient(180deg, #c8336c, #a3144a); --tv-btn-ink: #fff; --tv-btn-sh: inset 0 1px 0 rgba(255, 255, 255, .35); --tv-btn-r: 999px;
   --tv-power: #fff; --tv-power-glow: transparent;
   --tv-slot: transparent; --tv-slot-ink: #3d7d00; --tv-slot-sh: none; --tv-slot-ico: 'WINNING LIVE · '; --tv-font: 'M PLUS Rounded 1c', 'Segoe UI', sans-serif;
-  grid-template-columns: auto 30px; grid-template-rows: auto auto 1fr auto auto; grid-template-areas: "scr k1" "scr k2" "scr ." "scr pwr" "lcd ej"; column-gap: 11px;
+  grid-template-columns: auto 30px; grid-template-rows: auto auto 1fr auto auto auto; grid-template-areas: "scr k1" "scr k2" "scr ." "scr nx" "scr pwr" "lcd ej"; column-gap: 11px;
   -webkit-mask: radial-gradient(circle at calc(100% - 41px) 0, transparent 8px, #000 8.5px) top / 100% 51% no-repeat,
     radial-gradient(circle at calc(100% - 41px) 100%, transparent 8px, #000 8.5px) bottom / 100% 51% no-repeat;
   mask: radial-gradient(circle at calc(100% - 41px) 0, transparent 8px, #000 8.5px) top / 100% 51% no-repeat,
@@ -472,7 +475,8 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   --tv-bezel: #eef2f7; --tv-bezel-sh: inset 0 0 0 1px #d5dde8; --tv-bezel-r: 4px 12px 12px 12px; --tv-screen-r: 8px; --tv-screen-bg: #dfe9f5;
   --tv-btn: transparent; --tv-btn-ink: #fff; --tv-btn-sh: none; --tv-power: #fff; --tv-power-glow: transparent;
   --tv-slot: transparent; --tv-slot-ink: #fff; --tv-slot-sh: none; --tv-slot-ico: 'MomoTalk · '; --tv-font: 'Noto Sans JP', 'Segoe UI', sans-serif;
-  grid-template-columns: 30px repeat(2, minmax(0, 1fr)) 22px 22px; grid-template-areas: "lcd lcd lcd ej pwr" "av scr scr scr scr" "k1 k1 k2 k2 k2";
+  /* 2,5 : 1 para que las dos respuestas midan lo mismo (k1 = avatar + 2.ª columna; k2 = 3.ª + los tres botones de 22 px). */
+  grid-template-columns: 30px minmax(0, 2.5fr) minmax(0, 1fr) 22px 22px 22px; grid-template-areas: "lcd lcd lcd nx ej pwr" "av scr scr scr scr scr" "k1 k1 k2 k2 k2 k2";
   row-gap: 8px; column-gap: 5px; padding: 6px 8px 10px; }
 .tv-bluearchive .tv-slot { padding-left: 22px; text-transform: none; letter-spacing: .02em; font-weight: 700; font-size: .66rem;
   background: url(/skins/bluearchive/ic-momo.webp) 0 50% / 16px auto no-repeat; }

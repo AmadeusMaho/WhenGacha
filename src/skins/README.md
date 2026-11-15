@@ -347,6 +347,10 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   - Para buscar más: `youtube.com/results?search_query=…&sp=EgIQAw%3D%3D` (solo listas). Comprobar que la lista se puede insertar con
     `https://www.youtube.com/oembed?url=https://www.youtube.com/playlist?list=…` (200; 401 = inserción desactivada).
 - **Populares**: las 15 subidas oficiales más vistas (13 nov 2026), en `top`.
+- **Botón "Otra canción"** (▶|, `.tv-next`, 14 nov 2026): fuera del vídeo, junto al título o a los demás botones según la silueta (área `nx` de
+  cada rejilla; lleva también `.tv-eject`, así toma el estilo de botón de cada skin). En "Todas" salta a otra pista al azar de toda la banda
+  sonora (también desde la última pista cargada, donde el "siguiente" de YouTube no hace nada); en "Populares", `nextVideo`.
+  En Genshin y HSR el título lleva `contain: inline-size` para no ensanchar el aparato (si no, el vídeo quedaba descentrado).
 
 ## Fondos animados: en movimiento o estáticos, y bucle sin saltos (13 nov 2026)
 

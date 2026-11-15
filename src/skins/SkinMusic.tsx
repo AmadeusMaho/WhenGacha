@@ -254,12 +254,12 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
 const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive'])
 
 type Mode = 'all' | 'top'
-const TXT: Record<Lang, { open: string; close: string; title: string; side: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
-  es: { open: 'Música oficial del juego', close: 'Cerrar (para la música)', title: 'Banda sonora', side: 'Cambiar de esquina',
+const TXT: Record<Lang, { open: string; close: string; title: string; side: string; next: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
+  es: { open: 'Música oficial del juego', close: 'Cerrar (para la música)', title: 'Banda sonora', side: 'Cambiar de esquina', next: 'Otra canción',
     all: 'Toda la banda sonora, en orden aleatorio', top: 'Las canciones oficiales más vistas', allShort: 'Todas', topShort: 'Populares', mode: 'Qué música suena' },
-  en: { open: "Game's official music", close: 'Close (stops the music)', title: 'Soundtrack', side: 'Switch corner',
+  en: { open: "Game's official music", close: 'Close (stops the music)', title: 'Soundtrack', side: 'Switch corner', next: 'Another song',
     all: 'The whole soundtrack, shuffled', top: 'The most viewed official songs', allShort: 'All', topShort: 'Popular', mode: 'What plays' },
-  zh: { open: '游戏官方音乐', close: '关闭（停止音乐）', title: '原声', side: '切换角落',
+  zh: { open: '游戏官方音乐', close: '关闭（停止音乐）', title: '原声', side: '切换角落', next: '换一首',
     all: '全部原声，随机播放', top: '观看次数最多的官方歌曲', allShort: '全部原声', topShort: '热门', mode: '播放内容' },
 }
 
@@ -267,6 +267,9 @@ const TXT: Record<Lang, { open: string; close: string; title: string; side: stri
 const SHUFFLE = <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
   <path d="M3 7h3.5c2 0 3.2 1 4.3 2.7l2.4 4.6c1.1 1.7 2.3 2.7 4.3 2.7H21" /><path d="M3 17h3.5c1.4 0 2.4-.5 3.2-1.4M14.3 8.4C15.1 7.5 16.1 7 17.5 7H21" /><path d="m18 4 3 3-3 3M18 14l3 3-3 3" />
 </svg>
+/** Saltar a otra canción (▶|). */
+const NEXT = <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden><path fill="currentColor" d="M5 5.5v13l9.5-6.5zM16.5 5.5h2.5v13h-2.5z" /></svg>
+
 const STAR = <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden><path fill="currentColor" d="m12 3.2 2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9-4.4-4.1 6-.7z" /></svg>
 
 const SIDE_KEY = 'whengacha:music-side'
@@ -297,7 +300,7 @@ const API = () => `&${COMMON}&enablejsapi=1&origin=${encodeURIComponent(location
 /** URL del reproductor. "Todas": una lista concreta con la API de la ventana (`enablejsapi`); la posición la pone `playVideoAt` al estar
  *  lista (YouTube ignora `index` en la URL). */
 function srcOf(m: { top: string[]; all: Source }, mode: Mode, list: string | undefined): string {
-  if (mode === 'top') return `${BASE}${m.top[0]}?${COMMON}&playlist=${m.top.join(',')}`
+  if (mode === 'top') return `${BASE}${m.top[0]}?playlist=${m.top.join(',')}${API()}`
   return list ? `${BASE}videoseries?list=${list}${API()}` : ''
 }
 
@@ -311,6 +314,7 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
   // "Todas": la lista que tiene cargada la ventana (cambiarla recarga la ventana) y la pista que se le pide dentro de ella.
   const [list, setList] = useState<string>()
   const want = useRef(0)
+  const skip = useRef<() => void>(undefined) // "Otra canción" en "Todas" (lo pone el efecto de abajo)
   useEffect(() => {
     if (!open || mode !== 'all' || !m) { setList(undefined); return }
     const t = pickTrack(m.all.lists)
@@ -356,10 +360,17 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
       if (typeof idx === 'number' && Date.now() - last > 1500) { if (cur !== undefined && idx !== cur) { jump(); return } cur = idx }
       if (state === 0 || d.event === 'onError') jump()
     }
+    skip.current = () => { last = 0; jump() }
     window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
+    return () => { skip.current = undefined; window.removeEventListener('message', onMsg) }
   }, [open, mode, m, list])
   if (!m) return null
+  // "Otra canción": en "Todas", otra al azar de toda la banda sonora (también desde la última pista cargada, donde el "siguiente" de YouTube
+  // no hace nada); en "Populares", la siguiente de la lista.
+  const next = () => {
+    if (mode === 'all') skip.current?.()
+    else frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'nextVideo', args: [] }), '*')
+  }
   const flip = () => { const n = side === 'right' ? 'left' : 'right'; setSide(n); write(SIDE_KEY, n) }
   const pick = (n: Mode) => { if (n !== mode) { setMode(n); write(MODE_KEY, n) } }
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
@@ -398,6 +409,7 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg>
             </button>
             <div className="tv-slot" title={`${s.title} · ${name}`}><span>{name}</span></div>
+            <button className="tv-eject tv-next" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>
             <button className="tv-eject" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
           </div>
         </div>,
@@ -407,6 +419,7 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
         <div className={`music-dock ${side}`} role="region" aria-label={`${s.title} · ${name}`}>
           <div className="music-head">
             <span className="music-title" title={`${s.title} · ${name}`}><b>♪ {name}</b></span>
+            <button className="music-ctl" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>
             <button className="music-ctl" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
             <button className="music-ctl" onClick={() => setOpen(false)} title={s.close} aria-label={s.close}>✕</button>
           </div>
