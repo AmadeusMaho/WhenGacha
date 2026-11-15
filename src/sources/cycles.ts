@@ -61,3 +61,24 @@ export function alExercise(gameId: string, now = Date.now()): GameEvent[] {
     return ev(gameId, 'Exercise Season', s, s + len - 1000, '⟦d.alExercise⟧', true, now)
   })
 }
+
+/**
+ * Punishing: Gray Raven · Phantom Pain Cage (Jaula del Dolor Fantasma): rotatorio semanal que se renueva con el reinicio del lunes
+ * (grayravens.com/wiki/Phantom_Pain_Cage: "missions that refresh weekly on the Monday reset"; 3 jefes desde el nivel 54, 3 intentos al día
+ * de lunes a viernes y 9 el sábado y el domingo). Los jefes salen al azar cada semana y por servidor (subpágina Bosses), así que no se pueden
+ * anunciar; cada jefe tiene su debilidad de elemento, que decide qué equipo conviene esa semana. Ninguna fuente da la hora: se usa el reinicio
+ * diario del juego, 05:00 del servidor, con la hora de América (UTC-5), y se marca "≈".
+ */
+export function pgrPainCage(gameId: string, now = Date.now()): GameEvent[] {
+  const off = -5 * HOUR
+  const local = new Date(now + off)
+  const back = (local.getUTCDay() - 1 + 7) % 7
+  let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 5) - off
+  if (start > now) start -= 7 * DAY
+  return [0, 1].map(k => {
+    const s = start + k * 7 * DAY
+    // Arte: tres tarjetas de jefe de la Jaula (bosssingletab53/54/34 del cliente: Melinoe y compañía), una por jefe de la semana;
+    // public/icons/pgr-pain-cage.webp, del explorador de assets.huaxu.app (no son los jefes de esa semana, que no se conocen).
+    return { ...ev(gameId, 'Phantom Pain Cage', s, s + 7 * DAY - 1000, '⟦d.pgrCage⟧', true, now), image: '/icons/pgr-pain-cage.webp' }
+  })
+}

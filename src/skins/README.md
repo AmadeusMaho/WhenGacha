@@ -364,3 +364,71 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   salto era el corte del propio vídeo, no la red.
 - La comprobación "el vídeo de fuera no arranca en 10 s → cambiarlo" se hace una sola vez y solo si nunca llegó a reproducirse (antes se
   reiniciaba en cada redibujado y podía cambiar el fondo por su imagen fija a media reproducción).
+
+## Ronda del 15 nov 2026: PGR, NIKKE, reproductor de WuWa y fondos por pestaña
+
+- **Fondos en todas las pestañas, en todas las skins** (antes solo Arknights y Blue Archive): `SkinPicker` monta `LiveWallpaper` siempre, con la
+  pestaña en la `key`, así cada pestaña muestra el siguiente fondo de la lista. Se quitó `liveAllTabs`. Revisado con `skin-contrast.js` en las
+  cuatro pestañas: solo quedan avisos de texto sobre imagen (los de siempre). Los fondos nuevos los sube el dueño con Wallpaureka.
+- **`pgr.css`** (skin **Punishing: Gray Raven**): carbón y blanco, el rojo de "Punishing" de acento (`#e0303c` en adornos, `#ff6b72` en texto,
+  `#c4202c` en botones con texto blanco) y el cian de los escenarios. Pestañas en paralelogramo con un retrato de Gray Raven (Lucia, Lee, Liv,
+  Karenina; `rolehead*1` del juego), la activa blanca con la barra roja; títulos con barra roja y el rótulo "// GRAY RAVEN"; paneles de cristal
+  carbón con marcas de visor (blanca arriba a la izquierda, roja abajo a la derecha); botones con dos esquinas cortadas, el principal rojo con "›";
+  barras de la línea de tiempo con el canto de su tipo (banner rojo, evento cian, desafío blanco); "fallo de señal" rojo/cian al pasar por el nombre.
+  - **Recursos** (`public/skins/pgr/`): del explorador público de **assets.huaxu.app** (`/browse/glb/image/…`, la base de datos de Huaxu, ya
+    extraída hasta la 4.9). La herramienta que la genera, `pgr-assets` (`huaxu-app/pgr-assets`, la sugirió el dueño), está instalada en
+    `../herramientas/pgr-venv` (Python 3.13; su dependencia `pycricodecsex` ya no está en PyPI y se instaló del wheel con el hash de su
+    `uv.lock`). Desde la 4.9.1 falla: el `XBuildConfig` trae un texto nuevo ("Release"), arreglado en `../herramientas/pgr.py`, y el índice de
+    parches del CDN de Kuro da 404 con la ruta que conoce; hasta que la actualicen, se usa el explorador.
+    `barcode.webp` = `logo/commonlogo`; `nav-*.webp` = retratos recortados a 96 px; `bg.webp`/`bg-m.webp` = `bgui/bgfightloading60`;
+    `still-login.webp` = `uiloginbg/loginbg` (fondo de las pestañas mientras `FONDOS.pgr` esté vacío).
+  - **Reproductor**: el terminal de comunicaciones de Gray Raven (código de barras, "BABYLONIA // COMMS" con un punto que parpadea, medidor de
+    señal de LED rojos en la columna derecha). **Música**: lista oficial de Vanguard Sound Studio + recopilaciones grandes (oEmbed 200).
+- **NIKKE, pulido**: línea de luz azul bajo la barra superior y en el pie, paneles con canto azul arriba, trama diagonal en la esquina y
+  muesca azul abajo a la derecha, cabeceras azules con el rayado de "Claim" (en `::after`), botón principal con destello al pasar, barras con
+  relieve y el brillo que corre en las que están en curso, eje de meses azul noche, viñeta sobre el fondo. **Armas** (las miras del juego,
+  `icn_weapon_*` de static.dotgg.gg, en `ret-*.webp`): cursor con la mira del AR (la del SR sobre lo que se pulsa), cada clic deja un **impacto
+  de bala** que se desvanece en 2,6 s (`nikkeShots.ts`, capa `.nk-shots`), la mira del SR se fija sobre los retratos al pasar el ratón, y los
+  títulos de la línea de tiempo llevan la mira de un arma (banners RL, eventos AR, desafíos SR).
+- **WuWa, reproductor nuevo**: el sintonizador de **Frecuencia** (`UiFrequency` del repo de TomyJan): placa del carrete de fondo
+  (`ui/freq-console.webp`), silueta biselada con una pestaña arriba y el emblema dorado, y la **cinta de frecuencia** (`ui/freq.svg`): nueve
+  hebras doradas (#ffe670 del atlas) que ondulan, como el hilo de luz de la frecuencia del Vagabundo en la cinemática de inicio (referencia del
+  dueño). El SVG se generó con un script de Node (por hebra, suma de dos ondas viajeras; 12 fotogramas; curvas Catmull-Rom): si se rehace, el
+  bucle debe avanzar la fase 2π exactas para que no salte. El dueño pidió que no se salga del aparato.
+- **PGR, 2.ª capa** (mismo día, "usa más assets"): Black Card en la pestaña Tiradas (`nav-pulls.webp`, iconcurrency/iconconsumegem; también es
+  ahora el icono de la moneda de PGR en la calculadora, `public/icons/pgr-black-card.webp`, en todas las skins); el triángulo "GR" de Gray Raven
+  (`gr-emblem.webp`, common/commontaskmbdc sin la barra central) en los títulos y de marca de agua en la cabecera de cada juego; la etiqueta
+  "▲ In Event" del juego (`inevent.webp`, common/uibrawbg) en las barras en curso; el destello naranja del reclutamiento (`flare.webp`,
+  uichouka/uichoukaguang1) en el botón principal y bajo el título de la ventana del evento; el código de barras en la esquina del arte; el logo
+  del Gobierno Mundial (`wg-logo.webp`, uitask/taskicon en blanco) en el pie; franja de código de barras en la esquina de los paneles; "salto de
+  señal" del retrato al elegir pestaña y barrido de escaneo rojo al cambiar de pestaña; la línea de "ahora" en rojo.
+  La **Jaula del Dolor Fantasma** lleva arte propio en todas las skins: tres tarjetas de jefe del juego (`public/icons/pgr-pain-cage.webp`,
+  uifubenbosssingle/bosssingletab53, 54 y 34), solo de ambiente: los jefes de cada semana no se conocen.
+- **PGR, 3.ª ronda**: **21 fondos animados** elegidos por el dueño (MoeWalls, WallpaperWaifu, DesktopHut y MotionBGs), publicados con la cola de
+  Wallpaureka (`/api/queue/add`, `kind: 'whengacha'`, nombres limpios sin el nombre del juego); los de DesktopHut/MotionBGs desde el original
+  4K a 1920 px. Tres pesan 6–8,5 MB (selena-lunar-elegance, bianca, nirvatia): si hace falta, recodificarlos a CRF 28–29 con nombre nuevo.
+  **Tarjetas con forma de ficha de PGR** (Mis gachas, cuadrícula, "Termina pronto", próximos, retratos): dos esquinas cortadas (`--pg-cut`),
+  filo blanco en el corte de arriba y rojo en el de abajo, franja de rango roja, destello al pasar, cabecera de arte con rayado rojo y código de
+  serie. **Cursor**: el `.cur` que aportó el dueño (el cliente no trae cursor), redibujado en vectorial y renderizado a 32/48/64 px.
+  **Fuente "Punishing Virus Language"** (aportada por el dueño, `pgr-virus.woff2`): es el alfabeto cifrado del juego, ilegible a propósito; solo
+  en rótulos de adorno ("// GRAY RAVEN", código de serie, cabecera del reproductor, inscripción del pie). El texto real sigue en Rajdhani/Barlow
+  (la fuente de la interfaz del juego no está en el explorador de Huaxu: `pgr-assets` no extrae fuentes). "Salto de señal" rehecho por fases.
+- **PGR, 4.ª capa** ("se parece a las otras skins cuadradas"; capturas del menú principal y de Research que aportó el dueño): pestañas como tiles de
+  DOS líneas (título en Barlow Condensed + subtítulo SCHEDULE / MEMBERS / NEWS / RESEARCH, la elegida blanca con subrayado rojo); botones de la
+  cabecera como los cuadrados azules "+" de la barra de recursos, inclinados como ella (`skewY(-4deg)`); sincronizar = el reloj con batería; lo
+  elegido en blanco con punta de flecha ("Arrival Construct"); botón principal como "Research x1" (losa negra, triángulos grises, filo rojo y
+  punta de flecha); texto fantasma gigante "PUNISHING" sobre el fondo. **Descartado**: girar la barra de pestañas en perspectiva como el HUD del
+  juego (doblada se veía rara) y la etiqueta azul de coste en el botón principal (quedaba básica).
+- **PGR, marco de la línea de tiempo** (solo el marco, no las barras): ventana de operación con dos esquinas cortadas, filo rojo arriba,
+  esquina roja abajo, regla de marcas en el borde derecho, rejilla de puntos de HUD y el triángulo GR de marca de agua (`tl-watermark.webp`,
+  ya con 13 % de opacidad en el archivo: un fondo no admite opacidad por capa); todo en el fondo del propio `.tl`, que con scroll se queda quieto.
+  Placa "SCHEDULE / OPS // GRAY RAVEN" en `.tl-corner` (en móvil, solo el triángulo); meses en Barlow Condensed con corchete y "//" rojos,
+  regla de marcas bajo el eje; columna de juegos como fichas de miembro numeradas (número fantasma 01, 02…) con el marco de mira del juego en el
+  avatar (`tl-target.webp`, uiareawarstagekuang08); rejilla discontinua, línea de mes roja, rótulos de sección en placa con corte.
+- **PGR, reproductor (2.ª versión)**: el reproductor de música del juego (cdplayer/uimusicplayer): la caja del CD (`pl-case.webp`) con el vídeo en
+  la bandeja, el disco con la portada de "Crossing Eternities" (`pl-cd.webp`) que sale por la derecha y gira, el brazo del tocadiscos
+  (`pl-arm.webp`) que baja y se mece, y el dial en arco (`pl-dial.webp`) con aguja roja. Animaciones con curvas suaves, sin `steps()`.
+  Sustituye al terminal con medidor de LED.
+  El disco lleva la **miniatura del vídeo que suena** (`--tv-thumb`, de `SkinMusic.tsx`: la ventana de YouTube manda `videoData.video_id` en sus
+  mensajes; `i.ytimg.com/vi/<id>/hqdefault.jpg`) con el aro del CD encima (`pl-cd-ring.webp`); si no hay, la portada de "Crossing Eternities".
+  El dial ya no tiene aguja (oscilando parecía un metrónomo): sus marcas se encienden en rojo en una franja que lo recorre (máscara con el dial).

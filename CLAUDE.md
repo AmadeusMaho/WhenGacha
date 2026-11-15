@@ -82,8 +82,13 @@ los destacados y a las cabeceras de sección de la ventana del evento (como Gens
 
 **Toda skin nueva lleva su reproductor de música temático** (`src/skins/SkinMusic.tsx`: su música en `MUSIC` y su id en `MINI`; su diseño en
 `src/skins/skins.css`, "Temas compactos"). Cada uno con **silueta propia y compacta** basada en un objeto de su juego, no la misma caja con otros
-colores: ZZZ la tele CRT (solo suya), HSR funda de vinilo con el disco girando, Genshin pergamino, NIKKE el teléfono del comandante, WuWa panel
-holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk. El vídeo siempre entero a 200×200 y sin nada encima (norma de YouTube).
+colores: ZZZ la tele CRT (solo suya), HSR funda de vinilo con el disco girando, Genshin pergamino, NIKKE el teléfono del comandante, WuWa el
+sintonizador de Frecuencia (con la cinta dorada animada), Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk,
+PGR el reproductor de CD del propio juego (caja del CD, disco que gira y brazo).
+
+**Fondos en todas las pestañas** (15 nov 2026): toda skin muestra su fondo en las cuatro pestañas y cada pestaña el siguiente de su lista (antes solo
+Arknights y Blue Archive). Una skin nueva se revisa también en Mis gachas, Parches y Tiradas con el fondo detrás. Los fondos animados los elige y
+sube el dueño con **Wallpaureka** (`../Wallpaureka`, perfil WhenGacha); una skin nueva necesita su id en `SKIN_NAMES` de `Wallpaureka/lib/whengacha.mjs` y su lista en `FONDOS`. El vídeo siempre entero a 200×200 y sin nada encima (norma de YouTube).
 
 ## Otros detalles útiles
 

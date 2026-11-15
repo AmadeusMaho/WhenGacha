@@ -4,7 +4,7 @@ import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
 import { hasWikiCodes, syncPocketGamerCodes, syncWikiCodes } from './codes'
 import { syncBluepoch } from './bluepoch'
 import { withChallengeRewards, type ChallengePage } from './challenges'
-import { alExercise, hi3MemorialArena, r99Limbo } from './cycles'
+import { alExercise, hi3MemorialArena, pgrPainCage, r99Limbo } from './cycles'
 import { syncCznEvents } from './czn'
 import { discordChannel, discordMessages, syncDiscord, tweetImages } from './discord'
 import { syncAfkJourney } from './afkjourney'
@@ -386,8 +386,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
       const s = await withWikiEventRewards(s1, game.wiki.host, game.api)
       return { ...s, patches: buildPatches(id, s.patches, history, game.patchCycleDays) }
     }
-    // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa).
-    case 'pgr': return syncPgr(id)
+    // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa) + la Jaula del Dolor Fantasma semanal (cycles.ts).
+    case 'pgr': return syncPgr(id).then(s => ({ ...s, events: [...s.events, ...pgrPainCage(id)] }))
     // Honkai Impact 3rd: eventos y gachapones de trajes de su wiki (Fandom) + gachapones de la versión del aviso oficial de HoYoLAB (honkai3.ts).
     // Con canal de Discord (tuits y #glb-current-supplies), sus anuncios mandan.
     case 'honkai3': return both(syncHonkai3(id), syncHi3Official(id)).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))

@@ -21312,6 +21312,27 @@ function alExercise(gameId, now = Date.now()) {
 		return ev(gameId, "Exercise Season", s, s + len - 1e3, "⟦d.alExercise⟧", true, now);
 	});
 }
+/**
+* Punishing: Gray Raven · Phantom Pain Cage (Jaula del Dolor Fantasma): rotatorio semanal que se renueva con el reinicio del lunes
+* (grayravens.com/wiki/Phantom_Pain_Cage: "missions that refresh weekly on the Monday reset"; 3 jefes desde el nivel 54, 3 intentos al día
+* de lunes a viernes y 9 el sábado y el domingo). Los jefes salen al azar cada semana y por servidor (subpágina Bosses), así que no se pueden
+* anunciar; cada jefe tiene su debilidad de elemento, que decide qué equipo conviene esa semana. Ninguna fuente da la hora: se usa el reinicio
+* diario del juego, 05:00 del servidor, con la hora de América (UTC-5), y se marca "≈".
+*/
+function pgrPainCage(gameId, now = Date.now()) {
+	const off = -5 * HOUR$10;
+	const local = new Date(now + off);
+	const back = (local.getUTCDay() - 1 + 7) % 7;
+	let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 5) - off;
+	if (start > now) start -= 7 * DAY$39;
+	return [0, 1].map((k) => {
+		const s = start + k * 7 * DAY$39;
+		return {
+			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$39 - 1e3, "⟦d.pgrCage⟧", true, now),
+			image: "/icons/pgr-pain-cage.webp"
+		};
+	});
+}
 // src/sources/stove.ts
 /** Últimos `size` avisos de un tablón (el resumen trae unos 1000 caracteres del cuerpo). */
 async function articles(board, size) {
@@ -30841,7 +30862,10 @@ async function syncSourceRaw(game) {
 				patches: buildPatches(id, s.patches, history, game.patchCycleDays)
 			};
 		}
-		case "pgr": return syncPgr(id);
+		case "pgr": return syncPgr(id).then((s) => ({
+			...s,
+			events: [...s.events, ...pgrPainCage(id)]
+		}));
 		case "honkai3": return both(syncHonkai3(id), syncHi3Official(id)).then((s) => ({
 			...s,
 			events: [...s.events, ...hi3MemorialArena(id)]

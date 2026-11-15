@@ -16,7 +16,9 @@ import './nikke.css'
 import './uma.css'
 import './arknights.css'
 import './bluearchive.css'
+import './pgr.css'
 import { setTiltEnabled, subscribeTilt, tiltEnabled } from './akTilt'
+import './nikkeShots'
 import { baDark, setBaDark, subscribeBaDark } from './baDark'
 import { liveState, setLiveMode, subscribeLive, type LiveMode } from './liveMode'
 
@@ -62,10 +64,10 @@ const TXT: Record<Lang, Record<string, string>> = {
 
 /**
  * Botón "pincel" de la cabecera: skins de WhenGacha Premium, apoyo y acceso por correo. Es lo único que App.tsx monta de las skins.
- * `timeline`: si se está viendo la línea de tiempo (ahí va el fondo animado de la skin, si tiene).
+ * `tab`: la pestaña que se ve (cada una muestra otro fondo animado de la skin, si tiene).
  * `donateUrl`: donación sin Premium, por si el apoyo con Premium aún no está configurado en el servidor.
  */
-export default function SkinPicker({ timeline = false, tab, donateUrl }: { timeline?: boolean; tab?: string; donateUrl?: string }) {
+export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl?: string }) {
   const lang = useLang()
   const s = TXT[lang] ?? TXT.es
   const skin = useSkin()
@@ -74,10 +76,10 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
   const preview = usePreview()
   // Lo que se ve: la vista previa (sin Premium) o la skin elegida.
   const active = preview ?? skin
-  // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), solo en la línea de tiempo (o en todas las pestañas si la
-  // skin lo pide con `liveAllTabs`; ahí cada pestaña muestra el siguiente fondo: LiveWallpaper se vuelve a montar con la pestaña en la key).
+  // Fondos de la skin + el de la versión actual del juego (liveFeed.ts), en TODAS las pestañas (15 nov 2026; antes solo Arknights y Blue Archive):
+  // cada pestaña muestra el siguiente fondo de la lista (LiveWallpaper se vuelve a montar con la pestaña en la key).
   const def = SKINS.find(k => k.id === active)
-  const live = useLiveWithFeed(active, timeline || def?.liveAllTabs ? def?.live : undefined)
+  const live = useLiveWithFeed(active, def?.live)
   // Giroscopio de la skin Arknights (akTilt.ts): se puede apagar; el interruptor solo sale con esa skin elegida (Premium).
   const tilt = useSyncExternalStore(subscribeTilt, tiltEnabled)
   // Modo oscuro de la skin Blue Archive (baDark.ts): mismo patrón, solo con esa skin elegida.
@@ -243,7 +245,7 @@ export default function SkinPicker({ timeline = false, tab, donateUrl }: { timel
       )}
       {dialog && <SupportDialog donateUrl={donateUrl} onClose={() => setDialog(false)}
         onLogin={() => { setDialog(false); toggle(); setView('login') }} />}
-      {live && active && <LiveWallpaper key={def?.liveAllTabs ? `${active}:${tab}` : active} skin={active} live={live} />}
+      {live && active && <LiveWallpaper key={`${active}:${tab}`} skin={active} live={live} />}
     </div>
     </>
   )

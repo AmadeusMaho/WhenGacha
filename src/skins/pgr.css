@@ -1,0 +1,532 @@
+/* ===== Skin "Punishing: Gray Raven" (15 nov 2026) =====
+   Como los menús del juego: carbón casi negro y blanco, el ROJO de "Punishing" como acento (el de "DIMENSION RERUN" y la etiqueta
+   "◆ In Event"), y el cian de los escenarios de las pantallas de carga para lo secundario. Formas rectas con esquinas cortadas, marcas de
+   visor en las esquinas, rótulos en mayúsculas espaciadas con una barra roja y un código pequeño, y el código de barras de Gray Raven.
+   public/skins/pgr/ (piezas del cliente, del explorador público de assets.huaxu.app; © Kuro Games; el dueño decidió usarlas):
+   - barcode.webp = commonlogo ("GRAY RAVEN" + código de barras), junto al nombre de la web.
+   - nav-*.webp = retratos del juego (rolehead*1): Lucia (línea de tiempo), Lee (mis gachas), Liv (parches), Karenina (tiradas).
+   - bg.webp / bg-m.webp = pantalla de carga bgfightloading60 (fondo fijo); still-login.webp = el arte de la pantalla de inicio de sesión
+     (fondo de las pestañas mientras FONDOS.pgr esté vacío; los animados los pone el dueño con Wallpaureka).
+   Fuentes: Rajdhani (rótulos, OFL) y Barlow (texto, OFL); la del juego no está disponible.
+   Contraste: texto #eceef1 / #b3b9c1 sobre carbón; rojo de texto #ff6b72 (≥ 4.5:1 sobre #15171b); botones rojos #c4202c con texto blanco (5.9:1).
+   Solo aplica con <html data-skin="pgr">. */
+
+html[data-skin="pgr"] {
+  --pg-red: #e0303c;     /* adornos */
+  --pg-red-t: #ff6b72;   /* rojo de texto sobre oscuro */
+  --pg-red-b: #c4202c;   /* fondo de botón con texto blanco */
+  --pg-cyan: #6fd3ff;
+  --pg-ink: #0d0f12;
+  --pg-glass: rgba(18, 20, 24, .84);
+  --pg-glass2: rgba(26, 29, 34, .9);
+  --pg-solid: #15171b;
+  --pg-edge: rgba(255, 255, 255, .13);
+  --pg-edge2: rgba(255, 255, 255, .32);
+  --pg-head: 'Rajdhani', 'Barlow', 'Segoe UI', sans-serif;
+  --bg: #0b0c0f;
+  --panel: var(--pg-glass);
+  --panel2: var(--pg-glass2);
+  --line: rgba(255, 255, 255, .1);
+  --text: #eceef1;
+  --muted: #b3b9c1;
+  --acc: var(--pg-red-t); /* se usa también como color de texto (cifras de Tiradas, cuentas atrás): el rojo legible */
+  --acc2: #ff9aa0;
+  color-scheme: dark;
+}
+html[data-skin="pgr"] body { background: var(--bg); font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif; font-weight: 500; letter-spacing: .01em; }
+html[data-skin="pgr"] :is(h1, h2, h3, h4, b, strong) { font-weight: 700; }
+html[data-skin="pgr"] :is(h1, h2, h3, header nav button, .sec-title, .stats b, .plan-total b, .modal-title h2, .month b) { font-family: var(--pg-head); }
+html[data-skin="pgr"] ::selection { background: rgba(224, 48, 60, .45); color: #fff; }
+html[data-skin="pgr"] * { scrollbar-color: rgba(255, 255, 255, .28) transparent; }
+
+/* ===== Fondo: pantalla de carga del juego, oscurecida, con trama de líneas y viñeta ===== */
+html[data-skin="pgr"] .aurora { background: #0b0c0f; }
+html[data-skin="pgr"] .aurora::after { display: block; content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 85% 75% at 50% 35%, transparent 40%, rgba(5, 6, 8, .75)),
+    linear-gradient(180deg, rgba(8, 9, 12, .55), rgba(8, 9, 12, .72) 50%, rgba(8, 9, 12, .9)), url(/skins/pgr/bg.webp) center / cover no-repeat; }
+@media (max-width: 700px) { html[data-skin="pgr"] .aurora::after {
+  background: linear-gradient(180deg, rgba(8, 9, 12, .6), rgba(8, 9, 12, .8) 50%, rgba(8, 9, 12, .92)), url(/skins/pgr/bg-m.webp) 50% 40% / cover no-repeat; } }
+html[data-skin="pgr"] .skin-live { filter: brightness(.5) saturate(.9) contrast(1.05); }
+/* Sobre el fondo de la pestaña: la misma trama y viñeta (bajo el contenido). */
+html[data-skin="pgr"] body:has(> .skin-live)::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .03) 0 1px, transparent 1px 3px), radial-gradient(ellipse 85% 75% at 50% 35%, transparent 45%, rgba(5, 6, 8, .7)); }
+html[data-skin="pgr"] main { position: relative; }
+
+/* ===== Cabecera: barra carbón con el filo rojo; el código de barras de Gray Raven junto al nombre ===== */
+html[data-skin="pgr"] .app > header { background: linear-gradient(180deg, rgba(20, 22, 26, .95), rgba(11, 12, 15, .93)); border-bottom: 0;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .08), 0 6px 20px rgba(0, 0, 0, .5); backdrop-filter: blur(10px); }
+html[data-skin="pgr"] .app > header::after { content: ""; position: absolute; left: 0; bottom: -2px; width: 100%; height: 2px; pointer-events: none;
+  background: linear-gradient(90deg, var(--pg-red) 0 160px, rgba(224, 48, 60, .35) 160px 40%, transparent 85%); }
+html[data-skin="pgr"] .brand h1 { color: #fff; text-transform: uppercase; letter-spacing: .14em; font-size: 1.15rem; }
+html[data-skin="pgr"] .brand::after { content: ""; display: inline-block; flex: none; width: 54px; height: 36px; margin-left: 6px; opacity: .85;
+  background: url(/skins/pgr/barcode.webp) center / contain no-repeat; }
+@media (max-width: 700px) { html[data-skin="pgr"] .brand::after { display: none; } }
+/* Pequeño "fallo de señal" al pasar el ratón por el nombre (rojo y cian desplazados un instante), como las transiciones del juego. */
+html[data-skin="pgr"] .brand:hover h1 { animation: pg-glitch .45s steps(2, end) 1; }
+@keyframes pg-glitch { 0% { text-shadow: 2px 0 var(--pg-red), -2px 0 var(--pg-cyan); } 50% { text-shadow: -2px 0 var(--pg-red), 2px 0 var(--pg-cyan); transform: translateX(1px); } 100% { text-shadow: none; } }
+
+/* Pestañas: paralelogramos con el retrato de un miembro de Gray Raven; la activa, blanca con texto carbón y la barra roja (como la
+   pestaña elegida de los menús del juego). Contraste: #15171b sobre #f1f2f4 = 16:1; #c9ced5 sobre transparente/carbón ≥ 9:1. */
+html[data-skin="pgr"] header nav { gap: 4px; padding: 0; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow: visible; }
+html[data-skin="pgr"] header nav .nav-ind { display: none; }
+html[data-skin="pgr"] header nav button { position: relative; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  background: rgba(30, 33, 38, .75) !important; color: #c9ced5 !important; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; font-size: .92rem;
+  padding: 7px 18px 7px 46px !important; clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%); transition: background-color .15s, color .15s; }
+html[data-skin="pgr"] header nav button:not(.on):hover { background: rgba(52, 56, 63, .9) !important; color: #fff !important; }
+html[data-skin="pgr"] header nav button.on { background: #f1f2f4 !important; color: #15171b !important; }
+html[data-skin="pgr"] header nav button.on::after { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 3px; background: var(--pg-red); }
+html[data-skin="pgr"] header nav button::before { content: ""; position: absolute; left: 13px; top: 50%; width: 26px; height: 26px; transform: translateY(-50%);
+  background: #2a2d33 center / cover no-repeat; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); filter: grayscale(.6) brightness(.9); transition: filter .15s; }
+html[data-skin="pgr"] header nav button:nth-of-type(1)::before { background-image: url(/skins/pgr/nav-timeline.webp); }
+html[data-skin="pgr"] header nav button:nth-of-type(2)::before { background-image: url(/skins/pgr/nav-mine.webp); }
+html[data-skin="pgr"] header nav button:nth-of-type(3)::before { background-image: url(/skins/pgr/nav-patches.webp); }
+html[data-skin="pgr"] header nav button:nth-of-type(4)::before { background-image: url(/skins/pgr/nav-pulls.webp); }
+html[data-skin="pgr"] header nav button:is(.on, :hover)::before { filter: none; }
+html[data-skin="pgr"] header nav button:focus-visible { outline: 2px solid var(--pg-red); outline-offset: -3px; }
+@media (max-width: 700px) {
+  html[data-skin="pgr"] header nav { gap: 2px; }
+  html[data-skin="pgr"] header nav button { padding: 6px 7px 6px 27px !important; font-size: .72rem; letter-spacing: .02em; clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+  html[data-skin="pgr"] header nav button::before { left: 7px; width: 18px; height: 18px; } }
+/* Botones de la barra: oscuros con filo fino. */
+html[data-skin="pgr"] header .btn { border-radius: 0; border: 1px solid var(--pg-edge2); background: rgba(22, 24, 28, .85); color: #eceef1; box-shadow: none; }
+html[data-skin="pgr"] header .btn:hover:not(:disabled) { background: #2e3238 !important; border-color: #fff; color: #fff; }
+
+/* ===== Botones: rectos con dos esquinas cortadas; el principal en rojo con la flecha "›" del juego ===== */
+html[data-skin="pgr"] .btn { border-radius: 0; border: 1px solid var(--pg-edge2); background: rgba(26, 29, 34, .9); color: #eceef1; text-shadow: none;
+  box-shadow: none; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+html[data-skin="pgr"] .btn::after { display: none; }
+html[data-skin="pgr"] .btn:hover:not(:disabled) { background: #33373e !important; border-color: #fff; color: #fff; transform: none; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  border: 1px solid #e7535c; background: linear-gradient(90deg, var(--pg-red-b), #a8141f) !important; color: #fff; filter: none; letter-spacing: .04em; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { background: linear-gradient(90deg, #d42733, #b5151f) !important; box-shadow: 0 0 14px rgba(224, 48, 60, .45); }
+html[data-skin="pgr"] .btn.primary:not(.icon)::after { display: inline; content: " ›"; position: static; background: none; font-weight: 700; }
+html[data-skin="pgr"] .btn:disabled { opacity: 1; background: #24272c; border-color: #3a3e45; color: #9aa1aa; }
+html[data-skin="pgr"] .btn.mark .spark { color: #ffd36b; }
+html[data-skin="pgr"] .btn.mark:not(.primary) { background: #2a2d33 !important; color: #eceef1; }
+html[data-skin="pgr"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 2px solid var(--pg-red); outline-offset: 2px; }
+html[data-skin="pgr"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 0; border: 1px solid var(--pg-edge2); background: rgba(12, 13, 16, .92); color: #eceef1; }
+html[data-skin="pgr"] :is(input, select):focus { border-color: var(--pg-red); box-shadow: 0 0 0 2px rgba(224, 48, 60, .3); outline: none; }
+html[data-skin="pgr"] :is(input, textarea)::placeholder { color: #9aa1aa; opacity: 1; }
+html[data-skin="pgr"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--pg-red); }
+
+/* ===== Chips y filtros: placas carbón; la activa, blanca con texto carbón y filo rojo ===== */
+html[data-skin="pgr"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
+  border-radius: 0; border: 1px solid var(--pg-edge); background: rgba(24, 26, 31, .88); color: #e2e5e9; box-shadow: none; }
+html[data-skin="pgr"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: var(--pg-edge2); background: #2e3238 !important; transform: none; }
+html[data-skin="pgr"] .seg { padding: 2px; gap: 2px; }
+html[data-skin="pgr"] .seg button { border-radius: 0; color: #c9ced5; }
+html[data-skin="pgr"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="pgr"] :is(.chip.on, .seg button.on):hover { background: #f1f2f4 !important; color: #15171b; border-color: #fff; box-shadow: inset 0 -2px 0 var(--pg-red); }
+html[data-skin="pgr"] .codes-chip :is(.cc-txt, .cc-chev) { color: #eceef1 !important; }
+
+/* ===== Etiquetas: rectas; lo urgente y lo "en curso" en rojo, como "◆ In Event" ===== */
+html[data-skin="pgr"] .tag { border-radius: 0; border: 1px solid var(--pg-edge); background: rgba(12, 13, 16, .92); color: #e2e5e9; font-weight: 700; }
+html[data-skin="pgr"] .tag.great { color: var(--pg-cyan); border-color: rgba(111, 211, 255, .45); }
+html[data-skin="pgr"] .tag.good { color: #8fe3a8; }
+html[data-skin="pgr"] .tag.mid { color: #ffd27a; }
+html[data-skin="pgr"] .tag.bad { color: var(--pg-red-t); }
+html[data-skin="pgr"] .pill.hot { border-radius: 0; background: var(--pg-red-b); color: #fff; }
+html[data-skin="pgr"] .pill.new { border-radius: 0; background: rgba(12, 13, 16, .92); color: var(--pg-cyan); }
+html[data-skin="pgr"] .today-flag { border-radius: 0; background: var(--pg-red-b); color: #fff; letter-spacing: .06em;
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px); }
+html[data-skin="pgr"] .soon-card em { border-radius: 0; background: rgba(12, 13, 16, .92); color: #ffd27a; }
+html[data-skin="pgr"] .soon-card.urgent em { background: var(--pg-red-b); color: #fff; }
+html[data-skin="pgr"] .soon-card.urgent em::before { content: "◆ "; font-size: .7em; vertical-align: 1px; }
+
+/* ===== Títulos: barra roja + rótulo en mayúsculas espaciadas + un código pequeño a la derecha que corre hasta el borde ===== */
+html[data-skin="pgr"] h3 { color: #f4f5f7; text-transform: uppercase; letter-spacing: .14em; font-size: .95rem; font-weight: 700; }
+html[data-skin="pgr"] h3::before { content: ""; flex: none; width: 4px; height: 1.05em; background: var(--pg-red); box-shadow: 0 0 6px rgba(224, 48, 60, .6); }
+html[data-skin="pgr"] h3:not(:has(> button, > .btn, > a))::after { content: "// GRAY RAVEN"; flex: 1 1 0; min-width: 0; overflow: hidden; white-space: nowrap;
+  margin-left: 8px; padding-left: 8px; color: rgba(255, 255, 255, .28); font: 600 .62rem/1 'Barlow', sans-serif; letter-spacing: .2em; text-align: right;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .06)) left center / 100% 1px no-repeat; }
+html[data-skin="pgr"] h3 small { color: #c4c9d0; text-transform: none; letter-spacing: .02em; }
+html[data-skin="pgr"] h3:has(> .sec-ico)::before { display: none; }
+html[data-skin="pgr"] h3 > .sec-ico { color: var(--pg-red-t); }
+html[data-skin="pgr"] :is(.bcard, .ecard, .soon-card, .up-card) h3 { text-transform: none; letter-spacing: .02em; font-size: inherit; }
+html[data-skin="pgr"] :is(.bcard, .ecard, .soon-card, .up-card) h3::before, html[data-skin="pgr"] :is(.bcard, .ecard, .soon-card, .up-card) h3::after { display: none; }
+
+/* ===== Paneles: cristal carbón con filo fino y marcas de visor en las esquinas (en ::after: no cuentan como fondo en la auditoría) ===== */
+html[data-skin="pgr"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 0; border: 1px solid var(--pg-edge); background-color: var(--pg-glass); box-shadow: 0 12px 30px rgba(0, 0, 0, .5); }
+html[data-skin="pgr"] :is(.psec, .gsec, .current, .next-patch, .gcard, .up-card) { position: relative; }
+html[data-skin="pgr"] :is(.psec, .gsec, .current, .next-patch, .gcard, .up-card)::after { content: ""; position: absolute; inset: -1px; pointer-events: none; z-index: 0;
+  background: linear-gradient(#fff, #fff) left top / 12px 2px no-repeat, linear-gradient(#fff, #fff) left top / 2px 12px no-repeat,
+    linear-gradient(var(--pg-red), var(--pg-red)) right bottom / 12px 2px no-repeat, linear-gradient(var(--pg-red), var(--pg-red)) right bottom / 2px 12px no-repeat; }
+html[data-skin="pgr"] :is(.psec, .gsec, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .current, .next-patch) { backdrop-filter: blur(10px); }
+html[data-skin="pgr"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: rgba(17, 19, 23, .96); }
+html[data-skin="pgr"] :is(.gcard-hero, .ecard-img) { background-color: var(--pg-solid); }
+html[data-skin="pgr"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 25%, rgba(17, 19, 23, .97)); }
+html[data-skin="pgr"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, rgba(17, 19, 23, .97)); }
+html[data-skin="pgr"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(17, 19, 23, .98)); }
+html[data-skin="pgr"] .modal { background: rgba(17, 19, 23, .97); box-shadow: inset 0 3px 0 var(--pg-red), 0 20px 50px rgba(0, 0, 0, .65); }
+html[data-skin="pgr"] .modal-hero { background: linear-gradient(135deg, #2a1418, #121418); }
+html[data-skin="pgr"] .modal-title h2 { text-transform: uppercase; letter-spacing: .06em; }
+html[data-skin="pgr"] .modal-title small { color: var(--pg-red-t); }
+html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { border-color: var(--pg-edge2); transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, .12), 0 14px 32px rgba(0, 0, 0, .6), -3px 0 0 var(--pg-red); }
+html[data-skin="pgr"] .gsec-head { background: linear-gradient(90deg, rgba(36, 16, 20, .95), rgba(16, 18, 22, .95) 60%); border-radius: 0; box-shadow: inset 3px 0 0 var(--pg-red); }
+html[data-skin="pgr"] .gsec-head h2 { text-transform: uppercase; letter-spacing: .08em; }
+html[data-skin="pgr"] .gsec-head .fold { border-radius: 0; }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) { background-color: rgba(17, 19, 23, .97); }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) button { border-radius: 0; }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) button.on { background: #f1f2f4; color: #15171b; box-shadow: inset 3px 0 0 var(--pg-red); }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) button.on :is(i, span, small) { color: #15171b; }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: rgba(255, 255, 255, .08); }
+html[data-skin="pgr"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--pg-red-t); border-color: rgba(255, 107, 114, .5); opacity: 1; }
+html[data-skin="pgr"] .skin-panel .skin-title { color: #fff !important; text-transform: uppercase; letter-spacing: .12em; box-shadow: inset 0 -2px 0 var(--pg-red); }
+html[data-skin="pgr"] .support-dialog h2 { text-transform: uppercase; letter-spacing: .06em; box-shadow: inset 0 -2px 0 var(--pg-red); padding-bottom: 8px; }
+html[data-skin="pgr"] :is(.support-dialog, .skin-panel, .consent, .modal-body, .psec, .gsec, .current, .next-patch, .gcard-body) :is(a:not(.btn), .linkbtn, .link-btn) { color: #ff9aa0 !important; }
+
+/* Filas de listas: placas con un filo rojo a la izquierda al pasar el ratón. */
+html[data-skin="pgr"] :is(.list li, .hist li) { margin: 0 0 4px; padding: 7px 10px; border-radius: 0; background: rgba(28, 31, 36, .9); border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: inset 2px 0 0 rgba(255, 255, 255, .35); }
+html[data-skin="pgr"] :is(.list li, .hist li):hover { background: rgba(42, 46, 52, .95); box-shadow: inset 3px 0 0 var(--pg-red); }
+html[data-skin="pgr"] .progress { border-radius: 0; background: rgba(255, 255, 255, .1); }
+html[data-skin="pgr"] .progress i { border-radius: 0; background: linear-gradient(90deg, #fff, var(--pg-red)); box-shadow: none; }
+html[data-skin="pgr"] .stats > div { border-radius: 0; background: rgba(28, 31, 36, .9); border: 1px solid rgba(255, 255, 255, .08); }
+html[data-skin="pgr"] .stats b { color: #fff; }
+html[data-skin="pgr"] .gsec-head .stats b { color: var(--pg-red-t); }
+html[data-skin="pgr"] :is(.ev-loc, .gcard-head p) { color: var(--pg-cyan); }
+
+/* ===== Línea de tiempo: cristal carbón; barras rectas con el canto de su tipo (banner rojo, evento cian, desafío blanco) ===== */
+html[data-skin="pgr"] [style*="--c:"] { --c: #e0303c !important; --c2: #1d2025 !important; }
+html[data-skin="pgr"] .tl.tl { background: rgba(12, 13, 16, .66); backdrop-filter: blur(3px); }
+html[data-skin="pgr"] :is(.tl-corner, .tl-label, .tl-axis) { background: #121418; }
+html[data-skin="pgr"] .tl-axis { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .2); }
+html[data-skin="pgr"] .tl-lane { border-color: rgba(255, 255, 255, .06); }
+html[data-skin="pgr"] .grid-line { background: rgba(255, 255, 255, .05); }
+html[data-skin="pgr"] .tick { color: #b3b9c1; }
+html[data-skin="pgr"] .month b { color: #fff; text-transform: uppercase; letter-spacing: .14em; }
+html[data-skin="pgr"] .bar { border-radius: 0; border: 1px solid rgba(255, 255, 255, .12); background: linear-gradient(90deg, #252930, #1b1e23) !important;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 7px), calc(100% - 7px) 100%, 0 100%); }
+html[data-skin="pgr"] .bar-clip { border-radius: 0; }
+html[data-skin="pgr"] .bar.banner { border-left: 3px solid var(--pg-red); }
+html[data-skin="pgr"] .bar.event { border-left: 3px solid var(--pg-cyan); }
+html[data-skin="pgr"] .bar.challenge { border-left: 3px solid #f1f2f4; }
+html[data-skin="pgr"] .bar:hover { border-color: var(--pg-edge2); }
+html[data-skin="pgr"] .bar.live { box-shadow: inset 0 0 0 1px rgba(224, 48, 60, .45); }
+html[data-skin="pgr"] .bar-prog { background: linear-gradient(90deg, rgba(255, 255, 255, .85), var(--pg-red)); opacity: .9; }
+html[data-skin="pgr"] .bar.past { opacity: 1; filter: grayscale(.85) brightness(.7); }
+html[data-skin="pgr"] .bar .bar-txt .when.upcoming { color: #d6dae0 !important; }
+html[data-skin="pgr"] .sec-title { color: #f4f5f7 !important; text-transform: uppercase; letter-spacing: .14em; }
+html[data-skin="pgr"] .sec-band.banner .sec-title { color: var(--pg-red-t) !important; }
+html[data-skin="pgr"] .sec-band.event .sec-title { color: var(--pg-cyan) !important; }
+html[data-skin="pgr"] .patch-mark { opacity: 1; color: var(--pg-red-t); }
+
+/* ===== Destacados: ficha de construcción del juego (fondo de rango, franja carbón con filo rojo, esquina cortada) ===== */
+html[data-skin="pgr"] .bport { border-radius: 0; border: 1px solid var(--pg-edge); clip-path: polygon(0 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%); }
+html[data-skin="pgr"] .bport:hover { border-color: #fff; transform: translateY(-2px); }
+html[data-skin="pgr"] .bport .p-time { border-radius: 0; background: rgba(12, 13, 16, .92); color: #fff; border: 0; box-shadow: inset 2px 0 0 var(--pg-red); backdrop-filter: none; }
+html[data-skin="pgr"] .bport .p-time.hot { background: var(--pg-red-b); color: #fff; }
+html[data-skin="pgr"] .featured { gap: 8px; }
+html[data-skin="pgr"] .portrait { position: relative; width: 88px; gap: 0; overflow: hidden; border-radius: 0; border: 1px solid var(--pg-edge2); background: #15171b;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%); }
+html[data-skin="pgr"] .portrait img { width: 100%; height: 100px; border: 0; border-radius: 0; object-position: 50% 8%;
+  background: linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, .12) 50%, transparent 60%), linear-gradient(180deg, #3a1a20, #8a2630 70%, #c0343e); }
+html[data-skin="pgr"] .portrait:hover { border-color: #fff; }
+html[data-skin="pgr"] .portrait:hover img { transform: none; }
+html[data-skin="pgr"] .portrait span { padding: 5px 4px; background: #15171b; border-top: 2px solid var(--pg-red); color: #f4f5f7; font-weight: 700; font-size: .76rem; line-height: 1.15; }
+html[data-skin="pgr"] .portrait small { padding: 0 4px 5px; background: #15171b; color: #c4c9d0; font-size: .68rem; }
+
+/* ===== Textos con color fijo de la hoja base ===== */
+html[data-skin="pgr"] :is(.code-until, .prec) { color: #ffd27a; }
+html[data-skin="pgr"] .link-btn { color: #ff9aa0; }
+html[data-skin="pgr"] .stars { color: #ffd27a; text-shadow: none; }
+html[data-skin="pgr"] .cc-new { background: var(--pg-red-b); color: #fff; }
+/* Pie: filo rojo corto y el resto blanco tenue. */
+html[data-skin="pgr"] .site-foot { border-top: 0; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); position: relative; }
+html[data-skin="pgr"] .site-foot::before { content: ""; position: absolute; left: 0; top: 0; width: 120px; height: 2px; background: var(--pg-red); }
+
+/* Pestaña "Tiradas". */
+html[data-skin="pgr"] .plan .plan-total b { color: #fff; }
+html[data-skin="pgr"] .plan :is(.plan-step, .plan-sum-n b) { color: var(--pg-red-t); border-color: var(--pg-red-t); }
+/* Nombre del juego y "≈" sobre el arte en "Mis gachas": sombra para que se lean sobre artes claros. */
+html[data-skin="pgr"] .gcard-head :is(h2, span) { text-shadow: 0 1px 3px #000, 0 0 10px rgba(0, 0, 0, .85); }
+html[data-skin="pgr"] .gcard-hero .fade { background: linear-gradient(transparent 15%, rgba(17, 19, 23, .75) 55%, rgba(17, 19, 23, .97)); }
+/* Cabecera de cada juego sin arte: degradado oscuro (con --c rojo, el blanco del nombre se quedaba en 3,9:1). Versión en Parches: rojo legible. */
+html[data-skin="pgr"] .gcard-hero { background-image: linear-gradient(135deg, #4a1d24, #1d2025 70%); }
+html[data-skin="pgr"] .up-ver { color: var(--pg-red-t); }
+/* Cuentas atrás de los chips de "Mis gachas": llevaban el color del juego (--c, rojo de adorno: 3,9:1). */
+html[data-skin="pgr"] .up-chip b { color: var(--pg-red-t) !important; }
+
+/* ===== 2.ª capa (15 nov 2026, "usa más assets"): más piezas del cliente (explorador de assets.huaxu.app) =====
+   gr-emblem.webp = el triángulo "GR" de Gray Raven (common/commontaskmbdc, sin la barra del centro); inevent.webp = la etiqueta "▲ In Event"
+   (common/uibrawbg); flare.webp = el destello naranja del reclutamiento (uichouka/uichoukaguang1); wg-logo.webp = el logo del Gobierno
+   Mundial (uitask/taskicon, pasado a blanco); nav-pulls.webp = la Black Card (iconcurrency/iconconsumegem), como el vale de NIKKE. */
+
+/* Pestaña "Tiradas": la Black Card entera, sin recorte ni gris. */
+html[data-skin="pgr"] header nav button:nth-of-type(4)::before { left: 10px; width: 32px; height: 28px; background: url(/skins/pgr/nav-pulls.webp) center / contain no-repeat;
+  clip-path: none; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+html[data-skin="pgr"] header nav button:nth-of-type(4) { padding-left: 48px !important; }
+@media (max-width: 700px) { html[data-skin="pgr"] header nav button:nth-of-type(4)::before { left: 6px; width: 22px; height: 18px; }
+  html[data-skin="pgr"] header nav button:nth-of-type(4) { padding-left: 30px !important; } }
+/* Al elegir una pestaña, "salto de señal" como las transiciones del juego (2.ª versión: la 1.ª metía las sombras roja y cian en el filtro
+   del retrato y el clip-path las recortaba, casi no se veía). En ~0,5 s y por fases:
+   - El retrato se corta en franjas que se desplazan (clip-path en bandas) y parpadea en rojo/cian antes de asentarse.
+   - El texto se separa en rojo y cian (text-shadow) con un leve temblor, y se recompone.
+   - La barra roja se dibuja de izquierda a derecha con un brillo blanco en la punta. */
+html[data-skin="pgr"] header nav button.on::before { animation: pg-sig-img .5s cubic-bezier(.3, .7, .2, 1) 1; }
+html[data-skin="pgr"] header nav button.on { animation: pg-sig-txt .45s linear 1; }
+html[data-skin="pgr"] header nav button.on::after { transform-origin: 0 50%; animation: pg-sig-bar .5s cubic-bezier(.2, .8, .2, 1) 1; }
+@keyframes pg-sig-img {
+  0%   { transform: translate(-4px, -50%); clip-path: polygon(5px 0, 100% 0, 100% 30%, 0 30%, 0 55%, 100% 55%, calc(100% - 5px) 100%, 0 100%); filter: brightness(1.8) sepia(1) saturate(6) hue-rotate(-20deg); }
+  18%  { transform: translate(3px, -50%); clip-path: polygon(5px 0, 100% 0, 100% 15%, 0 15%, 0 70%, 100% 70%, calc(100% - 5px) 100%, 0 100%); filter: brightness(1.4) sepia(1) saturate(4) hue-rotate(150deg); }
+  34%  { transform: translate(-2px, -50%); clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); filter: brightness(1.6) sepia(1) saturate(5) hue-rotate(-20deg); }
+  52%  { transform: translate(1px, -50%); filter: brightness(1.15); }
+  100% { transform: translateY(-50%); clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); filter: none; } }
+@keyframes pg-sig-txt {
+  0%   { text-shadow: 3px 0 rgba(224, 48, 60, .9), -3px 0 rgba(111, 211, 255, .9); transform: translateX(-1px); }
+  25%  { text-shadow: -2px 0 rgba(224, 48, 60, .9), 2px 0 rgba(111, 211, 255, .9); transform: translateX(1px); }
+  50%  { text-shadow: 1px 0 rgba(224, 48, 60, .6), -1px 0 rgba(111, 211, 255, .6); transform: none; }
+  100% { text-shadow: none; } }
+@keyframes pg-sig-bar { from { transform: scaleX(0); box-shadow: 4px 0 8px rgba(255, 255, 255, .9); } 70% { box-shadow: 2px 0 6px rgba(255, 255, 255, .6); } to { transform: scaleX(1); box-shadow: none; } }
+
+/* Títulos: el triángulo "GR" en lugar de la barra roja, con un halo rojo. */
+html[data-skin="pgr"] h3::before { width: 17px; height: 12px; background: url(/skins/pgr/gr-emblem.webp) center / contain no-repeat; box-shadow: none;
+  filter: drop-shadow(0 0 3px rgba(224, 48, 60, .9)); }
+/* Cabecera de cada juego: el emblema grande de marca de agua a la derecha. */
+html[data-skin="pgr"] .gsec-head { position: sticky; }
+html[data-skin="pgr"] .gsec-head::after { content: ""; position: absolute; right: 52px; top: 50%; width: 64px; height: 44px; transform: translateY(-50%); pointer-events: none; opacity: .14;
+  background: url(/skins/pgr/gr-emblem.webp) center / contain no-repeat; }
+
+/* Paneles: una franja de código de barras en la esquina superior derecha (::before; las esquinas de visor van en ::after). */
+html[data-skin="pgr"] :is(.psec, .gsec, .current, .next-patch)::before { content: ""; position: absolute; top: 7px; right: 10px; width: 58px; height: 9px; pointer-events: none; z-index: 0; opacity: .3;
+  background: linear-gradient(90deg, #fff 0 2px, transparent 2px 4px, #fff 4px 5px, transparent 5px 8px, #fff 8px 11px, transparent 11px 12px, #fff 12px 13px, transparent 13px 16px,
+    #fff 16px 18px, transparent 18px 21px, #fff 21px 22px, transparent 22px 23px, #fff 23px 26px, transparent 26px 29px, #fff 29px 30px, transparent 30px 32px,
+    #fff 32px 35px, transparent 35px 36px, #fff 36px 37px, transparent 37px 40px, #fff 40px 42px, transparent 42px 44px, #fff 44px 45px, transparent 45px 48px,
+    #fff 48px 51px, transparent 51px 52px, #fff 52px 53px, transparent 53px 55px, #fff 55px 58px); }
+
+/* Línea de tiempo: en las barras en curso, la etiqueta "▲ In Event" del juego arriba a la derecha (se encoge en las barras cortas para no
+   tapar el título), y la línea de "ahora" en rojo con halo. */
+html[data-skin="pgr"] .bar.live::after { content: ""; position: absolute; top: 0; right: 0; width: 30%; max-width: 92px; height: 11px; z-index: 1; opacity: .92; pointer-events: none;
+  background: url(/skins/pgr/inevent.webp) right top / contain no-repeat; }
+html[data-skin="pgr"] .now-line { background: var(--pg-red) !important; box-shadow: 0 0 8px rgba(224, 48, 60, .8); }
+
+/* Botón principal: el destello naranja del reclutamiento cruza al pasar el ratón. */
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate) { position: relative; overflow: hidden; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate)::before { content: ""; position: absolute; top: -40%; bottom: -40%; left: -70%; width: 70%; pointer-events: none;
+  background: url(/skins/pgr/flare.webp) center / 100% 100% no-repeat; mix-blend-mode: screen; opacity: 0; transition: left .5s ease, opacity .2s; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover::before { left: 110%; opacity: .85; }
+
+/* Ventana del evento: el destello del reclutamiento bajo el título y el código de barras en la esquina del arte. */
+html[data-skin="pgr"] .modal-hero::after { content: ""; position: absolute; left: 0; bottom: 0; width: 260px; height: 90px; pointer-events: none; opacity: .55; mix-blend-mode: screen;
+  background: url(/skins/pgr/flare.webp) left bottom / contain no-repeat; }
+html[data-skin="pgr"] .modal-hero::before { content: ""; position: absolute; z-index: 2; top: 12px; left: 14px; width: 60px; height: 40px; pointer-events: none; opacity: .8;
+  background: url(/skins/pgr/barcode.webp) left top / contain no-repeat; filter: drop-shadow(0 1px 2px #000); }
+
+/* Pie: el logo del Gobierno Mundial de marca de agua a la derecha. */
+html[data-skin="pgr"] .site-foot::after { content: ""; position: absolute; right: 12px; top: 50%; width: 150px; height: 38px; transform: translateY(-50%); pointer-events: none; opacity: .16;
+  background: url(/skins/pgr/wg-logo.webp) right center / contain no-repeat; }
+@media (max-width: 700px) { html[data-skin="pgr"] .site-foot::after { display: none; } }
+
+/* Al cambiar de pestaña, el contenido entra con un barrido de escaneo (una línea roja que baja). */
+html[data-skin="pgr"] main { animation: pg-in .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+html[data-skin="pgr"] main::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 5; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--pg-red) 20%, #fff 50%, var(--pg-red) 80%, transparent); box-shadow: 0 0 10px rgba(224, 48, 60, .9);
+  animation: pg-scanline .6s ease-in both; }
+@keyframes pg-in { from { opacity: 0; clip-path: inset(0 0 100% 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+@keyframes pg-scanline { from { top: 0; opacity: 1; } to { top: 100vh; opacity: 0; } }
+html[data-skin="pgr"].has-vt main { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin="pgr"] :is(main, main::before, header nav button.on, header nav button.on::before, header nav button.on::after) { animation: none; }
+  html[data-skin="pgr"] main::before { display: none; } }
+html[data-skin="pgr"] .bar.live .bar-txt { position: relative; z-index: 2; text-shadow: 0 1px 2px #000, 0 0 6px rgba(0, 0, 0, .9); }
+
+/* --- Cursor: el que aportó el dueño ("cursor (1).cur", 15 nov 2026; el cliente de PGR no trae cursor en los assets de Huaxu: solo el
+   dibujo del ratón de la configuración de mandos). Era de 32 px y pixelado al ampliarlo: se redibujó en vectorial con su misma forma (flecha blanca, ranura negra, cola roja) y se
+   renderizó con suavizado a 32, 48 y 64 px. Punta en (2, 2). --- */
+html[data-skin="pgr"], html[data-skin="pgr"] body { cursor: image-set(url(/skins/pgr/cursor.png) 1x, url(/skins/pgr/cursor@1.5x.png) 1.5x, url(/skins/pgr/cursor@2x.png) 2x) 2 2, auto; }
+html[data-skin="pgr"] :is(a, button, [role="button"], [role="link"], [role="radio"], [role="menuitemradio"], summary, select, label, .bar, .clickable, .bport, .portrait) {
+  cursor: image-set(url(/skins/pgr/cursor.png) 1x, url(/skins/pgr/cursor@1.5x.png) 1.5x, url(/skins/pgr/cursor@2x.png) 2x) 2 2, pointer !important; }
+html[data-skin="pgr"] :is(input[type="text"], input[type="search"], input[type="email"], textarea) { cursor: text !important; }
+
+/* ===== Tarjetas con la forma de las fichas de PGR (15 nov 2026): "Mis gachas", cuadrícula, "Termina pronto", próximos y retratos =====
+   Dos esquinas cortadas (arriba a la izquierda y abajo a la derecha, --pg-cut), el filo blanco en el corte de arriba y rojo en el de abajo
+   (::after, en lugar de las marcas de visor, que el corte se comería), una franja de rango roja a la izquierda y un destello al pasar.
+   Sin sombra exterior (el clip-path la recorta): el relieve va por dentro. */
+html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card) { --pg-cut: 16px; position: relative; overflow: hidden;
+  clip-path: polygon(var(--pg-cut) 0, 100% 0, 100% calc(100% - var(--pg-cut)), calc(100% - var(--pg-cut)) 100%, 0 100%, 0 var(--pg-cut));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), inset 3px 0 0 rgba(224, 48, 60, .85); border-color: transparent;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s; }
+html[data-skin="pgr"] :is(.soon-card, .up-card) { --pg-cut: 10px; }
+html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card)::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
+  background:
+    linear-gradient(135deg, transparent calc(var(--pg-cut) * .707 - 1px), #fff calc(var(--pg-cut) * .707 - 1px), #fff calc(var(--pg-cut) * .707 + .5px), transparent calc(var(--pg-cut) * .707 + .5px)) left top / calc(var(--pg-cut) + 2px) calc(var(--pg-cut) + 2px) no-repeat,
+    linear-gradient(135deg, transparent calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 + 1.5px), transparent calc(var(--pg-cut) * .707 + 1.5px)) right bottom / calc(var(--pg-cut) + 2px) calc(var(--pg-cut) + 2px) no-repeat,
+    linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .09) 48%, transparent 56%) -200% 0 / 200% 100% no-repeat;
+  transition: background-position .6s ease; }
+html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card):hover { transform: translateY(-2px); background-color: rgba(28, 31, 37, .92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), inset 4px 0 0 var(--pg-red), inset 0 -40px 40px -40px rgba(224, 48, 60, .35); }
+html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card):hover::after { background-position: left top, right bottom, 200% 0; }
+html[data-skin="pgr"] .soon-card.urgent { box-shadow: inset 0 0 0 1px rgba(224, 48, 60, .45), inset 4px 0 0 var(--pg-red); }
+
+/* "Mis gachas": la cabecera de arte acaba en diagonal con una franja de rayas (como los rótulos de las fichas del juego) y un código de
+   serie en la esquina; el cuerpo, carbón liso. */
+html[data-skin="pgr"] .gcard-hero { position: relative; }
+html[data-skin="pgr"] .gcard-hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 7px; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(-60deg, rgba(224, 48, 60, .9) 0 3px, transparent 3px 7px) left / 38% 100% no-repeat,
+    linear-gradient(90deg, rgba(224, 48, 60, .9), rgba(224, 48, 60, .25) 38%, rgba(255, 255, 255, .18) 38.5%, transparent 85%) left bottom / 100% 1px no-repeat;
+  clip-path: polygon(0 0, 38% 0, calc(38% + 7px) 100%, 0 100%, 0 0, 100% 6px, 100% 7px, 0 7px); }
+html[data-skin="pgr"] .gcard::before { content: "GR-" counter(pg-card, decimal-leading-zero); counter-increment: pg-card; position: absolute; top: 8px; right: 12px; z-index: 3;
+  pointer-events: none; color: rgba(255, 255, 255, .55); font: 700 .58rem/1 var(--pg-head); letter-spacing: .18em; text-shadow: 0 1px 2px #000; }
+html[data-skin="pgr"] :is(.grid, main) { counter-reset: pg-card; }
+html[data-skin="pgr"] .gcard-body { background: rgba(17, 19, 23, .96); }
+
+/* Cuadrícula: el arte con rayado en la parte de abajo y la línea roja de separación. */
+html[data-skin="pgr"] :is(.ecard-img, .bcard-art) { position: relative; }
+html[data-skin="pgr"] .ecard-img::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; z-index: 2; pointer-events: none;
+  background: linear-gradient(90deg, var(--pg-red) 30%, rgba(255, 255, 255, .25) 30%, transparent); }
+
+/* Retratos de banner de "Mis gachas": ficha de construcción, con las dos esquinas cortadas, filo rojo abajo y el nombre sobre una franja. */
+html[data-skin="pgr"] .bport { clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); border: 0;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2), inset 0 -2px 0 var(--pg-red); }
+html[data-skin="pgr"] .bport:hover { box-shadow: inset 0 0 0 1px #fff, inset 0 -3px 0 var(--pg-red); }
+@media (prefers-reduced-motion: reduce) { html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card)::after { transition: none; } }
+
+/* --- "Idioma del virus Punishing" (Punishing Virus Language Font.ttf, aportada por el dueño el 15 nov 2026; recorte ASCII en pgr-virus.woff2,
+   3 KB): las letras son los símbolos cifrados del juego, así que NO se usa para texto que haya que leer, solo en rótulos de adorno, como en
+   el juego: "// GRAY RAVEN" de los títulos, el código de serie de las tarjetas, la cabecera del reproductor y una inscripción en el pie. --- */
+@font-face { font-family: 'PGR Virus'; font-display: swap; src: url(/skins/pgr/pgr-virus.woff2) format('woff2'); }
+html[data-skin="pgr"] h3:not(:has(> button, > .btn, > a))::after { font-family: 'PGR Virus', 'Barlow', sans-serif; font-size: .7rem; letter-spacing: .16em; }
+html[data-skin="pgr"] .gcard::before { font-family: 'PGR Virus', var(--pg-head); font-size: .66rem; }
+html[data-skin="pgr"] .tv-pgr .tv-deco::after { font-family: 'PGR Virus', 'Rajdhani', sans-serif; font-size: .64rem; letter-spacing: .14em; }
+html[data-skin="pgr"] .site-foot::before { content: "PUNISHING // ASCEND"; width: auto; height: auto; top: -1.4em; left: 0; padding-top: 4px; background: none;
+  border-top: 2px solid var(--pg-red); color: rgba(255, 255, 255, .3); font: .62rem/1 'PGR Virus', 'Barlow', sans-serif; letter-spacing: .3em; white-space: nowrap; }
+/* Tarjetas de banner sin arte detrás: degradado oscuro (con --c, el rojo de adorno, el texto gris se quedaba en 2,3:1). */
+html[data-skin="pgr"] .bcard.bcard { background-image: linear-gradient(160deg, #4a1d24, #1d2025 55%); }
+html[data-skin="pgr"] .ecard-body small { color: var(--pg-red-t); }
+
+/* ===== 4.ª capa (15 nov 2026): que no parezca "otra skin cuadrada". Lo que es SOLO de PGR, sacado de capturas del menú principal y de
+   Research que aportó el dueño: el HUD en perspectiva (el menú y la barra de recursos flotan girados en 3D), tiles de DOS líneas (título
+   grande condensado + subtítulo pequeño: "Battle / 18-4", "Dorm / Simulation"), el azul de los "+" y de las etiquetas de coste, lo elegido
+   en blanco con punta de flecha ("Arrival Construct"), los botones negros de "Research x1" con su etiqueta azul, el reloj con batería y un
+   texto fantasma gigante detrás ("NORMAL / THE PUNISHING NEW"). Rótulos en Barlow Condensed (la más parecida a la del juego). ===== */
+html[data-skin="pgr"] { --pg-head: 'Barlow Condensed', 'Rajdhani', 'Barlow', sans-serif; --pg-blue: #2563c9; }
+
+/* Pestañas: tiles de dos líneas (como el menú de la derecha del juego). La elegida, blanca como "Missions / Daily Work". */
+@media (min-width: 701px) {
+  /* Sin girar la barra en perspectiva: se probó (como el menú del juego) y doblada se veía rara (dueño, 15 nov 2026). */
+  html[data-skin="pgr"] header nav { gap: 6px; }
+  html[data-skin="pgr"] header nav button { display: grid; justify-items: start; line-height: 1; padding: 6px 20px 6px 48px !important; font-size: 1.12rem; letter-spacing: .04em;
+    background: rgba(14, 16, 20, .8) !important; clip-path: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1) !important; }
+  html[data-skin="pgr"] header nav button:nth-of-type(n)::after { content: "SCHEDULE"; position: static; left: auto; right: auto; bottom: auto; display: block; height: auto; margin-top: 3px; background: none;
+    color: #a3a9b2; font: 600 .56rem/1 'Barlow', sans-serif; letter-spacing: .22em; transform: none; animation: none; }
+  html[data-skin="pgr"] header nav button:nth-of-type(2)::after { content: "MEMBERS"; }
+  html[data-skin="pgr"] header nav button:nth-of-type(3)::after { content: "NEWS"; }
+  html[data-skin="pgr"] header nav button:nth-of-type(4)::after { content: "RESEARCH"; }
+  html[data-skin="pgr"] header nav button.on { background: #f1f2f4 !important; box-shadow: inset 0 -3px 0 var(--pg-red) !important;
+    animation: pg-sig-txt .45s linear 1, pg-sig-under .5s cubic-bezier(.2, .8, .2, 1) 1; }
+  html[data-skin="pgr"] header nav button.on:nth-of-type(n)::after { color: #4a4f57; }
+  html[data-skin="pgr"] header nav button::before { left: 12px; width: 28px; height: 28px; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+  @keyframes pg-sig-under { from { box-shadow: inset 0 0 0 var(--pg-red); } to { box-shadow: inset 0 -3px 0 var(--pg-red); } }
+  /* Botones de la derecha: los cuadrados azules de los "+" de la barra de recursos, inclinados como ella (sube hacia la derecha). */
+  html[data-skin="pgr"] .head-actions .btn { transform: skewY(-4deg); }
+}
+html[data-skin="pgr"] header .btn { border: 0; background: var(--pg-blue); color: #fff; clip-path: none; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .25); }
+html[data-skin="pgr"] header .btn:hover:not(:disabled) { background: #3474dc !important; color: #fff; }
+html[data-skin="pgr"] header .btn.on { box-shadow: inset 0 0 0 2px #fff; }
+/* El botón de sincronizar es el reloj del menú: la batería en lugar de la flecha (vuelve a girar la flecha mientras sincroniza). */
+html[data-skin="pgr"] .head-actions > .btn:last-child { background: rgba(14, 16, 20, .85); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); font-family: var(--pg-head); font-size: .95rem; letter-spacing: .04em; }
+html[data-skin="pgr"] .head-actions > .btn:last-child:not(.busy) .spin { font-size: 0; width: 22px; height: 11px; margin-right: 3px; display: inline-block; vertical-align: -1px;
+  border: 1.5px solid #fff; border-radius: 1px; background: repeating-linear-gradient(90deg, #fff 0 2px, transparent 2px 4px) 2px 2px / calc(100% - 4px) calc(100% - 4px) no-repeat;
+  box-shadow: 2px 0 0 -0.5px #fff; }
+
+/* Lo elegido (chips, segmentos, menús de skin e idioma): blanco con la punta de flecha a la derecha, como "Arrival Construct". */
+html[data-skin="pgr"] :is(.chip.on, .seg button.on, .fopt.on, .ichip.on:not(.banner):not(.event):not(.challenge)) { padding-right: 16px;
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%); box-shadow: none; }
+html[data-skin="pgr"] :is(.lang-menu, .skin-panel) button.on { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%); }
+
+/* Botón principal: el de "Research x1": losa negra con triángulos grises de fondo, filo rojo y punta de flecha. */
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  border: 0; padding-right: 22px; background:
+    linear-gradient(135deg, transparent 46%, rgba(255, 255, 255, .07) 46% 54%, transparent 54%) right 14px center / 1.6em 100% no-repeat,
+    linear-gradient(45deg, transparent 46%, rgba(255, 255, 255, .07) 46% 54%, transparent 54%) right calc(14px + 1.4em) center / 1.6em 100% no-repeat,
+    linear-gradient(90deg, #121418, #1d2026) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .22), inset 3px 0 0 var(--pg-red); clip-path: none; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { box-shadow: inset 0 0 0 1px #fff, inset 4px 0 0 var(--pg-red), 0 0 14px rgba(224, 48, 60, .35); }
+/* La flecha va en línea, en rojo, y el botón acaba en punta (la etiqueta azul de coste se probó y quedaba básica, dueño 15 nov 2026). */
+html[data-skin="pgr"] .btn.primary:not(.icon)::after { content: "›"; position: static; display: inline; width: auto; height: auto; margin-left: 6px; background: none;
+  color: var(--pg-red-t); font-weight: 800; z-index: auto; transform: none; opacity: 1; transition: none; animation: none; }
+html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate) { clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%) !important; }
+html[data-skin="pgr"] .site-foot a.btn.donate { padding-right: 14px; }
+
+/* Texto fantasma gigante detrás de todo (sobre el fondo animado, bajo el contenido), como "NORMAL / THE PUNISHING NEW" de Research. */
+html[data-skin="pgr"] body:has(> .skin-live)::after { content: "PUNISHING"; display: flex; align-items: flex-end; justify-content: flex-end; padding: 0 2vw 6vh 0; box-sizing: border-box;
+  font: 800 clamp(90px, 15vw, 260px)/.8 'Barlow Condensed', sans-serif; letter-spacing: .02em; color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, .1); white-space: nowrap; overflow: hidden; }
+@media (max-width: 700px) { html[data-skin="pgr"] body:has(> .skin-live)::after { content: ""; } }
+
+/* ===== Línea de tiempo: el MARCO (no las barras), 15 nov 2026 ("la forma en sí es muy básica") =====
+   Como una ventana de operación del juego: placa de título en la esquina fija ("SCHEDULE" + "OPS // GRAY RAVEN" + una regla de marcas), marco con dos esquinas cortadas y filo rojo arriba, regla de marcas en el eje y en el borde derecho, el triángulo "GR"
+   (tl-watermark.webp, common/commontaskmbdc a resolución completa) de marca de agua y una rejilla de puntos de HUD. Los adornos del marco van
+   en el FONDO del propio .tl (con scroll, background-attachment: scroll lo deja quieto respecto al marco), no en pseudo-elementos que se
+   irían con el desplazamiento. Columna de juegos: fichas de miembro numeradas (01, 02…) con el marco de mira del juego en el avatar
+   (tl-target.webp, uiareawar/uiareawarstagekuang08). */
+html[data-skin="pgr"] .tl.tl { border: 0; border-radius: 0;
+  clip-path: polygon(22px 0, 100% 0, 100% calc(100% - 22px), calc(100% - 22px) 100%, 0 100%, 0 22px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14), inset 0 2px 0 var(--pg-red);
+  background-image:
+    linear-gradient(135deg, var(--pg-red) 0 50%, transparent 50%),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, .4) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(180deg, rgba(255, 255, 255, .55) 0 1px, transparent 1px 40px),
+    url(/skins/pgr/tl-watermark.webp),
+    radial-gradient(rgba(255, 255, 255, .07) 1px, transparent 1.4px);
+  /* La marca de agua ya viene con 13 % de opacidad en el archivo (un fondo no admite opacidad por capa). */
+  background-position: right bottom, right 4px top 60px, right 4px top 60px, right 7% bottom 10%, 0 0;
+  background-size: 22px 22px, 5px calc(100% - 120px), 10px calc(100% - 120px), 240px auto, 18px 18px;
+  background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+  background-color: rgba(10, 11, 14, .7); }
+
+/* Placa de título en la esquina fija (encima de la columna de juegos y a la izquierda de los meses). */
+html[data-skin="pgr"] .tl-corner { position: sticky; background: linear-gradient(180deg, #17191e, #0e1013) !important; box-shadow: inset -1px 0 0 rgba(255, 255, 255, .14), inset 0 -1px 0 rgba(255, 255, 255, .2);
+  overflow: hidden; }
+html[data-skin="pgr"] .tl-corner::before { content: "SCHEDULE"; position: absolute; left: 26px; top: 9px; color: #fff; font: 800 1.35rem/1 var(--pg-head); letter-spacing: .06em; }
+html[data-skin="pgr"] .tl-corner::after { content: "OPS // GRAY RAVEN"; position: absolute; left: 27px; top: 34px; color: #9aa1aa; font: 600 .5rem/1 'Barlow', sans-serif; letter-spacing: .2em; white-space: nowrap; }
+html[data-skin="pgr"] .tl-corner { background-image: linear-gradient(var(--pg-red), var(--pg-red)), repeating-linear-gradient(90deg, rgba(255, 255, 255, .5) 0 1px, transparent 1px 4px), linear-gradient(180deg, #17191e, #0e1013) !important;
+  background-size: 4px 30px, 60px 3px, auto !important; background-position: 12px 9px, 27px calc(100% - 6px), 0 0 !important; background-repeat: no-repeat !important; }
+
+/* Eje de meses: placa oscura; cada mes, rótulo grande condensado tras un corchete rojo; regla de marcas pequeñas abajo; fechas condensadas. */
+html[data-skin="pgr"] .tl-axis { background: linear-gradient(180deg, #17191e, #0e1013) !important; box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .25), 0 6px 18px rgba(0, 0, 0, .45); }
+html[data-skin="pgr"] .tl-track.axis { background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .28) 0 1px, transparent 1px 12px) 0 100% / 100% 4px no-repeat; }
+html[data-skin="pgr"] .month { height: 26px; padding: 0 12px; border-left: 0; background: linear-gradient(90deg, rgba(255, 255, 255, .06), transparent 60%);
+  box-shadow: inset 2px 0 0 var(--pg-red); }
+html[data-skin="pgr"] .month:nth-child(even) { background: linear-gradient(90deg, rgba(255, 255, 255, .03), transparent 60%); box-shadow: inset 2px 0 0 rgba(255, 255, 255, .6); }
+html[data-skin="pgr"] .month b { font: 800 1rem/1 var(--pg-head); letter-spacing: .12em; color: #fff; }
+html[data-skin="pgr"] .month b::after { content: " //"; color: var(--pg-red-t); letter-spacing: 0; }
+html[data-skin="pgr"] .tick { font-family: var(--pg-head); font-weight: 600; font-size: .82rem; letter-spacing: .04em; color: #b3b9c1; }
+html[data-skin="pgr"] .tick::before { border-left-color: rgba(255, 255, 255, .55); height: 8px; top: -11px; }
+
+/* Columna de juegos: ficha de miembro, con número de orden fantasma, franja roja, avatar en el marco de mira y separador con nodo. */
+html[data-skin="pgr"] .tl-inner { counter-reset: pg-lane; }
+html[data-skin="pgr"] .tl-lane { counter-increment: pg-lane; border-bottom: 0; box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .1); }
+html[data-skin="pgr"] .tl-label { overflow: hidden; border-left: 0 !important; border-right: 0 !important;
+  background: linear-gradient(90deg, #15171b, #101215) !important; box-shadow: inset 3px 0 0 var(--pg-red), inset -1px 0 0 rgba(255, 255, 255, .16), inset 0 -1px 0 rgba(255, 255, 255, .1); }
+html[data-skin="pgr"] .tl-label::after { content: counter(pg-lane, decimal-leading-zero); position: absolute; right: 8px; bottom: -6px; pointer-events: none;
+  font: 800 3.4rem/1 var(--pg-head); color: transparent; -webkit-text-stroke: 1px rgba(255, 255, 255, .12); }
+html[data-skin="pgr"] .tl-label-in strong { font: 800 1.08rem/1.05 var(--pg-head); letter-spacing: .06em; text-transform: uppercase; color: #fff; }
+html[data-skin="pgr"] .tl-label-in small { font-size: .62rem; letter-spacing: .12em; text-transform: uppercase; color: #9aa1aa; }
+html[data-skin="pgr"] .tl-label .avatar { border-radius: 0; border: 0; overflow: visible;
+  clip-path: none; box-shadow: none; }
+html[data-skin="pgr"] .tl-label .avatar img { clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
+html[data-skin="pgr"] .tl-label .avatar::after { content: ""; position: absolute; inset: -6px; pointer-events: none; background: url(/skins/pgr/tl-target.webp) center / 100% 100% no-repeat; opacity: .85; }
+html[data-skin="pgr"] .tl-label .fold { border-radius: 0; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .2);
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%); }
+html[data-skin="pgr"] .tl-label .fold:hover { background: var(--pg-red); color: #fff; transform: none; }
+
+/* Carriles: rejilla discontinua de HUD, la línea de cada mes más marcada y la franja de meses alternos con rayado muy tenue. */
+html[data-skin="pgr"] .grid-line { background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .09) 0 3px, transparent 3px 8px); }
+html[data-skin="pgr"] .grid-line.month-line { background: linear-gradient(180deg, rgba(224, 48, 60, .45), rgba(255, 255, 255, .14) 40px); }
+html[data-skin="pgr"] .month-band { background: repeating-linear-gradient(-45deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 9px) !important; }
+/* Rótulos de sección dentro del carril (Banners, Eventos…): placa con corte y línea que corre hasta el borde. */
+html[data-skin="pgr"] .sec-band { border-top: 0; background: linear-gradient(90deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .04) 70%) 0 0 / 100% 1px no-repeat !important; }
+html[data-skin="pgr"] .sec-band .sec-title { display: inline-flex; align-items: center; gap: 6px; padding: 3px 18px 3px 10px; font: 700 .8rem/1 var(--pg-head); letter-spacing: .16em;
+  background: linear-gradient(90deg, rgba(10, 11, 14, .92), rgba(10, 11, 14, .6)); box-shadow: inset 2px 0 0 currentColor;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 0 100%); }
+html[data-skin="pgr"] .lane-empty { font-family: var(--pg-head); letter-spacing: .1em; text-transform: uppercase; color: #9aa1aa; }
+@media (max-width: 700px) {
+  /* En móvil la columna mide ~50 px: en la placa, solo el triángulo GR. */
+  html[data-skin="pgr"] .tl-corner::before { content: ""; left: 50%; top: 50%; width: 30px; height: 21px; transform: translate(-50%, -50%); background: url(/skins/pgr/gr-emblem.webp) center / contain no-repeat;
+    filter: drop-shadow(0 0 3px rgba(224, 48, 60, .9)); }
+  html[data-skin="pgr"] .tl-corner::after { display: none; }
+  html[data-skin="pgr"] .tl-corner { background-position: -99px 0, -999px 0, 0 0 !important; }
+  html[data-skin="pgr"] .tl-label::after { font-size: 2.2rem; } }

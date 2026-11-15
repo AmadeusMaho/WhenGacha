@@ -189,7 +189,8 @@ const ECON: Record<string, Econ> = {
     choices: [{ id: 'blitz', name: 'Boss Blitz', per: 'patch', options: [{ label: '—', amount: 0 }, { label: 'Top 50 %+', amount: 1000 }, { label: 'Top 20–50 %', amount: 1100 }, { label: 'Top 10–20 %', amount: 1200 }, { label: 'Top 10 %', amount: 1300 }] }] },
   // PGR (13 nov 2026, FandomSpot "How To Farm Black Cards"): tareas semanales hasta 1000 (jugar Phantom Pain Cage y War Zone y llegar a sus
   // puntos; por eso no van aparte) y al menos 500 de compensación tras cada versión grande.
-  pgr: { currency: 'Black Cards', icon: 'Black Card', per: 250, pass: 0, pity: 0, sources: [daily(30), weekly(1000), { key: 'maint', amount: 500, per: 'patch' }] },
+  // PGR: iconUrl = la Black Card del juego (iconconsumegem del cliente, explorador de assets.huaxu.app; public/icons/pgr-black-card.webp).
+  pgr: { currency: 'Black Cards', icon: 'Black Card', iconUrl: '/icons/pgr-black-card.webp', per: 250, pass: 0, pity: 0, sources: [daily(30), weekly(1000), { key: 'maint', amount: 500, per: 'patch' }] },
   honkai3: { currency: 'Crystals', icon: 'Crystal', per: 280, pass: 0, pity: 0, sources: [daily(40),
     { name: 'Elysian Realm', amount: 500, per: 'week', endgame: true },
     { name: 'Memorial Arena', amount: 140, per: 'week', endgame: true }] },

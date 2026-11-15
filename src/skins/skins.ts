@@ -15,10 +15,8 @@ export interface SkinDef {
   /** Fuentes de Google Fonts que usa (familias con sus pesos, formato css2). */
   fonts?: string
   /** Fondo animado de la línea de tiempo: vídeo (sin audio) y su fotograma fijo (ahorro de datos, "reducir movimiento", vídeo bloqueado).
-   *  Con una lista, cada visita a la línea de tiempo usa el siguiente (LiveWallpaper.tsx). */
+   *  Con una lista, cada pestaña (y cada visita) usa el siguiente (LiveWallpaper.tsx; desde el 15 nov 2026 en todas las pestañas y todas las skins). */
   live?: LiveClip | LiveClip[]
-  /** El fondo animado sale en TODAS las pestañas, no solo en la línea de tiempo (Arknights: la skin se diseñó con el personaje detrás). */
-  liveAllTabs?: boolean
 }
 
 /** Un fondo de la línea de tiempo: vídeo con su fotograma fijo, o solo una imagen (`poster`), que se mueve despacio. */
@@ -75,6 +73,12 @@ export const FONDOS: Record<string, string[]> = {
     'hinomiya-chinatsu-shy', 'misono-mika-angel', 'waraku-chise-moonlit-night-sky', 'kasumizawa-miyu-sniper', 'ajitani-hifumi-summer',
     'sorasaki-hina-piano', 'chise-swimsuit', 'izuna-swimsuit', 'wakamo', 'ako'
   ],
+  pgr: [
+    'adelyde-anabasis', 'kurumi-x-adelyde', 'lucia-pyroath-under-tree', 'hanying-autumn-tree', 'nier-automata-x-pgr',
+    'bianca-stigmata-floating', 'lamia-mermaid', 'solitary-dream-bianca-stigmata', 'lucia-crimson-abyss-apocalyptic-cyan',
+    'liv-solaeter-special-coating', 'selena-phantom', 'nanami-pulse-tide-heart-view', 'lucia-snowfall', 'lucia', 'selena-lunar-elegance',
+    'bianca', 'luna', 'luna-oblivion', 'nirvatia-wings-of-stillness', 'lucia-celestial-reverie', 'nirvatia'
+  ],
 }
 // </fondos>
 
@@ -104,10 +108,13 @@ export const SKINS: SkinDef[] = [
   // Prueba local (uma.css) con piezas de interfaz del zip "Umamusume UI sprites" y el cursor del juego en public/skins/uma/ (ver README).
   { id: 'uma', game: 'uma', name: 'Umamusume', fonts: 'family=M+PLUS+Rounded+1c:wght@500;700;800', live: [...cdn('uma'), ...stills('uma', ['kv', 'stadium', 'race'])] },
   // arknights.css (3.ª versión): piezas de interfaz y fuentes de la extracción del cliente en public/skins/arknights/.
-  { id: 'arknights', game: 'arknights', name: 'Arknights', fonts: 'family=Barlow:wght@400;500;600;700', ...(FONDOS.arknights?.length ? { live: cdn('arknights'), liveAllTabs: true } : {}) },
+  { id: 'arknights', game: 'arknights', name: 'Arknights', fonts: 'family=Barlow:wght@400;500;600;700', ...(FONDOS.arknights?.length ? { live: cdn('arknights') } : {}) },
   // bluearchive.css (13 nov 2026): piezas de los atlas de interfaz que aportó el dueño en public/skins/bluearchive/ (ver la cabecera del CSS).
   // Fondos animados de fans (MoeWalls…) que elige el dueño con Wallpaureka (22, 13 nov 2026); en todas las pestañas, uno distinto en cada una.
-  { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive'), liveAllTabs: true } : {}) },
+  { id: 'bluearchive', game: 'bluearchive', name: 'Blue Archive', fonts: 'family=Noto+Sans+JP:wght@400;500;700&family=Exo+2:ital,wght@1,700;1,800', ...(FONDOS.bluearchive?.length ? { live: cdn('bluearchive') } : {}) },
+  // pgr.css (15 nov 2026): piezas y retratos del cliente (explorador público de assets.huaxu.app) en public/skins/pgr/. Sus fondos animados los
+  // añade el dueño con Wallpaureka (FONDOS.pgr); mientras esté vacío, lleva el arte de la pantalla de inicio de sesión del juego.
+  { id: 'pgr', game: 'pgr', name: 'Punishing: Gray Raven', fonts: 'family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Barlow:wght@400;500;600;700', live: FONDOS.pgr?.length ? cdn('pgr') : stills('pgr', ['login']) },
 ]
 
 const KEY = 'whengacha:skin'

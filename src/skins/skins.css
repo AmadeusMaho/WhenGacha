@@ -390,32 +390,55 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 /* Barra de inicio del teléfono. */
 .tv-nikke .tv-deco { bottom: 5px; left: 50%; width: 56px; height: 3px; margin-left: -28px; border-radius: 2px; background: rgba(255, 255, 255, .45); }
 
-/* --- Wuthering Waves: panel holográfico. Cristal casi sin marco con esquineras doradas alrededor del vídeo; los mandos flotan en una
-   columna a la izquierda (modos en rombo) y bajo el título corre la onda de la Resonancia. --- */
-.music-dock.tv-wuwa { --tv-on: var(--ww-gold, #f1dc9b); --tv-icon: #9fd8d6; --tv-r: 2px;
-  --tv-body: linear-gradient(180deg, rgba(24, 40, 48, .9), rgba(11, 22, 27, .92)); --tv-body-sh: inset 0 0 0 1px rgba(240, 248, 250, .22), 0 14px 34px rgba(0, 0, 0, .5);
-  --tv-bezel: linear-gradient(#f1dc9b, #f1dc9b) 0 0 / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 0 0 / 2px 14px,
-    linear-gradient(#f1dc9b, #f1dc9b) 100% 0 / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 100% 0 / 2px 14px,
-    linear-gradient(#f1dc9b, #f1dc9b) 0 100% / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 0 100% / 2px 14px,
-    linear-gradient(#f1dc9b, #f1dc9b) 100% 100% / 14px 2px, linear-gradient(#f1dc9b, #f1dc9b) 100% 100% / 2px 14px;
-  --tv-bezel-sh: none; --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #0b161b;
-  --tv-knob-r: 2px; --tv-knob: rgba(11, 22, 27, .9); --tv-knob-sh: 0 0 0 1px rgba(241, 220, 155, .65); --tv-knob-on-sh: 0 0 0 1px #fff0c4, 0 0 10px rgba(241, 220, 155, .75);
-  --tv-btn: transparent; --tv-btn-ink: #f1f5f5; --tv-btn-sh: inset 0 0 0 1px rgba(241, 220, 155, .5); --tv-btn-r: 1px;
+/* --- Wuthering Waves (2.ª versión, 15 nov 2026; la 1.ª, un panel holográfico con esquineras, parecía "muy básica" al lado de las demás).
+   La FRECUENCIA del juego: el hilo de luz dorada de la frecuencia del Vagabundo (la cinemática de inicio; referencia del dueño) en una
+   cinta de nueve hebras que ondulan desfasadas, a todo el ancho del aparato (sin salirse: así lo prefirió el dueño) (ui/freq.svg, SVG animado propio; el amarillo es el
+   #ffe670 del atlas UiFrequency). El aparato es el sintonizador de la pantalla de Frecuencia (UiFrequency de TomyJan/WutheringWaves-UIResources,
+   rama 3.7): placa del carrete de fondo (T_FrequencyBg3_UI oscurecida, ui/freq-console.webp), silueta biselada asimétrica con una pestaña
+   arriba donde va el emblema dorado (ui/emblem.png, la marca del atlas de botones), la regla de marcas del atlas (8 px cada 24 px) bajo la
+   cinta y los mandos en una fila: modos en rombo, título, otra canción, esquina y apagar.
+   El cuerpo se dibuja en .tv-deco (la silueta con clip-path; su ::before, 1 px más adentro, es el relleno, así queda un filo fino),
+   para que la pestaña del emblema quede por encima del borde. --- */
+.music-dock.tv-wuwa { --tv-on: #ffe670; --tv-icon: #9fd8d6; --tv-r: 0; --ww-fq: #ffe670; --wt: 10px;
+  --tv-body: transparent; --tv-body-sh: none;
+  --tv-bezel: linear-gradient(var(--ww-fq), var(--ww-fq)) 0 0 / 12px 2px, linear-gradient(var(--ww-fq), var(--ww-fq)) 0 0 / 2px 12px,
+    linear-gradient(var(--ww-fq), var(--ww-fq)) 100% 0 / 12px 2px, linear-gradient(var(--ww-fq), var(--ww-fq)) 100% 0 / 2px 12px,
+    linear-gradient(#d7d7d7, #d7d7d7) 0 100% / 12px 1px, linear-gradient(#d7d7d7, #d7d7d7) 0 100% / 1px 12px,
+    linear-gradient(#d7d7d7, #d7d7d7) 100% 100% / 12px 1px, linear-gradient(#d7d7d7, #d7d7d7) 100% 100% / 1px 12px, rgba(0, 0, 0, .5);
+  --tv-bezel-sh: inset 0 0 0 1px rgba(215, 215, 215, .12); --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #070a0c;
+  --tv-knob-r: 2px; --tv-knob: rgba(9, 12, 15, .95); --tv-knob-sh: 0 0 0 1px rgba(215, 215, 215, .5); --tv-knob-on-sh: 0 0 0 1px #fff3b8, 0 0 10px rgba(255, 230, 112, .7);
+  --tv-btn: rgba(9, 12, 15, .7); --tv-btn-ink: #eef2f3; --tv-btn-sh: inset 0 0 0 1px rgba(215, 215, 215, .38); --tv-btn-r: 2px;
   --tv-power: #9fd8d6; --tv-power-glow: rgba(159, 216, 214, .6);
-  --tv-slot: transparent; --tv-slot-ink: #f1dc9b; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: '◈ '; --tv-font: 'Sora', 'Barlow', 'Segoe UI', sans-serif;
-  grid-template-columns: 22px auto; grid-template-rows: auto auto 1fr auto auto auto auto; grid-template-areas: "k1 scr" "k2 scr" ". scr" "nx scr" "pwr scr" "ej scr" "lcd lcd";
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.tv-wuwa .tv-bezel { background-repeat: no-repeat; padding: 4px; }
-.tv-wuwa .tv-knob { --tv-knob-size: 13px; margin-top: 6px; }
+  --tv-slot: rgba(0, 0, 0, .5); --tv-slot-ink: #ffe670; --tv-slot-sh: inset 0 0 0 1px rgba(255, 230, 112, .28); --tv-slot-r: 2px; --tv-slot-ico: '◈ ';
+  --tv-font: 'Sora', 'Barlow', 'Segoe UI', sans-serif; padding: 18px 9px 9px; gap: 4px 5px; margin-top: 14px;
+  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: 'scr scr scr scr scr scr' 'fq fq fq fq fq fq' 'k1 k2 lcd nx ej pwr'; }
+/* Silueta: filo gris claro (el fondo de .tv-deco) y el relleno grafito con la placa del carrete 1 px más adentro. */
+.tv-wuwa .tv-deco { inset: calc(-1 * var(--wt)) 0 0; background: linear-gradient(180deg, rgba(255, 230, 112, .75), rgba(215, 215, 215, .4) 30%, rgba(215, 215, 215, .28));
+  clip-path: polygon(0 calc(var(--wt) + 18px - 0px), calc(18px + 0px) var(--wt), calc(50% - 46px) var(--wt), calc(50% - 34px) 0, calc(50% + 34px) 0, calc(50% + 46px) var(--wt), calc(100% - 6px - 0px) var(--wt), 100% calc(var(--wt) + 6px + 0px), 100% calc(100% - 18px - 0px), calc(100% - 18px - 0px) 100%, calc(6px + 0px) 100%, 0 calc(100% - 6px - 0px)); filter: drop-shadow(0 14px 22px rgba(0, 0, 0, .6)); }
+.tv-wuwa .tv-deco::before { content: ''; position: absolute; inset: 1px; clip-path: polygon(0 calc(var(--wt) + 18px - 0px), calc(18px + 0px) var(--wt), calc(50% - 46px) var(--wt), calc(50% - 34px) 0, calc(50% + 34px) 0, calc(50% + 46px) var(--wt), calc(100% - 6px - 0px) var(--wt), 100% calc(var(--wt) + 6px + 0px), 100% calc(100% - 18px - 0px), calc(100% - 18px - 0px) 100%, calc(6px + 0px) 100%, 0 calc(100% - 6px - 0px));
+  background: linear-gradient(180deg, rgba(16, 20, 25, .7), rgba(8, 11, 14, .9)), url(/skins/wuwa/ui/freq-console.webp) center 30% / cover, #0d1114;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+/* Emblema dorado en la pestaña de arriba, con su halo. */
+.tv-wuwa.music-dock::after { content: ''; position: absolute; z-index: 2; top: calc(-1 * var(--wt) - 13px); left: 50%; width: 30px; height: 30px; margin-left: -15px; pointer-events: none;
+  background: url(/skins/wuwa/ui/emblem.png) center / contain no-repeat; filter: drop-shadow(0 0 6px rgba(255, 230, 112, .55)); }
+.tv-wuwa .tv-bezel { background-repeat: no-repeat; padding: 5px; justify-self: center; }
+/* La frecuencia, a todo el ancho del aparato. Debajo, la regla de marcas que se desliza y el filo blanco del atlas. */
+.music-dock.tv-wuwa .tv-grille { display: block; grid-area: fq; justify-self: stretch; position: relative; z-index: 3; height: 44px; min-height: 0; margin: 0;
+  border-radius: 0; overflow: hidden; box-shadow: none;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .42) 0 1px, transparent 1px 24px) 0 100% / 100% 9px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, .18) 0 1px, transparent 1px 6px) 0 100% / 100% 5px no-repeat,
+    linear-gradient(90deg, transparent, rgba(215, 215, 215, .34) 15%, rgba(215, 215, 215, .34) 85%, transparent) 0 100% / 100% 1px no-repeat;
+  animation: ww-tune 14s ease-in-out infinite alternate; }
+@keyframes ww-tune { from { background-position: 0 100%, 0 100%, 0 100%; } to { background-position: -24px 100%, -24px 100%, 0 100%; } }
+.music-dock.tv-wuwa .tv-grille::before { content: ''; position: absolute; inset: 0 0 6px; background: url(/skins/wuwa/ui/freq.svg) center / 100% 100% no-repeat;
+  filter: drop-shadow(0 0 2px rgba(255, 230, 112, .9)) drop-shadow(0 0 7px rgba(255, 214, 90, .45)); }
+.tv-wuwa .tv-knob { --tv-knob-size: 12px; }
 .tv-wuwa .tv-knob::before { transform: rotate(45deg); }
 .tv-wuwa .tv-knob svg { display: none; }
-.tv-wuwa .tv-knob.on { --tv-knob: linear-gradient(135deg, #fff0c4, #e0c36f); }
+.tv-wuwa .tv-knob.on { --tv-knob: linear-gradient(135deg, #fff3b8, #ffe670); }
 .tv-wuwa :is(.tv-power, .tv-eject) { width: 22px; }
-/* Onda bajo el título (se desplaza mientras está abierto). */
-.tv-wuwa .tv-slot { letter-spacing: .14em; padding-bottom: 4px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='6' viewBox='0 0 24 6'%3E%3Cpath d='M0 3 Q6 0 12 3 T24 3' fill='none' stroke='%239fd8d6' stroke-width='1.2'/%3E%3C/svg%3E") 0 100% / 24px 6px repeat-x;
-  animation: tv-wave 1.6s linear infinite; }
-@keyframes tv-wave { to { background-position: 24px 100%; } }
+.tv-wuwa .tv-slot { letter-spacing: .12em; font-size: .58rem; contain: inline-size; }
+@media (prefers-reduced-motion: reduce) { .music-dock.tv-wuwa .tv-grille { animation: none; } }
 
 /* --- Arknights: ficha de PRTS. Chapa carbón con la esquina cortada y el canto blanco de los diálogos del juego; a la izquierda la pestaña
    amarilla con el título en vertical; abajo, interruptores de palanca y la franja de precaución. --- */
@@ -517,3 +540,65 @@ html[data-skin] .skin-live-pair > .skin-live-v { position: absolute; inset: 0; w
 html[data-skin] .skin-live-v.skin-live-b { --live-b: 0; -webkit-mask-image: linear-gradient(rgba(0, 0, 0, var(--live-b)), rgba(0, 0, 0, var(--live-b)));
   mask-image: linear-gradient(rgba(0, 0, 0, var(--live-b)), rgba(0, 0, 0, var(--live-b))); transition: --live-b .8s linear; }
 html[data-skin] .skin-live-v.skin-live-b.on { --live-b: 1; }
+
+/* --- Punishing: Gray Raven (2.ª versión, 15 nov 2026; la 1.ª era un terminal con un medidor de LED a saltos): el REPRODUCTOR DE MÚSICA
+   DEL JUEGO (cdplayer/uimusicplayer del cliente, explorador de assets.huaxu.app). El aparato es la caja del CD (pgr/pl-case.webp,
+   uimusicplayeralbumcollection: lomo con código de barras y bandeja), con el vídeo dentro de la bandeja; el disco sale por la derecha al abrir y gira, con la miniatura del vídeo que suena (si no, pl-cd.webp: la portada
+   del álbum "Crossing Eternities", bgcdface114, recortada con la máscara del disco y su aro); el brazo del
+   tocadiscos (pl-arm.webp, uimusicplayermainbg) baja sobre él y se mece; debajo, el dial en arco (pl-dial.webp, uimusicplayermainzsbg02)
+   cuyas marcas se encienden en rojo en una franja que lo recorre. Todo con curvas suaves (giro continuo, entradas con desaceleración, vaivén alterno), nada a pasos.
+   El disco y el brazo sobresalen de la caja: sin clip-path en el reproductor (la sombra va con filter). --- */
+.music-dock.tv-pgr { --tv-on: #ff6b72; --tv-icon: #c9ced5; --tv-r: 0;
+  --tv-body: url(/skins/pgr/pl-case.webp) 0 0 / 100% auto no-repeat, linear-gradient(180deg, #1d2024, #121417); --tv-body-sh: none;
+  --tv-bezel: #050607; --tv-bezel-sh: 0 0 0 1px rgba(255, 255, 255, .22); --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #050607;
+  --tv-knob-r: 0; --tv-knob: #0b0c0f; --tv-knob-sh: 0 0 0 1px rgba(255, 255, 255, .4); --tv-knob-on-sh: 0 0 0 1px #ff9aa0, 0 0 8px rgba(224, 48, 60, .7);
+  --tv-btn: rgba(11, 12, 15, .85); --tv-btn-ink: #eceef1; --tv-btn-sh: inset 0 0 0 1px rgba(255, 255, 255, .28); --tv-btn-r: 0;
+  --tv-power: #ff6b72; --tv-power-glow: rgba(224, 48, 60, .6);
+  --tv-slot: rgba(5, 6, 7, .85); --tv-slot-ink: #f4f5f7; --tv-slot-sh: inset 2px 0 0 #e0303c, inset 0 0 0 1px rgba(255, 255, 255, .12); --tv-slot-r: 0; --tv-slot-ico: '▶ ';
+  --tv-font: 'Barlow Condensed', 'Rajdhani', 'Barlow', sans-serif; padding: 9px 8px 8px 31px; gap: 4px 5px; margin-right: 58px;
+  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: 'scr scr scr scr scr scr' 'dl dl dl dl dl dl' 'k1 k2 lcd nx ej pwr';
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12); filter: drop-shadow(0 14px 26px rgba(0, 0, 0, .65)); }
+.music-dock.tv-pgr.left { margin-right: 0; margin-left: 0; }
+.tv-pgr .tv-bezel { padding: 4px; }
+/* El disco: detrás de la caja (z-index -1 dentro del reproductor), asomando por la derecha; sale al abrir y gira sin parar. */
+.tv-pgr .tv-deco { top: 26px; right: -78px; width: 160px; height: 160px; z-index: -1; border-radius: 50%;
+  /* Cara del disco: la miniatura del vídeo que suena (--tv-thumb, la pone SkinMusic.tsx) recortada en círculo, con el aro y el centro del CD
+     del juego encima (pl-cd-ring.webp). Debajo, el disco con la portada de "Crossing Eternities": se ve mientras carga la primera canción
+     o si la miniatura no carga. hqdefault viene en 4:3 con bandas negras: se amplía (136 %) para que no entren en el círculo. */
+  background: url(/skins/pgr/pl-cd-ring.webp) center / contain no-repeat, var(--tv-thumb, none) center / auto 136% no-repeat,
+    url(/skins/pgr/pl-cd.webp) center / contain no-repeat;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, .7));
+  animation: pg-cd-out .9s cubic-bezier(.2, .8, .2, 1) both, pg-cd-spin 7s linear .9s infinite; }
+@keyframes pg-cd-out { from { transform: translateX(-90px) rotate(-120deg); } to { transform: translateX(0) rotate(0); } }
+/* El giro va en la propiedad rotate (aparte del transform de la entrada): con transform, rotate(1turn) sobre la matriz final de la entrada
+   se interpolaba como matriz y una vuelta entera es la identidad, así que el disco no giraba. */
+@keyframes pg-cd-spin { from { rotate: 0deg; } to { rotate: 360deg; } }
+/* El brazo: su base arriba a la derecha; baja sobre el disco al abrir y luego se mece muy poco. */
+.tv-pgr.music-dock::after { content: ''; position: absolute; z-index: 3; top: -6px; right: -66px; width: 47px; height: 130px; pointer-events: none;
+  background: url(/skins/pgr/pl-arm.webp) center / contain no-repeat; transform-origin: 70% 8%; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, .7));
+  animation: pg-arm-in 1.1s cubic-bezier(.3, .7, .2, 1) .35s both, pg-arm-sway 3.6s ease-in-out 1.5s infinite alternate; }
+@keyframes pg-arm-in { from { transform: rotate(-32deg); } to { transform: rotate(0); } }
+@keyframes pg-arm-sway { from { transform: rotate(0); } to { transform: rotate(1.6deg); } }
+/* El dial en arco con la aguja roja, que barre a un lado y a otro con suavidad (la .tv-grille de la tele). */
+.music-dock.tv-pgr .tv-grille { display: block; grid-area: dl; justify-self: stretch; position: relative; z-index: 1; height: 32px; min-height: 0; margin: 0; border-radius: 0;
+  overflow: hidden; box-shadow: none; background: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat; }
+/* Arco aplanado a 32 px para que no alargue el reproductor. Sin aguja (oscilando desde arriba parecía un metrónomo): las marcas del propio arco se encienden en rojo en una franja que lo recorre
+   de lado a lado, con la imagen del dial como máscara. */
+.music-dock.tv-pgr .tv-grille::before { content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, transparent 38%, rgba(224, 48, 60, .35) 44%, #ff5a64 50%, rgba(224, 48, 60, .35) 56%, transparent 62%) 0 0 / 250% 100% no-repeat;
+  -webkit-mask: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat; mask: url(/skins/pgr/pl-dial.webp) center top / 100% 32px no-repeat;
+  filter: drop-shadow(0 0 3px rgba(224, 48, 60, .9)); animation: pg-dial 5s cubic-bezier(.45, 0, .55, 1) infinite alternate; }
+.music-dock.tv-pgr .tv-grille::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .25), transparent); }
+@keyframes pg-dial { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.tv-pgr .tv-knob { --tv-knob-size: 14px; }
+.tv-pgr .tv-knob svg { display: none; }
+.tv-pgr .tv-knob.on { --tv-knob: #e0303c; }
+.tv-pgr :is(.tv-power, .tv-eject) { width: 22px; clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px); }
+.tv-pgr .tv-eject:hover { color: #fff; background: #2e3238; }
+.tv-pgr .tv-slot { letter-spacing: .1em; font-size: .7rem; font-weight: 700; text-transform: uppercase; contain: inline-size; }
+.tv-pgr .tv-slot span::before { color: #ff6b72; }
+@media (max-width: 700px) { .music-dock.tv-pgr { margin-right: 50px; } .tv-pgr .tv-deco { right: -66px; width: 136px; height: 136px; top: 34px; } .tv-pgr.music-dock::after { right: -56px; height: 112px; } }
+@media (prefers-reduced-motion: reduce) { .tv-pgr .tv-deco, .tv-pgr.music-dock::after, .music-dock.tv-pgr .tv-grille::before { animation: none; } }
+/* Selector de la ventanita sencilla (por si acaso). */
+html[data-skin="pgr"] .music-modes button { border-radius: 0; }
+html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303c; }

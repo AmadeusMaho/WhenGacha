@@ -247,11 +247,31 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
       ['PLsdxE1--Wa_rNtgNwI19t1J5tjAxHQ-g5', 147], // Arknights OST (Kazdel Team)
     ] },
   },
+  pgr: {
+    // Populares: las 15 primeras de la lista oficial de Vanguard Sound Studio (el estudio de sonido de Kuro; 15 nov 2026). YouTube no da las
+    // vistas de esa lista sin la API, así que van en su orden (las más recientes primero): Aeternion, Tinder, Cryosphere, A March Through
+    // Blizzard, Wake from the Mirage, 白鸟梦歌, 霁梦, Steel Heart, Pieces Of My Past, Serene Embers, Paradox, By My Blade, Abyssal Circuit,
+    // Dreaming to the Glowing Place, One More Hand.
+    top: ['4eG36yB2id8', 'oJCnNtzjfgg', 'lMeqPH19iaY', 'gLKrrSb8Lv4', 'GBKa3nRP-fw', 'v338M2CYl6g', 'aeGP_eD5J4M', 'DKdzGJWeurM', 'I6BSk9_FC5w', '5zfunmdxYus', 'k6wm2UDOmUs', 'PfFYDUTrL30', 'ReS36EOD71Y', 'BNOe9s-nHd4', 'eyfwH7LrZho'],
+    // Toda la banda sonora (15 nov 2026): la lista oficial de Vanguard Sound Studio y las recopilaciones más grandes (sin álbumes "- Topic" por
+    // lista en YouTube). Todas comprobadas con oEmbed (200). Hay pistas repetidas entre ellas.
+    all: { lists: [
+      ['PLDW8QP19---Xz0ibnIHw7KUMzlnr6RLh_', 60], // Vanguard Sound Studio (oficial)
+      ['PLFrvV0fDHzHYfO34mXwu4G1YdZ3mHWdW2', 287], // OST by Patch Release, crispy_querem
+      ['PLFrvV0fDHzHbrKel1wzjC7PrKpYm81bZD', 12], // Original Soundtrack Vol. 3, crispy_querem
+      ['PLtkCgVOmjtI-DBwlq2A7HVXQzuCiKUY5a', 182], // OST Playlist, Tamachi
+      ['PLtkCgVOmjtI8AuLloQMJUU6uzVxC2znJC', 85], // Battle OST, Tamachi
+      ['PLR6PU4jLjdp8jiQPxZaWXZtfYwk9vwaIu', 228], // OST, SG33
+      ['PLdhollli_iHSRbYdbCEid026jyjR_ayLQ', 257], // OST, finn .mov
+      ['PLzge8wPnyV9AudQgfSo-JGP8fybXo049-', 108], // Soundtrack Collection
+    ] },
+  },
 }
 
 /** Skins con reproductor temático compacto (además de ZZZ, que tiene la tele): HSR funda de vinilo, Genshin pergamino, NIKKE el teléfono del
- *  comandante, WuWa panel holográfico, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk. Las que no estén aquí usan la ventanita sencilla. */
-const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive'])
+ *  comandante, WuWa el sintonizador de Frecuencia, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk,
+ *  PGR el reproductor de CD del juego (caja, disco girando y brazo). Las que no estén aquí usan la ventanita sencilla. */
+const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive', 'pgr'])
 
 type Mode = 'all' | 'top'
 const TXT: Record<Lang, { open: string; close: string; title: string; side: string; next: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
@@ -313,6 +333,21 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
   const m = MUSIC[skin]
   // "Todas": la lista que tiene cargada la ventana (cambiarla recarga la ventana) y la pista que se le pide dentro de ella.
   const [list, setList] = useState<string>()
+  // Vídeo que suena (15 nov 2026): la ventana de YouTube lo dice en sus mensajes (infoDelivery → videoData.video_id) al empezar cada uno.
+  // Lo usa el reproductor de PGR para poner la miniatura del vídeo en el disco que gira (variable --tv-thumb; ver skins.css).
+  const [vid, setVid] = useState<string>()
+  useEffect(() => {
+    if (!open) { setVid(undefined); return }
+    const onMsg = (e: MessageEvent) => {
+      if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
+      let d: { info?: { videoData?: { video_id?: string } } } | null = null
+      try { d = JSON.parse(e.data) } catch { return }
+      const id = d?.info?.videoData?.video_id
+      if (id && /^[\w-]{11}$/.test(id)) setVid(id)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [open])
   const want = useRef(0)
   const skip = useRef<() => void>(undefined) // "Otra canción" en "Todas" (lo pone el efecto de abajo)
   useEffect(() => {
@@ -389,7 +424,8 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
            A la derecha, las dos ruedas son el selector de modo; abajo, el vídeo (VHS): encendido = cerrar, pantallita = título, ⇄ = esquina.
            Las demás skins de MINI reutilizan este HTML con otra silueta, compacta y sin mueble de tele (skins.css, "Temas compactos"):
            la primera versión les ponía a todas el mismo mueble y acababan pareciendo teles (13 nov 2026). */
-        <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}`} role="region" aria-label={`${s.title} · ${name}`}>
+        <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}`} role="region" aria-label={`${s.title} · ${name}`}
+          style={vid ? { '--tv-thumb': `url(https://i.ytimg.com/vi/${vid}/hqdefault.jpg)` } as React.CSSProperties : undefined}>
           {skin !== 'zzz' && <span className="tv-deco" aria-hidden />}
           <div className="tv-set">
             <div className="tv-bezel"><div className="tv-screen">{player}</div></div>
