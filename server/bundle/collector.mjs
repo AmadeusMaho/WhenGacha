@@ -21297,6 +21297,21 @@ function r99Limbo(gameId, now = Date.now()) {
 	const i = resets.findIndex((r, j) => r <= now && now < resets[j + 1]);
 	return [i, i + 1].filter((j) => j >= 0 && j + 1 < resets.length).map((j) => ev(gameId, "Limbo", resets[j], resets[j + 1] - 1e3, "⟦d.r99Limbo⟧", false, now));
 }
+/**
+* Azur Lane · Ejercicios (PvP): temporadas de 14 días que acaban un lunes a las 00:00 del servidor global (UTC-7, sin horario de verano), un lunes sí y
+* otro no (blhx.fandom.com/wiki/Exercise: "reset every two weeks"; los Méritos no se reinician). Ninguna fuente publica las fechas: la referencia es una
+* captura del juego que encontró el dueño (14 nov 2026), "Season Time 0d 00:08:31" el lunes 16 dic 2024 a las 03:53 (GMT-3) → fin el 16 dic 2024 a las
+* 07:00 UTC. De ahí al 16 nov 2026 hay 700 días (50 temporadas exactas). Si el juego corriera el ciclo (un mantenimiento largo), hay que mover la referencia.
+*/
+function alExercise(gameId, now = Date.now()) {
+	const ref = Date.UTC(2024, 11, 16, 7);
+	const len = 14 * DAY$39;
+	const start = ref + Math.floor((now - ref) / len) * len;
+	return [0, 1].map((k) => {
+		const s = start + k * len;
+		return ev(gameId, "Exercise Season", s, s + len - 1e3, "⟦d.alExercise⟧", true, now);
+	});
+}
 // src/sources/stove.ts
 /** Últimos `size` avisos de un tablón (el resumen trae unos 1000 caracteres del cuerpo). */
 async function articles(board, size) {
@@ -30831,7 +30846,10 @@ async function syncSourceRaw(game) {
 			...s,
 			events: [...s.events, ...hi3MemorialArena(id)]
 		}));
-		case "azurlane": return syncAzurLane(id);
+		case "azurlane": return syncAzurLane(id).then((s) => ({
+			...s,
+			events: [...s.events, ...alExercise(id)]
+		}));
 		default: throw new Error(`Sin fuente para ${game.name}`);
 	}
 }

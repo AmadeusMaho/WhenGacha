@@ -905,3 +905,7 @@ da una fecha de la que partir para calcular el ciclo. No se añade hasta tener u
 **NIKKE** (14 nov 2026): nikke.gg publicó dos avisos técnicos ("November 13 Emergency Update Notice", "PC Launcher Security Update") y el lector, que tomaba los dos
 posts más nuevos con "update" en el título, dejó fuera las notas de la versión: de 11 elementos a 3. Ahora van primero las "Patch Notes" y se ignoran los avisos de
 emergencia, seguridad, lanzador, compensación y los resúmenes de nikke.gg (`nikkegg.ts`).
+
+**Azur Lane, Ejercicios: añadido** (`alExercise` en cycles.ts). Referencia: una captura del juego que encontró el dueño, "Season Time 0d 00:08:31" el lunes 16 dic 2024
+a las 03:53 (GMT-3) → la temporada acabó a las 07:00 UTC (00:00 UTC-7). Hasta el 16 nov 2026 hay 700 días = 50 temporadas de 14 días, así que el ciclo sigue cuadrando.
+Va marcado "≈" porque es un cálculo: si el juego corre el ciclo, se cambia la referencia.

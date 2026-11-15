@@ -4,7 +4,7 @@ import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
 import { hasWikiCodes, syncPocketGamerCodes, syncWikiCodes } from './codes'
 import { syncBluepoch } from './bluepoch'
 import { withChallengeRewards, type ChallengePage } from './challenges'
-import { hi3MemorialArena, r99Limbo } from './cycles'
+import { alExercise, hi3MemorialArena, r99Limbo } from './cycles'
 import { syncCznEvents } from './czn'
 import { discordChannel, discordMessages, syncDiscord, tweetImages } from './discord'
 import { syncAfkJourney } from './afkjourney'
@@ -393,7 +393,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'honkai3': return both(syncHonkai3(id), syncHi3Official(id)).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))
     // Azur Lane: avisos de mantenimiento de su web oficial (azurlane.ts: eventos, construcción limitada y cosméticos con fechas, retratos de la wiki)
     // + tuits oficiales por Discord (syncSource los une por encima; azurPolish los ordena).
-    case 'azurlane': return syncAzurLane(id)
+    // + temporadas de Ejercicios (PvP), ciclo fijo de 14 días (cycles.ts).
+    case 'azurlane': return syncAzurLane(id).then(s => ({ ...s, events: [...s.events, ...alExercise(id)] }))
     default: throw new Error(`Sin fuente para ${game.name}`)
   }
 }
