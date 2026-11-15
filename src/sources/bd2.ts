@@ -119,7 +119,7 @@ const cleanTitle = (s: string) => s
 const isArt = (url: string) => !/\/image\.(png|jpe?g|webp|gif)$/i.test(url)
 
 const MINOR = /Coupon|Survey|Attendance Check|Login Event/i
-const CHALLENGE = /Colosseum|Tower of Salvation|Mirror War|Guild Raid|Arena/i
+const CHALLENGE = /Colosseum|Tower of Salvation|Mirror War|Guild Raid|Arena|Taros Tactical Manual/i
 
 /** `art`: arte de cada traje ("1) Night of Betrayal Valze Costume: …" + su imagen), para los banners de pickup. */
 function parseNotice(gameId: string, n: Notice, m: Maint, out: GameEvent[], seen: Set<string>, pickups: Map<string, GameEvent>, art: Map<string, string>) {
@@ -228,7 +228,13 @@ function parseNotice(gameId: string, n: Notice, m: Maint, out: GameEvent[], seen
     }
     // Calendario de contenidos: "- Trial Season 49: After the November 4 maintenance - November 11, 02:59 PM (UTC)" / "- Season 27: …"
     const sch = /^-\s*((?:Trial\s+)?Season\s+\d+):\s*(.+?)\s+[-–]\s+(.+)$/i.exec(l)
-    if (sch && section) push('challenge', `${section} · ${sch[1]}`, sch[2], sch[3])
+    if (sch && section) { push('challenge', `${section} · ${sch[1]}`, sch[2], sch[3]); continue }
+    // Otras fases con nombre en las secciones de modos: "2. Guild Raid" → "- Boss Defense: After the October 21 maintenance - October 28, 02:59 PM (UTC)".
+    const phase = /^-\s*([A-Z][A-Za-z' ]{2,30}):\s*((?:After|Before|[A-Z][a-z]+ \d).+?)\s+[-–]\s+(.+)$/.exec(l)
+    if (phase && section && CHALLENGE.test(section)) { push('challenge', `${section} · ${phase[1]}`, phase[2], phase[3]); continue }
+    // "- The Guild Raid boss for this season is Morghenia." → descripción del rotatorio de esa sección.
+    const boss = /boss for this season is ([^.]+)\./i.exec(l)
+    if (boss) for (const e of out) if (e.kind === 'challenge' && e.title.startsWith(section) && !e.description) e.description = `Boss: ${boss[1].trim()}`
   }
   flush()
 }
@@ -252,6 +258,57 @@ function readCoupon(n: Notice): PromoCode | null {
   return { code, rewards: [reward, until].filter((x): x is string => !!x) }
 }
 
+/**
+ * Arte de los eventos y modos desde las "Developer Notes" del mes (el aviso que presenta la actualización): cada sección (<h2>) trae su ilustración
+ * con nombre propio ("13.png" en "New Season Events" = arte de Blood Royale; "24.jpg" en "Golden Colosseum"). Los avisos de cada evento solo traen
+ * tablas de recompensas pegadas como "image.png" (sin texto que leer), que no sirven de imagen. 1 aviso más por ciclo.
+ *  - "New Season Events" → los eventos con el nombre de la temporada ("Blood Royale", su pase y su misión de impulso).
+ *  - El resto de secciones → los eventos y rotatorios cuyo nombre empieza igual ("Golden Colosseum · Trial Season 50", "Guild Raid · Boss Defense").
+ */
+async function withDevNotesArt(items: Item[], out: GameEvent[]) {
+  // Las del mes y, de respaldo, las del anterior (un modo que no cambia este mes no tiene sección: Tower of Salvation en noviembre).
+  const devs = items.filter(i => /Developer Notes/i.test(i.subject) && Date.now() - Date.parse(i.publishedAt) < 70 * DAY).slice(0, 2)
+  if (!devs.length || out.every(e => e.image)) return
+  const sections = new Map<string, string>() // nombre de sección → primera imagen con nombre propio
+  let season: string | undefined
+  for (const [k, dev] of devs.entries()) {
+    const n = await notice(dev.id).catch(() => null)
+    if (!n) continue
+    let sec = ''
+    for (const l of lines(n)) {
+      if (l.startsWith('@@H2 ')) { sec = l.slice(5).replace(/\s*\(.*?\)\s*$/, '').trim(); continue }
+      if (!l.startsWith('@@IMG ') || !sec || !isArt(l.slice(6).trim())) continue
+      // El arte de la temporada solo de las notas del mes: el de la anterior es otra temporada.
+      if (/^new season events?$/i.test(sec)) { if (k === 0) season ??= l.slice(6).trim(); continue }
+      if (!sections.has(sec.toLowerCase())) sections.set(sec.toLowerCase(), l.slice(6).trim())
+    }
+  }
+  // Nombre de la temporada: el del evento que empieza por "Season Event '…' Update" ya limpio, o el más repetido entre los eventos.
+  const seasonName = out.find(e => e.kind === 'event' && !e.minor && /Season (?:Pass|Event)/i.test(e.title))?.title.replace(/\s+Season (?:Pass|Event).*$/i, '').trim()
+  for (const e of out) {
+    if (e.image || e.kind === 'banner') continue
+    const t = e.title.toLowerCase()
+    if (season && seasonName && t.includes(seasonName.toLowerCase())) { e.image = season; continue }
+    const hit = [...sections].find(([k]) => k.length > 4 && t.startsWith(k))
+    if (hit) e.image = hit[1]
+  }
+}
+
+/**
+ * Retratos de los trajes (14 nov 2026; lo encontró el dueño): el visor de Live2D de la comunidad (github.com/Jelosus2/BD2-L2D-Viewer, licencia MIT)
+ * guarda la lista de trajes en `src/utils/character_list.ts` ("068001": { "charName": "Valze", "costumeName": "Night of Betrayal" … }) y el icono de
+ * cada uno en `src/assets/char_icons/icon_char068001.png` (~13 KB). El pickup se llama "<traje> <personaje>". 1 consulta al día (caché del proxy).
+ */
+const L2D = 'https://raw.githubusercontent.com/Jelosus2/BD2-L2D-Viewer/HEAD/src'
+export async function bd2CostumeIcons(): Promise<Map<string, string>> {
+  const res = await fetch(viaProxy(`${L2D}/utils/character_list.ts`))
+  if (!res.ok) throw new Error(`bd2 l2d viewer → HTTP ${res.status}`)
+  const out = new Map<string, string>()
+  for (const m of (await res.text()).matchAll(/"(\d{6})":\s*\{\s*"charName":\s*"([^"]+)",\s*"costumeName":\s*"([^"]+)"/g))
+    out.set(`${m[3]} ${m[2]}`.toLowerCase(), `${L2D}/assets/char_icons/icon_char${m[1]}.png`)
+  return out
+}
+
 async function get<T>(url: string): Promise<T> {
   const res = await fetch(viaProxy(url))
   if (!res.ok) throw new Error(`browndust2 → HTTP ${res.status}`)
@@ -264,8 +321,14 @@ export async function syncBd2(gameId: string): Promise<GameSync> {
   const list = await get<{ items?: Item[] }>(`${API}?${new URLSearchParams({ locale: LOCALE, page: '0', limit: '50' })}`)
   const items = list.items ?? []
   if (!items.length) throw new Error('browndust2: lista de avisos vacía')
+  // 50 avisos ≈ 3 semanas: el calendario de contenidos de la actualización anterior (Taros Tactical Manual dura 4 semanas) puede quedar en la página 2.
+  if (items.filter(i => /Contents Schedule after/i.test(i.subject)).length < 2) {
+    const more = await get<{ items?: Item[] }>(`${API}?${new URLSearchParams({ locale: LOCALE, page: '1', limit: '50' })}`).catch(() => ({ items: [] as Item[] }))
+    items.push(...(more.items ?? []).filter(i => /Contents Schedule after/i.test(i.subject)).slice(0, 1))
+  }
   // Los avisos de las 2 últimas actualizaciones (≈ 4 semanas): de ahí salen todos los periodos que siguen abiertos.
-  const relevant = items.filter(i => RELEVANT.test(i.subject)).slice(0, 10)
+  // + los calendarios de contenidos de las 2 últimas actualizaciones (Guild Raid y Taros Tactical Manual solo salen en uno de ellos).
+  const relevant = [...new Set([...items.filter(i => RELEVANT.test(i.subject)).slice(0, 10), ...items.filter(i => /Contents Schedule after/i.test(i.subject)).slice(0, 2)])]
   const notices = (await Promise.all(relevant.map(i => notice(i.id).catch(() => null)))).filter((n): n is Notice => !!n?.content)
   const maint: Maint = { start: new Map(), end: new Map() }
   for (const n of notices) if (/Maintenance and Update|Live Update/i.test(n.subject)) readMaintenance(n, maint)
@@ -281,13 +344,18 @@ export async function syncBd2(gameId: string): Promise<GameSync> {
   // el del aviso "New Pickup - <nombre>" cuando figura entre los recientes.
   for (const [name, ev] of pickups) {
     const own = art.get(name)
-    if (own) { ev.image = own; continue }
+    // El arte del traje es vertical (personaje de cuerpo entero): sirve también de retrato (la app lo recorta por arriba, `object-position: 50% 15%`).
+    if (own) { ev.image = own; ev.featured = ev.featured.map(f => ({ ...f, icon: f.icon ?? own })); continue }
     const it = items.find(i => /Pickup\s*-/i.test(i.subject) && i.subject.toLowerCase().includes(name))
     if (!it) continue
     const n = await notice(it.id).catch(() => null)
     const src = n ? [...(n.contentHtml ?? '').matchAll(/<img\b[^>]*?\bsrc="([^"]+)"/gi)].map(x => x[1]).find(isArt) : undefined
     if (src) ev.image = src
   }
+  await withDevNotesArt(items, out)
+  // Retrato cuadrado del traje (el arte vertical del aviso queda como imagen del banner).
+  const icons = await bd2CostumeIcons().catch(() => new Map<string, string>())
+  for (const ev of pickups.values()) ev.featured = ev.featured.map(f => ({ ...f, icon: icons.get(f.name.toLowerCase()) ?? f.icon }))
   // Cupones: los 3 avisos de cupón más recientes de la lista (el mensual y algún especial); se quedan los que siguen vigentes.
   const couponItems = items.filter(i => COUPON.test(i.subject) && !NOT_COUPON.test(i.subject)).slice(0, 3)
   const codes: PromoCode[] = []

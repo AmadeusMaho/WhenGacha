@@ -117,6 +117,14 @@ export async function syncTrickcalNews(gameId: string): Promise<GameSync> {
   return { events: events.filter((e, i) => events.findIndex(o => o.id === e.id) === i), patches: [], codes: parseNotices(gameId, messages).codes }
 }
 
+/** "Event currency can be used in the Event Store to exchange for [Unflinching Polan Figure]" → premios con nombre (sin cantidad). */
+function bracketRewards(lines: string[]): { name: string; amount: number }[] {
+  const out: string[] = []
+  for (const m of lines.join(" ").matchAll(/(?:exchange for|obtain|receive|acquire[ds]?|claim|get)\s+(?:the\s+)?(?:[A-Z][\w]*\s+){0,2}\[([^\]]{3,40})\]/g))
+    if (!out.includes(m[1].trim())) out.push(m[1].trim())
+  return out.slice(0, 6).map(name => ({ name, amount: 0 }))
+}
+
 /** Nombre de un apartado: "1. Themed Theater [Between Usurpation and Deviation]" → "Between Usurpation and Deviation"; "Recruit Pick Up Apostle
  *  [A Noble from Dragon Royalty] Vivi" → "Vivi" (el corchete es el título del Apóstol); "6. Weekend Event [WWElias!]" → "WWElias!". */
 function noticeName(raw: string): string {
@@ -165,7 +173,9 @@ export function trickcalNotice(gameId: string, text: string, posted: number): Ga
     // "9. Pass" → el nombre completo que dé su texto ("Civvies Pass", "Trickcal Pass").
     const title = p.sec && /^event story$/i.test(p.name) ? `${p.sec.name}: Event Story`
       : /^pass$/i.test(p.name) ? (p.lines.join(' ').match(/\b([A-Z][\w']+ Pass)\b/)?.[1] ?? 'Trickcal Pass') : p.name
-    const found = kind === 'event' ? pullsIn('trickcal', p.lines) : { pulls: 0, items: [] }
+    const found0 = kind === 'event' ? pullsIn('trickcal', p.lines) : { pulls: 0, items: [] }
+    // Sin cifras, los premios que el aviso nombra entre corchetes ("exchange for [Unflinching Polan Figure]", "acquire [Symbol of Protection]").
+    const found = kind === 'event' && !found0.items.length ? { pulls: 0, items: bracketRewards(p.lines) } : found0
     out.push({
       id: `${gameId}:${kind}:bili:${title}:${new Date(start).toISOString().slice(0, 10)}`, gameId, kind, title,
       start: new Date(start).toISOString(), end: new Date(r.end).toISOString(), items: found.items, pulls: found.pulls,

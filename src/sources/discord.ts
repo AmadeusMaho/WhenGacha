@@ -354,14 +354,41 @@ export function bracketRewards(section: string[]): { name: string; amount: numbe
   return out.slice(0, 10)
 }
 
-export async function syncDiscord(gameId: string): Promise<GameSync> {
+/** Últimos 100 mensajes del canal de un juego (el proxy los guarda 30 min: pedirlos dos veces en un ciclo no repite la consulta). */
+export async function discordMessages(gameId: string): Promise<Message[]> {
   const channel = discordChannel(gameId)
-  if (!channel) return { events: [], patches: [], codes: [] }
+  if (!channel) return []
   const res = await fetch(viaProxy(`${API}/${channel}/messages?limit=100`))
   if (!res.ok) throw new Error(`discord ${gameId} → HTTP ${res.status}`)
   const messages = (await res.json()) as Message[]
   if (!Array.isArray(messages)) throw new Error('discord: respuesta inesperada')
-  return parseNotices(gameId, messages)
+  return messages
+}
+
+export async function syncDiscord(gameId: string): Promise<GameSync> {
+  if (!discordChannel(gameId)) return { events: [], patches: [], codes: [] }
+  return parseNotices(gameId, await discordMessages(gameId))
+}
+
+/**
+ * Imagen de los tuits oficiales para lo que no la trae (Trickcal: sus avisos web no tienen ninguna). Un evento toma la del tuit más reciente
+ * que lo nombra; un banner, la del que nombra a su Apóstol y habla de reclutamiento ("Rate Up", "Recruit"; no la de un aspecto nuevo).
+ * Solo tuits publicados desde 10 días antes del inicio.
+ */
+export function tweetImages(events: GameEvent[], messages: Message[]): GameEvent[] {
+  const txt = (m: Message) => [m.content, ...(m.embeds ?? []).flatMap(e => [e.title ?? '', e.description ?? ''])].join(' ').replace(/\\([^\w\s])/g, '$1')
+  const img = (m: Message) => m.attachments?.find(a => /^image\//.test(a.content_type ?? '') || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url
+    ?? m.embeds?.find(e => e.image?.url)?.image?.url
+  const withImg = messages.map(m => ({ t: txt(m), at: Date.parse(m.timestamp), src: img(m) })).filter(x => x.src)
+  if (!withImg.length) return events
+  return events.map(e => {
+    if (e.image || e.minor) return e
+    const from = Date.parse(e.start) - 10 * 86_400_000
+    const name = e.kind === 'banner' ? e.featured[0]?.name : e.title
+    if (!name || name.length < 4) return e
+    const hit = withImg.find(x => x.at >= from && x.t.toLowerCase().includes(name.toLowerCase()) && (e.kind !== 'banner' || /rate.?up|recruit|pick.?up/i.test(x.t)))
+    return hit ? { ...e, image: hit.src } : e
+  })
 }
 
 /**

@@ -86,7 +86,7 @@ export const CATALOG: Game[] = [
   // BrownDust2: avisos oficiales de browndust2.com (src/sources/bd2.ts). Actualiza cada 2 semanas (miércoles).
   def('bd2', 'BrownDust2', 'BD2', 'Neowiz', '#d4a373', '#4a2c17', 14, '', 'BrownDust2', 'bd2',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/11/b3/f8/11b3f84d-1f7e-67a7-7b85-916916f5743d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
-  // Azur Lane: avisos de mantenimiento de su web oficial (src/sources/azurlane.ts) + tuits oficiales por Discord. Su wiki pone una barrera anti-bots.
+  // Azur Lane: avisos de mantenimiento de su web oficial (src/sources/azurlane.ts) + tuits oficiales por Discord; retratos enlazados de su wiki (alIcon).
   // AFK Journey: su wiki de Fandom (src/sources/afkjourney.ts). Sin códigos: la wiki no mantiene una lista fiable.
   def('afkjourney', 'AFK Journey', 'AFKJ', 'Farlight', '#e9c46a', '#3d3215', 0, 'afk-journey.fandom.com', 'AFK Journey', 'afkjourney',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/21/90/d2/2190d26d-73b6-74eb-9986-0eec5d7371bd/AppIcon-Global-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),

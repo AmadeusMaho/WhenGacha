@@ -136,6 +136,8 @@ const ICON_FILES: Partial<Record<string, (n: string) => string[]>> = {
   mongil: n => [`${n.replace(/\s+/g, '')}Portrait.png`],
   gfl2: n => [`${n} Covenant Avatar.png`],
   wuwa: n => [`Resonator ${n}.png`],
+  // HI3: arma de 5★/4★ ("Key of Mirroring (5) (Icon).png") y pieza superior del set de estigmas ("Let Time Be Your Name (T).png"); las valquirias, por su página.
+  honkai3: n => [`${n} (5) (Icon).png`, `${n} (4) (Icon).png`, `${n} (Icon).png`, `${n} (T).png`],
 }
 const MAX_FACES = 40
 
@@ -200,7 +202,8 @@ async function withItemIcons(game: Game, events: GameEvent[]): Promise<GameEvent
   const ROMAN: Record<string, string> = { I: 'Ⅰ', II: 'Ⅱ', III: 'Ⅲ', IV: 'Ⅳ', V: 'Ⅴ', VI: 'Ⅵ' }
   const roman = (n: string) => n.replace(/ (I{1,3}|IV|VI?)$/, (_m, r: string) => ` ${ROMAN[r]}`)
   const bases = (n: string) => { const one = n.replace(/ies$/, 'y').replace(/(?<!s)s$/, ''); return [...new Set([n, one, one.replace(/\bExclusive\s+/i, ''), roman(n)])] }
-  const variants = (n: string) => bases(n).flatMap(b => [`Item ${b}.png`, `${b}.png`, `${b} Icon.png`, `Icon ${b}.png`])
+  // E7: "Skystone Currency.png", "Covenant Bookmarks Currency.png". HI3: "Nostalgic Tides Ticket (Icon).png" (su "X.png" suele ser un enlace roto en los objetos nuevos).
+  const variants = (n: string) => bases(n).flatMap(b => [`Item ${b}.png`, `${b}.png`, `${b} Icon.png`, `Icon ${b}.png`, `${b} (Icon).png`, `${b} Currency.png`, `${b}s Currency.png`])
   const found = new Map<string, string>() // nombre de archivo (normalizado) → URL
   const files = names.flatMap(variants)
   for (let i = 0; i < files.length; i += 45) {

@@ -48,15 +48,18 @@ export async function syncPocketGamerCodes(slug: string): Promise<PromoCode[]> {
 
 export function pocketGamerCodes(doc: Document): PromoCode[] {
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
-  const head = [...doc.querySelectorAll('h2')].find(h => /active/i.test(text(h)) && /codes?/i.test(text(h)))
+  // "Active Stella Sora codes" (h2) o, en otras páginas, h2 "Epic Seven codes" + h3 "Active codes".
+  const head = [...doc.querySelectorAll('h2, h3')].find(h => /active/i.test(text(h)) && /codes?/i.test(text(h)))
   if (!head) throw new Error('pocketgamer: no se encontró la lista de códigos activos')
   const out: PromoCode[] = []
   for (let n = head.nextElementSibling; n && !/^H2$/.test(n.tagName); n = n.nextElementSibling) {
     if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break
     for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
       const line = text(li)
-      const code = (/^([A-Za-z0-9]{4,30})\b/.exec(line)?.[1] ?? '').trim()
-      if (!code || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
+      const code = (/^([A-Za-z0-9_!]{4,30})(?=[\s:–-]|$)/.exec(line)?.[1] ?? '').trim()
+      // Una frase ("There are no expired codes right now.") no es un código (los de PtN sí mezclan mayúsculas: "EternalStrings").
+      if (!code || /^(?:there|no|these|this|all|we|the|currently|check)\b/i.test(line) || /\bno (?:active |expired |new )?codes?\b/i.test(line)
+        || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
       const rest = line.slice(code.length).replace(/^\s*[-–:]\s*/, '')
       const until = /\((?:expires?|until)\s+([^)]+)\)/i.exec(rest)?.[1]
       // "10 Premium Salmon Puree" → "Premium Salmon Puree ×10"; "Hope Luxite x300" → "Hope Luxite ×300"; "300k Gold" → "Gold ×300k".
@@ -65,6 +68,26 @@ export function pocketGamerCodes(doc: Document): PromoCode[] {
         .map(r => r.replace(/^(\d[\d,.]*[kK]?)\s+(.+)$/, '$2 ×$1').replace(/\s+x\s?(\d[\d,.]*[kK]?)$/i, ' ×$1'))
         .filter(r => r && !/^(rewards?|free rewards?|tba|-)$/i.test(r))
       out.push({ code, rewards: [...rewards.slice(0, 6), ...(until ? [`Until ${until.trim()}`] : [])] })
+    }
+  }
+  return out
+}
+
+/**
+ * Códigos de mobilematters.gg (/redeem-codes/<juego>; robots.txt solo cierra búsquedas y recursos internos). Azur Lane (14 nov 2026; la encontró el
+ * dueño): un `<h2>` "New Codes for …" con una lista `<li>CÓDIGO</li>` (sin recompensas) y, aparte, "Expired … Codes", que no se lee.
+ */
+export async function syncMobileMattersCodes(slug: string): Promise<PromoCode[]> {
+  const res = await fetch(viaProxy(`https://mobilematters.gg/redeem-codes/${slug}`))
+  if (!res.ok) throw new Error(`mobilematters ${slug} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  const head = [...doc.querySelectorAll('h2')].find(h => /new codes|active|working/i.test(text(h)) && !/expired/i.test(text(h)))
+  const out: PromoCode[] = []
+  for (let n = head?.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
+    for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
+      const m = /^([A-Za-z0-9_]{4,30})(?:\s*[-–:]\s*(.+))?$/.exec(text(li))
+      if (m && !out.some(c => c.code === m[1])) out.push({ code: m[1], rewards: m[2] ? [m[2]] : [] })
     }
   }
   return out

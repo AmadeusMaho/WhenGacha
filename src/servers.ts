@@ -41,7 +41,8 @@ const REGIONS: Record<string, Regions> = {
   genshin: HOYO,
   starrail: HOYO,
   zenless: HOYO,
-  honkai3: HOYO,
+  // HI3: su wiki y los avisos globales dan la hora del servidor de América ("2026-10-22 05:00" = fin del mantenimiento en UTC-5; honkai3.ts).
+  honkai3: { ...HOYO, base: 'na' },
   // Kuro: "server time" de cada región; kuro.ts, Reverie y Prydwen usan América.
   // WuWa: mantenimiento de versión 04:00–11:00 (UTC+8), 7 h.
   wuwa: { base: 'na', maint: 7, list: [NA, EU, ASIA, { id: 'sea', label: 'SEA (UTC+8)', offset: 8 }, { id: 'hmt', label: 'HMT (UTC+8)', offset: 8 }] },

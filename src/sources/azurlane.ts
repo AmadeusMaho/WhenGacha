@@ -1,6 +1,8 @@
 import { viaProxy } from '../net'
 import type { Featured, GameEvent } from '../types'
 import type { GameSync } from './ennead'
+import { md5 } from './md5'
+import { syncMobileMattersCodes } from './codes'
 
 /**
  * Azur Lane (Yostar; servidor global/EN, horas UTC-7). Fuentes revisadas el 13 nov 2026:
@@ -13,9 +15,12 @@ import type { GameSync } from './ennead'
  *    - Skins, tienda, muebles, aspectos de equipo, secretos, JUUSTAGRAM…: campañas menores (ocultas por defecto).
  *    El inicio es el fin del mantenimiento (12:00 A.M. + "approximately 6 hours"), marcado "≈"; el fin, el del aviso.
  *  - Discord (canal "azurlane", tuits de @AzurLane_EN): `syncSource` lo une por encima; los avisos web cubren lo que el canal pierde.
- *  - Su wiki (azurlane.koumakan.jp) pone una barrera anti-bots: sin retratos ni iconos de esa fuente.
- *  - Códigos: no se publican con regularidad; los que lleguen por Discord.
- * 1 lista + hasta 3 avisos por ciclo (caché de 6 h en el proxy).
+ *  - Su wiki (azurlane.koumakan.jp) pone una barrera anti-bots (Anubis) en sus páginas y su robots.txt cierra /w/ (la API): no se consulta.
+ *    Las imágenes, en cambio, se sirven sin barrera desde azurlane.netojuu.com/images/ (no las cierra el robots.txt) en la ruta fija de MediaWiki
+ *    (md5 del nombre de archivo), así que los retratos se enlazan sin pedir nada: "<Nombre>Icon.png" (sin "/" y con "_"), comprobado con 9 barcos
+ *    nuevos y viejos el 14 nov 2026 ("Liliel_Angel_ParatroopersRirisaIcon.png", "ÄgirIcon.png").
+ *  - Códigos: la lista de "New Codes" de mobilematters.gg (pocas y sin recompensas detalladas) + los que lleguen por Discord.
+ * 1 lista + hasta 4 avisos por ciclo (caché de 6 h en el proxy; los eventos largos, como los de planos, duran 4 semanas).
  */
 const SITE = 'https://azurlane.yo-star.com/news/'
 const HOUR = 3_600_000
@@ -38,7 +43,14 @@ export function azurPeriod(s: string, year: number, maintEnd: number | undefined
   return end > start ? [start, end] : null
 }
 
-const MINOR = /skins?|shop|furniture|gear ?box|gear skins?|secrets?|juustagram|meowfficers?|memory|fleetchat|cv update|outfits?|battle ui/i
+const MINOR = /skins?|shop|furniture|gear ?box|gear skins?|secrets?|juustagram|meowfficers?|memory|fleetchat|cv update|outfits?|battle ui|augment|rental|black friday/i
+
+/** Retrato cuadrado de un barco en la wiki ("Liliel Angel Paratroopers/Ririsa" → …/1/12/Liliel_Angel_ParatroopersRirisaIcon.png). */
+export function alIcon(name: string): string {
+  const file = `${name.trim().replace(/\//g, '').replace(/\s+/g, '_')}Icon.png`
+  const h = md5(file)
+  return `https://azurlane.netojuu.com/images/${h[0]}/${h.slice(0, 2)}/${encodeURIComponent(file)}`
+}
 
 /** Eventos de un aviso de mantenimiento. */
 export function azurNotice(gameId: string, html: string, posted: Date): GameEvent[] {
@@ -71,14 +83,14 @@ export function azurNotice(gameId: string, html: string, posted: Date): GameEven
       }
     } else if (/^new characters?$/i.test(label)) {
       const pool = content.filter(l => /construction/i.test(l))
-      const featured: Featured[] = pool.map(l => ({ name: l.replace(/\s*\(.*\)\s*$/, '').trim(), rarity: /rate up/i.test(l) ? 5 : 4, tag: /rate up/i.test(l) ? 'Rate up' : undefined }))
+      const featured: Featured[] = pool.map(l => { const name = l.replace(/\s*\(.*\)\s*$/, '').trim(); return { name, icon: alIcon(name), rarity: /rate up/i.test(l) ? 5 : 4, tag: /rate up/i.test(l) ? 'Rate up' : undefined } })
       if (featured.length) add({ kind: 'banner', title: `Limited Construction: ${featured.filter(f => f.tag).map(f => f.name).join(', ') || featured[0].name}`, image, start, end,
         description: '⟦d.azurConstruction⟧', featured })
       // Personajes que se ganan en el evento: recompensas del evento de ese periodo (si lo hay).
       const rewards = content.filter(l => !/construction/i.test(l) && !/^available/i.test(l)).map(l => l.replace(/\s*\(.*\)\s*$/, '').trim())
       if (/reward for participating/i.test(when ?? '') && rewards.length) {
         const ev = out.find(o => o.kind === 'event' && o.start === start && o.end === end)
-        if (ev) ev.items = [...ev.items, ...rewards.map(name => ({ name, amount: 1 }))]
+        if (ev) ev.items = [...ev.items, ...rewards.map(name => ({ name, icon: alIcon(name), amount: 1 }))]
       }
     } else if (MINOR.test(label)) {
       const what = content.filter(l => !l.startsWith('※')).slice(0, 4).map(l => l.replace(/\s*\(\d+ purchases? limited\)/i, ''))
@@ -96,12 +108,42 @@ export async function syncAzurLane(gameId: string): Promise<GameSync> {
   // Enlaces a los avisos de mantenimiento ("/news/2026/11/11/maintenance-notice-11-12-12-a-m-utc-7-2/"), los más recientes (40 días).
   const urls = [...new Set([...list.matchAll(/https:\/\/azurlane\.yo-star\.com\/news\/(20\d\d)\/(\d\d)\/(\d\d)\/maintenance-notice[a-z0-9-]*\//g)].map(m => m[0]))]
     .map(u => ({ u, at: Date.UTC(+/\/(20\d\d)\//.exec(u)![1], +/\/20\d\d\/(\d\d)\//.exec(u)![1] - 1, +/\/20\d\d\/\d\d\/(\d\d)\//.exec(u)![1]) }))
-    .filter(x => Date.now() - x.at < 40 * DAY).sort((a, b) => b.at - a.at).slice(0, 3)
+    .filter(x => Date.now() - x.at < 40 * DAY).sort((a, b) => b.at - a.at).slice(0, 4)
   if (!urls.length) throw new Error('yostar Azur Lane: sin avisos de mantenimiento recientes')
   const events: GameEvent[] = []
   for (const { u, at } of urls) {
     const html = await fetch(viaProxy(u)).then(r => (r.ok ? r.text() : '')).catch(() => '')
     if (html) events.push(...azurNotice(gameId, html, new Date(at)))
   }
-  return { events, patches: [], codes: [] }
+  const codes = await syncMobileMattersCodes('azur-lane-code').catch(() => [])
+  return { events, patches: [], codes }
+}
+
+/** Cosméticos y tienda en los tuits ("The following new Augment Modules", "The collab furniture", "Limited collab gear skins"). */
+const DC_MINOR = /augment modules?|furniture|gear skins?|\bskins?\b|battle ui|outfits?|juustagram|\bshop\b|L2D|dynamic|secretar/i
+
+/**
+ * Último paso de Azur Lane (index.ts), sobre lo unido de Discord y la web:
+ *  - Los tuits de cosméticos llegaban como eventos normales con la frase por título: pasan a campaña menor con el nombre limpio
+ *    ("The following new Augment Modules" → "Augment Modules").
+ *  - Si la web trae una campaña menor con el mismo periodo (inicio ±1 día, fin ±1 h), sobra la del tuit ("Collab furniture" / "Furniture: Manga Club").
+ *  - Retratos: todo barco que la web nombra (construcción, personajes de recompensa) lleva su icono también en los eventos y banners de Discord.
+ */
+export function azurPolish(s: GameSync): GameSync {
+  const tidy = (t: string) => { const x = t.replace(/^(?:the following new|the following|the|new)\s+/i, '').trim(); return x.charAt(0).toUpperCase() + x.slice(1) }
+  const fixed = s.events.map(e => (e.id.includes(':dc:') && e.kind === 'event' && !e.minor && DC_MINOR.test(e.title) && !e.items.length
+    ? { ...e, title: tidy(e.title), minor: true } : e))
+  const web = fixed.filter(e => e.minor && e.id.includes(':yostar:'))
+  const dup = (e: GameEvent) => e.minor && e.id.includes(':dc:') && web.some(w => Math.abs(Date.parse(w.start) - Date.parse(e.start)) <= DAY && Math.abs(Date.parse(w.end) - Date.parse(e.end)) <= HOUR)
+  const ships = new Map<string, string>()
+  for (const e of fixed) {
+    if (!e.id.includes(':yostar:')) continue
+    for (const f of e.featured) if (f.icon) ships.set(f.name.toLowerCase(), f.icon)
+    for (const i of e.items) if (i.icon) ships.set(i.name.toLowerCase(), i.icon)
+  }
+  const icon = (n: string) => ships.get(n.toLowerCase().trim())
+  const events = fixed.filter(e => !dup(e)).map(e => ({ ...e,
+    items: e.items.map(i => (i.icon ? i : { ...i, icon: icon(i.name) })),
+    featured: e.featured.map(f => (f.icon ? f : { ...f, icon: icon(f.name) ?? (e.kind === 'banner' ? alIcon(f.name) : undefined) })) }))
+  return { ...s, events }
 }

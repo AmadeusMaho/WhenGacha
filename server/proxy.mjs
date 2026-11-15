@@ -103,12 +103,21 @@ const SOURCES = [
     || (/^\/api\/game\/monster2\/official\/forum\/stardive_gl\/article\/\d{1,6}$/.test(u.pathname) && [...u.searchParams.keys()].every(k => k === 'menuSeq'))) },
   // Azur Lane: avisos de mantenimiento de su web oficial (WordPress; robots.txt sin reglas). La lista de noticias y cada aviso, sin parámetros.
   { name: 'yostar-al', ttl: 6 * HOUR, test: u => u.hostname === 'azurlane.yo-star.com' && (u.pathname === '/news/' || /^\/news\/20\d\d\/\d\d\/\d\d\/maintenance-notice[a-z0-9-]*\/$/.test(u.pathname)) && !u.search },
+  // Honkai Impact 3rd: avisos oficiales de HoYoLAB (cuenta oficial del juego, gids=1): la lista de "Notices" (máx. 10) y cada aviso suelto.
+  // Es la API pública que usa la propia web (www.hoyolab.com, robots.txt solo cierra /genshin). Una lista + 1 aviso por ciclo.
+  { name: 'hoyolab', ttl: 6 * HOUR, test: u => u.hostname === 'bbs-api-os.hoyolab.com' && (
+    (u.pathname === '/community/post/wapi/getNewsList' && u.searchParams.get('gids') === '1' && Number(u.searchParams.get('page_size')) <= 10 && [...u.searchParams.keys()].every(k => ['gids', 'page_size', 'type'].includes(k)))
+    || (u.pathname === '/community/post/wapi/getPostFull' && /^\d{6,10}$/.test(u.searchParams.get('post_id') ?? '') && [...u.searchParams.keys()].every(k => k === 'post_id'))) },
+  // BrownDust2: lista de trajes del visor de Live2D de la comunidad (GitHub, MIT) para los retratos. Un archivo, 24 h.
+  { name: 'bd2-l2d', ttl: 24 * HOUR, test: u => u.hostname === 'raw.githubusercontent.com' && u.pathname === '/Jelosus2/BD2-L2D-Viewer/HEAD/src/utils/character_list.ts' && !u.search },
+  // Códigos de Azur Lane de mobilematters.gg (robots.txt solo cierra búsquedas y recursos). Una página, 6 h.
+  { name: 'mobilematters', ttl: 6 * HOUR, test: u => u.hostname === 'mobilematters.gg' && u.pathname === '/redeem-codes/azur-lane-code' && !u.search },
   // Path to Nowhere: avisos oficiales de su web (la API de la lista que usa la propia página, máx. 10, y la página de cada aviso).
   { name: 'aisno', ttl: 6 * HOUR, test: u => u.hostname === 'ptn.aisnogames.com' && (
     (u.pathname === '/api/news' && u.searchParams.get('locale') === 'en-EN' && Number(u.searchParams.get('limit')) <= 10 && [...u.searchParams.keys()].every(k => ['offset', 'limit', 'locale', 'section'].includes(k)))
     || (/^\/en-EN\/news\/\d{1,6}$/.test(u.pathname) && !u.search)) },
-  // Códigos de Sword of Convallaria, Path to Nowhere, MONGIL, Wizardry Variants Daphne y Aniimo (respaldo de Game8) de PocketGamer (robots.txt "Allow: /"). Una página por juego.
-  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && /^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne|aniimo)\/codes\/$/.test(u.pathname) && !u.search },
+  // Códigos de Sword of Convallaria, Path to Nowhere, MONGIL, Wizardry Variants Daphne, Stella Sora y Aniimo (respaldo de Game8) de PocketGamer (robots.txt "Allow: /"). Una página por juego.
+  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && /^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne|aniimo|stella-sora)\/codes\/$/.test(u.pathname) && !u.search },
   // Wizardry Variants Daphne: feed RSS oficial de noticias en inglés (páginas 1 y 2, texto completo) y la lista oficial de aventureros (retratos).
   { name: 'wizardry', ttl: 3 * HOUR, test: u => u.hostname === 'wizardry.info' && u.pathname === '/en/daphne/news/feed/' && (!u.search || /^\?paged=[12]$/.test(u.search)) },
   { name: 'wizardry-adv', ttl: 24 * HOUR, test: u => u.hostname === 'wizardry.info' && /^\/en\/daphne\/adventurers\/(?:page\/[2-5]\/)?$/.test(u.pathname) && !u.search },
@@ -178,7 +187,7 @@ const SOURCES = [
   { name: 'news-feed', ttl: 2 * HOUR, internal: true, test: u => (u.hostname === 'www.gematsu.com' && u.pathname === '/feed' || (u.hostname === 'gamingonphone.com' || u.hostname === 'www.siliconera.com') && u.pathname === '/feed/') && !u.search },
   { name: 'itunes', ttl: 12 * HOUR, internal: true, test: u => u.hostname === 'itunes.apple.com' && /^\/(search|lookup)$/.test(u.pathname) && [...u.searchParams.keys()].every(k => ['term', 'id', 'entity', 'country', 'limit', 'media'].includes(k)) },
   { name: 'snapshots', ttl: 15 * MIN, test: u => u.hostname === 'raw.githubusercontent.com' && /^\/AmadeusMaho\/WhenGacha\/data\/snapshots\/[a-z0-9]+\.json$/.test(u.pathname) },
-  { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini)\.json$/.test(u.pathname) },
+  { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini|egos_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   // FGO: lo que viene a NA según JP (fgo.ts, fromJp): eventos JP de Atlas Academy y la lista de banners de GamePress (robots.txt solo cierra /admin/).
   { name: 'atlasacademy-jp', ttl: 12 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && u.pathname === '/export/JP/basic_event_lang_en.json' },
@@ -264,7 +273,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'bbs-api-os.hoyolab.com': 3000, 'mobilematters.gg': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

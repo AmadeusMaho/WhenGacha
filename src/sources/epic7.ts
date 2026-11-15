@@ -1,5 +1,5 @@
 import { viaProxy } from '../net'
-import type { GameEvent } from '../types'
+import type { GameEvent, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 import { articles, bodyLines, bodyText as body, sized, thumb, type Article } from './stove'
 import { pullsIn } from './pulls'
@@ -123,8 +123,27 @@ function period(text: string, posted: number, ends: Map<string, string>): Period
 }
 
 const NOT_AN_EVENT = /\b(pack|sale|sales|bundle)\b/i
-/** Máximo de avisos cuyo cuerpo completo se pide por no traer el periodo en el resumen (cada uno es una petición). */
-const MAX_DETAILS = 8
+/** Máximo de avisos cuyo cuerpo completo se pide (por no traer el periodo o las recompensas en el resumen; cada uno es una petición). */
+const MAX_DETAILS = 14
+
+/**
+ * Tablas de recompensas que STOVE aplana una celda por línea: "Check-In Day / Standard Reward / Quantity / 1 / Faint Guiding Stone / 25 / 7+ /
+ * Chronicle Bookmark / 100 …" (42-Day Journey). Se leen los tríos [número de día o fila, objeto, cantidad] y se suma cada objeto.
+ * Solo tras una cabecera de tabla con "Reward" y "Quantity"/"Qty" (para no tomar fechas u horas por cantidades).
+ */
+export function tableRewards(lines: string[]): string[] {
+  const head = lines.findIndex((l, i) => /reward/i.test(l) && lines.slice(i, i + 4).some(x => /^(quantity|qty|amount)$/i.test(x.trim())))
+  if (head < 0) return []
+  const sum = new Map<string, number>()
+  const num = (x?: string) => (x && /^[\d,]+$/.test(x.trim()) ? Number(x.replace(/,/g, '')) : NaN)
+  for (let i = head; i < lines.length - 2; i++) {
+    const [a, b, c] = [lines[i].trim(), lines[i + 1].trim(), lines[i + 2].trim()]
+    if (!/^\d{1,3}\+?$/.test(a) || /^[\d,+]+$/.test(b) || b.length < 3 || b.length > 60 || isNaN(num(c))) continue
+    sum.set(b, (sum.get(b) ?? 0) + num(c))
+    i += 2
+  }
+  return [...sum].map(([n, q]) => `${n} x${q}`)
+}
 
 async function syncEvents(gameId: string, list: Article[], ends: Map<string, string>): Promise<GameEvent[]> {
   const from = Date.now() - 3 * DAY
@@ -141,6 +160,11 @@ async function syncEvents(gameId: string, list: Article[], ends: Map<string, str
       try { text = await body(a.article_id); p = period(text, a.create_datetime, ends) } catch { /* se omite este aviso */ }
     }
     if (!p || +p.end < from) continue
+    // Recompensas: el resumen corta las tablas; para los vigentes sin ninguna en el resumen, el aviso entero.
+    if (text === (a.summary ?? '') && details < MAX_DETAILS && !/purchas|top-?up/i.test(text) && !pullsIn('epic7', text.split('\n')).items.length) {
+      details++
+      try { text = await body(a.article_id) } catch { /* se queda el resumen */ }
+    }
     const title = a.title.replace(/\s*\((?:Edited|Added on)[^)]*\)?\s*$/i, '').trim()
     const key = `${title.toLowerCase()}|${p.start.toISOString().slice(0, 10)}`
     if (seen.has(key)) continue
@@ -149,7 +173,8 @@ async function syncEvents(gameId: string, list: Article[], ends: Map<string, str
     // Sus tablas llegan aplanadas ("Reward Name Quantity … Covenant Bookmark 50"): se reescriben como "Covenant Bookmark x50". Los avisos de
     // recompensas por compras (Golden Scales: "points earned from purchasing") no se cuentan: no son tiradas gratis.
     const flat = text.replace(/\b(Covenant Bookmarks?|Skystones?)\s+(\d[\d,]*)\b/g, '$1 x$2')
-    const { pulls, items } = /purchas|top-?up/i.test(text) ? { pulls: 0, items: [] } : pullsIn('epic7', flat.split(/\n|(?<=[.!])\s+/))
+    const table = tableRewards(text.split('\n'))
+    const { pulls, items } = /purchas|top-?up/i.test(text) ? { pulls: 0, items: [] } : pullsIn('epic7', table.length ? table : flat.split(/\n|(?<=[.!])\s+/))
     out.push({
       id: `${gameId}:event:${a.article_id}`, gameId, kind: 'event', title,
       image: thumb(a),
@@ -194,6 +219,29 @@ async function syncNewHeroes(gameId: string, list: Article[], ends: Map<string, 
   return out
 }
 
+/**
+ * Cupones oficiales de los avisos de STOVE (los resúmenes que ya se piden; ninguna consulta más): "Coupon Code: EPICWITHCZN Coupon Redemption
+ * Period: 9/17 (Thu) after the maintenance - 10/29 (Thu) 02:59 UTC Rewards - Covenant Bookmark x 15 - Gold x 300,000". Solo los vigentes.
+ * La lista de PocketGamer no se usa: mezcla cupones de un solo uso, de torneos y caducados sin fecha (revisado el 14 nov 2026).
+ */
+export function e7Coupons(list: Article[], now = Date.now()): PromoCode[] {
+  const out: PromoCode[] = []
+  for (const a of list) {
+    const t = (a.summary ?? '').replace(/\s+/g, ' ')
+    for (const m of t.matchAll(/Coupon Code\s*:\s*([A-Z0-9_!]{4,30})/gi)) {
+      if (out.some(c => c.code === m[1])) continue
+      const rest = t.slice(m.index! + m[0].length, m.index! + m[0].length + 400)
+      const end = /[-–~]\s*(\d{1,2})\/(\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2})\s*UTC/i.exec(rest)
+      if (!end) continue
+      const e = utc(nearYear(+end[1], +end[2], a.create_datetime), +end[1], +end[2], end[3])
+      if (+e < now) continue
+      const rewards = [...(/Rewards?\s*(.+?)(?:\s+\*|\s+Coupon|\s+Thank|$)/i.exec(rest)?.[1] ?? '').matchAll(/-\s*([A-Z][^-]*?x\s*[\d,]+)/g)].map(r => r[1].trim().replace(/\s*x\s*/, ' ×'))
+      out.push({ code: m[1], rewards: [...rewards.slice(0, 6), `Until ${e.toUTCString().slice(5, 22)} UTC`] })
+    }
+  }
+  return out
+}
+
 export async function syncEpic7(gameId: string): Promise<GameSync> {
   const [banners, events, maint] = await Promise.allSettled([syncBanners(gameId), articles(988, 100), articles(986, 100)])
   if (banners.status === 'rejected' && events.status === 'rejected') throw banners.reason
@@ -201,5 +249,6 @@ export async function syncEpic7(gameId: string): Promise<GameSync> {
   const base = banners.status === 'fulfilled' ? banners.value : []
   const parsed = events.status === 'fulfilled' ? await syncEvents(gameId, events.value, ends) : []
   const heroes = maint.status === 'fulfilled' ? await syncNewHeroes(gameId, maint.value, ends, base).catch(() => []) : []
-  return { events: [...base, ...heroes, ...parsed], patches: [], codes: [] }
+  const codes = e7Coupons([...(events.status === 'fulfilled' ? events.value : []), ...(maint.status === 'fulfilled' ? maint.value : [])])
+  return { events: [...base, ...heroes, ...parsed], patches: [], codes }
 }

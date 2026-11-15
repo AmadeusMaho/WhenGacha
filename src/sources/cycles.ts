@@ -15,10 +15,10 @@ const ev = (gameId: string, title: string, start: number, end: number, descripti
 
 /**
  * Honkai Impact 3rd · Memorial Arena: "runs from Tuesday, 04:00 to Monday, 02:00 every week" (wiki de Fandom, página "Memorial Arena", sep 2026).
- * Hora del servidor: como el resto de HI3 en la app, UTC+8 (Asia) y marcado "≈".
+ * Hora del servidor: como el resto de HI3 en la app, la de América (UTC-5; servers.ts la desplaza a cada región) y marcado "≈".
  */
 export function hi3MemorialArena(gameId: string, now = Date.now()): GameEvent[] {
-  const off = 8 * HOUR
+  const off = -5 * HOUR
   const local = new Date(now + off)
   // Martes 04:00 (hora del servidor) más reciente.
   const back = (local.getUTCDay() - 2 + 7) % 7

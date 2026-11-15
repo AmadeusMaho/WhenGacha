@@ -1,12 +1,12 @@
 import type { Game, GameEvent } from '../types'
 import { GACHAFOCUS, syncGachafocus } from './gachafocus'
 import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
-import { hasWikiCodes, syncWikiCodes } from './codes'
+import { hasWikiCodes, syncPocketGamerCodes, syncWikiCodes } from './codes'
 import { syncBluepoch } from './bluepoch'
 import { withChallengeRewards, type ChallengePage } from './challenges'
 import { hi3MemorialArena, r99Limbo } from './cycles'
 import { syncCznEvents } from './czn'
-import { discordChannel, syncDiscord } from './discord'
+import { discordChannel, discordMessages, syncDiscord, tweetImages } from './discord'
 import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
@@ -23,11 +23,11 @@ import { syncMongil } from './mongil'
 import { syncSuikoden } from './suikoden'
 import { syncDaphne, DAPHNE_ICONS } from './daphne'
 import { syncAniimo, ANIIMO_ICONS } from './aniimo'
-import { syncAzurLane } from './azurlane'
+import { azurPolish, syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
-import { syncHonkai3 } from './honkai3'
+import { syncHi3Official, syncHonkai3 } from './honkai3'
 import { eventPages, syncHoyoWiki } from './hoyowiki'
 import { pullsIn, type PullGame } from './pulls'
 import { shortDescription } from './summary'
@@ -40,7 +40,7 @@ import { game8Recurring, syncGame8 } from './game8'
 import { syncPrydwen } from './prydwen'
 import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
-import { syncStellaSora, syncStellaSoraNews } from './stellasora'
+import { SS_ICONS, ssPolish, syncStellaSora, syncStellaSoraNews } from './stellasora'
 import { syncUma } from './uma'
 import { alignPatches, buildPatches, fetchHistory, finalize } from './versions'
 import { syncArknights, syncEndfield } from './wiki'
@@ -247,7 +247,7 @@ const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail:
  * Iconos de recompensas de los juegos sin wiki (el recolector los busca en la wiki del juego, `withItemIcons` de collector.ts): MHO, la lista de objetos
  * de GameWith; BLEACH, los iconos oficiales de su web. Se aplica después de unir Discord, así también los avisos oficiales salen con icono.
  */
-const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS }
+const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS, stellasora: async () => SS_ICONS }
 async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
   const load = ITEM_ICONS[id]
   if (!load || !s.events.some(e => e.items.some(i => !i.icon))) return s
@@ -277,23 +277,18 @@ function dedupeEvents(events: GameEvent[]): GameEvent[] {
   return out
 }
 
-/**
- * Azur Lane: los tuits por Discord y los avisos de la web dan los mismos cosméticos con otro nombre ("Collab furniture" / "Furniture: Manga Club").
- * Si la web trae una campaña menor con el mismo periodo (inicio ±1 día, fin ±1 h), sobra la del tuit.
- */
-function azurDedupe(id: string, s: GameSync): GameSync {
-  if (id !== 'azurlane') return s
-  const web = s.events.filter(e => e.minor && e.id.includes(':yostar:'))
-  const dup = (e: GameEvent) => e.minor && e.id.includes(':dc:') && web.some(w => Math.abs(Date.parse(w.start) - Date.parse(e.start)) <= DAY && Math.abs(Date.parse(w.end) - Date.parse(e.end)) <= HOUR)
-  return { ...s, events: s.events.filter(e => !dup(e)) }
-}
-
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
   // Avisos oficiales publicados en Steam (steam.ts): mandan sobre las fuentes de siempre, como los de Discord.
   const raw = () => (STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game))
-  const s0 = discordChannel(game.id) ? await officialFirst(syncDiscord(game.id), raw()) : await raw()
-  const s1 = await withItemIcons(game.id, azurDedupe(game.id, s0))
+  // Azur Lane: al revés. Los avisos de mantenimiento de su web dan cada bloque con su periodo y su tipo; los tuits, frases sueltas que por nombre se
+  // tragaban los de la web ("Limited collab gear skins" se quedaba con "Skins"). La web manda y Discord añade lo que ella no tiene (adelantos, avisos sueltos).
+  const s0 = !discordChannel(game.id) ? await raw()
+    : game.id === 'azurlane' ? await officialFirst(raw(), syncDiscord(game.id))
+    : await officialFirst(syncDiscord(game.id), raw())
+  // Trickcal: imágenes de sus tuits oficiales (sus avisos web no traen ninguna).
+  if (game.id === 'trickcal' && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []))
+  const s1 = await withItemIcons(game.id, game.id === 'azurlane' ? azurPolish(s0) : game.id === 'stellasora' ? ssPolish(s0) : s0)
   // Descripciones sin HTML y breves (resúmenes al estilo de Endfield; summary.ts).
   const s = { ...s1, events: dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e))) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
@@ -326,7 +321,9 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'reverse1999': return withGachafocus(id, 'reverse1999', officialFirst(syncBluepoch(id), syncReverse1999(id))).then(s => ({ ...s, events: [...s.events, ...r99Limbo(id)] }))
     // Stella Sora: avisos oficiales de stellasora.global (todos los eventos de la versión, hora exacta) + banners exactos de su wiki (con imagen).
     // Gachafocus solo si se reactiva.
+    // Códigos: la lista de activos de PocketGamer (los avisos oficiales no los publican; 14 nov 2026).
     case 'stellasora': return withGachafocus(id, 'stellasora', officialFirst(syncStellaSoraNews(id), syncStellaSora(id)), true)
+      .then(async s => (s.codes.length ? s : { ...s, codes: await syncPocketGamerCodes('stella-sora').catch(() => []) }))
     // Epic Seven: banners de bannerhistory.app + eventos de los avisos oficiales de STOVE. Gachafocus solo si se reactiva (GACHAFOCUS_ENABLED=1).
     case 'epic7': return GF_ON ? syncGachafocus(id, game.api) : syncEpic7(id)
     // Notas de parche oficiales (vía nikke.gg) con hora exacta + Prydwen/wiki para banners y lo que no traen.
@@ -391,10 +388,11 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     }
     // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa).
     case 'pgr': return syncPgr(id)
-    // Honkai Impact 3rd: eventos de su wiki (Fandom); banners solo vía Discord.
-    case 'honkai3': return syncHonkai3(id).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))
-    // Azur Lane: solo anuncios oficiales vía Discord (syncSource los añade si hay canal); sin fuente web permitida.
-    // + los avisos de mantenimiento de su web oficial (azurlane.ts): eventos, construcción limitada y cosméticos con fechas, aunque el canal falle.
+    // Honkai Impact 3rd: eventos y gachapones de trajes de su wiki (Fandom) + gachapones de la versión del aviso oficial de HoYoLAB (honkai3.ts).
+    // Con canal de Discord (tuits y #glb-current-supplies), sus anuncios mandan.
+    case 'honkai3': return both(syncHonkai3(id), syncHi3Official(id)).then(s => ({ ...s, events: [...s.events, ...hi3MemorialArena(id)] }))
+    // Azur Lane: avisos de mantenimiento de su web oficial (azurlane.ts: eventos, construcción limitada y cosméticos con fechas, retratos de la wiki)
+    // + tuits oficiales por Discord (syncSource los une por encima; azurPolish los ordena).
     case 'azurlane': return syncAzurLane(id)
     default: throw new Error(`Sin fuente para ${game.name}`)
   }

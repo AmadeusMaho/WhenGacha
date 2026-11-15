@@ -162,8 +162,8 @@ los banners de la 3.7. `alignPatches` (`src/sources/versions.ts`, aplicado en `s
   Lee el último "VERSION "…" UPDATE NOTE": banners (Omniframe, arma, CUB, "[Expedition Supply] Research"), eventos y tiradas (250 Black Card o 250 R&D Tickets por
   investigación, según sus notas). Se omiten los paquetes de revestimientos. Imágenes: la wiki de Fandom aún no tiene las de esta versión.
 - **Honkai Impact 3rd** (`honkai3.ts`): eventos desde `honkaiimpact3.fandom.com` (robots.txt permite /api.php): `Category:Events` por fecha + `{{Event Entry|start|end|version}}`.
-  Hora del servidor sin zona → UTC+8 y "≈". ennead solo tiene sus códigos; la wiki dejó de registrar los gachapones (Supply) en 2019 → banners solo vía Discord.
-- **Azur Lane**: solo vía Discord (su web es de Yostar y su wiki azurlane.koumakan.jp pone una barrera anti-bots Anubis: no se usa). Sin canal configurado, vacío.
+  Hora del servidor de **América (UTC-5)**, no UTC+8 (corregido el 14 nov 2026; ver "Honkai Impact 3rd y Azur Lane, segunda pasada"). Banners: ver esa sección.
+- **Azur Lane** (`azurlane.ts`): avisos de mantenimiento de su web oficial + Discord; retratos enlazados de la wiki sin consultarla. Ver la misma sección.
 - **Comparación con gacha-event-tracker** (agregador público, JSON en GitHub Pages; solo para comparar): sin huecos en NTE, R:1999, Arknights, Blue Archive, Stella Sora.
   **Genshin, HSR y ZZZ → RESUELTO** (`hoyowiki.ts`): la plantilla `{{Event List|hidepast=1}}` de sus wikis de Fandom, renderizada con `action=parse`, da cada evento con su periodo exacto
   (`data-sort-value`, hora del servidor de Asia, UTC+8), imagen y tipos; `officialFirst(wiki, ennead)`: **la wiki manda en las horas** (decisión del dueño, 6 nov 2026: ennead daba el inicio a las 07:00 UTC+8, en pleno mantenimiento, y cierres redondos; la wiki da 11:00 UTC+8 tras la actualización y el cierre real 03:59 UTC+8) y ennead aporta recompensas, tiradas, banners, desafíos y lo que la wiki no tenga. Además, ennead lista algunos eventos sin fechas (0 → 0), que antes se descartaban. Tras el cambio:
@@ -788,3 +788,116 @@ o sin lanzar en global, con fecha, región, editor, plataformas, estado y botón
 - **Rechazos en Botkeep (13 nov 2026)**: game8.co y webapi.browndust2.com bloquean su IP (ya sabido; las copias llegan desde el PC por la rama
   `data` y `carryOver` evita perderlas). **iopwiki.com** pide `Crawl-delay: 20` y el proxy esperaba 2 s: ahora 20 s (`GAP`). **Siliconera**
   (RSS de próximos gachas): Cloudflare corta las IP de servidores; el servidor ya no lo pide (`notServer`), solo el PC y Actions (`allFeeds`).
+
+## Honkai Impact 3rd y Azur Lane, segunda pasada (14 nov 2026)
+
+Los dos juegos más flojos de la lista. Lo que se encontró y lo que se hizo:
+
+**Honkai Impact 3rd** (`honkai3.ts`, proxy `hoyolab`):
+- **Hora mal**: la wiki da la hora del servidor de América. La versión 9.1 empieza "2026-10-22 05:00", que es el `debut_NA` de su página "Version 9.1" y el fin del
+  mantenimiento "23:00, OCT 21 – 05:00, OCT 22 (UTC-5, Americas Server)" del aviso oficial. Se leía como UTC+8: todo salía 13 h antes. Ahora `SERVER = -5`, la base
+  de servers.ts es `na` y la Memorial Arena (martes 04:00 – lunes 02:00) también va en UTC-5.
+- **Banners de trajes** ("… Outfit Supply"): la wiki los tiene como eventos con fecha exacta ("Within 10 … Outfit Supply drops"). Ahora son banners con la valquiria
+  (retrato de su página) y el traje. Antes salían como eventos con "Special Outfit Coupon ×100" de recompensa (que es solo la conversión del repetido).
+- **Banners de la versión** (Battlesuit, AstralOp y Equipment Supply): la wiki no los registra con fecha (las páginas "Battlesuit Supply"/"Equipment Supply" solo
+  explican las reglas) y el aviso de HoYoLAB "Supply Events Preview" es solo imágenes. Salen del aviso oficial "vX.Y … Update Announcement" de HoYoLAB
+  (`bbs-api-os.hoyolab.com`, API pública de su web; robots.txt de hoyolab.com solo cierra /genshin): "Welcome to v9.1 … (OCT 22 ~ DEC 24)", "Herrscher of Time
+  Battlesuit Supply is available", "Equipment Supply … Drive core Key of Mirroring and Let Time Be Your Name stigma set have increased drop rates". El aviso no da su
+  cierre (rotan cada 14 días con reposiciones), así que van `open` (la barra llega al fin de la versión, sin fecha de fin mostrada). 2 consultas por ciclo, caché 6 h.
+  El servidor de Discord sigue #glb-current-supplies del Discord oficial: cuando publique, sus anuncios mandan (no ha publicado desde el 6 nov; formato sin probar).
+- Battle Pass, Time Capsule y recargas ("Starry Wishes") pasan a campaña menor.
+- **Iconos**: la wiki usa "X (Icon).png" (añadido a `withItemIcons`) y para el equipo "X (5) (Icon).png" / "X (T).png" (`ICON_FILES.honkai3`). **Sin icono**: los objetos
+  nuevos de la 9.1 (Nostalgic Tides Ticket, Refreshing Sweetheart, Wishing Amid Light Gift Box…) y el equipo destacado (Key of Mirroring, Let Time Be Your Name):
+  sus páginas enlazan archivos que la wiki aún no subió (enlaces rotos). Se cubren solos cuando los suba.
+
+**Azur Lane** (`azurlane.ts`):
+- **Eventos mal catalogados**: los tuits de cosméticos ("The following new Augment Modules…", "The collab furniture…", "Limited collab gear skins…") entraban como
+  eventos con la frase por título. Además Discord mandaba sobre la web y, al emparejar por nombre, "Limited collab gear skins" se tragaba el bloque "New Skins" de la web.
+  Ahora **la web manda** (`officialFirst(web, discord)` solo para Azur Lane): cada bloque del aviso trae su tipo y su periodo; Discord añade lo que la web no tiene.
+  `azurPolish` pasa los cosméticos de los tuits a campaña menor con el nombre limpio y quita los que la web ya tiene en el mismo periodo.
+- **Retratos sin consultar la wiki**: azurlane.koumakan.jp pone Anubis en sus páginas y su robots.txt cierra /w/ (la API). Las imágenes, en cambio, salen sin barrera de
+  `azurlane.netojuu.com/images/` (no las cierra su robots.txt) en la ruta fija de MediaWiki: `/images/<md5[0]>/<md5[0..1]>/<archivo>`. `alIcon` (con `md5.ts`) arma
+  "<Nombre>Icon.png" sin pedir nada (comprobado con 9 barcos, 9/9). Lo usan los barcos de construcción limitada y los personajes de recompensa de los eventos.
+- Hasta 4 avisos por ciclo (antes 3): los eventos de planos duran 4 semanas. "Augment", "rental" y "Black Friday" también son menores.
+- **Sin fuente**: códigos (Azur Lane global no los publica con regularidad y PocketGamer no tiene página), rotatorios (Ejercicios, META, Operation Siren: sin calendario
+  documentado con fechas) e iconos de los objetos (gemas, cubos, módulos de mejora: su nombre de archivo en la wiki no sigue una regla fija).
+
+**Auditoría del resto** (14 nov 2026, copias locales, solo lo vigente y no menor): los más flojos en recompensas son BD2, Epic Seven, Limbus, Onmyoji (sin fuente),
+Stella Sora, Trickcal, WuWa, Uma, FGO, SoC y DNA (0 % de eventos con recompensas); sin imagen en la mayoría, Trickcal (0 %), BD2 (22 %), PtN (33 %) y Stella Sora (36 %);
+sin códigos, Arknights, Epic Seven, NIKKE, Limbus, Stella Sora, GFL2 y PGR.
+
+
+## BD2, Epic Seven, Stella Sora y Trickcal, segunda pasada (14 nov 2026)
+
+**BrownDust2** (`bd2.ts`):
+- **Imágenes**: las de cada evento en sus avisos son tablas de recompensas pegadas como "image.png" (sin texto: no se pueden leer ni sirven de portada).
+  El arte de verdad está en las "Developer Notes" del mes: cada sección (`<h2>`) con su ilustración de nombre propio ("13.png" = Blood Royale, "24.jpg" =
+  Golden Colosseum, "26.png" = Taros Tactical Manual). `withDevNotesArt` lee las del mes y las del anterior (1–2 avisos más por ciclo): "New Season Events" →
+  los eventos con el nombre de la temporada (el evento, su pase y su misión de impulso); el resto, a lo que empieza igual. Sin arte en ninguna fuente:
+  Toire's Casino Roulette, Complex (Light) Boosting Mission y Tower of Salvation.
+- **Retratos**: el arte del traje de los pickups (vertical, cuerpo entero) sirve de retrato; la app lo recorta por arriba. BD2 no tiene wiki ni base de datos de trajes.
+- **Rotatorios**: además del Golden Colosseum y la Tower of Salvation, las fases con nombre de las secciones de modos ("Guild Raid · Boss Defense", con "Boss: Morghenia")
+  y **Taros Tactical Manual** (temporadas de 4 semanas). El calendario de la actualización anterior puede quedar en la página 2 de la lista: se pide solo si falta.
+- **Recompensas**: siguen sin fuente (tablas en imagen).
+
+**Epic Seven** (`epic7.ts`):
+- **Recompensas**: las tablas que STOVE aplana una celda por línea ("Check-In Day / Standard Reward / Quantity / 1 / Faint Guiding Stone / 25 …") se leen como tríos
+  (`tableRewards`). Los vigentes sin recompensas en el resumen piden el aviso entero (máx. 14 por ciclo, caché 2 h). Los demás avisos las dan en imagen.
+- **Códigos**: los cupones oficiales de los resúmenes de STOVE ("Coupon Code: EPICWITHCZN … Redemption Period … Rewards …"), solo vigentes; sin consultas nuevas.
+  La lista de PocketGamer **no se usa**: mezcla cupones de un solo uso, de torneos (E7WC) y caducados sin fecha.
+- **Iconos**: la wiki (epic-seven.fandom.com) nombra las monedas "X Currency.png" (añadido a `withItemIcons`). **Sin icono ni retrato**: Faint Guiding Stone, Epic Charm/Mana Stone
+  Selection Chest, Chronicle Bookmark, los tickets de invocación y los héroes Bunny Girl (ni la wiki ni epic7db.com los tienen aún; se cubren solos cuando los suban).
+
+**Stella Sora** (`stellasora.ts`):
+- **Imágenes y recompensas**: cada apartado "■" de los avisos oficiales trae su imagen debajo del periodo y nombra sus premios ("get Compass… redeem Stellanite Dust,
+  Cerulean Ticket…"). El lector de avisos los perdía (pasaba el HTML a texto). Ahora `ssSections` los guarda y `ssPolish` (index.ts, tras unir Discord y la wiki) los
+  aplica por nombre. "Limited Event Story: X" no se confunde con el evento X. Premios sin cantidad (el aviso no la da).
+- **Destacados**: los de la portada de la wiki ponían el nombre del banner como personaje ("Stardust Rising in the Light"). Ahora salen de los avisos de reclutamiento
+  (★5 y ★4: "Firefly, Tilia, Ridge"; discos "[Stellar Destination]"). El mismo reclutamiento con dos nombres (tuit "Beneath Billowing Sails" y aviso "Untrodden Lands Seen In
+  Dreams") se queda en uno. Hasta 6 avisos por ciclo (antes 4).
+- **Retratos e iconos sin consultar la wiki** (su robots.txt cierra /w/): ruta fija de MediaWiki en static.wikitide.net. Trekkers "Leafia.png", discos
+  "Disc_icon_<Nombre>.png" (comprobados). Los objetos no siguen una regla ("Item_2.png" = Stellanite Dust), así que van en un mapa comprobado a mano (`SS_ICONS`).
+- **Códigos**: lista de activos de PocketGamer (`stella-sora`). El lector de PocketGamer ahora acepta la cabecera en `<h3>` y descarta frases ("There are no expired codes…").
+
+**Trickcal** (`trickcal.ts`):
+- **Imágenes**: sus avisos web (Bilibili) no traen ninguna. `tweetImages` (discord.ts) da a un evento la imagen del tuit oficial que lo nombra, y a un banner la del que
+  nombra a su Apóstol y habla de reclutamiento. El canal tiene aún pocos tuits (se siguió hace poco): se irá llenando.
+- **Recompensas**: sin cifras, las que el aviso nombra entre corchetes ("exchange for [Unflinching Polan Figure]"). Sin icono (no hay fuente de iconos de objetos).
+
+**Azur Lane, Ejercicios**: la wiki blhx.fandom.com ("Exercise") explica los rangos y los Méritos y que las temporadas duran **2 semanas**, pero ni ella ni otra fuente
+da una fecha de la que partir para calcular el ciclo. No se añade hasta tener una (la cuenta atrás de la temporada en el juego bastaría).
+
+## Limbus Company y horas reales (14 nov 2026)
+
+**Limbus** (`limbus.ts`), el juego más flojo de la lista (3 elementos, todo "≈", sin retratos):
+- **Hora real**: sus avisos oficiales son imágenes (Steam, y el canal de Discord solo tiene el mensaje de seguimiento), pero la wiki cita siempre la misma regla:
+  "from April 20, 12:00 to May 4, 09:59 (KST)" (Hell's Chicken, Line 1, The Magic Hell Bus). Las fechas de Eldritch Tools se leen así: inicio 12:00 KST (03:00 UTC),
+  fin 09:59 KST (00:59 UTC). Antes, todo a las 10:00 KST y "≈".
+- **Retratos**: `identities/<id>_normal_profile.webp` y `egos/<id>_awaken_profile.webp` de Eldritch Tools (~20 KB). El id lleva el pecador (1|03|16 = identidad de
+  Don Quixote), así que el destacado se llama "Wedge Office Fixer Don Quixote" y no "Wedge Office Fixer" dos veces. Nombres de E.G.O: `egos_mini.json` (añadido al proxy).
+  Hasta 6 destacados por banner (antes 3).
+- **Temporada y Mirror Dungeon** (de la wiki): en el servidor no salían nunca. linkedom deja `body` vacío al leer un fragmento HTML suelto: se envuelve en un documento
+  completo (como bd2.ts y kuro.ts) y se separan las etiquetas. Ahora salen "Season 8: Punctum" y "Mirror Dungeon: Mirror of Sisyphe" (sin fin anunciado).
+- **Sin fuente**: recompensas (en imagen) y códigos (Limbus no los publica).
+
+**Honkai Impact 3rd**: las horas de la wiki son las oficiales del servidor de América; solo lo que empieza a las 05:00 (fin previsto de la actualización) queda "≈".
+
+**Juegos con horas aproximadas y por qué** (lo vigente, 14 nov 2026):
+- "Tras el mantenimiento" (el fin real no se publica; el cierre sí es exacto): DNA, Infinity Nikki, Trickcal, Azur Lane, parte de HI3 y Aniimo.
+- Solo días: AFK Journey (wiki), Onmyoji (wiki; sin avisos oficiales legibles), NTE (lo que solo trae Game8) y MHO (lo que solo trae GameWith).
+- Arknights: lo que aún no ha salido en global sale del calendario de su gamedata (estimado).
+
+## Fuentes que encontró el dueño (14 nov 2026)
+
+- **Azur Lane, códigos**: mobilematters.gg/redeem-codes/azur-lane-code (fuente `mobilematters`; robots.txt solo cierra búsquedas y recursos). Lista "New Codes" sin
+  recompensas (hoy AZUR2026); la de caducados no se lee. `syncMobileMattersCodes` en codes.ts.
+- **Azur Lane, Ejercicios**: temporadas de 14 días que acaban un lunes a las 00:00 (UTC-7, sin horario de verano), un lunes sí y otro no. Falta saber cuál de los
+  dos lunes: ninguna fuente publica una fecha. Con la cuenta atrás del juego (pantalla de Ejercicios) se añade el rotatorio.
+- **BrownDust2, retratos**: el visor de Live2D de la comunidad (Jelosus2/BD2-L2D-Viewer, MIT): `src/utils/character_list.ts` (traje, personaje, id) por raw.githubusercontent
+  (fuente `bd2-l2d`, 24 h) y el icono `src/assets/char_icons/icon_char<id>.png`. El pickup "<traje> <personaje>" toma ese icono; el arte vertical del aviso queda como
+  imagen del banner. dotgg.gg/brown-dust-2 también tiene retratos, pero su robots.txt cierra el paso a los rastreadores: no se usa.
+- **AFK Journey, web oficial** (afkjourney.farlightgames.com/news/): descartada. La página mete todas las noticias en un JSON de 18 MB; son notas de parche (la última en
+  inglés, 1.7.1 de mayo; las siguientes solo en chino y coreano) sin periodos de eventos.
+- **Onmyoji**: sin canal oficial vivo en inglés (web parada en 2020, Discord abandonado, Steam desde 2022; no aparece cuenta oficial activa en X ni Facebook). La wiki de
+  Fandom ("Events/Global") sigue siendo la única fuente con fechas.
+- **Trickcal**: sin wiki ni guía con imágenes de eventos o iconos de objetos (búsqueda del 14 nov 2026). Quedan las imágenes de los tuits oficiales (`tweetImages`).
