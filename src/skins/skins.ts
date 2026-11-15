@@ -54,7 +54,9 @@ export const FONDOS: Record<string, string[]> = {
   ],
   genshin: [
     'columbina-blue-flower-fields', 'arlecchino-crimson-moon', 'bride-furina', 'hu-tao-mid-autumn-festival', 'sea-of-flowers',
-    'yae-miko-sakura-sunset', 'aether-vs-ronova-boss-fight', 'columbina-luminous-moon', 'lonely-ganyu-in-the-rain', 'sumeru'
+    'yae-miko-sakura-sunset', 'aether-vs-ronova-boss-fight', 'columbina-luminous-moon', 'lonely-ganyu-in-the-rain', 'sumeru', 'ronova',
+    'clorinde', 'genshin-impact', 'zhongli-and-hu-tao', 'raiden-ei-x-raiden-makoto', 'kamisato-ayaka-cherry-blossom',
+    'xiao-lanterns-on-the-full-moon-night', 'klee-trip', 'aether-and-paimon'
   ],
   zzz: [
     'v33', 'claret-and-roxy', 'miyabi-fox', 'remielle-dan', 'yuzuha-x-alice', 'yixuan', 'yidhari', 'hoshimi-miyabi', 'ye-shunguang',
