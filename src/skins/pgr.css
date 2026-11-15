@@ -303,11 +303,8 @@ html[data-skin="pgr"] .bar.live::after { content: ""; position: absolute; top: 0
   background: url(/skins/pgr/inevent.webp) right top / contain no-repeat; }
 html[data-skin="pgr"] .now-line { background: var(--pg-red) !important; box-shadow: 0 0 8px rgba(224, 48, 60, .8); }
 
-/* Botón principal: el destello naranja del reclutamiento cruza al pasar el ratón. */
+/* Botón principal: sin destello al pasar el ratón (se quitó el barrido del reclutamiento a petición del dueño, 15 nov 2026). */
 html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate) { position: relative; overflow: hidden; }
-html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate)::before { content: ""; position: absolute; top: -40%; bottom: -40%; left: -70%; width: 70%; pointer-events: none;
-  background: url(/skins/pgr/flare.webp) center / 100% 100% no-repeat; mix-blend-mode: screen; opacity: 0; transition: left .5s ease, opacity .2s; }
-html[data-skin="pgr"] :is(.btn.primary, .site-foot a.btn.donate):hover::before { left: 110%; opacity: .85; }
 
 /* Ventana del evento: el destello del reclutamiento bajo el título y el código de barras en la esquina del arte. */
 html[data-skin="pgr"] .modal-hero::after { content: ""; position: absolute; left: 0; bottom: 0; width: 260px; height: 90px; pointer-events: none; opacity: .55; mix-blend-mode: screen;
@@ -343,7 +340,7 @@ html[data-skin="pgr"] :is(input[type="text"], input[type="search"], input[type="
 
 /* ===== Tarjetas con la forma de las fichas de PGR (15 nov 2026): "Mis gachas", cuadrícula, "Termina pronto", próximos y retratos =====
    Dos esquinas cortadas (arriba a la izquierda y abajo a la derecha, --pg-cut), el filo blanco en el corte de arriba y rojo en el de abajo
-   (::after, en lugar de las marcas de visor, que el corte se comería), una franja de rango roja a la izquierda y un destello al pasar.
+   (::after, en lugar de las marcas de visor, que el corte se comería), una franja de rango roja a la izquierda (el destello blanco al pasar se quitó, 15 nov 2026).
    Sin sombra exterior (el clip-path la recorta): el relieve va por dentro. */
 html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card) { --pg-cut: 16px; position: relative; overflow: hidden;
   clip-path: polygon(var(--pg-cut) 0, 100% 0, 100% calc(100% - var(--pg-cut)), calc(100% - var(--pg-cut)) 100%, 0 100%, 0 var(--pg-cut));
@@ -353,12 +350,9 @@ html[data-skin="pgr"] :is(.soon-card, .up-card) { --pg-cut: 10px; }
 html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card)::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none;
   background:
     linear-gradient(135deg, transparent calc(var(--pg-cut) * .707 - 1px), #fff calc(var(--pg-cut) * .707 - 1px), #fff calc(var(--pg-cut) * .707 + .5px), transparent calc(var(--pg-cut) * .707 + .5px)) left top / calc(var(--pg-cut) + 2px) calc(var(--pg-cut) + 2px) no-repeat,
-    linear-gradient(135deg, transparent calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 + 1.5px), transparent calc(var(--pg-cut) * .707 + 1.5px)) right bottom / calc(var(--pg-cut) + 2px) calc(var(--pg-cut) + 2px) no-repeat,
-    linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .09) 48%, transparent 56%) -200% 0 / 200% 100% no-repeat;
-  transition: background-position .6s ease; }
+    linear-gradient(135deg, transparent calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 - .5px), var(--pg-red) calc(var(--pg-cut) * .707 + 1.5px), transparent calc(var(--pg-cut) * .707 + 1.5px)) right bottom / calc(var(--pg-cut) + 2px) calc(var(--pg-cut) + 2px) no-repeat; }
 html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card):hover { transform: translateY(-2px); background-color: rgba(28, 31, 37, .92);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), inset 4px 0 0 var(--pg-red), inset 0 -40px 40px -40px rgba(224, 48, 60, .35); }
-html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card):hover::after { background-position: left top, right bottom, 200% 0; }
 html[data-skin="pgr"] .soon-card.urgent { box-shadow: inset 0 0 0 1px rgba(224, 48, 60, .45), inset 4px 0 0 var(--pg-red); }
 
 /* "Mis gachas": la cabecera de arte acaba en diagonal con una franja de rayas (como los rótulos de las fichas del juego) y un código de
@@ -382,7 +376,6 @@ html[data-skin="pgr"] .ecard-img::after { content: ""; position: absolute; left:
 html[data-skin="pgr"] .bport { clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); border: 0;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .2), inset 0 -2px 0 var(--pg-red); }
 html[data-skin="pgr"] .bport:hover { box-shadow: inset 0 0 0 1px #fff, inset 0 -3px 0 var(--pg-red); }
-@media (prefers-reduced-motion: reduce) { html[data-skin="pgr"] :is(.gcard, .ecard, .bcard, .soon-card, .up-card)::after { transition: none; } }
 
 /* --- "Idioma del virus Punishing" (Punishing Virus Language Font.ttf, aportada por el dueño el 15 nov 2026; recorte ASCII en pgr-virus.woff2,
    3 KB): las letras son los símbolos cifrados del juego, así que NO se usa para texto que haya que leer, solo en rótulos de adorno, como en
@@ -407,18 +400,21 @@ html[data-skin="pgr"] { --pg-head: 'Barlow Condensed', 'Rajdhani', 'Barlow', san
 /* Pestañas: tiles de dos líneas (como el menú de la derecha del juego). La elegida, blanca como "Missions / Daily Work". */
 @media (min-width: 701px) {
   /* Sin girar la barra en perspectiva: se probó (como el menú del juego) y doblada se veía rara (dueño, 15 nov 2026). */
-  html[data-skin="pgr"] header nav { gap: 6px; }
-  html[data-skin="pgr"] header nav button { display: grid; justify-items: start; line-height: 1; padding: 6px 20px 6px 48px !important; font-size: 1.12rem; letter-spacing: .04em;
+  /* Compacta (15 nov 2026): con 1.12rem y 20/48 px de relleno medía 755 px y partía la cabecera en dos líneas; ahora ~500 px, como las demás. */
+  html[data-skin="pgr"] header nav { gap: 4px; }
+  html[data-skin="pgr"] header nav button { display: grid; justify-items: start; line-height: 1; padding: 5px 12px 5px 38px !important; font-size: .95rem; letter-spacing: .03em;
     background: rgba(14, 16, 20, .8) !important; clip-path: none; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1) !important; }
   html[data-skin="pgr"] header nav button:nth-of-type(n)::after { content: "SCHEDULE"; position: static; left: auto; right: auto; bottom: auto; display: block; height: auto; margin-top: 3px; background: none;
-    color: #a3a9b2; font: 600 .56rem/1 'Barlow', sans-serif; letter-spacing: .22em; transform: none; animation: none; }
+    color: #a3a9b2; font: 600 .52rem/1 'Barlow', sans-serif; letter-spacing: .16em; transform: none; animation: none; }
   html[data-skin="pgr"] header nav button:nth-of-type(2)::after { content: "MEMBERS"; }
   html[data-skin="pgr"] header nav button:nth-of-type(3)::after { content: "NEWS"; }
   html[data-skin="pgr"] header nav button:nth-of-type(4)::after { content: "RESEARCH"; }
   html[data-skin="pgr"] header nav button.on { background: #f1f2f4 !important; box-shadow: inset 0 -3px 0 var(--pg-red) !important;
     animation: pg-sig-txt .45s linear 1, pg-sig-under .5s cubic-bezier(.2, .8, .2, 1) 1; }
   html[data-skin="pgr"] header nav button.on:nth-of-type(n)::after { color: #4a4f57; }
-  html[data-skin="pgr"] header nav button::before { left: 12px; width: 28px; height: 28px; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+  html[data-skin="pgr"] header nav button::before { left: 8px; width: 24px; height: 24px; clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px); }
+  html[data-skin="pgr"] header nav button:nth-of-type(4) { padding-left: 40px !important; }
+  html[data-skin="pgr"] header nav button:nth-of-type(4)::before { left: 7px; width: 28px; height: 24px; }
   @keyframes pg-sig-under { from { box-shadow: inset 0 0 0 var(--pg-red); } to { box-shadow: inset 0 -3px 0 var(--pg-red); } }
   /* Botones de la derecha: los cuadrados azules de los "+" de la barra de recursos, inclinados como ella (sube hacia la derecha). */
   html[data-skin="pgr"] .head-actions .btn { transform: skewY(-4deg); }
