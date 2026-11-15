@@ -52,6 +52,17 @@
 @media (prefers-reduced-motion: reduce) { .premium-badge::after { animation: none; } }
 @media (max-width: 600px) { .premium-badge { padding: 1px 7px; font-size: .6rem; } }
 
+/* Botón de las skins dorado como la insignia Premium (15 nov 2026), SOLO en la vista original (sin skin): es lo que ve quien aún no apoyó.
+   Con una skin puesta (ya pagó) el botón toma el estilo de la skin. Texto #2a1f08 sobre el dorado: > 8:1. */
+html:not([data-skin]) .skin-btn { position: relative; overflow: hidden; border: 0; color: #2a1f08;
+  background: linear-gradient(135deg, #f7e2a8, #d6ad5c 45%, #f3d58c 70%, #b98a3c);
+  box-shadow: 0 0 0 1px rgba(255, 236, 190, .45) inset, 0 2px 12px rgba(214, 173, 92, .45); }
+html:not([data-skin]) .skin-btn:hover:not(:disabled), html:not([data-skin]) .skin-btn[aria-expanded="true"] { color: #2a1f08;
+  background: linear-gradient(135deg, #fbecc4, #e2bd6e 45%, #f7e0a4 70%, #c8994a); box-shadow: 0 0 0 1px rgba(255, 244, 214, .7) inset, 0 2px 16px rgba(214, 173, 92, .6); }
+html:not([data-skin]) .skin-btn::after { content: ""; position: absolute; inset: 0; transform: translateX(-120%); pointer-events: none;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .6) 50%, transparent 70%); animation: premium-shine 6s ease-in-out 1.5s infinite; }
+@media (prefers-reduced-motion: reduce) { html:not([data-skin]) .skin-btn::after { animation: none; } }
+
 /* Cuenta Premium en el menú del pincel. */
 .skin-account p { color: var(--good); }
 .skin-panel .skin-unlock .support-open { width: auto; justify-self: start; border-radius: 999px; padding: 7px 16px; }
@@ -293,6 +304,41 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 .tv-zzz .tv-bezel::before { content: ''; position: absolute; top: 4px; left: 14px; width: 58px; height: 5px; border-radius: 50%;
   background: radial-gradient(ellipse, rgba(255, 255, 255, .28), transparent 70%); pointer-events: none; }
 @media (max-width: 700px) { .music-dock.tv-zzz { --tv-r: 13px; --tv-bezel-r: 16px / 14px; } }
+/* Cinta VHS (15 nov 2026): al empezar cada canción entra una cinta en el lector de vídeo de debajo de la pantalla, del ancho de la ranura.
+   Es una caja en 3D: la cara de arriba (.tv-vhs-top) va tumbada en perspectiva con la portada (la miniatura del vídeo que suena, la misma
+   --tv-thumb que el disco de PGR) y la franja amarilla "VHS"; el canto de delante (.tv-vhs-front) cuelga de ella a 90° (preserve-3d), así
+   que se mueve y se encoge con ella sin ajustes a mano. La boca del lector es el borde de arriba de .tv-vhs (a media ranura): lo que pasa
+   detrás se oculta (overflow hidden) y una sombra hace de interior oscuro. La cinta llega desde delante, se para con la portada a la vista
+   y se desliza hacia dentro por su propio plano; luego se enciende el título. Solo ocupa la fila del lector, por debajo de la pantalla:
+   nunca la tapa (YouTube no lo permite). */
+.tv-zzz .tv-slot { position: relative; overflow: visible; }
+.tv-zzz .tv-vhs { --d: 60px; --t: 7px; --tilt: perspective(380px) rotateX(64deg);
+  position: absolute; z-index: 3; left: -24px; right: -24px; top: 50%; height: 60px; overflow: hidden; pointer-events: none;
+  opacity: 0; animation: tv-vhs-in 1.9s ease-out both; }
+/* Interior de la boca: sombra sobre la parte de la cinta que ya va entrando. */
+/* Del ancho exacto de la ranura (el contenedor es 24 px más ancho por lado para la perspectiva de la cinta). */
+.tv-zzz .tv-vhs::after { content: ''; position: absolute; z-index: 2; left: 24px; right: 24px; top: 0; height: 9px; background: linear-gradient(rgba(0, 0, 0, .9), transparent); }
+.tv-zzz .tv-vhs-top { position: absolute; left: 37px; right: 37px; top: 0; height: var(--d); border-radius: 2px; transform-origin: 50% 0; transform-style: preserve-3d;
+  transform: var(--tilt); box-shadow: 0 0 0 1px #000;
+  background: linear-gradient(170deg, rgba(255, 255, 255, .22), transparent 35%),
+    linear-gradient(#ffdd00, #ffdd00) 0 6px / 100% 9px no-repeat,
+    var(--tv-thumb, linear-gradient(135deg, #2a64ad, #1b4682)) center 60% / cover no-repeat, #111;
+  animation: tv-vhs-slide 1.9s both; }
+/* Canto: plástico negro con el filo de luz, la etiqueta blanca y la ventanita; de pie bajo el borde cercano de la cara de arriba. */
+.tv-zzz .tv-vhs-front { position: absolute; left: 0; right: 0; top: 100%; height: var(--t); border-radius: 0 0 3px 3px; transform-origin: 50% 0; transform: rotateX(-90deg);
+  background: linear-gradient(90deg, transparent 0 34%, #2a2926 34% 66%, transparent 66%) 0 50% / 100% 3px no-repeat,
+    linear-gradient(90deg, transparent 0 6%, #e9e4d6 6% 26%, transparent 26%) 0 50% / 100% 4px no-repeat,
+    linear-gradient(180deg, #3d3a36, #1a1917 30%, #070707);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 0 0 1px #000; }
+/* Al acabar desaparece todo, también la sombra de la boca (si no, quedaba una línea negra sobre la ranura). */
+@keyframes tv-vhs-in { 0% { opacity: 0; transform: translateY(6px); } 20%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
+/* Móvil: el aparato va a 8 px del borde (no 16): cinta algo más corta para que quepa. */
+@media (max-width: 700px) { .tv-zzz .tv-vhs { --d: 50px; --t: 6px; } }
+@keyframes tv-vhs-slide {
+  0%, 45% { transform: var(--tilt); animation-timing-function: cubic-bezier(.5, 0, .3, 1); }
+  100% { transform: var(--tilt) translateY(calc(-1 * (var(--d) + 48px))); } }
+.tv-zzz .tv-slot span { animation: tv-vhs-title .5s ease-out 1.8s both; }
+@keyframes tv-vhs-title { from { opacity: 0; filter: blur(2px); } }
 
 /* ===== Temas compactos (todas menos ZZZ, .tv-mini): mismo HTML que la tele, pero cada skin con su propia silueta y casi sin marco
    (≈ 215–255 px de ancho, igual en escritorio y móvil). Las piezas se colocan en la rejilla del reproductor con display: contents;

@@ -23,12 +23,12 @@ import type { Lang } from '../i18n'
 type Source = { lists: [string, number][] }
 const MUSIC: Record<string, { top: string[]; all: Source }> = {
   genshin: {
-    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): La vaguelette (16.5 M), Nod-Krai Main Theme Live Performance (16.5 M),
-    // Flares of the Blazing Sun (10.1 M), Genshin Impact Main Theme (1.8 M), 【原神】「輝く星々 The Stellar Moments」 (1.7 M), 【原神】「輝く星々Vol.2 The Stellar
-    // Moments Vol (1.1 M), 【原神】「寂々たる無妄の国」Disc 1 - 稲光と雷櫻の大地 (1.1 M), 【原神】「輝く星々Vol. 3」 (0.8 M), 【原神】「渦巻、落星と雪山 Vortex of Legends」 (0.8 M),
-    // 【原神】「ジュニャーナとヴィディヤーの森」Disc 1 - 緑に囲まれた住処 (0.8 M), 【原神】ドラゴンスパインOSTイメージ楽曲MV「雪深き山頂の記憶」 (0.8 M), 【原神】「白露澄明の泉」Disc 1 - 律令の頌歌 (0.8 M), 【原神】ストーリーOST
-    // selection「さざ波」MV (0.7 M), 【原神】「輝く星々Vol. 4」 (0.6 M), 【原神】「流星の軌跡Vol. 2」 (0.5 M)
-    top: ['lm3t3myPspk', 'RuXa_yxZMGI', 'o4ne1Xzp8m8', 'EEYMlUVKmyE', 'VkbOdPoMlZ8', '9RGH1j_PIrE', '_CnLbWsxAfA', 'UOh6nvmFc2o', 'iYs8Fv7hrzA', 'y2qPVXmwSiQ', 'h_wb3LfOMw4', 'rxIB4nXIpmg', 'RT7aKhGnsjk', 'y9Rqa8arWo8', 'kPxh-Vx7jhI'],
+    // Populares (15 nov 2026, vistas de YouTube con yt-dlp): solo canciones sueltas (fuera álbumes y conciertos de una hora, tráilers y cortos).
+    // La vaguelette (16.5 M), Nod-Krai Main Theme Live Performance (16 M), Flares of the Blazing Sun (10.1 M), Rex Incognito (7.3 M), Polumnia Omnia
+    // (6.7 M), Passing Memories (6.7 M), Duel in the Mist (6.2 M), Se mettre sur son trente-et-un ! (5.3 M), Fontaine (5.1 M), Termination of Desires
+    // (4.7 M), Absolutio Absoluta Absolutissime (4.3 M), Rage Beneath the Mountains (4.3 M), Elogia Cinerosa (4.3 M), Lullaby of the New Moon (3.9 M),
+    // EP: The Divine Stone Sees the World (3.6 M). Del canal oficial y de las pistas de HOYO-MiX / Yu-peng Chen.
+    top: ['lm3t3myPspk', 'RuXa_yxZMGI', 'o4ne1Xzp8m8', 'SBfoWTB-T_U', 'NLEqRNhv6gs', 'j3661mhHfvY', 'FYP2dM8RTFM', 'Arhwh0knLe4', 'tiulg9ySfR8', 'uAte-2ZptaQ', '0ZNqBF3M7-8', 'tIq41I2WT70', 'yFrH9y_cpLg', 'rX8kBUIT5dE', 'gE1BVoq2x8s'],
     // Toda la banda sonora (14 nov 2026): Álbumes de NightBunny8 (pistas de "HOYO-MiX - Topic"/"Yu-Peng Chen - Topic"), uno por lista: ~1900 pistas en total.
     all: { lists: [
       ['PLBO2h-GzDvIa-IIu_3Z8u3L8OO_1Bkv9X', 63], // City of Winds and Idylls
@@ -90,11 +90,12 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
     ] },
   },
   zzz: {
-    // Las 14 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): モエチャッカファイア / 弌誠：MUSIC VIDEO (108.6 M), ZENLESS – Tiësto x Zenless Zone
-    // Zero (20.3 M), Come Alive (11.7 M), Burning Desires (10.0 M), Lucia EP - "DAMIDAMI" (6.6 M), Zhao EP - "Tiny Giant" (6.6 M), Caesar EP -
-    // "pinKing" (6.2 M), Phoenix EP - "1% Battery Girl" (5.8 M), "ReDreaming Angel" - Angels of Delusio (5.7 M), Ellen EP - "Shark's Gotta Bite" (4.3
-    // M), Starlight - Billy EP - "Billy Mode" (4.0 M), Claret EP - "Link Up" (3.6 M), Lighter EP - "Fearless" (3.5 M), Norma EP - "chaos.exe" (3.2 M)
-    top: ['wZlv3qDPfjk', 'GkgtQOlJp0Y', 'R3tZmmiKi0o', 'LCo0KdbVIJM', 'NCzUV95VIEI', 'TU5Bt8MLPjk', 'FaxI5oNATLE', 'AkWvzeXDUxY', '7wMz8mDyHgM', 'cK1ABiGuiG0', 'JNfm_nR4OWo', 'Ln0ilmPqXU0', 't_Ng_b28uxM', 'QBGEahKfeco'],
+    // Populares (15 nov 2026, vistas de YouTube con yt-dlp): ZENLESS – Tiësto x Zenless Zone Zero (20.3 M), Come Alive (11.7 M), Burning Desires
+    // (10.0 M), Lucia EP "DAMIDAMI" (6.5 M), Zhao EP "Tiny Giant" (6.5 M), Caesar EP "pinKing" (6.2 M), Phoenix EP "1% Battery Girl" (5.9 M),
+    // "ReDreaming Angel" (5.7 M), Ellen EP "Shark's Gotta Bite" (4.2 M), Billy EP "Billy Mode" (4.0 M), Claret EP "Link Up" (3.6 M), Lighter EP
+    // "Fearless" (3.5 M), Norma EP "chaos.exe" (3.2 M), Ju Fufu EP (3.1 M), Yuzuha EP "Wonderland Trickery" (2.9 M). Se quitó "モエチャッカファイア"
+    // (108 M): es una canción de 弌誠 en su propio canal, no música de ZZZ.
+    top: ['GkgtQOlJp0Y', 'R3tZmmiKi0o', 'LCo0KdbVIJM', 'NCzUV95VIEI', 'TU5Bt8MLPjk', 'FaxI5oNATLE', 'AkWvzeXDUxY', '7wMz8mDyHgM', 'cK1ABiGuiG0', 'JNfm_nR4OWo', 'Ln0ilmPqXU0', 't_Ng_b28uxM', 'QBGEahKfeco', 'ftIfHp2h7eg', 'fFU7rj7IoLo'],
     // Toda la banda sonora (14 nov 2026): Álbumes de NightBunny8 (pistas de "Sān-Z - Topic"), versiones 3.x de Finding Purposes y la lista "MV" del canal oficial.
     all: { lists: [
       ['PLBO2h-GzDvIa5lcXOhFpl-trjDsa8VuKU', 198], // Hyper Commission
@@ -179,12 +180,11 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
     ] },
   },
   uma: {
-    // Las 14 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): めにしゅき♡ラッシュっしゅ！ (9.8 M), BRIGHTEST HEART (8.0 M), うまぴょい伝説 (8.0 M), GIRLS'
-    // LEGEND U (3.9 M), Umamusume: Pretty Derby – Umapyoi Lege (1.7 M), Winning Concert Video Short Version: " (96 k), Winning Concert Video Short
-    // Version: " (44 k), Winning Concert Video Short Version: " (22 k), Winning Concert Medley Promotional Vid (22 k), Winning Concert Video Short
-    // Version: " (18 k), Winning Concert Video Short Version: " (13 k), Winning Concert Medley Promotional Vid (13 k), Winning Concert Video Short
-    // Version: " (13 k), Winning Concert Video Short Version: " (12 k)
-    top: ['8ULbYqRtlMQ', 'YExL2ilCMLs', 'VFOg6mHtZcA', 'G7RmGsHxv-Q', 'eAkxxgEHEmg', 'h4kgHAp-HLo', 'hDy2ww5MVh8', '60qtuyy7xjs', '2R1IoTrfRJU', '1vsGxmIX6Co', 'LVfT8sU48Pg', 'TL75-qmY1Eo', '2jlTePl8xjU', '7e7rUU7k7gc'],
+    // Populares (15 nov 2026, vistas de YouTube con yt-dlp): solo pistas oficiales ("- Topic" del sello). めにしゅき♡ラッシュっしゅ！ (9.8 M),
+    // うまぴょい伝説 (8.0 M), BRIGHTEST HEART (8.0 M), Legend-Changer (4.9 M), ∞ (4.6 M), GIRLS' LEGEND U (3.9 M), U.M.A. NEW WORLD!! (3.9 M),
+    // トレセン音頭 (3.1 M), 走れウマ娘 (3.0 M), STARTING FORCE (2.9 M), VOLTAGE (2.6 M), ユメヲカケル！ (2.5 M), ウマすぎ！グルメパレード (2.4 M),
+    // Glorious Moment！ (2.3 M), LADY G DONNA (2.3 M). Antes la mitad eran vídeos cortos del Winning Concert con 12–96 mil vistas.
+    top: ['8ULbYqRtlMQ', 'VFOg6mHtZcA', 'YExL2ilCMLs', 'Kpf2mmyzuMM', 'kuMQureM-kA', 'G7RmGsHxv-Q', 'dPj1yTKbWuM', 'K2MLBGo_su8', '8Rw5tbl5Wfc', '5qFDboChguw', 'ff8cVl9JBLM', 'vIo3GWaAbw8', 'c2EerlVb7Js', 'O44r1_NZ8ZY', 'JF8WNheLQzQ'],
     // Toda la banda sonora (14 nov 2026): Sin álbumes por lista: las de 荻風 (pistas "- Topic" del sello; 702 y 347, la ventana alcanza 200 de cada una), recopilaciones de canciones y de música del juego, y "Winning Concert Video" oficial.
     all: { lists: [
       ['PLXQE_C7He7f_XHyR-qrqV8maID8emw3Xb', 702], // OST ALL (荻風)
@@ -199,13 +199,12 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
     ] },
   },
   bluearchive: {
-    // Las 15 subidas oficiales más vistas (13 nov 2026, vistas de YouTube): Main OST 'Target for love' Full ver. (5.7 M), Usagi Flap | Rabbit of
-    // Caerbannog! RAB (1.3 M), X DJ TAK BGM REMIX_2021 Ver. (1.0 M), Echoes of Longing MV | Ex. Decagrammat (0.7 M), Unwelcome School_Piano Jazz Ver.
-    // (Feat (0.7 M), Highlander Railroad Academy Special OS (0.5 M), Main OST 'Target for love' Covered by  (0.5 M), Aris \u0026 Kei - Protocol
-    // SUPERNOVA M (0.4 M), KAGEROU (Full Version) | OST (0.3 M), SUGAR RUSH - Kokoro Gradation (JP Ver. (0.3 M), BGM Playlist _Theme l Winter ❄ l
-    // (0.3 M), BGM Playlist _Theme l Dreamer🚀 l (0.3 M), Kisaki - Following Petals (Japanese Ve (0.2 M), Main OST Piano ver. l Coverd by FONZI  (0.2
-    // M), Sakurako – Twinkle☆Magic MV (0.2 M)
-    top: ['aTU-osotD8k', 'wFvj8P3c9T0', 'iWy_8f1LmTU', 'AgcbWyKM-Tc', 'iWKXKcGVjxA', 'sOwnhE0Easg', '8Q4rflTedwQ', 'Pm4KSlf19pI', 'aQiNBLWvynk', 'xQcjgqtxDuA', 'hskgnjHp4uI', 'fO3VPOEQXNM', '4Rki7khVcZ0', 'ExYvqpziqgg', 'zTX1HSo9JUE'],
+    // Populares (15 nov 2026, vistas de YouTube con yt-dlp, canal oficial): fuera versiones de otros artistas, remixes y "BGM Playlist". Target for
+    // love (5.6 M), Usagi Flap (1.2 M; solo existe oficial en bucle de 1 h), Echoes of Longing (0.7 M), Unwelcome School Piano Jazz con Mitsukiyo, su
+    // compositor (0.7 M), Burning Love (0.6 M, bucle de 1 h), Sparkle Express (0.5 M), Protocol SUPERNOVA (0.4 M), KAGEROU (0.3 M), SUGAR RUSH (0.3 M),
+    // The Promise at Sunset (0.2 M), Following Petals (0.2 M), Twinkle☆Magic (0.2 M), To the Shining MiLie (0.1 M), Flower, Wind and You (0.1 M),
+    // Unending Moderato (0.1 M).
+    top: ['aTU-osotD8k', 'wFvj8P3c9T0', 'AgcbWyKM-Tc', 'iWKXKcGVjxA', '0hPOvejAD0s', 'sOwnhE0Easg', 'Pm4KSlf19pI', 'aQiNBLWvynk', 'xQcjgqtxDuA', 'PxmdydKnvS8', '4Rki7khVcZ0', 'zTX1HSo9JUE', 'F0fRnHg39Ko', '8jP2b6FOuVE', '4iKfJNx-bK4'],
     // Toda la banda sonora (14 nov 2026): Su música no está en canales "- Topic": las listas de MO2 (por volumen, género y evento), los aniversarios de NightBunny8 y "MUSIC" del canal oficial.
     all: { lists: [
       ['PLh6Ws4FpphfoQhmpxR__Drt6t2LSS_p6Z', 39], // Vol.1
@@ -248,11 +247,26 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
     ] },
   },
   pgr: {
-    // Populares: las 15 primeras de la lista oficial de Vanguard Sound Studio (el estudio de sonido de Kuro; 15 nov 2026). YouTube no da las
-    // vistas de esa lista sin la API, así que van en su orden (las más recientes primero): Aeternion, Tinder, Cryosphere, A March Through
-    // Blizzard, Wake from the Mirage, 白鸟梦歌, 霁梦, Steel Heart, Pieces Of My Past, Serene Embers, Paradox, By My Blade, Abyssal Circuit,
-    // Dreaming to the Glowing Place, One More Hand.
-    top: ['4eG36yB2id8', 'oJCnNtzjfgg', 'lMeqPH19iaY', 'gLKrrSb8Lv4', 'GBKa3nRP-fw', 'v338M2CYl6g', 'aeGP_eD5J4M', 'DKdzGJWeurM', 'I6BSk9_FC5w', '5zfunmdxYus', 'k6wm2UDOmUs', 'PfFYDUTrL30', 'ReS36EOD71Y', 'BNOe9s-nHd4', 'eyfwH7LrZho'],
+    // Populares (15 nov 2026, vistas de YouTube con yt-dlp): las 50 más vistas de PGR del canal de Vanguard Sound Studio (el estudio de sonido
+    // de Kuro), sin las de otros juegos ni tráileres. Antes eran las 15 más recientes, sin mirar vistas. De más a menos vistas:
+    // NARWHAL (7.7 M), HIKARI (6.8 M), LAMIA (4.9 M), Last Resort .feat Kinoko蘑菇 (3.4 M), Revelation .feat Kinoko蘑菇 (2.7 M), Under Dimension feat.
+    // Kinoko蘑菇 (2.3 M), Dust (2.2 M), Exorcism (1.4 M), In My Memory (1.3 M), Moonlit Occultation (1.2 M), Sie liebten sich beide (1.2 M), 傀儡 曲
+    // (1.2 M), To The Limit (1.1 M), Lamia -Another Mode- (1.0 M), Dream With You! (1.0 M), 月 Full Version feat. Mira.Z (972 k), To Our Destiny
+    // (901 k), 月 feat. ルナ（CV 釘宮理恵） (888 k), Infinite Gallery ft. Kinoko蘑菇 (812 k), Crossing Eternities (811 k), Evans Gambit (788 k), Endless Path
+    // (744 k), 暮日战歌 (684 k), Wraith (669 k), By My Blade (599 k), Interstice Oath (581 k), 风的视线 / 風の視線 (562 k), Industrial Strike (479 k), C.O.R.E
+    // (467 k), 【Rabbit J】Dancing tonight feat. 夏铜子【パニシング:グレイレイヴン】Official Lyric Video (421 k), Unknown Territory (407 k), The Last Witness (382
+    // k), Abyssal Circuit (349 k), Flame of Hope (349 k), Dreaming to the Glowing Place (321 k), Edenis Full Ver. (321 k), Adversity (291 k),
+    // Crank! (275 k), 逆流 (249 k), Paradox (232 k), Echoes from the Abyss (228 k), Stellarira (225 k), Shattered Doll (194 k), 萤灯谣-合唱版 (188 k),
+    // NANAMI IKIMASU (174 k), Echo of Fated Petals (167 k), 碧落幽山寺 (162 k), One More Hand (158 k), Cryosphere (114 k), Pieces Of My Past (73 k)
+    top: [
+      'q2DBeby7ni8', '6wDr3SmdKKs', 'J9IwRWu70NQ', '7GrDuo4bSZ0', '1W6B60hoa_Y', 'fzlQmQ1Eesk', 'ZwZC4vlZTbI', 'J7xiQcrHYGU',
+      'b1ivKEyoeQw', 'YCIG3RaPnwA', 'cuOae6-GA-g', 'RHu804DrBZc', 'a545Gv3jGzg', 'hMstZbdlh5g', 'y_uq2jtiqCQ', 'zZFqdB8d_lE',
+      'rccBbVZva1A', 'lQnCbzwSMd8', 'jm3UN5B_uwI', 'eTExXK6Je0I', '2rqhqYfgK0w', 'ECNVDsBv3uc', 'EMUgvaWBek4', 'WrBpauaSO8g',
+      'PfFYDUTrL30', '5p75uRVuGKI', 'CyhzV00R69w', '2O3nFoVu5cA', 'ktf_HPqTOXM', '-A1BCv-A0xg', 'TlrLzcj8z2c', 'ZqcQrDCg-dw',
+      'ReS36EOD71Y', 'HyHNEGNNpAc', 'BNOe9s-nHd4', 'h8F4FEoNAKA', '2y9kpHVTbBA', 'nZgg4-e-pSY', 'iWjjtXdeFhQ', 'k6wm2UDOmUs',
+      'SAtnzxtqSmU', 'TeKtgYlvsZM', 'vmSocuyuVhQ', 'bSfF2jxTH8o', 'h8B8_NroMyc', 'nkeVQFaUE38', 'oTqMnZF_LjI', 'eyfwH7LrZho',
+      'lMeqPH19iaY', 'I6BSk9_FC5w',
+    ],
     // Toda la banda sonora (15 nov 2026): la lista oficial de Vanguard Sound Studio y las recopilaciones más grandes (sin álbumes "- Topic" por
     // lista en YouTube). Todas comprobadas con oEmbed (200). Hay pistas repetidas entre ellas.
     all: { lists: [
@@ -324,11 +338,15 @@ function srcOf(m: { top: string[]; all: Source }, mode: Mode, list: string | und
   return list ? `${BASE}videoseries?list=${list}${API()}` : ''
 }
 
-export default function SkinMusic({ skin, name, lang }: { skin: string; name: string; lang: Lang }) {
+/**
+ * `preview` (15 nov 2026): vista previa de la skin sin Premium (menú del pincel). El reproductor sale ya abierto y suena la canción más
+ * popular ("Populares"), sin el botón ♪ de la cabecera y sin guardar el modo elegido. Suena porque el menú se abrió con un clic.
+ */
+export default function SkinMusic({ skin, name, lang, preview = false }: { skin: string; name: string; lang: Lang; preview?: boolean }) {
   const s = TXT[lang] ?? TXT.es
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(preview)
   const [side, setSide] = useState<'left' | 'right'>(() => (read(SIDE_KEY) === 'left' ? 'left' : 'right'))
-  const [mode, setMode] = useState<Mode>(() => (read(MODE_KEY) === 'top' ? 'top' : 'all'))
+  const [mode, setMode] = useState<Mode>(() => (preview || read(MODE_KEY) === 'top' ? 'top' : 'all'))
   const frame = useRef<HTMLIFrameElement>(null)
   const m = MUSIC[skin]
   // "Todas": la lista que tiene cargada la ventana (cambiarla recarga la ventana) y la pista que se le pide dentro de ella.
@@ -348,6 +366,18 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
   }, [open])
+  // "Populares": si una canción no se puede reproducir (bloqueada en el país, retirada…), pasa a la siguiente en vez de quedarse en el error.
+  useEffect(() => {
+    if (!open || mode !== 'top') return
+    const onMsg = (e: MessageEvent) => {
+      if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
+      let d: { event?: string } | null = null
+      try { d = JSON.parse(e.data) } catch { return }
+      if (d?.event === 'onError') frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'nextVideo', args: [] }), '*')
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
+  }, [open, mode])
   const want = useRef(0)
   const skip = useRef<() => void>(undefined) // "Otra canción" en "Todas" (lo pone el efecto de abajo)
   useEffect(() => {
@@ -407,24 +437,24 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
     else frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'nextVideo', args: [] }), '*')
   }
   const flip = () => { const n = side === 'right' ? 'left' : 'right'; setSide(n); write(SIDE_KEY, n) }
-  const pick = (n: Mode) => { if (n !== mode) { setMode(n); write(MODE_KEY, n) } }
+  const pick = (n: Mode) => { if (n !== mode) { setMode(n); if (!preview) write(MODE_KEY, n) } }
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
   const listen = () => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*')
   const player = <iframe key={`${skin}:${mode}:${mode === 'all' ? list : ''}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
     allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
   return (
     <>
-      <button className={`btn sm lang-btn music-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-pressed={open} title={s.open} aria-label={s.open}>
+      {!preview && <button className={`btn sm lang-btn music-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-pressed={open} title={s.open} aria-label={s.open}>
         {/* Nota centrada en su caja (x 6–18, y 3–21) y del tamaño del pincel (18 px), para que los dos botones midan lo mismo. */}
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden><path fill="currentColor" d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" /></svg>
-      </button>
+      </button>}
       {open && (skin === 'zzz' || MINI.has(skin)) && createPortal(
         /* ZZZ (13 nov 2026): el reproductor es la tele CRT de la pantalla de inicio del juego, dibujada solo con CSS. El vídeo va dentro
            de la pantalla a su tamaño (200×200) y sin nada encima (YouTube no deja taparlo): el cristal curvo y el brillo van en el marco.
            A la derecha, las dos ruedas son el selector de modo; abajo, el vídeo (VHS): encendido = cerrar, pantallita = título, ⇄ = esquina.
            Las demás skins de MINI reutilizan este HTML con otra silueta, compacta y sin mueble de tele (skins.css, "Temas compactos"):
            la primera versión les ponía a todas el mismo mueble y acababan pareciendo teles (13 nov 2026). */
-        <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}`} role="region" aria-label={`${s.title} · ${name}`}
+        <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}${preview ? ' preview' : ''}`} role="region" aria-label={`${s.title} · ${name}`}
           style={vid ? { '--tv-thumb': `url(https://i.ytimg.com/vi/${vid}/hqdefault.jpg)` } as React.CSSProperties : undefined}>
           {skin !== 'zzz' && <span className="tv-deco" aria-hidden />}
           <div className="tv-set">
@@ -444,7 +474,12 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
             <button className="tv-power" onClick={() => setOpen(false)} title={s.close} aria-label={s.close}>
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden><path d="M12 3v8" /><path d="M6.4 6.6a8 8 0 1 0 11.2 0" /></svg>
             </button>
-            <div className="tv-slot" title={`${s.title} · ${name}`}><span>{name}</span></div>
+            {/* ZZZ (15 nov 2026): al empezar cada canción entra una cinta VHS en la ranura del vídeo y después se enciende el título (la `key`
+                con el vídeo que suena repite la animación). Va en el aparato de debajo, nunca encima de la pantalla (YouTube no deja taparla). */}
+            <div className="tv-slot" title={`${s.title} · ${name}`}>
+              {skin === 'zzz' && vid && <i className="tv-vhs" key={`t:${vid}`} aria-hidden><b className="tv-vhs-top"><b className="tv-vhs-front" /></b></i>}
+              <span key={skin === 'zzz' ? `n:${vid ?? ''}` : undefined}>{name}</span>
+            </div>
             <button className="tv-eject tv-next" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>
             <button className="tv-eject" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
           </div>
@@ -452,7 +487,7 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
         document.body,
       )}
       {open && skin !== 'zzz' && !MINI.has(skin) && createPortal(
-        <div className={`music-dock ${side}`} role="region" aria-label={`${s.title} · ${name}`}>
+        <div className={`music-dock ${side}${preview ? ' preview' : ''}`} role="region" aria-label={`${s.title} · ${name}`}>
           <div className="music-head">
             <span className="music-title" title={`${s.title} · ${name}`}><b>♪ {name}</b></span>
             <button className="music-ctl" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>

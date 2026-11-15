@@ -104,6 +104,16 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
   const [code, setCode] = useState('')
   const [codeStatus, setCodeStatus] = useState<ApiResult | 'busy' | null>(null)
   const box = useRef<HTMLDivElement>(null)
+  // Música de la vista previa (sin Premium, 15 nov 2026): el reproductor de la skin se abre y suena al dejar el ratón medio segundo en su
+  // fila (no al cruzar filas: cada una cargaría un vídeo). Sigue sonando si el ratón sale del menú hacia el reproductor; se quita al pasar
+  // por "Original", al elegir otra skin o al cerrar el menú.
+  const [tryMusic, setTryMusic] = useState<string | null>(null)
+  useEffect(() => {
+    if (!open || supporter || !preview) return
+    const t = setTimeout(() => setTryMusic(preview), 500)
+    return () => clearTimeout(t)
+  }, [open, supporter, preview])
+  useEffect(() => { if (!open || supporter) setTryMusic(null) }, [open, supporter])
   // Posición del menú en pantalla, medida al abrirlo y fija mientras está abierto: cada skin tiene otra altura de cabecera, y con la
   // vista previa el menú saltaba de sitio al pasar el ratón de una fila a otra (10 nov 2026). En móvil manda el CSS (fijo bajo la cabecera).
   const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
@@ -121,7 +131,11 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
 
   useEffect(() => {
     if (!open) return
-    const outside = (e: Event) => { if (!box.current?.contains(e.target as Node)) { setOpen(false); clearNotice() } }
+    // Los clics en el reproductor de la vista previa (va en un portal, fuera del menú) no cierran el menú.
+    const outside = (e: Event) => {
+      const t = e.target as Element
+      if (!box.current?.contains(t) && !t.closest?.('.music-dock.preview')) { setOpen(false); clearNotice() }
+    }
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); clearNotice() } }
     document.addEventListener('pointerdown', outside)
     document.addEventListener('keydown', esc)
@@ -146,12 +160,15 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
 
   // Música de la skin puesta (no de la vista previa): el botón va a la izquierda del pincel y solo existe con una skin.
   const music = skin && supporter ? SKINS.find(k => k.id === skin) : undefined
+  const tryDef = !music && tryMusic ? SKINS.find(k => k.id === tryMusic) : undefined
   return (
     <>
     {/* `key`: al cambiar de skin el reproductor se reinicia cerrado (otra lista; no debe empezar a sonar sola). */}
     {music && <SkinMusic key={music.id} skin={music.id} name={music.name} lang={lang} />}
+    {tryDef && <SkinMusic key={`try:${tryDef.id}`} skin={tryDef.id} name={tryDef.name} lang={lang} preview />}
     <div className="skin" ref={box}>
-      <button className="btn sm lang-btn" onClick={toggle} aria-haspopup="menu" aria-expanded={open} title={s.title} aria-label={s.title}>
+      {/* Dorado como la insignia Premium (15 nov 2026): que el botón de las skins se vea entre los de la cabecera en todas las skins. */}
+      <button className="btn sm lang-btn skin-btn" onClick={toggle} aria-haspopup="menu" aria-expanded={open} title={s.title} aria-label={s.title}>
         {/* Paleta de acuarela (12 nov 2026): contorno con el hueco del pulgar y cuatro pastillas de color con el centro aguado; en el color del botón. */}
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
           <path d="M12 3.2c-5.1 0-9 3.6-9 8.3 0 4.4 3.6 8.3 8.2 8.3 1.4 0 2.1-.8 2.1-1.8 0-.6-.3-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1 .8-1.8 1.9-1.8h2.3c2.9 0 4.6-1.9 4.6-4.4 0-3.3-4-5.9-9-5.9z" />
@@ -188,7 +205,7 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
             </li>
           ) : <>
           <li role="none">
-            <button role="menuitemradio" aria-checked={!skin} className={!skin ? 'on' : ''} onClick={() => pick(null)} onMouseMove={() => { if (!supporter && preview) endPreview() }}>
+            <button role="menuitemradio" aria-checked={!skin} className={!skin ? 'on' : ''} onClick={() => pick(null)} onMouseMove={() => { if (!supporter) { if (preview) endPreview(); setTryMusic(null) } }}>
               <img src="/logo.webp" alt="" width="22" height="22" /><span>{s.none}</span>{!skin && <i>✓</i>}
             </button>
           </li>
