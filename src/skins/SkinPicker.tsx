@@ -105,15 +105,16 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
   const [codeStatus, setCodeStatus] = useState<ApiResult | 'busy' | null>(null)
   const box = useRef<HTMLDivElement>(null)
   // Música de la vista previa (sin Premium, 15 nov 2026): el reproductor de la skin se abre y suena al dejar el ratón medio segundo en su
-  // fila (no al cruzar filas: cada una cargaría un vídeo). Sigue sonando si el ratón sale del menú hacia el reproductor; se quita al pasar
-  // por "Original", al elegir otra skin o al cerrar el menú.
+  // fila (no al cruzar filas: cada una cargaría un vídeo). Es solo una muestra (16 nov 2026: antes seguía sonando al sacar el ratón del
+  // menú y se podía usar sin pagar): se quita en cuanto acaba la vista previa (el ratón sale del menú, pasa por "Original", se cierra el
+  // menú) y, como mucho, a los 30 s de sonar cada skin (si no, bastaba con dejar el ratón quieto o, en móvil, el menú abierto).
   const [tryMusic, setTryMusic] = useState<string | null>(null)
   useEffect(() => {
-    if (!open || supporter || !preview) return
+    if (!open || supporter || !preview) { setTryMusic(null); return }
     const t = setTimeout(() => setTryMusic(preview), 500)
-    return () => clearTimeout(t)
+    const stop = setTimeout(() => setTryMusic(null), 30_500)
+    return () => { clearTimeout(t); clearTimeout(stop) }
   }, [open, supporter, preview])
-  useEffect(() => { if (!open || supporter) setTryMusic(null) }, [open, supporter])
   // Posición del menú en pantalla, medida al abrirlo y fija mientras está abierto: cada skin tiene otra altura de cabecera, y con la
   // vista previa el menú saltaba de sitio al pasar el ratón de una fila a otra (10 nov 2026). En móvil manda el CSS (fijo bajo la cabecera).
   const [pos, setPos] = useState<{ top: number; right: number } | null>(null)
@@ -131,11 +132,7 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
 
   useEffect(() => {
     if (!open) return
-    // Los clics en el reproductor de la vista previa (va en un portal, fuera del menú) no cierran el menú.
-    const outside = (e: Event) => {
-      const t = e.target as Element
-      if (!box.current?.contains(t) && !t.closest?.('.music-dock.preview')) { setOpen(false); clearNotice() }
-    }
+    const outside = (e: Event) => { if (!box.current?.contains(e.target as Node)) { setOpen(false); clearNotice() } }
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); clearNotice() } }
     document.addEventListener('pointerdown', outside)
     document.addEventListener('keydown', esc)

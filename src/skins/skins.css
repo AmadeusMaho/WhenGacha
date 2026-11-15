@@ -187,6 +187,9 @@ html[data-skin] .skin-live-fx::before { left: 0; right: 0; top: 0; height: calc(
   --tv-slot: #050505; --tv-slot-ink: var(--tv-on); --tv-slot-glow: none; --tv-slot-sh: inset 0 0 0 1px #2b2b2e, inset 0 2px 5px rgba(0, 0, 0, .9); --tv-slot-r: 3px; --tv-slot-ico: '▶ ';
   width: auto; padding: 9px; border-radius: var(--tv-r); background: var(--tv-body); box-shadow: var(--tv-body-sh); font-family: var(--tv-font); }
 .music-dock.right { right: 16px; } .music-dock.left { left: 16px; }
+/* Vista previa sin Premium (16 nov 2026): el reproductor es solo una muestra y no se puede tocar. Si no, al pasar el ratón del menú al vídeo
+   (un iframe, que se queda con los eventos del ratón) el menú no se enteraba de que lo había dejado y la música seguía sonando gratis. */
+.music-dock.preview, .music-dock.preview * { pointer-events: none !important; }
 @keyframes music-in { from { opacity: 0; transform: translateY(12px); } }
 .music-frame { display: block; width: 200px; height: 200px; border: 0; background: #000; }
 .music-head { display: flex; align-items: center; gap: 3px; padding: 4px 4px 4px 9px; color: #f1f2f3; box-shadow: inset 0 -2px 0 var(--acc); }
