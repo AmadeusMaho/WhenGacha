@@ -312,7 +312,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
    y se desliza hacia dentro por su propio plano; luego se enciende el título. Solo ocupa la fila del lector, por debajo de la pantalla:
    nunca la tapa (YouTube no lo permite). */
 .tv-zzz .tv-slot { position: relative; overflow: visible; }
-.tv-zzz .tv-vhs { --d: 60px; --t: 7px; --tilt: perspective(380px) rotateX(64deg);
+.tv-zzz .tv-vhs { --d: 54px; --t: 13px; --tilt: perspective(380px) rotateX(64deg);
   position: absolute; z-index: 3; left: -24px; right: -24px; top: 50%; height: 60px; overflow: hidden; pointer-events: none;
   opacity: 0; animation: tv-vhs-in 1.9s ease-out both; }
 /* Interior de la boca: sombra sobre la parte de la cinta que ya va entrando. */
@@ -326,17 +326,17 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
   animation: tv-vhs-slide 1.9s both; }
 /* Canto: plástico negro con el filo de luz, la etiqueta blanca y la ventanita; de pie bajo el borde cercano de la cara de arriba. */
 .tv-zzz .tv-vhs-front { position: absolute; left: 0; right: 0; top: 100%; height: var(--t); border-radius: 0 0 3px 3px; transform-origin: 50% 0; transform: rotateX(-90deg);
-  background: linear-gradient(90deg, transparent 0 34%, #2a2926 34% 66%, transparent 66%) 0 50% / 100% 3px no-repeat,
-    linear-gradient(90deg, transparent 0 6%, #e9e4d6 6% 26%, transparent 26%) 0 50% / 100% 4px no-repeat,
+  background: linear-gradient(90deg, transparent 0 34%, #2a2926 34% 66%, transparent 66%) 0 50% / 100% 5px no-repeat,
+    linear-gradient(90deg, transparent 0 6%, #e9e4d6 6% 26%, transparent 26%) 0 50% / 100% 7px no-repeat,
     linear-gradient(180deg, #3d3a36, #1a1917 30%, #070707);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25), 0 0 0 1px #000; }
 /* Al acabar desaparece todo, también la sombra de la boca (si no, quedaba una línea negra sobre la ranura). */
 @keyframes tv-vhs-in { 0% { opacity: 0; transform: translateY(6px); } 20%, 92% { opacity: 1; transform: none; } 100% { opacity: 0; transform: none; } }
 /* Móvil: el aparato va a 8 px del borde (no 16): cinta algo más corta para que quepa. */
-@media (max-width: 700px) { .tv-zzz .tv-vhs { --d: 50px; --t: 6px; } }
+@media (max-width: 700px) { .tv-zzz .tv-vhs { --d: 44px; --t: 11px; } }
 @keyframes tv-vhs-slide {
   0%, 45% { transform: var(--tilt); animation-timing-function: cubic-bezier(.5, 0, .3, 1); }
-  100% { transform: var(--tilt) translateY(calc(-1 * (var(--d) + 48px))); } }
+  100% { transform: var(--tilt) translateY(calc(-1 * (var(--d) + var(--t) * 4 + 30px))); } }
 .tv-zzz .tv-slot span { animation: tv-vhs-title .5s ease-out 1.8s both; }
 @keyframes tv-vhs-title { from { opacity: 0; filter: blur(2px); } }
 

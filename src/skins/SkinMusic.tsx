@@ -353,18 +353,26 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
   const [list, setList] = useState<string>()
   // Vídeo que suena (15 nov 2026): la ventana de YouTube lo dice en sus mensajes (infoDelivery → videoData.video_id) al empezar cada uno.
   // Lo usa el reproductor de PGR para poner la miniatura del vídeo en el disco que gira (variable --tv-thumb; ver skins.css).
+  // También la usa la cinta VHS de ZZZ, que entra una vez por canción. Se acepta un vídeo solo cuando lleva 900 ms sin cambiar: al cargar una
+  // lista, YouTube dice primero el vídeo con que empieza la lista y enseguida el que se le pidió (playVideoAt), y eso metía la cinta dos
+  // veces y cargaba dos miniaturas seguidas en el disco de PGR (16 nov 2026).
   const [vid, setVid] = useState<string>()
   useEffect(() => {
     if (!open) { setVid(undefined); return }
+    let pending: string | undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
     const onMsg = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
       let d: { info?: { videoData?: { video_id?: string } } } | null = null
       try { d = JSON.parse(e.data) } catch { return }
       const id = d?.info?.videoData?.video_id
-      if (id && /^[\w-]{11}$/.test(id)) setVid(id)
+      if (!id || !/^[\w-]{11}$/.test(id) || id === pending) return
+      pending = id
+      clearTimeout(timer)
+      timer = setTimeout(() => setVid(id), 900)
     }
     window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
+    return () => { clearTimeout(timer); window.removeEventListener('message', onMsg) }
   }, [open])
   // "Populares": si una canción no se puede reproducir (bloqueada en el país, retirada…), pasa a la siguiente en vez de quedarse en el error.
   useEffect(() => {
