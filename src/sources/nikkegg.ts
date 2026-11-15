@@ -125,8 +125,13 @@ export async function syncNikkeGg(gameId: string): Promise<GameSync> {
   if (!res.ok) throw new Error(`nikke.gg → HTTP ${res.status}`)
   const list = (await res.json()) as Post[]
   if (!Array.isArray(list)) throw new Error('nikke.gg: lista inesperada')
-  // Los dos avisos de actualización más recientes (la versión en curso y, a veces, una actualización a mitad).
-  const notes = list.filter(p => /patch ?notes|update notice|update$/i.test(p.title.rendered)).slice(0, 2)
+  // Los dos avisos de actualización más recientes (la versión en curso y, a veces, una actualización a mitad). Primero las "Patch Notes": los avisos
+  // técnicos ("November 13 Emergency Update Notice", "Notice on Nov 12 PC Launcher Security Update", 14 nov 2026) no traen eventos y, al ser los más
+  // nuevos, dejaban fuera las notas de la versión (NIKKE pasó de 11 elementos a 3).
+  const technical = /emergency|security|launcher|hotfix|incident|compensation|summary/i
+  const isNotes = (p: Post) => /patch ?notes/i.test(p.title.rendered) && !technical.test(p.title.rendered)
+  const isUpdate = (p: Post) => /update notice|update$/i.test(p.title.rendered) && !technical.test(p.title.rendered)
+  const notes = [...list.filter(isNotes), ...list.filter(p => !isNotes(p) && isUpdate(p))].slice(0, 2)
   const out: GameEvent[] = []
   const seen = new Set<string>()
   for (const p of notes) {

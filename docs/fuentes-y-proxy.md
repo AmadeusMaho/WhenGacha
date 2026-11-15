@@ -901,3 +901,7 @@ da una fecha de la que partir para calcular el ciclo. No se añade hasta tener u
 - **Onmyoji**: sin canal oficial vivo en inglés (web parada en 2020, Discord abandonado, Steam desde 2022; no aparece cuenta oficial activa en X ni Facebook). La wiki de
   Fandom ("Events/Global") sigue siendo la única fuente con fechas.
 - **Trickcal**: sin wiki ni guía con imágenes de eventos o iconos de objetos (búsqueda del 14 nov 2026). Quedan las imágenes de los tuits oficiales (`tweetImages`).
+
+**NIKKE** (14 nov 2026): nikke.gg publicó dos avisos técnicos ("November 13 Emergency Update Notice", "PC Launcher Security Update") y el lector, que tomaba los dos
+posts más nuevos con "update" en el título, dejó fuera las notas de la versión: de 11 elementos a 3. Ahora van primero las "Patch Notes" y se ignoran los avisos de
+emergencia, seguridad, lanzador, compensación y los resúmenes de nikke.gg (`nikkegg.ts`).

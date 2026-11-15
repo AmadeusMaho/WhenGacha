@@ -28792,7 +28792,10 @@ async function syncNikkeGg(gameId) {
 	if (!res.ok) throw new Error(`nikke.gg → HTTP ${res.status}`);
 	const list = await res.json();
 	if (!Array.isArray(list)) throw new Error("nikke.gg: lista inesperada");
-	const notes = list.filter((p) => /patch ?notes|update notice|update$/i.test(p.title.rendered)).slice(0, 2);
+	const technical = /emergency|security|launcher|hotfix|incident|compensation|summary/i;
+	const isNotes = (p) => /patch ?notes/i.test(p.title.rendered) && !technical.test(p.title.rendered);
+	const isUpdate = (p) => /update notice|update$/i.test(p.title.rendered) && !technical.test(p.title.rendered);
+	const notes = [...list.filter(isNotes), ...list.filter((p) => !isNotes(p) && isUpdate(p))].slice(0, 2);
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const p of notes) {
