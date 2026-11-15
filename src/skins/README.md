@@ -329,9 +329,14 @@ este diseño: el reproductor tiene que verse mientras suena y no se puede oculta
 Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en el color de cada skin; se recuerda):
 
 - **Toda la banda sonora** (por defecto; ampliada el 14 nov 2026). `all.lists` de cada skin: listas de YouTube con su número de vídeos, una por
-  álbum o versión. Al abrir, y cada vez que acaba una canción (o falla, o se pulsa "siguiente"), se carga otra pista al azar de entre todas
-  (`pickTrack`: cada pista pesa lo mismo; `loadPlaylist` con su posición). Al acabar una canción la lista pasa sola a la siguiente sin avisar de
-  "terminado": se detecta por el cambio de `playlistIndex`.
+  álbum o versión. Al abrir, y cada vez que acaba una canción (o falla, o se pulsa "siguiente"), suena otra pista al azar de entre todas
+  (`pickTrack`: cada pista pesa lo mismo). Si es de la misma lista, `playVideoAt`; si es de otra, se recarga la ventana con esa lista y luego
+  `playVideoAt`. **`loadPlaylist` con otra lista no sirve**: la ventana se queda en la primera lista y solo mueve la posición (era el fallo de
+  "en HSR solo suenan EP", 14 nov 2026). Al acabar una canción la lista pasa sola a la siguiente sin avisar de "terminado": se detecta por el
+  cambio de `playlistIndex`.
+  - **Canciones nuevas**: el número de cada lista en `MUSIC` solo vale hasta que se carga; luego manda el tamaño real que da la ventana
+    (`learnSize`, guardado en `whengacha:music-sizes`). Así lo que se añada a una lista de menos de 200 entra solo. Los álbumes nuevos que se
+    suban como lista aparte hay que añadirlos a mano.
   - **Límite de YouTube**: la ventana solo carga las **200 primeras** de cada lista (comprobado: pedirle la posición 1500 o poner `index=` en la URL
     vuelve a la primera). Por eso la música va repartida en listas pequeñas (las de más de 200 cuentan como 200).
   - Fuentes, por orden de preferencia: listas oficiales del estudio, álbumes de pistas "- Topic" (el audio que YouTube genera de la distribuidora;

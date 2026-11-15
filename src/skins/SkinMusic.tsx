@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Lang } from '../i18n'
 
@@ -278,18 +278,27 @@ const BASE = 'https://www.youtube-nocookie.com/embed/'
 const COMMON = 'autoplay=1&rel=0&playsinline=1&loop=1'
 
 /** Una pista al azar de toda la banda sonora: lista según su tamaño y posición dentro de ella (cada pista pesa lo mismo). */
+/** Tamaño real de cada lista, según lo que dice la ventana de YouTube al cargarla (hasta 200). Así las canciones que se añadan a una lista
+ *  entran solas, sin tocar los números de `MUSIC` (que solo sirven hasta que se ha cargado la lista una vez). Se recuerda entre visitas. */
+const SIZES_KEY = 'whengacha:music-sizes'
+const sizes: Record<string, number> = (() => { try { return JSON.parse(read(SIZES_KEY) ?? '{}') ?? {} } catch { return {} } })()
+function learnSize(list: string, n: number) {
+  if (n > 0 && sizes[list] !== n) { sizes[list] = Math.min(n, 200); write(SIZES_KEY, JSON.stringify(sizes)) }
+}
+
 function pickTrack(lists: [string, number][]): { list: string; index: number } {
-  const size = (n: number) => Math.min(n, 200)
-  let r = Math.floor(Math.random() * lists.reduce((t, [, n]) => t + size(n), 0))
-  for (const [list, n] of lists) { if (r < size(n)) return { list, index: r }; r -= size(n) }
+  const size = (list: string, n: number) => sizes[list] ?? Math.min(n, 200)
+  let r = Math.floor(Math.random() * lists.reduce((t, [l, n]) => t + size(l, n), 0))
+  for (const [list, n] of lists) { const k = size(list, n); if (r < k) return { list, index: r }; r -= k }
   return { list: lists[0][0], index: 0 }
 }
 
-/** URL del reproductor. "Todas": con la API de la ventana (`enablejsapi`) para saltar a una pista al azar (ver el efecto de `SkinMusic`). */
-function srcOf(m: { top: string[]; all: Source }, mode: Mode): string {
+const API = () => `&${COMMON}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
+/** URL del reproductor. "Todas": una lista concreta con la API de la ventana (`enablejsapi`); la posición la pone `playVideoAt` al estar
+ *  lista (YouTube ignora `index` en la URL). */
+function srcOf(m: { top: string[]; all: Source }, mode: Mode, list: string | undefined): string {
   if (mode === 'top') return `${BASE}${m.top[0]}?${COMMON}&playlist=${m.top.join(',')}`
-  const { list } = pickTrack(m.all.lists) // la posición la pone el efecto al estar lista (YouTube ignora `index` en la URL)
-  return `${BASE}videoseries?list=${list}&${COMMON}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
+  return list ? `${BASE}videoseries?list=${list}${API()}` : ''
 }
 
 export default function SkinMusic({ skin, name, lang }: { skin: string; name: string; lang: Lang }) {
@@ -299,8 +308,16 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
   const [mode, setMode] = useState<Mode>(() => (read(MODE_KEY) === 'top' ? 'top' : 'all'))
   const frame = useRef<HTMLIFrameElement>(null)
   const m = MUSIC[skin]
-  // Fijo mientras la ventana sigue abierta con el mismo modo (barajar en cada render recargaría el vídeo); al reabrir, otro orden.
-  const src = useMemo(() => (m && open ? srcOf(m, mode) : ''), [m, mode, open])
+  // "Todas": la lista que tiene cargada la ventana (cambiarla recarga la ventana) y la pista que se le pide dentro de ella.
+  const [list, setList] = useState<string>()
+  const want = useRef(0)
+  useEffect(() => {
+    if (!open || mode !== 'all' || !m) { setList(undefined); return }
+    const t = pickTrack(m.all.lists)
+    want.current = t.index
+    setList(t.list)
+  }, [open, mode, m])
+  const src = m && open ? srcOf(m, mode, list) : ''
   useEffect(() => {
     if (!open) return
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -308,43 +325,46 @@ export default function SkinMusic({ skin, name, lang }: { skin: string; name: st
     return () => document.removeEventListener('keydown', esc)
   }, [open])
   // "Todas" (14 nov 2026): al estar lista la ventana, al acabar cada canción (o si una no se puede reproducir, o se pulsa "siguiente") se
-  // carga otra pista al azar de entre TODAS las listas de la skin (`loadPlaylist` con su posición; solo llega a las 200 primeras de cada lista).
+  // salta a otra pista al azar de entre TODAS las listas de la skin. Si es de la misma lista, `playVideoAt`; si es de otra, se recarga la
+  // ventana con esa lista (`loadPlaylist` con otra lista NO cambia de lista: se queda en la primera y solo mueve la posición; comprobado).
   useEffect(() => {
-    if (!open || mode !== 'all' || !m) return
+    if (!open || mode !== 'all' || !m || !list) return
     let started = false
     let last = 0
-    let cur: number | undefined // posición en la lista que suena ahora (la que nosotros pedimos)
+    let cur: number | undefined // posición que suena ahora (la que pedimos)
     const send = (func: string, args: unknown[] = []) => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func, args }), '*')
+    const play = (index: number) => { last = Date.now(); cur = undefined; want.current = index; send('playVideoAt', [index]) }
     const jump = () => {
-      const now = Date.now()
-      if (now - last < 1500) return // un solo salto por fin de canción (YouTube avisa varias veces)
-      last = now
-      cur = undefined
-      const { list, index } = pickTrack(m.all.lists)
-      send('loadPlaylist', [{ list, listType: 'playlist', index }])
+      if (Date.now() - last < 1500) return // un solo salto por fin de canción (YouTube avisa varias veces)
+      const t = pickTrack(m.all.lists)
+      if (t.list === list) play(t.index)
+      else { last = Date.now(); want.current = t.index; setList(t.list) }
     }
     const onMsg = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
       let d: { event?: string; info?: unknown } | null = null
       try { d = JSON.parse(e.data) } catch { return }
       if (!d) return
-      const info = d.info as { playerState?: number; playlistIndex?: number } | number | null | undefined
+      const info = d.info as { playerState?: number; playlistIndex?: number; playlist?: string[] } | number | null | undefined
+      // Tamaño real de la lista (la ventana es solo de esta lista): las canciones que se le añadan entran solas en el sorteo.
+      const got = typeof info === 'object' ? info?.playlist?.length : undefined
+      if (got) { learnSize(list, got); if (want.current >= got) { last = 0; jump(); return } } // la lista encogió: otra pista
       const state = d.event === 'onStateChange' ? info : typeof info === 'object' ? info?.playerState : undefined
       const idx = typeof info === 'object' ? info?.playlistIndex : undefined
-      if (!started && (d.event === 'onReady' || state === 1)) { started = true; last = 0; jump(); return } // primera pista al azar
+      if (!started && (d.event === 'onReady' || state === 1)) { started = true; play(want.current); return }
       // Al acabar una canción, la lista pasa sola a la siguiente (sin avisar de "terminado"): se nota en el cambio de posición.
       if (typeof idx === 'number' && Date.now() - last > 1500) { if (cur !== undefined && idx !== cur) { jump(); return } cur = idx }
       if (state === 0 || d.event === 'onError') jump()
     }
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
-  }, [open, mode, m])
+  }, [open, mode, m, list])
   if (!m) return null
   const flip = () => { const n = side === 'right' ? 'left' : 'right'; setSide(n); write(SIDE_KEY, n) }
   const pick = (n: Mode) => { if (n !== mode) { setMode(n); write(MODE_KEY, n) } }
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
   const listen = () => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*')
-  const player = <iframe key={`${skin}:${mode}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
+  const player = <iframe key={`${skin}:${mode}:${mode === 'all' ? list : ''}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
     allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
   return (
     <>
