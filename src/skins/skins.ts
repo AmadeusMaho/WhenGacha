@@ -59,12 +59,15 @@ export const FONDOS: Record<string, string[]> = {
     'xiao-lanterns-on-the-full-moon-night', 'klee-trip', 'aether-and-paimon'
   ],
   zzz: [
-    'v33', 'claret-and-roxy', 'miyabi-fox', 'remielle-dan', 'yuzuha-x-alice', 'yixuan', 'yidhari', 'hoshimi-miyabi', 'ye-shunguang',
-    'vivian-x-hugo'
+    'v33', 'claret-and-roxy', 'remielle-dan', 'yuzuha-x-alice', 'yixuan', 'yidhari', 'hoshimi-miyabi', 'ye-shunguang', 'vivian-x-hugo',
+    'billy-kid-s-rank', 'angels-of-delusion-livestream', 'yuzuha', 'astra-yao', 'yanagi', 'burnice-white-burning-desires',
+    'zenless-zone-zero', 'grace', 'roxy', 'ellen', 'dj-remielle-wise', 'vivian-banshee'
   ],
   hsr: [
     'chibi-stelle-black-hole', 'evanescia', 'acheron-crimson-lotus', 'acheron-black-hole', 'sparkle-trash-can-dance', 'sparxie-yao-guang',
-    'galaxy-ranger-acheron', 'castorice-river-flower', 'honkai-star-rail-phainon', 'astral-express', 'cyrene-the-starry-muse'
+    'galaxy-ranger-acheron', 'castorice-river-flower', 'honkai-star-rail-phainon', 'astral-express', 'cyrene-the-starry-muse', 'stellaron',
+    'cyrene', 'phainon', 'castorice', 'firefly-sunset-city', 'jing-yuan', 'kafka-in-the-rain', 'ruan-mei-cherry-blossom', 'huohuo',
+    'silver-wolf-and-kafka', 'jingliu-moon-night', 'mommy-kafka'
   ],
   nikke: [
     'sin', 'coins', 'phantom', 'heaven', 'absolute', 'sphere', 'arcane', 'blankticket', 'boomtheghost', 'colorless', 'for-rest',
@@ -74,7 +77,9 @@ export const FONDOS: Record<string, string[]> = {
   uma: [],
   arknights: [
     'spark-in-the-eyes-exusiai', 'skadi-blood-moon-ocean', 'mizuki-and-caerula-arbor', 'kaltsit-esperanta', 'mon3tr', 'texas-x-exusiai',
-    'lappland-x-texas', 'amiya-midnight-blue-city', 'umbrella-anime-girl-flower-shop', 'collapse', 'melantha', 'amiya-nightmare-chen'
+    'lappland-x-texas', 'amiya-midnight-blue-city', 'collapse', 'melantha', 'amiya-stellar-valkyrie', 'exusiai', 'frostnova',
+    'texas-the-omertosa', 'skadi-the-corrupting-heart', 'dusk', 'nian', 'coral-coast', 'pc-desktop-candle-knight-desktop',
+    'pc-amiya-in-apartment-free', 'angelina-hd'
   ],
   bluearchive: [
     'misono-mika-angel-wings', 'ushio-noa-starlight-float', 'yutori-natsu', 'iroha-sunset-summer', 'tendou-arisu-maid', 'mutsuki',
