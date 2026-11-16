@@ -49,6 +49,8 @@ const ART: Record<string, string> = {
   daphne: 'https://i0.wp.com/wizardry.info/wp-content/themes/wizardry-info/assets/img/daphne/mv_en.png?w=1280&ssl=1',
   // Aniimo (14 nov 2026): el fondo de la portada de su web oficial (aniimo.com, "hero-bg"), sin texto. Las capturas de la App Store son verticales.
   aniimo: 'https://kg-web-cdn.akamaized.net/master/official-website/worldx_office_frontend/images/first-page/pc/1p/hero-bg-20261023.webp',
+  // StarSavior (16 nov 2026): fondo de la portada de su web oficial (starsavior.com, 2560×1440, sin texto). Las capturas de la App Store llevan rótulos.
+  starsavior: 'https://starsavior.com/api/home/en/pc/background-019a75ae-573f-77d9-a224-9a6968fe0ce2.webp',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -130,6 +132,10 @@ export const CATALOG: Game[] = [
   // con recompensas e iconos + códigos de Game8 (src/sources/aniimo.ts). Tres regiones (servers.ts).
   def('aniimo', 'Aniimo', 'ANI', 'Pawprint Studio', '#7cc7a1', '#173037', 0, '', 'Aniimo', 'aniimo',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/71/69/87/716987bc-c98f-d85e-1803-e96f08e1a067/FPX_AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // StarSavior: avisos oficiales de Steam (horas exactas en UTC: eventos, banners, Cosmo Gate, Guild Defense, Gauntlet, Overload Cube y lo anunciado)
+  // + banners de Prydwen + códigos de PocketGamer (src/sources/starsavior.ts). Servidores Global y Asia con el mismo horario (UTC).
+  def('starsavior', 'StarSavior', 'SSV', 'Studiobside', '#8fb4ff', '#1b2350', 0, '', 'StarSavior', 'starsavior',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/03/41/8c/03418cef-3e90-3737-3f01-de3bdcce0e4c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

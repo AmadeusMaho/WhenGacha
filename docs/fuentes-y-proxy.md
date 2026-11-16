@@ -602,6 +602,36 @@ Sin fuentes nuevas en el proxy: la API de noticias de Steam (`steam`), dos pági
 - Calculadora: 38 por tirada, sin pity confirmado (las guías hablan de canjear el traje por 3000 Lightweave Fragments), diarias 30 Glimmer (Daily
   Activity; games.gg, mmodude y nerdschalk; Mobalytics dice 400, parece un error).
 
+## StarSavior (añadido el 16 nov 2026)
+
+`src/sources/starsavior.ts`. Studiobside, global desde el 19 mar 2026 (PC/Steam, iOS, Android). Dos servidores, **Global** y **Asia** (Corea, Japón y Asia fusionados el 22 oct 2026), pero **con el mismo horario**: un solo parche, horas en UTC y el mantenimiento de los jueves a la vez (01:00 UTC = 10:00 JST en los avisos japoneses). Sin selector en `servers.ts`.
+Sin fuentes nuevas en el proxy: la API de noticias de Steam (`steam`, app 3609080; **hasta 50 avisos** en vez de 20: publican 5–10 por semana y las
+notas de una actualización valen 3 semanas), una página más de `prydwen` (`/other-games/starsavior/banners`) y una de `pocketgamer` (`star-savior`).
+1 consulta a Steam, 1 página de Prydwen y 1 de PocketGamer por ciclo.
+- **Hora del juego**: el día cambia a las 15:00 UTC (00:00 KST; «compensation … by November 6, 14:59 UTC») y eventos y banners cierran a las 19:00 UTC
+  (04:00 KST). Las actualizaciones son los jueves con mantenimiento de 01:00 a 03:00 UTC (a veces prorrogado: el 12 nov acabó a las 07:00).
+- **Eventos, modos y Select Observation (oficial)**: las notas de actualización de Steam («[November 12] Update Notes») dan cada apartado con su periodo
+  exacto en UTC («▶ Period: After maintenance on November 12 – December 3, 19:00 UTC»). "After maintenance" = fin del mantenimiento de ese día, sacado de
+  las propias notas o del "Maintenance Announcement" (el texto tachado de la prórroga se descarta). Los "Server Patch"/"Data Patch" no cuentan.
+  Los "On-Time Event" semanales salen como evento pequeño con sus recompensas («1) 20,000 Lunar Elixir»).
+- **Banners**: Prydwen (Savior y Arcana, nombre completo, inicio y fin exactos). Prydwen pone el inicio a las 04:00 UTC: si las notas de Steam dan el fin
+  real del mantenimiento, se usa ese.
+- **Rotatorios**: Cosmo Gate Prism (temporadas cada 14 días: una semana de juego y otra de liquidación sin acceso) y Guild Defense Prism (cada 28 días) salen
+  de las notas; las temporadas siguientes se calculan desde la última publicada (`nextSeasons`, "estimated"). Gauntlet (pretemporada hasta el 10 ene 2027,
+  14:00 UTC) y Overload Cube (7 semanas) vienen con su periodo en las notas.
+- **Lo próximo**: los resúmenes de las retransmisiones ("Special Broadcast Summary") anuncian el evento siguiente («The [Memoirs of a Year Yet to Come] event is
+  scheduled to run from December 3 to December 25») y sus Saviors («[Butterfly Dream: Lacy] will be available through Observation starting in Week 1 of …»):
+  evento y banners estimados (inicio tras el mantenimiento del jueves de esa semana, 3 semanas de banner). En cuanto salen en Prydwen o en las notas, mandan esos.
+- **Retratos**: sin wiki con iconos (Prydwen no tiene página de personajes y starsavior.com solo enseña los 15 del lanzamiento). Se usa la imagen que el propio
+  aviso pone tras el nombre del Savior («[Gille]» + imagen; «● Butterfly Dream: Lacy (Sun Attribute, Assassin)» + imagen; con un solo destacado, la imagen tras
+  su periodo). Las Arcana no llevan retrato (son cartas, no personajes); su banner lleva el arte de Prydwen.
+- **Iconos de objetos**: Stellagem y billete de Observation destacada recortados (sin la cifra) de las capturas de tychara.com y guardados en
+  `public/icons/starsavior-*.webp` (`STARSAVIOR_ICONS`). **Sin icono**: Lunar Elixir, Willpower y demás materiales (ninguna fuente permitida los publica).
+- **Códigos**: PocketGamer, que solo da el código; las recompensas de los vigentes salen de SuperCheats/BlueStacks (`CODE_REWARDS`, jun 2026).
+- **Tiradas y calculadora**: 200 Stellagems por Observation (reseña de gamingonphone); cada billete de Observation es 1 tirada. Sin pity, pero cada tirada
+  da 1 Observation Record y con 200 se canjea el destacado (tychara, "Gacha System"): pity 200. Pase de pago (Stellagem Supply) 120 al día.
+  **Sin ingresos diarios**: ninguna guía publica cuántas Stellagems gratis dan las diarias, las semanales o el Gauntlet; cada jugador pone las suyas.
+
 ## Iconos, lector de avisos y webs oficiales (12 nov 2026, segunda parte)
 
 - **Iconos de recompensas** sin wiki (`withItemIcons` de `src/sources/index.ts`, después de unir Discord): MHO, de la "Item and Material List" de GameWith

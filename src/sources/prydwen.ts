@@ -33,6 +33,8 @@ export const PRYDWEN: Record<string, Config> = {
   nikke: { slug: 'nikke', regions: ['global'], fixEnd: nikkeEnd },
   // MONGIL: STAR DIVE (13 nov 2026): página bajo /other-games/, mismo formato; las tres regiones con las mismas horas.
   mongil: { slug: 'other-games/mongil-star-dive', regions: ['na', 'eu', 'asia'] },
+  // StarSavior (16 nov 2026): un solo servidor ("global"); banners de Savior y de Arcana (data-category="weapon").
+  starsavior: { slug: 'other-games/starsavior', regions: ['global'] },
 }
 
 const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''

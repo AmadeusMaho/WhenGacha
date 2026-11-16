@@ -270,6 +270,10 @@ const ECON: Record<string, Econ> = {
   // Crystals (de pago). Sin pity confirmado (las guías hablan de canjear el traje por 3000 Lightweave Fragments; ~1500 por traje repetido).
   // Ingresos (14 nov 2026): 30 Glimmer al día por la Daily Activity (games.gg, mmodude, nerdschalk; Mobalytics dice 400, parece un error). Lo demás
   // (Aniilog, Elite Training, Alphas, cofres) es de una sola vez y baja mucho pasado el nivel 60: no se cuenta.
+  // StarSavior (16 nov 2026): 200 Stellagems por Observation (gamingonphone); sin pity, pero cada tirada da 1 punto de Observation Record y con 200 se
+  // canjea el destacado (tychara.com, "Gacha System"): se cuenta como pity de 200. El pase de pago (Stellagem Supply) da 120 al día durante 30.
+  // Ninguna guía publica cuántas Stellagems gratis dan las diarias, las semanales o el Gauntlet: sin `sources`, cada jugador pone las suyas.
+  starsavior: { currency: 'Stellagem', icon: 'Stellagem', iconUrl: '/icons/starsavior-stellagem.webp', ticket: 'Featured Observation Ticket', per: 200, pass: 120, pity: 200, sources: [] },
   aniimo: { currency: 'Glimmer', icon: 'Glimmer', iconUrl: 'https://img.game8.co/4622704/d376c11890317af3680c75d5276f4e89.png/show', ticket: 'Lightweave Ticket', per: 38, pass: 0, pity: 0, sources: [daily(30)] },
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },
 }

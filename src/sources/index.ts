@@ -23,6 +23,7 @@ import { syncMongil } from './mongil'
 import { syncSuikoden } from './suikoden'
 import { syncDaphne, DAPHNE_ICONS } from './daphne'
 import { syncAniimo, ANIIMO_ICONS } from './aniimo'
+import { syncStarSavior, STARSAVIOR_ICONS } from './starsavior'
 import { azurPolish, syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -247,7 +248,7 @@ const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail:
  * Iconos de recompensas de los juegos sin wiki (el recolector los busca en la wiki del juego, `withItemIcons` de collector.ts): MHO, la lista de objetos
  * de GameWith; BLEACH, los iconos oficiales de su web. Se aplica después de unir Discord, así también los avisos oficiales salen con icono.
  */
-const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS, stellasora: async () => SS_ICONS }
+const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS, stellasora: async () => SS_ICONS, starsavior: async () => STARSAVIOR_ICONS }
 async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
   const load = ITEM_ICONS[id]
   if (!load || !s.events.some(e => e.items.some(i => !i.icon))) return s
@@ -363,6 +364,9 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // Aniimo: avisos oficiales de Steam (horas exactas de las tres regiones, Lightweave y temporada) + lista de eventos de Game8 (imagen y
     // recompensas con icono; lo que solo está ahí va "≈") + códigos de Game8 (PocketGamer de respaldo). Holo-Battle Interlink semanal.
     case 'aniimo': return syncAniimo(id)
+    // StarSavior: notas de actualización de Steam (horas exactas en UTC; eventos, modos rotatorios y lo anunciado en las retransmisiones) + banners
+    // de Prydwen (Savior y Arcana) + códigos de PocketGamer. Servidores Global y Asia con el mismo horario (UTC).
+    case 'starsavior': return syncStarSavior(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)
