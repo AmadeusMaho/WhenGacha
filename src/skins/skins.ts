@@ -72,7 +72,8 @@ export const FONDOS: Record<string, string[]> = {
   nikke: [
     'sin', 'coins', 'phantom', 'heaven', 'absolute', 'sphere', 'arcane', 'blankticket', 'boomtheghost', 'colorless', 'for-rest',
     'goddessfall', 'goninjathief', 'ice-dragon-saga', 'jinx-player', 'juvenile-days', 'lifeagain', 'new-flavor', 'old-tales',
-    'romantic-valentine', 'secret-garden', 'summer', 'terminusticket', 'wisdom-spring'
+    'romantic-valentine', 'secret-garden', 'summer', 'terminusticket', 'wisdom-spring', 'red-hood-goddess-of-victory',
+    'nikke-goddess-of-victory'
   ],
   uma: [],
   arknights: [
