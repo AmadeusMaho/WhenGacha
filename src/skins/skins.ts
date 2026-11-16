@@ -94,6 +94,14 @@ export const FONDOS: Record<string, string[]> = {
     'liv-solaeter-special-coating', 'selena-phantom', 'nanami-pulse-tide-heart-view', 'lucia-snowfall', 'lucia', 'selena-lunar-elegance',
     'bianca', 'luna', 'luna-oblivion', 'nirvatia-wings-of-stillness', 'lucia-celestial-reverie', 'nirvatia'
   ],
+  fgo: [
+    'saber-cloudy-vortex-fate-series', 'emiya-archer-unlimited-blade-works-fate-stay-night', 'rin-and-archer-fishing-fate-stay-night',
+    'jeanne-darc-and-jeanne-alter', 'king-hassan', 'jeanne-darc-alter', 'saber-alter-vs-berserker-fate-stay-night-heavens-feel-ii-los',
+    'jack-the-ripper-fate-apocrypha', 'lancer', 'mashu-kyrielight-with-glasses', 'katsushika-hokusai',
+    'saber-alter-fate-stay-night-heaven-s-feel', 'cool-fate-zero-saber-king-arthur-artoria-pendragon-4k-live-w', 'pc-ishtar',
+    '4k-fate-stay-night', 'archer-fate-stay-night', 'pc-flames', 'fate-grand-order-anime-sitonai-girl', 'okita-souji',
+    'mashu-kyrielight-fate', 'mash-kyrielight', 'oda-nobunaga-fate'
+  ],
 }
 // </fondos>
 
@@ -131,6 +139,11 @@ export const SKINS: SkinDef[] = [
   // añade el dueño con Wallpaureka (FONDOS.pgr); mientras esté vacío, lleva el arte de la pantalla de inicio de sesión del juego.
   { id: 'pgr', game: 'pgr', name: 'Punishing: Gray Raven', fonts: 'family=Barlow+Condensed:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&family=Barlow:wght@400;500;600;700', live: FONDOS.pgr?.length ? cdn('pgr') : stills('pgr', ['login']),
     tabLive: { mine: { poster: '/skins/pgr/still-login.webp', fixed: true } } },
+  // fgo.css (16 nov 2026): piezas de interfaz del Drive de assets de FGO que aportó el dueño, en public/skins/fgo/ (ver la cabecera del CSS).
+  // Fondos animados: los 22 que eligió el dueño (MoeWalls, WallpaperWaifu, DesktopHut y MotionBGs), publicados con Wallpaureka (16 nov 2026).
+  // Si FONDOS.fgo se vaciara, fondos fijos de Chaldea del mismo Drive (CHALDEAS, Rayshift, pasillo, taller de Da Vinci y el exterior). En "Mis gachas", My Room, quieta.
+  { id: 'fgo', game: 'fgo', name: 'Fate/Grand Order', fonts: 'family=Cinzel:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700', live: FONDOS.fgo?.length ? cdn('fgo') : stills('fgo', ['chaldeas', 'rayshift', 'corridor', 'workshop', 'chaldea']),
+    tabLive: { mine: { poster: '/skins/fgo/still-myroom.webp', fixed: true } } },
 ]
 
 const KEY = 'whengacha:skin'

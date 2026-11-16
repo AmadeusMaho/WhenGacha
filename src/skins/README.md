@@ -439,3 +439,26 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
 - **Fondo propio por pestaña** (`tabLive` en `SkinDef`; `fixed` en `LiveClip` = sin recorrido de cámara ni motas): PGR usa en "Mis gachas" el arte
   de la pantalla de inicio de sesión del juego (`still-login.webp`), quieto; las demás pestañas siguen rotando sus vídeos.
   "Mis gachas" no lleva fondo animado en ninguna skin (`NO_LIVE_TABS` en SkinPicker): se ve el fondo propio de cada una; PGR, su `tabLive`.
+
+## Skin Fate/Grand Order (16 nov 2026)
+
+- **`fgo.css`**: paneles azul noche de cristal facetado con filete dorado y rombos en las esquinas, cabeceras de la ventana del evento como la
+  barra blanca con el laurel de Chaldea (`crest-r.webp`, ya desvanecido por la izquierda en el archivo: con la cabecera entera se veía el corte
+  donde empezaba la imagen), botones de perla ("決定"), pestañas hexagonales con los rombos del menú principal (編成, マイルーム, 強化, 召喚),
+  barras de la línea de tiempo con el dibujo de su carta de comando (banner = Buster, evento = Arts, desafío = Quick, con el logotipo en el
+  rótulo de sección), retratos de destacados como carta de servant (marco dorado `frame.webp` con border-image y placa negra con el nombre en
+  dorado) y el círculo de invocación girando de marca de agua. Fuentes Cinzel y Noto Sans JP.
+- **Recursos** (`public/skins/fgo/`): del Drive de assets de FGO que aportó el dueño (carpetas "User Interface", "Servant Cards" y
+  "Background/Chaldea"). `HS.png` de ese Drive es de Hearthstone: no se usa.
+- **Fondos**: 22 animados elegidos por el dueño (16 nov 2026; MoeWalls y WallpaperWaifu a 1280 px porque solo dan la vista previa, DesktopHut y
+  MotionBGs a 1920), publicados con Wallpaureka. Si `FONDOS.fgo` se vaciara, quedan los fijos de Chaldea (CHALDEAS, Rayshift, pasillo, taller
+  de Da Vinci, exterior). "Mis gachas": My Room quieta (`tabLive`). La vista previa empieza con 「色彩」 (`first` en `MUSIC.fgo`).
+- El planeta del reproductor gira despacio (`.tv-side::before`, 90 s, solo transform).
+- **Reproductor** (`.tv-fgo` en skins.css; 2.ª versión, la 1.ª era una carta de Craft Essence y "se veía muy rara"): CHALDEAS, redondo y
+  siempre azul. El aparato es el globo (esfera azul con meridianos y paralelos de luz) con el vídeo inscrito como ventana cuadrada: no se
+  recorta en círculo (YouTube no deja tapar ni recortar el vídeo), por eso el globo mide su diagonal (`--g`: 290 px, 284 en móvil). Alrededor,
+  tres anillos gruesos de metal (bandas de 11–13 px con brillo metálico y, detrás, su canto oscuro desfasado para que de canto tengan grosor)
+  giran DETRÁS del vídeo; debajo, un pedestal pequeño con el título y los mandos de cristal holográfico (22×20 px) (el modo elegido se enciende en cian). Se probaron y se quitaron, porque no gustaron: el modo rojo con
+  "Populares", una animación de invocación al empezar cada canción y una cúpula con las paredes de franjas de la sala detrás. Música: Original Soundtrack I–III oficiales y recopilaciones; 50 populares.
+- Revisada con `skin-contrast.js` en las cuatro pestañas, Cuadrícula, ventana del evento y menú de skins, escritorio y 375 px: sin avisos
+  (salvo los juegos "wip" desactivados de la base y la cabecera blanca, que el script marca como imagen).

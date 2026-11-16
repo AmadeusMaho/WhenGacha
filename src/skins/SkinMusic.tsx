@@ -21,7 +21,9 @@ import type { Lang } from '../i18n'
 /** `lists`: listas de YouTube con su número de vídeos. La ventana de YouTube solo carga las 200 primeras de cada lista (comprobado: pedirle la
  *  posición 1500 vuelve a la primera), así que la banda sonora se reparte en listas por álbum/versión y las de más de 200 cuentan como 200. */
 type Source = { lists: [string, number][] }
-const MUSIC: Record<string, { top: string[]; all: Source }> = {
+/** `first` (opcional): la canción con la que empieza la vista previa (sin Premium) si no conviene la más vista; luego sigue `top` en orden. */
+type Music = { top: string[]; all: Source; first?: string }
+const MUSIC: Record<string, Music> = {
   genshin: {
     // Populares (15 nov 2026, vistas de YouTube con yt-dlp): solo canciones sueltas (fuera álbumes y conciertos de una hora, tráilers y cortos).
     // La vaguelette (16.5 M), Nod-Krai Main Theme Live Performance (16 M), Flares of the Blazing Sun (10.1 M), Rex Incognito (7.3 M), Polumnia Omnia
@@ -280,12 +282,56 @@ const MUSIC: Record<string, { top: string[]; all: Source }> = {
       ['PLzge8wPnyV9AudQgfSo-JGP8fybXo049-', 108], // Soundtrack Collection
     ] },
   },
+  fgo: {
+    // Vista previa: empieza con 坂本真綾「色彩」, el tema principal del juego (dueño, 16 nov 2026: Prover, la más vista, es de la serie de anime).
+    first: 'YqgculuTh2I',
+    // Populares (16 nov 2026, vistas de YouTube): las 50 canciones oficiales de FGO más vistas (canales oficiales de los artistas y del juego, y
+    // las pistas "- Topic" de Fate/Grand Order y de Haga Keita); fuera tráileres, CM, directos, avances de álbum y canciones de otras obras de
+    // Fate (UBW, Mahoyo, Tsukihime). Todas con oEmbed 200. De más a menos vistas:
+    // Prover (8.9 M), Tell me (8.3 M), 逆光 (7.0 M), Phantom Joke (5.7 M), 独白 (5.7 M), Wonderer (4.3 M), 色彩 (4.3 M), 躍動 (4.2 M), A stain (3.0 M),
+    // Echoes (2.1 M), 伍越同舟 (2.1 M), Beyond the Gray Sky (1.7 M), 七星神威 (1.6 M), 陸劫輪廻 (1.5 M), 時計 (1.1 M), Zettai Majyuu Sensen (1.0 M),
+    // 色彩 Solomon Version (658 k), Eiyuu no Shimei (651 k), GRAND BATTLE 3 (647 k), 連星 (575 k), The End (564 k), Proof (525 k), Nisha Senitsu (498 k),
+    // Eternity Blue (493 k), Thest (435 k), Reson8te (432 k), 流星RODEO GIRLS (415 k), Unmei GRAND BATTLE Babylonia (413 k), Rebellion (353 k),
+    // Mesopotamia (320 k), BEAST 2 -TIAMAT BATTLE- (305 k), This Illusion FGOW (303 k), Coronation (297 k), Aesc -Queen Morgan Battle- (277 k),
+    // Fate -GRAND BATTLE- (274 k), 洋燈 (249 k), Lingering Ice (239 k), Bright Voyager (224 k), Goddess Rhongomyniad Battle (219 k), Walk By (206 k),
+    // Fantasy -Calamity of Curse- (201 k), Tenbin no Mamorite (186 k), Dance With the Shadow (174 k), Kono Tate ni Kakete (168 k), Let the New You (164 k),
+    // Witch Trials (162 k), outbreak -FGO- (161 k), The Moment a Planet Is Born (161 k), Final Order ~ I Am Bedivere (157 k), True Human (152 k)
+    top: [
+      '5qftJ2P3lrQ', 'ILuCsl_Kjbw', 'Blb9WbuiazE', '3KGjAw0fGX0', 'jECVRY6yS1s', 'zlbIfu8Ydww', 'YqgculuTh2I', 'xJwrxGy_CpE', 'PizlZiPE8Go', '2vgTi0Uyldc',
+      '_2fJ8po1mpA', '1vOXcmdahbg', 'ard8YBNXNkc', '7XmUcG7kfFw', 'fpjE6ZZWKTM', '2K0s2jtLroI', 'TUr5tul2SQ4', 'J3QmNkp9s4k', 'pZurW2M2EKg', '8ro7-IZxl7s',
+      '2eQsHib9BjI', '1K_b00mdsws', '0AxvGrUtKlU', 'Te_FCn4tc5I', 'vsbZbSUM1gA', 'YMA1nxTnaLg', 's23wpqVvDRw', 'DntOJZHztTY', 'z7c3EMbpoRE', 'HA6mZSCawus',
+      'A0yiA5apC6w', 'Q4DpvK0DWlI', '7vyjubFHS18', '50MIlCFTxKA', 'sHSBseNBs4I', 'x4VL-QvOOO8', 'qP8c3vG88Rg', 'WxUwQdYvEUU', 'whuNOHBQTTE', 'bf5wYTWZEbQ',
+      'LPXSWK4xNww', 'NH9un7afvGc', 'CYwIUxNIDR0', 'dUcBIPkWG18', 'TKnl-uuNxGw', 'qXLRKSulqNk', 'Pz05RlmsT5o', 'ypbaurVSxwQ', 'xL2RVyEWG1A', 'yhRE3U4j1B4',
+    ],
+    // Toda la banda sonora (16 nov 2026): los Original Soundtrack I–III oficiales (SonySoundtracksVEVO), los álbumes de las películas y de
+    // MOONLIGHT/LOSTROOM y las recopilaciones más grandes (AsK_0, RRahkshi, R2乗). Sin las de BGM "extendida" de 30–60 min. Todas con oEmbed 200.
+    // R2乗 (subidas de fans): algunas las reclama Sony Music (SME) y no se dejan ver insertadas ("Video no disponible"); el reproductor salta
+    // a otra al dar error. En youtube.com sí se ven (dueño, 16 nov 2026), así que se queda.
+    all: { lists: [
+      ['PLRW80bBvVD3Xcun1Rakn0g92fvpVOpX8v', 84], // Original Soundtrack I (oficial)
+      ['PLRW80bBvVD3US84xtUS5myIrgKz5sSoxm', 61], // Original Soundtrack II (oficial)
+      ['PLRW80bBvVD3Xk2E5ShFVI903ItbipPGf0', 54], // Original Soundtrack III (oficial)
+      ['PLRW80bBvVD3WPASyNejtAnu57-2LjrphW', 20], // Orchestra Concert Live Album (oficial)
+      ['PLdR7m7PFLzQ7Yb6xmmuqEl6FjWTcwhlh_', 596], // OST (Mobile Game), AsK_0
+      ['PLdR7m7PFLzQ6rSCVUJIPbrQiZ5jliKvCO', 32], // First Order, AsK_0
+      ['PLdR7m7PFLzQ5BDwTBee8GdQGpSTfr9MdG', 61], // Camelot, AsK_0
+      ['PLdR7m7PFLzQ6O95Q5xd_B46ActZZPAgUV', 76], // Babylonia, AsK_0
+      ['PLdR7m7PFLzQ4hzMcRcgSC-Zye3Jj-HrDE', 33], // Solomon, AsK_0
+      ['PLdR7m7PFLzQ4U4GHNAoLya-Yv9MimZv7k', 37], // MOONLIGHT/LOSTROOM, AsK_0
+      ['PLFB2DBGahG4G8lJ02rUF5qHmKJWWnwqw-', 308], // Soundtrack, RRahkshi
+      ['PLs6wb9uuzu5F2FcpLs0H_pZjfYyrPFLLx', 298], // bgm, R2乗
+    ] },
+  },
 }
 
 /** Skins con reproductor temático compacto (además de ZZZ, que tiene la tele): HSR funda de vinilo, Genshin pergamino, NIKKE el teléfono del
  *  comandante, WuWa el sintonizador de Frecuencia, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk,
- *  PGR el reproductor de CD del juego (caja, disco girando y brazo). Las que no estén aquí usan la ventanita sencilla. */
-const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive', 'pgr'])
+ *  PGR el reproductor de CD del juego (caja, disco girando y brazo), FGO CHALDEAS (el globo en la esfera armilar, sobre su
+ *  plataforma holográfica). Las que no estén aquí usan la ventanita sencilla. */
+const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive', 'pgr', 'fgo'])
+
+/** Capas de cada aro de CHALDEAS (FGO): más capas = más grosor de canto. */
+const FGO_LAYERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 type Mode = 'all' | 'top'
 const TXT: Record<Lang, { open: string; close: string; title: string; side: string; next: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
@@ -333,8 +379,11 @@ function pickTrack(lists: [string, number][]): { list: string; index: number } {
 const API = () => `&${COMMON}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
 /** URL del reproductor. "Todas": una lista concreta con la API de la ventana (`enablejsapi`); la posición la pone `playVideoAt` al estar
  *  lista (YouTube ignora `index` en la URL). */
-function srcOf(m: { top: string[]; all: Source }, mode: Mode, list: string | undefined): string {
-  if (mode === 'top') return `${BASE}${m.top[0]}?playlist=${m.top.join(',')}${API()}`
+function srcOf(m: Music, mode: Mode, list: string | undefined, preview = false): string {
+  if (mode === 'top') {
+    const ids = preview && m.first ? [m.first, ...m.top.filter(v => v !== m.first)] : m.top
+    return `${BASE}${ids[0]}?playlist=${ids.join(',')}${API()}`
+  }
   return list ? `${BASE}videoseries?list=${list}${API()}` : ''
 }
 
@@ -394,7 +443,7 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
     want.current = t.index
     setList(t.list)
   }, [open, mode, m])
-  const src = m && open ? srcOf(m, mode, list) : ''
+  const src = m && open ? srcOf(m, mode, list, preview) : ''
   useEffect(() => {
     if (!open) return
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -465,6 +514,12 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
         <div className={`music-dock tv ${skin === 'zzz' ? '' : 'tv-mini '}tv-${skin} ${side}${preview ? ' preview' : ''}`} role="region" aria-label={`${s.title} · ${name}`}
           style={vid ? { '--tv-thumb': `url(https://i.ytimg.com/vi/${vid}/hqdefault.jpg)` } as React.CSSProperties : undefined}>
           {skin !== 'zzz' && <span className="tv-deco" aria-hidden />}
+          {/* FGO (16 nov 2026): los aros de la esfera armilar de CHALDEAS, con VOLUMEN: cada aro es una pila de capas separadas en
+              profundidad (preserve-3d); de frente coinciden y de canto forman una banda gruesa, no una hoja de papel. Solo gira el aro
+              (transform), sin repintar. Van detrás del vídeo (skins.css, "Fate/Grand Order"). */}
+          {skin === 'fgo' && <i className="fgo-armillary" aria-hidden>
+            {[0, 1, 2].map(r => <b key={r} className={`fgo-ring r${r}`}>{FGO_LAYERS.map(k => <s key={k} style={{ '--k': k } as React.CSSProperties} />)}</b>)}
+          </i>}
           <div className="tv-set">
             <div className="tv-bezel"><div className="tv-screen">{player}</div></div>
             <div className="tv-side">

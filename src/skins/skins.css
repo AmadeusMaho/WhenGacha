@@ -660,3 +660,102 @@ html[data-skin] .skin-live-v.skin-live-b.on { --live-b: 1; }
 /* Selector de la ventanita sencilla (por si acaso). */
 html[data-skin="pgr"] .music-modes button { border-radius: 0; }
 html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303c; }
+
+/* --- Fate/Grand Order (2.ª versión, 16 nov 2026; la 1.ª, una carta de Craft Essence, "se veía muy rara"): CHALDEAS, el globo de Chaldea,
+   siempre en azul y REDONDO (se probaron y quitaron: pasarlo a rojo con "Populares", una animación de invocación al cambiar de canción y una
+   cúpula con las paredes de franjas de la sala, que "se veía extraña").
+   El aparato es el globo: una esfera azul con meridianos y paralelos de luz; el vídeo va inscrito en ella como una ventana cuadrada (no se
+   puede recortar en círculo: YouTube no deja tapar ni recortar el vídeo, así que el globo mide la diagonal del vídeo, ~290 px). Alrededor,
+   los anillos gruesos de la esfera armilar giran DETRÁS del vídeo (la barra de la que colgaba se quitó a petición del dueño). Debajo, el pedestal con el título y los
+   mandos de cristal holográfico. --- */
+.music-dock.tv-fgo { --g: 290px; --gp: calc((var(--g) - 200px) / 2);
+  --tv-on: #7fd6ff; --tv-r: 0;
+  --tv-body: transparent; --tv-body-sh: none;
+  --tv-bezel: transparent; --tv-bezel-sh: none; --tv-bezel-r: 8px; --tv-screen-r: 8px; --tv-screen-bg: #04102c;
+  --tv-screen-sh: 0 0 0 1px rgba(170, 230, 255, .9), 0 0 14px 2px rgba(110, 205, 255, .55);
+  --tv-power: #e9f7ff; --tv-power-glow: rgba(127, 214, 255, .8);
+  --tv-slot: linear-gradient(180deg, rgba(6, 26, 70, .94), rgba(3, 12, 36, .94)); --tv-slot-ink: #eaf7ff;
+  --tv-slot-sh: inset 0 0 0 1px rgba(127, 214, 255, .6), inset 0 1px 0 rgba(255, 255, 255, .18);
+  --tv-slot-r: 999px; --tv-slot-ico: 'CHALDEAS · '; --tv-font: 'Cinzel', 'Times New Roman', serif;
+  width: var(--g); box-sizing: border-box;
+  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: "scr scr scr scr scr scr" "lcd lcd lcd lcd lcd lcd" "k1 k2 . nx ej pwr";
+  row-gap: 5px; column-gap: 4px; padding: var(--gp) calc(var(--gp) + 6px) 9px; isolation: isolate; overflow: visible; }
+.music-dock.tv-fgo .tv-slot { margin-top: calc(var(--gp) + 6px); }
+/* El globo: esfera de luz como CHALDEAS. Facetas de cristal tenues (conic-gradient), meridianos y paralelos finos, brillo especular arriba a
+   la izquierda y el borde iluminado de una esfera (anillo de luz por dentro del contorno), con el halo azul alrededor. */
+.music-dock.tv-fgo::before { content: ''; position: absolute; z-index: -3; pointer-events: none; left: 0; top: 0; width: var(--g); height: var(--g); border-radius: 50%;
+  background:
+    radial-gradient(ellipse 18% 50% at 50% 50%, transparent calc(100% - 1px), rgba(170, 230, 255, .26) calc(100% - 1px) 100%, transparent 100%),
+    radial-gradient(ellipse 36% 50% at 50% 50%, transparent calc(100% - 1px), rgba(170, 230, 255, .2) calc(100% - 1px) 100%, transparent 100%),
+    repeating-linear-gradient(180deg, transparent 0 31px, rgba(170, 230, 255, .15) 31px 32px),
+    radial-gradient(circle at 44% 40%, #9fe6ff, #45b4ff 24%, #1d78e6 48%, #0f4cc0 70%, #0a2f86 88%, #071f60);
+  box-shadow: inset -12px -16px 30px rgba(2, 10, 40, .45), 0 0 0 1px rgba(170, 235, 255, .7), 0 0 22px 5px rgba(60, 160, 255, .6), 0 0 60px 14px rgba(42, 127, 255, .3), 0 18px 40px rgba(0, 0, 0, .5); }
+/* La superficie del planeta (facetas de cristal y vetas de luz) gira despacio: solo transform, que no repinta (va en .tv-side::before, una
+   caja que en los temas compactos no se usaba). Encima, quietos, el brillo especular y el borde iluminado (.tv-side::after). */
+.music-dock.tv-fgo .tv-side::before, .music-dock.tv-fgo .tv-side::after { content: ''; position: absolute; z-index: -3; pointer-events: none; left: 0; top: 0;
+  width: var(--g); height: var(--g); border-radius: 50%; }
+.music-dock.tv-fgo .tv-side::before { will-change: transform; animation: fgo-spin 90s linear infinite;
+  background:
+    radial-gradient(ellipse 22% 12% at 30% 34%, rgba(210, 245, 255, .32), transparent 70%),
+    radial-gradient(ellipse 16% 9% at 68% 62%, rgba(210, 245, 255, .26), transparent 70%),
+    radial-gradient(ellipse 12% 20% at 74% 28%, rgba(0, 25, 80, .28), transparent 70%),
+    radial-gradient(ellipse 20% 11% at 36% 76%, rgba(0, 25, 80, .24), transparent 70%),
+    conic-gradient(from 15deg, rgba(255, 255, 255, .1) 0 9%, transparent 9% 21%, rgba(255, 255, 255, .07) 21% 30%, transparent 30% 44%, rgba(0, 20, 70, .18) 44% 57%,
+      transparent 57% 69%, rgba(255, 255, 255, .08) 69% 78%, transparent 78% 90%, rgba(0, 20, 70, .14) 90%); }
+@keyframes fgo-spin { to { transform: rotate(360deg); } }
+.music-dock.tv-fgo .tv-side::after {
+  background: radial-gradient(circle at 33% 27%, rgba(240, 252, 255, .7), rgba(200, 240, 255, .18) 16%, transparent 30%),
+    radial-gradient(circle closest-side, transparent 88%, rgba(170, 235, 255, .55) 96%, rgba(220, 248, 255, .85) 99%, transparent 100%); }
+/* Pedestal: plataforma de cristal pequeña bajo el globo, justo con el título y los mandos. */
+.music-dock.tv-fgo::after { content: ''; position: absolute; z-index: -4; pointer-events: none; left: calc(var(--gp) - 2px); right: calc(var(--gp) - 2px); top: calc(var(--g) - 4px); bottom: 0;
+  border-radius: 10px 10px 14px 14px;
+  background: linear-gradient(180deg, rgba(14, 48, 120, .95), rgba(5, 18, 52, .97));
+  box-shadow: inset 0 0 0 1px rgba(127, 214, 255, .55), inset 0 1px 0 rgba(255, 255, 255, .25), 0 0 12px rgba(42, 127, 255, .4), 0 10px 24px rgba(0, 0, 0, .5); }
+/* Esfera armilar (como la del juego, imagen de referencia del dueño): aros GRUESOS de metal oscuro con reflejos azules, detrás del vídeo,
+   y con VOLUMEN (16 nov 2026: de canto parecían una hoja de papel). Cada aro (.fgo-ring, SkinMusic.tsx) es una pila de 11 capas separadas en
+   profundidad con translateZ dentro de un contenedor con preserve-3d: de frente coinciden y de canto forman una banda de ~11 px. Las capas
+   de los extremos son las caras (metal con brillo, conic-gradient) y las del medio el canto, más oscuro. Cada capa es un disco recortado a
+   una banda de grosor --rw con una máscara. Solo gira el aro (transform): no se repinta. El frontal gira sobre su eje vertical, el ecuatorial
+   (ancho y casi tumbado, sobresale por los lados) se mece y el interior, inclinado, gira sobre el horizontal. */
+.tv-fgo .tv-bezel { padding: 0; isolation: isolate; }
+.music-dock.tv-fgo .tv-deco { display: none; }
+.fgo-armillary { position: absolute; z-index: -1; pointer-events: none; left: 0; top: 0; width: var(--g); height: var(--g); perspective: 1400px; }
+.fgo-ring { --rd: calc(var(--g) + 12px); --rw: 13px; position: absolute; left: 50%; top: 50%; width: var(--rd); height: var(--rd); margin: calc(var(--rd) / -2) 0 0 calc(var(--rd) / -2);
+  transform-style: preserve-3d; will-change: transform; }
+.fgo-ring s { position: absolute; inset: 0; border-radius: 50%; text-decoration: none;
+  transform: translateZ(calc((var(--k) - 5) * 1.1px));
+  background: linear-gradient(180deg, #13244a, #0a1430 50%, #13244a);
+  -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - var(--rw)), #000 calc(100% - var(--rw) + .5px));
+  mask: radial-gradient(circle closest-side, transparent calc(100% - var(--rw)), #000 calc(100% - var(--rw) + .5px)); }
+/* Caras de delante y de detrás: metal con brillo azul y un filo de luz. */
+.fgo-ring s:is(:first-child, :last-child) {
+  background: conic-gradient(from 210deg, #0a1430, #24407a 9%, #0e1b3c 20%, #0a1430 40%, #2f5596 56%, #4f86d0 60%, #12234a 68%, #0a1430 86%, #1c3366 95%, #0a1430); }
+.fgo-ring s:last-child { box-shadow: inset 0 0 0 1px rgba(170, 230, 255, .8); }
+/* El borde exterior del canto, algo más claro: de canto se lee como una superficie de metal. */
+.fgo-ring s:nth-child(2), .fgo-ring s:nth-child(10) { background: linear-gradient(180deg, #1d3a72, #0e1d42 50%, #1d3a72); }
+.fgo-ring.r0 { animation: fgo-ring-y 18s linear infinite; }
+.fgo-ring.r1 { --rd: calc(var(--g) + 44px); --rw: 12px; animation: fgo-ring-e 14s ease-in-out infinite alternate; }
+.fgo-ring.r2 { --rd: calc(var(--g) - 26px); --rw: 11px; animation: fgo-ring-x 24s linear infinite; }
+@keyframes fgo-ring-y { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
+@keyframes fgo-ring-e { from { transform: rotateZ(-6deg) rotateX(74deg); } to { transform: rotateZ(4deg) rotateX(70deg); } }
+@keyframes fgo-ring-x { from { transform: rotateZ(-28deg) rotateX(0deg); } to { transform: rotateZ(-28deg) rotateX(360deg); } }
+/* Título y mandos de cristal holográfico; el modo elegido se enciende en cian con el icono oscuro. */
+.tv-fgo .tv-slot { justify-content: center; height: 18px; padding: 0 8px; font-weight: 700; letter-spacing: .05em; text-transform: none; font-size: .58rem; text-shadow: 0 0 6px rgba(127, 214, 255, .7); }
+.tv-fgo .tv-slot span::before { color: #7fd6ff; }
+.tv-fgo :is(.tv-power, .tv-eject, .tv-knob) { width: 22px; height: 20px; display: grid; place-items: center; padding: 0; border-radius: 6px; font-size: .72rem; color: #e9f7ff; cursor: pointer;
+  background: linear-gradient(180deg, rgba(140, 215, 255, .3), rgba(30, 90, 190, .42) 48%, rgba(8, 30, 84, .82) 52%, rgba(10, 40, 104, .9));
+  box-shadow: inset 0 0 0 1px rgba(150, 225, 255, .75), inset 0 1px 0 rgba(255, 255, 255, .45), 0 0 8px rgba(42, 127, 255, .45), 0 2px 4px rgba(0, 0, 0, .5);
+  transition: box-shadow .15s, background .15s, color .15s; }
+.tv-fgo :is(.tv-power, .tv-eject, .tv-knob) svg { filter: drop-shadow(0 0 3px rgba(127, 214, 255, .9)); }
+.tv-fgo :is(.tv-power, .tv-eject, .tv-knob):hover:not(.on) { color: #fff; box-shadow: inset 0 0 0 1px #d8f3ff, inset 0 1px 0 rgba(255, 255, 255, .6), 0 0 12px 2px rgba(110, 205, 255, .7), 0 2px 4px rgba(0, 0, 0, .5); }
+.tv-fgo .tv-power:hover svg { filter: drop-shadow(0 0 4px #fff); }
+.tv-fgo .tv-knob { align-self: center; justify-self: center; --tv-knob-size: 20px; }
+.tv-fgo .tv-knob::before { display: none; }
+.tv-fgo .tv-knob svg { display: block; width: 11px; height: 11px; color: currentColor; }
+.tv-fgo :is(.tv-power, .tv-eject) svg { width: 11px; height: 11px; }
+.tv-fgo .tv-knob.on { color: #04204a; background: linear-gradient(180deg, #e6f8ff, #8fdcff 50%, #4aa8ff);
+  box-shadow: inset 0 0 0 1px #fff, 0 0 12px 2px rgba(127, 214, 255, .85), 0 2px 4px rgba(0, 0, 0, .5); }
+.tv-fgo .tv-knob.on svg { color: #04204a; filter: none; }
+/* El globo sobresale arriba (barra) y por los lados (anillos): se aparta un poco de la esquina de la pantalla. */
+.music-dock.tv-fgo.right { right: 30px; } .music-dock.tv-fgo.left { left: 30px; }
+@media (max-width: 700px) { .music-dock.tv-fgo { --g: 284px; } .music-dock.tv-fgo.right { right: 22px; } .music-dock.tv-fgo.left { left: 22px; } }

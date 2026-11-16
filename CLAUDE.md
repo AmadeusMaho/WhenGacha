@@ -84,7 +84,7 @@ los destacados y a las cabeceras de sección de la ventana del evento (como Gens
 `src/skins/skins.css`, "Temas compactos"). Cada uno con **silueta propia y compacta** basada en un objeto de su juego, no la misma caja con otros
 colores: ZZZ la tele CRT (solo suya), HSR funda de vinilo con el disco girando, Genshin pergamino, NIKKE el teléfono del comandante, WuWa el
 sintonizador de Frecuencia (con la cinta dorada animada), Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk,
-PGR el reproductor de CD del propio juego (caja del CD, disco que gira y brazo).
+PGR el reproductor de CD del propio juego (caja del CD, disco que gira y brazo), FGO CHALDEAS (un globo redondo con el vídeo inscrito, la esfera armilar girando detrás y un pedestal con mandos de cristal holográfico; siempre azul).
 
 **Fondos en todas las pestañas** (15 nov 2026): toda skin muestra su fondo en las cuatro pestañas y cada pestaña el siguiente de su lista (antes solo
 Arknights y Blue Archive). Una skin nueva se revisa también en Mis gachas, Parches y Tiradas con el fondo detrás. Los fondos animados los elige y
