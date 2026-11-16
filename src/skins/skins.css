@@ -736,6 +736,12 @@ html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303
 .fgo-ring.r0 { animation: fgo-ring-y 18s linear infinite; }
 .fgo-ring.r1 { --rd: calc(var(--g) + 44px); --rw: 12px; animation: fgo-ring-e 14s ease-in-out infinite alternate; }
 .fgo-ring.r2 { --rd: calc(var(--g) - 26px); --rw: 11px; animation: fgo-ring-x 24s linear infinite; }
+/* En móvil, 5 capas por aro en vez de 11 (menos de la mitad de memoria gráfica; dueño, 16 nov 2026): las dos caras y tres de canto, más juntas
+   (cada 2 px) para que de canto siga siendo una banda maciza. */
+@media (max-width: 700px) {
+  .fgo-ring s:not(:nth-child(1), :nth-child(4), :nth-child(6), :nth-child(8), :nth-child(11)) { display: none; }
+  .fgo-ring s:nth-child(1) { transform: translateZ(-4px); } .fgo-ring s:nth-child(4) { transform: translateZ(-2px); }
+  .fgo-ring s:nth-child(6) { transform: none; } .fgo-ring s:nth-child(8) { transform: translateZ(2px); } .fgo-ring s:nth-child(11) { transform: translateZ(4px); } }
 @keyframes fgo-ring-y { from { transform: rotateY(0deg); } to { transform: rotateY(360deg); } }
 @keyframes fgo-ring-e { from { transform: rotateZ(-6deg) rotateX(74deg); } to { transform: rotateZ(4deg) rotateX(70deg); } }
 @keyframes fgo-ring-x { from { transform: rotateZ(-28deg) rotateX(0deg); } to { transform: rotateZ(-28deg) rotateX(360deg); } }

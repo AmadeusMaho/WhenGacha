@@ -453,7 +453,7 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
 - **Fondos**: 22 animados elegidos por el dueño (16 nov 2026; MoeWalls y WallpaperWaifu a 1280 px porque solo dan la vista previa, DesktopHut y
   MotionBGs a 1920), publicados con Wallpaureka. Si `FONDOS.fgo` se vaciara, quedan los fijos de Chaldea (CHALDEAS, Rayshift, pasillo, taller
   de Da Vinci, exterior). "Mis gachas": My Room quieta (`tabLive`). La vista previa empieza con 「色彩」 (`first` en `MUSIC.fgo`).
-- El planeta del reproductor gira despacio (`.tv-side::before`, 90 s, solo transform).
+- El planeta del reproductor gira despacio (`.tv-side::before`, 90 s, solo transform). Aros con volumen: 11 capas 3D por aro (5 en móvil, menos memoria gráfica).
 - **Reproductor** (`.tv-fgo` en skins.css; 2.ª versión, la 1.ª era una carta de Craft Essence y "se veía muy rara"): CHALDEAS, redondo y
   siempre azul. El aparato es el globo (esfera azul con meridianos y paralelos de luz) con el vídeo inscrito como ventana cuadrada: no se
   recorta en círculo (YouTube no deja tapar ni recortar el vídeo), por eso el globo mide su diagonal (`--g`: 290 px, 284 en móvil). Alrededor,
