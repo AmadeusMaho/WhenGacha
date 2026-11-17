@@ -285,23 +285,24 @@ const MUSIC: Record<string, Music> = {
   fgo: {
     // Vista previa: empieza con 坂本真綾「色彩」, el tema principal del juego (dueño, 16 nov 2026: Prover, la más vista, es de la serie de anime).
     first: 'YqgculuTh2I',
-    // Populares (16 nov 2026, vistas de YouTube): las 50 canciones oficiales de FGO más vistas (canales oficiales de los artistas y del juego, y
-    // las pistas "- Topic" de Fate/Grand Order y de Haga Keita); fuera tráileres, CM, directos, avances de álbum y canciones de otras obras de
-    // Fate (UBW, Mahoyo, Tsukihime). Todas con oEmbed 200. De más a menos vistas:
-    // Prover (8.9 M), Tell me (8.3 M), 逆光 (7.0 M), Phantom Joke (5.7 M), 独白 (5.7 M), Wonderer (4.3 M), 色彩 (4.3 M), 躍動 (4.2 M), A stain (3.0 M),
-    // Echoes (2.1 M), 伍越同舟 (2.1 M), Beyond the Gray Sky (1.7 M), 七星神威 (1.6 M), 陸劫輪廻 (1.5 M), 時計 (1.1 M), Zettai Majyuu Sensen (1.0 M),
-    // 色彩 Solomon Version (658 k), Eiyuu no Shimei (651 k), GRAND BATTLE 3 (647 k), 連星 (575 k), The End (564 k), Proof (525 k), Nisha Senitsu (498 k),
-    // Eternity Blue (493 k), Thest (435 k), Reson8te (432 k), 流星RODEO GIRLS (415 k), Unmei GRAND BATTLE Babylonia (413 k), Rebellion (353 k),
-    // Mesopotamia (320 k), BEAST 2 -TIAMAT BATTLE- (305 k), This Illusion FGOW (303 k), Coronation (297 k), Aesc -Queen Morgan Battle- (277 k),
-    // Fate -GRAND BATTLE- (274 k), 洋燈 (249 k), Lingering Ice (239 k), Bright Voyager (224 k), Goddess Rhongomyniad Battle (219 k), Walk By (206 k),
-    // Fantasy -Calamity of Curse- (201 k), Tenbin no Mamorite (186 k), Dance With the Shadow (174 k), Kono Tate ni Kakete (168 k), Let the New You (164 k),
-    // Witch Trials (162 k), outbreak -FGO- (161 k), The Moment a Planet Is Born (161 k), Final Order ~ I Am Bedivere (157 k), True Human (152 k)
+    // Populares (16 nov 2026, vistas de YouTube; dueño: "lo de las series también"): las 50 canciones oficiales de Fate más vistas, de FGO
+    // (juego, anime y películas) y de las otras series (UBW, Heaven's Feel, Zero, Apocrypha, Prisma Illya, strange Fake, El-Melloi, EXTRA,
+    // Samurai Remnant, stay night 2006), de los canales oficiales de cada artista, del juego, Aniplex/Lantis/NBCUniversal y pistas "- Topic".
+    // Sin las de milet (Prover, Tell me): al dueño no le gustan para aquí; siguen en "Todas" (lista de Babylonia). Sin versiones TV, cortos,
+    // covers ni AMV. Todas con oEmbed 200. De más a menos vistas:
+    // I beg you (37.8 M), oath sign (33.9 M), Last Stardust (33.4 M), 春はゆく (21.7 M), FAKEit (21.0 M), to the beginning (15.3 M), Brave Shine (10.1 M),
+    // PROVANT (9.8 M), 英雄 運命の詩 (9.7 M), starlog (7.7 M), 逆光 (7.0 M), MEMORIA (5.8 M), Phantom Joke (5.7 M), 独白 (5.7 M), ideal white (4.5 M),
+    // Wonderer (4.3 M), 色彩 (4.3 M), 躍動 (4.2 M), 潜在的なアイ (3.7 M), Désir (3.6 M), kaleidoscope (3.4 M), A stain (3.0 M), 残夜幻想 (2.8 M), 雲雀 (2.6 M),
+    // 花の唄 (2.6 M), believe (2.3 M), Echoes (2.1 M), 伍越同舟 (2.1 M), 君が見た夢の物語 (1.8 M), Beyond the Gray Sky (1.7 M), 七星神威 (1.6 M),
+    // moving soul (1.6 M), ring your bell (1.6 M), 陸劫輪廻 (1.5 M), disillusion (1.2 M), 時計 (1.1 M), Zettai Majyuu Sensen (1.0 M), ASH (902 k), KOE (814 k),
+    // Iron Rose (764 k), 色彩 Solomon Version (658 k), Eiyuu no Shimei (651 k), GRAND BATTLE 3 (647 k), 連星 (575 k), The End (564 k), Proof (525 k),
+    // Torrid (504 k), Nisha Senitsu (498 k), Eternity Blue (493 k), Bright Burning Shout (484 k)
     top: [
-      '5qftJ2P3lrQ', 'ILuCsl_Kjbw', 'Blb9WbuiazE', '3KGjAw0fGX0', 'jECVRY6yS1s', 'zlbIfu8Ydww', 'YqgculuTh2I', 'xJwrxGy_CpE', 'PizlZiPE8Go', '2vgTi0Uyldc',
-      '_2fJ8po1mpA', '1vOXcmdahbg', 'ard8YBNXNkc', '7XmUcG7kfFw', 'fpjE6ZZWKTM', '2K0s2jtLroI', 'TUr5tul2SQ4', 'J3QmNkp9s4k', 'pZurW2M2EKg', '8ro7-IZxl7s',
-      '2eQsHib9BjI', '1K_b00mdsws', '0AxvGrUtKlU', 'Te_FCn4tc5I', 'vsbZbSUM1gA', 'YMA1nxTnaLg', 's23wpqVvDRw', 'DntOJZHztTY', 'z7c3EMbpoRE', 'HA6mZSCawus',
-      'A0yiA5apC6w', 'Q4DpvK0DWlI', '7vyjubFHS18', '50MIlCFTxKA', 'sHSBseNBs4I', 'x4VL-QvOOO8', 'qP8c3vG88Rg', 'WxUwQdYvEUU', 'whuNOHBQTTE', 'bf5wYTWZEbQ',
-      'LPXSWK4xNww', 'NH9un7afvGc', 'CYwIUxNIDR0', 'dUcBIPkWG18', 'TKnl-uuNxGw', 'qXLRKSulqNk', 'Pz05RlmsT5o', 'ypbaurVSxwQ', 'xL2RVyEWG1A', 'yhRE3U4j1B4',
+      'pCC6qbAnX00', 'GJ4yehnerHQ', 'ngm99aJh7ig', 'ekP7VLeXnqY', 'a_iU8YeH944', 'b1bXu0XZDlU', 'VQ2D8rZljwU', '1nyaV4WFddM', 'eaQpo6ogFlc', 'CGz2I_5ikI4',
+      'Blb9WbuiazE', 'LnMA-BrpDCg', '3KGjAw0fGX0', 'jECVRY6yS1s', '-P_B2AC5WJM', 'zlbIfu8Ydww', 'YqgculuTh2I', 'xJwrxGy_CpE', 'LeK0WZqC-As', 'JQAl_bQVOBs',
+      '-EbdeXPhi6o', 'PizlZiPE8Go', 'QontNYkPRBA', '7L1M7HLcpMw', 'JR8F-Eov418', '-su426eFStM', '2vgTi0Uyldc', '_2fJ8po1mpA', 'Wtzbt4QMuZg', '1vOXcmdahbg',
+      'ard8YBNXNkc', 'rwj7GVmMkh0', 'v6vwADf_qzQ', '7XmUcG7kfFw', 'bYZ5w1Cn-mE', 'fpjE6ZZWKTM', '2K0s2jtLroI', 'onIQMPIaS7E', 'Ptoc7mV_AYk', 'nynE3bJbiA4',
+      'TUr5tul2SQ4', 'J3QmNkp9s4k', 'pZurW2M2EKg', '8ro7-IZxl7s', '2eQsHib9BjI', '1K_b00mdsws', 'NsrzHogw-7c', '0AxvGrUtKlU', 'Te_FCn4tc5I', 'Teb_7bSNwI0',
     ],
     // Toda la banda sonora (16 nov 2026): los Original Soundtrack I–III oficiales (SonySoundtracksVEVO), los álbumes de las películas y de
     // MOONLIGHT/LOSTROOM y las recopilaciones más grandes (AsK_0, RRahkshi, R2乗). Sin las de BGM "extendida" de 30–60 min. Todas con oEmbed 200.
@@ -320,6 +321,22 @@ const MUSIC: Record<string, Music> = {
       ['PLdR7m7PFLzQ4U4GHNAoLya-Yv9MimZv7k', 37], // MOONLIGHT/LOSTROOM, AsK_0
       ['PLFB2DBGahG4G8lJ02rUF5qHmKJWWnwqw-', 308], // Soundtrack, RRahkshi
       ['PLs6wb9uuzu5F2FcpLs0H_pZjfYyrPFLLx', 298], // bgm, R2乗
+      // Las otras series de Fate (16 nov 2026, petición del dueño): una lista por obra, oficial (SonySoundtracksVEVO) cuando la hay.
+      ['PLBO2h-GzDvIYUuJgpz1pg3JT_4vb-MsiA', 40], // Fate/stay night (anime 2006), NightBunny8
+      ['PLr8oeV3cmlKm1pBlnXBN_3nvsg6ZDlSKR', 66], // Fate/stay night (novela visual)
+      ['PLdR7m7PFLzQ5-wuAjLy7jRUSDikdUb1pv', 59], // Fate/hollow ataraxia, AsK_0
+      ['PLRW80bBvVD3Vwg6Kly83cHCcpDdnDdWqo', 79], // Fate/stay night [Unlimited Blade Works] (oficial)
+      ['PLBO2h-GzDvIbNFvxdqkuwh7gEILaYXtcX', 102], // Fate/stay night [Heaven's Feel], NightBunny8
+      ['PLRW80bBvVD3XUbLDydHUuQVLs_IhYf_xW', 70], // Fate/Zero (oficial)
+      ['PLyHlOhRmggqXhuFPe6v70OZr6E59eQCl_', 62], // Fate/Apocrypha
+      ['PLdR7m7PFLzQ5zFwaBQihN2mGTEuKOsU0W', 272], // Fate/kaleid liner Prisma Illya, AsK_0
+      ['PLdR7m7PFLzQ4M42FiebXfb6id4R_wXtHl', 34], // Fate/EXTRA, AsK_0
+      ['PLRW80bBvVD3Vwt0BGylvTkAEaDq3d5IbP', 54], // Fate/EXTRA CCC (oficial)
+      ['PLRW80bBvVD3W4TWY9f_bhvvYu3pMu7emU', 34], // Fate/EXTELLA (oficial)
+      ['PLdR7m7PFLzQ4t9zQB2yVaELDbsTImMlo4', 53], // Fate/EXTRA Last Encore, AsK_0
+      ['PLRW80bBvVD3W05AkHKQyrqg8556ZBZ5fc', 44], // Lord El-Melloi II's Case Files (oficial)
+      ['PLPtvflpTqTN2j7F4jn0xXfuSdLDjFgZpb', 96], // Fate/Samurai Remnant
+      ['PLBO2h-GzDvIb_sEfsgTjrzq7_dW34cOrj', 49], // Fate/strange Fake, NightBunny8
     ] },
   },
 }

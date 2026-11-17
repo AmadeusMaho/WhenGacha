@@ -459,6 +459,8 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   recorta en círculo (YouTube no deja tapar ni recortar el vídeo), por eso el globo mide su diagonal (`--g`: 290 px, 284 en móvil). Alrededor,
   tres anillos gruesos de metal (bandas de 11–13 px con brillo metálico y, detrás, su canto oscuro desfasado para que de canto tengan grosor)
   giran DETRÁS del vídeo; debajo, un pedestal pequeño con el título y los mandos de cristal holográfico (22×20 px) (el modo elegido se enciende en cian). Se probaron y se quitaron, porque no gustaron: el modo rojo con
-  "Populares", una animación de invocación al empezar cada canción y una cúpula con las paredes de franjas de la sala detrás. Música: Original Soundtrack I–III oficiales y recopilaciones; 50 populares.
+  "Populares", una animación de invocación al empezar cada canción y una cúpula con las paredes de franjas de la sala detrás. Música (17 nov 2026): "Populares" son las 50 canciones oficiales más vistas de TODO Fate (FGO juego/anime/películas y las otras
+  series: UBW, Heaven's Feel, Zero, Apocrypha, Prisma Illya, strange Fake, El-Melloi…), sin las dos de milet (al dueño no le gustan ahí; siguen
+  en "Todas"). "Todas": la banda sonora de FGO (OST I–III, orquesta, recopilaciones) y una lista por cada otra serie de Fate.
 - Revisada con `skin-contrast.js` en las cuatro pestañas, Cuadrícula, ventana del evento y menú de skins, escritorio y 375 px: sin avisos
   (salvo los juegos "wip" desactivados de la base y la cabecera blanca, que el script marca como imagen).
