@@ -125,20 +125,8 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
           <button className={view === 'timeline' ? 'on' : ''} onClick={() => transition(() => setView('timeline'))}>{t('view.line')}</button>
           <button className={view === 'grid' ? 'on' : ''} onClick={() => transition(() => setView('grid'))}>{t('view.grid')}</button>
         </div>
-        {/* Ir a un juego: lista nativa (en el móvil, la del sistema). Vuelve a "Ir a…" tras elegir, para poder repetir el mismo juego. */}
-        {tracked.length > 1 && !ordering && (
-          // Botón de icono: la lista va encima, invisible, y al tocarla se abre la del sistema.
-          <span className="goto-wrap" title={t('goto.aria')}>
-            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 6h10M4 12h7M4 18h10" /><path d="M18 8v10m-3-3 3 3 3-3" />
-            </svg>
-            <select className="goto" value="" aria-label={t('goto.aria')}
-              onChange={e => { const id = e.target.value; e.target.value = ''; if (id) jump(id) }}>
-              <option value="" disabled hidden>{t('goto.label')}</option>
-              {tracked.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-            </select>
-          </span>
-        )}
+        {/* Ir a un juego: botón de icono con su menú (el de idioma, `.lang-menu`, que las skins ya estilan). */}
+        {tracked.length > 1 && !ordering && <GotoMenu games={tracked} state={state} onPick={id => jump(id)} />}
         <ZoneTag now={now} />
         <button className={`btn sm ghost fbtn ${activeFilters ? 'on' : ''}`} onClick={() => setSheet(true)} aria-haspopup="dialog">
           ☰ {t('filters.btn')}{activeFilters > 0 && <b className="badge">{activeFilters}</b>}
@@ -157,6 +145,64 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
         ? <Gantt {...ctx} filters={filters} zoom={zoom} narrow={narrow} fold={{ collapsed, toggle }} />
         : <GridView {...ctx} filters={filters} fold={{ collapsed, toggle }} />}
     </>
+  )
+}
+
+/* ---------- "Ir a…": botón de icono con la lista de juegos seguidos ---------- */
+/**
+ * Menú propio (antes un <select>: su lista la pinta el sistema, blanca y sin estilo). Usa `.lang-menu`, el del selector de idioma, para que cada
+ * skin lo vista igual. Se coloca centrado bajo el botón y sin salirse de la pantalla; flechas/Inicio/Fin para moverse, Escape o tocar fuera cierra.
+ */
+function GotoMenu({ games, state, onPick }: { games: Game[]; state: AppState; onPick: (id: string) => void }) {
+  const [open, setOpen] = useState(false)
+  const [left, setLeft] = useState(0)
+  const box = useRef<HTMLDivElement>(null)
+  const list = useRef<HTMLUListElement>(null)
+  const W = 236
+
+  useEffect(() => {
+    if (!open) return
+    const r = box.current!.getBoundingClientRect()
+    const want = r.left + r.width / 2 - W / 2
+    setLeft(Math.min(Math.max(want, 12), window.innerWidth - W - 12) - r.left)
+    list.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true })
+    const outside = (e: Event) => { if (!box.current?.contains(e.target as Node)) setOpen(false) }
+    const keys = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); box.current?.querySelector<HTMLButtonElement>('.goto-btn')?.focus(); return }
+      const items = [...(list.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])]
+      const i = items.indexOf(document.activeElement as HTMLButtonElement)
+      const to = e.key === 'ArrowDown' ? i + 1 : e.key === 'ArrowUp' ? i - 1 : e.key === 'Home' ? 0 : e.key === 'End' ? items.length - 1 : null
+      if (to === null || !items.length) return
+      e.preventDefault()
+      items[(to + items.length) % items.length].focus()
+    }
+    document.addEventListener('pointerdown', outside)
+    document.addEventListener('keydown', keys)
+    return () => { document.removeEventListener('pointerdown', outside); document.removeEventListener('keydown', keys) }
+  }, [open])
+
+  return (
+    <div className="goto-wrap" ref={box}>
+      <button className={`goto-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-haspopup="menu" aria-expanded={open}
+        title={t('goto.aria')} aria-label={t('goto.aria')}>
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 6h10M4 12h7M4 18h10" /><path d="M18 8v10m-3-3 3 3 3-3" />
+        </svg>
+      </button>
+      {open && (
+        <ul className="lang-menu goto-menu" role="menu" aria-label={t('goto.aria')} ref={list} style={{ left, right: 'auto', width: W }}>
+          <li className="goto-title" role="presentation">{t('goto.label')}</li>
+          {games.map(g => (
+            <li key={g.id} role="none">
+              <button role="menuitem" onClick={() => { setOpen(false); onPick(g.id) }}>
+                <GameAvatar game={g} state={state} size={26} />
+                <span>{g.name}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   )
 }
 
