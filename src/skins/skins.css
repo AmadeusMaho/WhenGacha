@@ -356,7 +356,7 @@ html[data-skin="arknights"] .music-modes button.on svg { color: var(--ak-yel); }
 .tv-mini :is(.tv-bezel, .tv-knob, .tv-power, .tv-slot, .tv-eject) { position: relative; z-index: 1; }
 .tv-mini .tv-bezel { grid-area: scr; padding: 5px; }
 .tv-mini .tv-power { grid-area: pwr; } .tv-mini .tv-eject { grid-area: ej; } .tv-mini .tv-next { grid-area: nx; }
-.tv-mini .tv-knob:nth-child(1) { grid-area: k1; } .tv-mini .tv-knob:nth-child(2) { grid-area: k2; }
+.tv-mini .tv-knob:nth-child(1) { grid-area: k1; } .tv-mini .tv-knob:nth-child(2) { grid-area: k2; } .tv-mini .tv-knob:nth-child(3) { grid-area: k3; }
 .tv-mini .tv-slot { grid-area: lcd; width: 100%; height: 22px; padding: 0 6px; font-size: .6rem; }
 .tv-mini :is(.tv-power, .tv-eject) { width: 24px; height: 22px; }
 .tv-mini .tv-knob { align-self: center; justify-self: center; --tv-knob-size: 22px; }
@@ -678,7 +678,8 @@ html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303
   --tv-slot-sh: inset 0 0 0 1px rgba(127, 214, 255, .6), inset 0 1px 0 rgba(255, 255, 255, .18);
   --tv-slot-r: 999px; --tv-slot-ico: 'CHALDEAS · '; --tv-font: 'Cinzel', 'Times New Roman', serif;
   width: var(--g); box-sizing: border-box;
-  grid-template-columns: 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: "scr scr scr scr scr scr" "lcd lcd lcd lcd lcd lcd" "k1 k2 . nx ej pwr";
+  /* Tres modos (18 nov 2026): Todas, Populares (solo el juego) y Todo Fate. */
+  grid-template-columns: 22px 22px 22px minmax(0, 1fr) 22px 22px 22px; grid-template-areas: "scr scr scr scr scr scr scr" "lcd lcd lcd lcd lcd lcd lcd" "k1 k2 k3 . nx ej pwr";
   row-gap: 5px; column-gap: 4px; padding: var(--gp) calc(var(--gp) + 6px) 9px; isolation: isolate; overflow: visible; }
 .music-dock.tv-fgo .tv-slot { margin-top: calc(var(--gp) + 6px); }
 /* El globo: esfera de luz como CHALDEAS. Facetas de cristal tenues (conic-gradient), meridianos y paralelos finos, brillo especular arriba a

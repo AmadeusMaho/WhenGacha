@@ -22,7 +22,9 @@ import type { Lang } from '../i18n'
  *  posición 1500 vuelve a la primera), así que la banda sonora se reparte en listas por álbum/versión y las de más de 200 cuentan como 200. */
 type Source = { lists: [string, number][] }
 /** `first` (opcional): la canción con la que empieza la vista previa (sin Premium) si no conviene la más vista; luego sigue `top` en orden. */
-type Music = { top: string[]; all: Source; first?: string }
+/** `game` (opcional, 18 nov 2026): tercer modo con las más vistas SOLO del juego, cuando `top` mezcla otras obras de la franquicia (FGO: `top`
+ *  es toda la saga Fate). Con `game`, `top` se llama "Todo Fate" (`topName`) y el selector muestra tres opciones. */
+type Music = { top: string[]; all: Source; first?: string; game?: string[]; topName?: Record<Lang, [short: string, long: string]> }
 const MUSIC: Record<string, Music> = {
   genshin: {
     // Populares (15 nov 2026, vistas de YouTube con yt-dlp): solo canciones sueltas (fuera álbumes y conciertos de una hora, tráilers y cortos).
@@ -304,6 +306,62 @@ const MUSIC: Record<string, Music> = {
       'ard8YBNXNkc', 'rwj7GVmMkh0', 'v6vwADf_qzQ', '7XmUcG7kfFw', 'bYZ5w1Cn-mE', 'fpjE6ZZWKTM', '2K0s2jtLroI', 'onIQMPIaS7E', 'Ptoc7mV_AYk', 'nynE3bJbiA4',
       'TUr5tul2SQ4', 'J3QmNkp9s4k', 'pZurW2M2EKg', '8ro7-IZxl7s', '2eQsHib9BjI', '1K_b00mdsws', 'NsrzHogw-7c', '0AxvGrUtKlU', 'Te_FCn4tc5I', 'Teb_7bSNwI0',
     ],
+    // Con el tercer botón (18 nov 2026, dueño): "Populares" = solo el juego FGO; la lista de arriba pasa a llamarse "Todo Fate".
+    topName: { es: ['Todo Fate', 'Las más vistas de toda la saga Fate'], en: ['All Fate', 'The most viewed songs of the whole Fate series'],
+      zh: ['全部Fate', '整个Fate系列观看次数最多的歌曲'] },
+    // Solo el juego (18 nov 2026, dueño: "todas ordenadas de mayor a menor vistas, exclusivas del juego"): las 416 pistas oficiales de
+    // Fate/Grand Order el JUEGO que hay en YouTube, de más a menos vistas: toda la "Fate/Grand Order Original Soundtrack I–VI" (álbumes oficiales
+    // en "Haga Keita - Topic"), los singles de eventos ("Fate/Grand Order - Topic"), las canciones de los anuncios de eventos y capítulos (lista
+    // MUSIC del canal 【公式】Fate/Grand Order: solo Lyric/Music Video, sin directos, avances ni anuncios de álbum) y los temas del juego de 坂本真綾
+    // (逆光, 色彩, 躍動, 時計). Cada álbum comprobado por su descripción. Fuera el anime y las películas (独白, Phantom Joke y los álbumes de
+    // Babylonia/Solomon, Camelot y First Order, aunque salgan en "Fate/Grand Order - Topic"), 残夜幻想 (Fate/Samurai Remnant) y Waltz in the
+    // MOONLIGHT/LOSTROOM (otro juego). Sin repetidas: de una canción con vídeo oficial, single y pista de álbum queda la más vista. Las
+    // Original Soundtrack VII y VIII no están en YouTube (solo sus avances). Todas con oEmbed 200.
+    // Empieza por 逆光 (7.0 M), Wonderer (4.3 M), 色彩 (4.3 M), 躍動 (4.2 M), A stain (3.0 M), Echoes (2.1 M), 伍越同舟 (2.0 M), Beyond the Gray Sky (1.7 M), 七星神威 (1.6 M), 陸劫輪廻 (1.4 M), 時計 (1.1 M), Seirennaru Heretics (818 k)… y acaba en Save Amazones.com! Shop Theme Song (309).
+    game: [
+      'Blb9WbuiazE', 'zlbIfu8Ydww', 'YqgculuTh2I', 'xJwrxGy_CpE', 'PizlZiPE8Go', '2vgTi0Uyldc', '_2fJ8po1mpA', '1vOXcmdahbg', 'ard8YBNXNkc', '7XmUcG7kfFw',
+      'fpjE6ZZWKTM', 'dUM3XwVWbIk', 'nynE3bJbiA4', 'TwVH1vAX8Uw', 'pZurW2M2EKg', '8ro7-IZxl7s', 'snyi_9uwZT0', '2eQsHib9BjI', '1K_b00mdsws', 'NsrzHogw-7c',
+      '0AxvGrUtKlU', 'Te_FCn4tc5I', '7TMPpTG5tzU', '6c2NBEoE3m4', 'krblmpF10to', 'YMA1nxTnaLg', 'vsbZbSUM1gA', 's23wpqVvDRw', 'oZ_0rDvP56M', 'z7c3EMbpoRE',
+      '9GK8sgVuE48', 'HA6mZSCawus', 'A0yiA5apC6w', '7vyjubFHS18', '8vlDI9j9iNs', '50MIlCFTxKA', 'sHSBseNBs4I', 'x4VL-QvOOO8', 'qP8c3vG88Rg', 'whuNOHBQTTE',
+      'LPXSWK4xNww', 'BQMEBl095qM', 'TKnl-uuNxGw', 'Pz05RlmsT5o', 'qXLRKSulqNk', 'vDvCQZ9RDeM', 'ypbaurVSxwQ', 'VdIoEfLRfzw', 'yhRE3U4j1B4', 'xxnaS14ofWU',
+      'BUV7YtWs6bU', 'roqqjzUDz6M', '79WCmnBvPbk', 'rDbAD0-a1M0', 'mBgCTeCCvUg', 'ZD2n6msi0D0', 'v06VYmoeC-g', 'ax7-vQXT2qY', 'WkQgvieevZI', 'sJyWTNq_U84',
+      't3X23PcA3yA', 'vd-rsahq_5k', 'YyYq_8cXtNE', '3xB7Fw96NQI', 'tbXgLE2fA78', 'HbgbBvzeY6s', 'wzb7URXtuIo', 'xRSY4LuqM7U', 'IyG9R6qLIUs', 'DblkSTiXKy0',
+      'hCHWk9ik4c4', 'H3eVjTMxees', 'wxeIslLuBZw', 'VihtFH6HaRg', 'EZx8RO-vXzM', 'moagdej073g', 'RynkE3-Rwvw', '-s4q8ZvO_sE', 'BPcm2Xw_nWw', 'mtOFy9cpzSs',
+      'UGxOn12D724', 'iaR9ZQVX3ec', 'JbxE8es_LuI', '7EhYWkonRkk', 'tL-HuqEhCJQ', 'zhCyoOlnPBU', 'vX63NEudjIE', 'KAilkuCMafk', 'zADTfLsW3Yc', 'lsxXMmFFYGM',
+      '0g4tnxpvkXo', 'j66x9AS7oe4', 'hDxQUDbkLEE', 'oScj9I0jlWA', 'KTkv8xtuMeQ', 'oCmzOWoNeAI', 'iCFDMVj6asE', 'v1CmIGfIZpo', 'RUv24gnsRng', 'ijKzGiqfHek',
+      '6ekcmgfFZGU', 'QQlFQmDbv4Y', 'c_JQbA383zc', '1TdwdL_BRCk', '2CMmz6Yr3pw', 'Dkz-5ovzjl4', 'NqWfXNmtxnc', 'ir5fJiV3eTI', '1kPmWvwQ-bI', 'vimbjQILiPQ',
+      'dyIt4dDCoWM', 'M1rfFUCho2o', 'Pjc1fdO7ilI', '9R7PYkeUAR4', 'IS8WW1UAjp8', 'D75Uyj5U5zU', '-rhmD2JO_8E', 'cgqlYiNt5Qc', 'mYaKTg_LqYM', 'CcKpmUDQBW0',
+      'NktROXN49Wk', 'z1V6o8YVFIE', 'QhJDnne1YpU', 'ftV2qcgvzmk', 'pJvSaxBYOkw', 'M75luWPeEZY', 'N8zqMgUFO_s', 'jUAoY6dX7GI', '7xQr3WZ056k', 'CGQOga07plE',
+      'FoWjQMzqCwc', 'u9J8XthlVvA', '2F54SPGOKhs', '16diM8GLRzg', 'jb5NVd4o6sE', '9Dt3O5jzpR0', '_vQ22GjSI6k', 'jA8x5gcxiuE', 'qU9I3tTI2dk', 'J2Y9XN8quys',
+      'rWmJVnTDtxI', '_pLXpBpUNYk', 'wAqKmRM4t-Q', 'e-_lsovMyes', 'LtgMVXrt4s8', 'KilxNCJm_mI', 'YPEaUWT6gPw', 'I3sS0TRpu-U', '4VTk7z83Hqo', '8krTM4cMPM4',
+      '0jz6cw7Wrjs', 'maiYw2ZazK4', '6RkDEZ1V3Uo', 'xTTDcG7T5fI', 'RNxEwvBLEvc', 'AF7BjCmxYyw', '7kY8xc67XYI', 'Kxc792bOyyk', 'dOKLQp5jfMc', 'CXkVYw5Nntc',
+      'SS0qYOTabxQ', 'yzno3RzRNtI', 'lNw9aD0LRKA', 'b85ud4UFu5A', 'GntJKNAi_BI', '9zjG3gdhksE', '2h-dUWymq74', 'mqm0WDgnRVE', 'esLwqrFmib0', 'e_r8cVqWU6M',
+      'LfFMo8WVpO8', '1sLHCbGfi8Y', '8xg3t40PhJs', 'eCSQUhVp3C0', 'YvCruEpHC7M', 'Bw_8sPmlFs0', 'gw8g1KwIfc8', 'VVSJYu97ZT8', 'J1XH9ilbInk', 'dBrsDZ36X4I',
+      'jxAFV9mprGQ', '0zBj6BpB-uI', 'mVO2Hur2RqY', 'UN_Dz2dJm2o', 'uMZHJKYEhGM', '5WhEdBGkqqM', 'wBhDqjWyONc', 'Q7Ejd2ScWSo', 'IujuADXHmPs', 'tREzNv4k8zE',
+      'f5zTdwfU8Ac', 'DYok59V1HZ4', 'WB73rXaxSs4', 'lGZhVc78FW0', 'FivIHhaOP8Q', '3we32rc0Vq4', 'CzKNXcm0KQc', 'oiG6a1YHUQQ', 'VDknJFFY8Hc', 'sLwlkSQLsQs',
+      '4e_2fQHJpBM', 'Nj0movNHLf0', 'sKq2QkiGcAo', '2EySvww-ypA', '5Uw-Rv-iMag', 'PPtVWtJ7hpk', 'dj_GZSW4llE', '3ps0UshFUjE', 'E6qJEgd0hwk', 'tsmmnxy33NU',
+      'zLh8acuE5O8', 'JRdyYVuuzBM', 'dPLx7eVICog', 'IG6Kx9SSGjQ', 'nKc8OJKyRJ0', 'PFHuFTvifMw', '7DYpdKRcCYU', 'szPO6PdIlVc', 'ZoFvkvEQXwc', 'YcA6BvOiA0Y',
+      '5MfvYfqhJYg', 'jtBSLKgM0U4', 'Juz3wJPn6mo', '-C-PDCtdnuc', 'QUu1F2wLN1E', 'BU8LxyM_E7I', '8zdSY_qQUX0', 'Lu3Bv2J9--s', 'KGobgEtN37E', 'CiAUHWqXKcE',
+      'a6m_q-QNYZw', 'xc_hRGoVuzQ', 'GuNl_YbMZiI', '5C-qoD3c4t0', 'u-NQITaUAXg', 'XjUKKHEbjqc', 'VzChiZh96Kc', 'F-_DOn2t3gs', '-SNncJlMtbs', 'm0ADPvJIe44',
+      '2_KvOAEmKy0', 'RKtyt2d44ik', 'hgE42J4u1Fw', 'NKNWUTxDzUg', 'XhotRVmZqgM', 'uGVqACSDsiY', 'Bnoi-lpCXPk', 'DbnSUmSa2NQ', 'RBk3o2DqEhY', 'vFptmaa5bmg',
+      'IBfSARR0XQY', 'oVbWcFgfucY', '-MgXZd43Jhw', 'EUidCvN4tck', '9swW1zLxntU', 'VAksHkmzJLM', 'eSIlQ4GFcHA', 'zBHeSG3EQcU', '4Ue3-hbhs6g', '3KC3mweWiKs',
+      'gxvr9Ae07es', '6JtYyS3Gtl0', 'aCXBR5RaWYQ', 'AqcpBm8CixA', 'O310bKh_xX4', 'Gtk9mlRmM6I', 'VC9FWeDCA4w', 'Ps-VyCZj4u4', 'PXIyXQFSy5Y', 'TNyJb2wRBOI',
+      'MM6sSimT7r4', '3YtKd-n4Cco', 'Ju4lE_0xJko', 'pITn1CIjjKg', 'vSM05c28EWQ', 'YUMT1ziO_Xg', 'JyiEKjDIm-I', 'FHvRslejJQg', 'JCN0jB-SqrE', '30MYfZn2R3A',
+      'K1qdtWNAIYc', 'ElSveQmh6gE', 'sa5VxthXRpc', '5Ak_iWt4DIs', 'bpa6XaU1sfM', 'N4FeTabnnn4', 'jiTrk470hzY', '2o7SnDk7QUw', 'N5UjMchl96Q', 'eDjR_Fw3GsQ',
+      'z7MlskVKunY', '4LNZTLncb3g', 'H5rSzyswMDw', '3s6ASuSeiUM', 'k_N2y5hwO-k', 'iEZB5fKVO4A', '5Kn4jmFWJl4', '8LVZzysscJ0', 'vfB4ecR108k', 'EQc_idhI6nU',
+      'Ctz-nkt7Ym8', 'MOnu2Z3MuXk', '0rCmjlwBxN4', 'S6LGqgEyW_I', 'IO_7t4obWLc', 'YczqI8HixDM', 'LI45Jr-iAwc', 'RHWgh5otYE4', 'N0WJkrPX-58', '_P1GkYvC_io',
+      't21P25FC56c', 'O-Gv305ZcAo', 'Dc_pIu6Dj28', 'gl8-Zy4NO_E', 'Stg3JVfiiVc', 'I-5ha6iTXao', 'AKT4IG02Z0w', 'QmlZ84UN3I8', 'RO4cIa9WBh4', 'Cb43LmHWf7k',
+      'SU1yJKLs5oA', 'WlpePwGbWVg', 'ZutOjSOOXGk', 'FqGnFlw8vUI', '93W3rVdrApk', 'Y8S1n_GmWPo', 'gI_s6Ufjt28', 'wy-U3rWnqok', 'Sz5ZRm_Bb4w', 'wqt2sjjVtRo',
+      'UsWkhBfedRc', '6wK1sfxAIMo', 'y75VupiHtAk', 'r3rwFLoo5jE', 'NbasKgGWupI', 'nhzJ7Q5J-q8', 'RUjmdc8v_7U', 'YerpPdO7ado', 'pTVZ5huv9tY', '4qkYtWX7PIo',
+      'Hm-dHVv0A84', '6j2m2L-ac88', '-ZZfRQZZbqU', 'Ce_6aBVg_Tk', 'm9TFOgam9hE', 'FaSdR6dlROs', 'seZ10vufz-k', 'o4vUhseehIc', 'T6B2BLBoPBc', 'CnIMFrClSe4',
+      '7KJ__-LSQBg', 'oPkiYqDUWoY', 'iEX04WQn3fg', '__BZrYdaiqE', 'QxnwESkCOnA', '8El2ycGj1AE', 'uGd4dURXq8I', 'jBpzmJF_YIw', 'ogXEoANvy6A', '6qXpjkfftLU',
+      'qqPup6lzmo0', 'UVRdS7xltmg', 'WOi50ALs6MI', 'wilg48yXEhU', 'lGI-6osX3Yc', 'WU0n95p4wD0', 'Qy9ORDy7W1g', 'wAzqiRsOztg', 'Euy6SZxqOag', 'zpojmuPnonk',
+      'fJZeTdZ-UTg', 'Q91GQiTfOuw', '-uVquaQ2KXM', 'oMfB8oXPC04', 'QcU2CXkzEB0', 'dJHmYWb_Lhs', 'GVHQLPIEz2w', 'u5dhy8HI_sg', 'Lt1YIVGIRLI', 'K5g5IRP3_zM',
+      'nuZUR5KjM78', 'TiUYEF3M74A', 'wf2MGSaWBes', 'ao3sxb79PXc', 'I_MRWCxhP1U', 'Q_pSOoEpucs', 'mKml7LozIj8', 'L3nlzYzkSMQ', 's_O-LjQCz_4', 'SD7DDA-Dgf0',
+      'v0yN9W8ozgc', 'aKLF0obiBnc', '9-lDwP9WDzc', '23Ih6nIZu5M', 'RWMEgoU6Cnw', 'sPU5RXqYxJ8', '1Fzpiwg83fQ', 'UiKd1daq8bA', 'UlxyZ_gSInw', 'JED3bNU2rNs',
+      'GzFDIzFyyp0', 'b70JzxH5MIY', '1N1liGdRnc8', 'xGyr7lNdeDo', 'G1nKkaZ7l2I', 'IVOgkeRwU34', 'O8Sftm4YXk8', 'qmctRQ_MJ6M', 'OFDW1LPKLHY', 'sCH5rxh92kw',
+      '8AnxPgdkuCs', '9wqNpUUEheo', 'PeakoXsRV28', 'OIqcaUsuCBQ', 'qti5m5DVF_g', 'nNzdMHKgI4U',
+    ],
     // Toda la banda sonora (16 nov 2026): los Original Soundtrack I–III oficiales (SonySoundtracksVEVO), los álbumes de las películas y de
     // MOONLIGHT/LOSTROOM y las recopilaciones más grandes (AsK_0, RRahkshi, R2乗). Sin las de BGM "extendida" de 30–60 min. Todas con oEmbed 200.
     // R2乗 (subidas de fans): algunas las reclama Sony Music (SME) y no se dejan ver insertadas ("Video no disponible"); el reproductor salta
@@ -350,7 +408,7 @@ const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bl
 /** Capas de cada aro de CHALDEAS (FGO): más capas = más grosor de canto. */
 const FGO_LAYERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-type Mode = 'all' | 'top'
+type Mode = 'all' | 'top' | 'game'
 const TXT: Record<Lang, { open: string; close: string; title: string; side: string; next: string; all: string; top: string; allShort: string; topShort: string; mode: string }> = {
   es: { open: 'Música oficial del juego', close: 'Cerrar (para la música)', title: 'Banda sonora', side: 'Cambiar de esquina', next: 'Otra canción',
     all: 'Toda la banda sonora, en orden aleatorio', top: 'Las canciones oficiales más vistas', allShort: 'Todas', topShort: 'Populares', mode: 'Qué música suena' },
@@ -367,6 +425,8 @@ const SHUFFLE = <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stro
 /** Saltar a otra canción (▶|). */
 const NEXT = <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden><path fill="currentColor" d="M5 5.5v13l9.5-6.5zM16.5 5.5h2.5v13h-2.5z" /></svg>
 
+/** "Todo Fate" (toda la franquicia): dos estrellas. */
+const STARS = <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden><path fill="currentColor" d="m8.5 3 1.9 4 4.3.5-3.2 2.9.9 4.3-3.9-2.2-3.9 2.2.9-4.3L2.3 7.5l4.3-.5zM17 11l1.4 2.9 3.1.4-2.3 2.1.6 3.1-2.8-1.6-2.8 1.6.6-3.1-2.3-2.1 3.1-.4z" /></svg>
 const STAR = <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden><path fill="currentColor" d="m12 3.2 2.6 5.5 6 .7-4.4 4.1 1.2 5.9L12 16.5l-5.4 2.9 1.2-5.9-4.4-4.1 6-.7z" /></svg>
 
 const SIDE_KEY = 'whengacha:music-side'
@@ -396,9 +456,17 @@ function pickTrack(lists: [string, number][]): { list: string; index: number } {
 const API = () => `&${COMMON}&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`
 /** URL del reproductor. "Todas": una lista concreta con la API de la ventana (`enablejsapi`); la posición la pone `playVideoAt` al estar
  *  lista (YouTube ignora `index` en la URL). */
-function srcOf(m: Music, mode: Mode, list: string | undefined, preview = false): string {
-  if (mode === 'top') {
-    const ids = preview && m.first ? [m.first, ...m.top.filter(v => v !== m.first)] : m.top
+/** Vídeos de "Populares" (o de la lista del juego), con `first` delante en la vista previa. */
+function idsOf(m: Music, mode: Mode, preview: boolean): string[] {
+  const base = mode === 'game' && m.game ? m.game : m.top
+  return preview && m.first ? [m.first, ...base.filter(v => v !== m.first)] : base
+}
+/** La ventana de YouTube solo carga 200 vídeos de `playlist` (comprobado 18 nov 2026: de 416 dice 200). Las listas más largas (FGO, solo el
+ *  juego) se reparten en bloques de 200 y, al acabar uno, se carga el siguiente (ver el efecto de "Populares"). */
+const CHUNK = 200
+function srcOf(m: Music, mode: Mode, list: string | undefined, preview = false, chunk = 0): string {
+  if (mode !== 'all') {
+    const ids = idsOf(m, mode, preview).slice(chunk * CHUNK, (chunk + 1) * CHUNK)
     return `${BASE}${ids[0]}?playlist=${ids.join(',')}${API()}`
   }
   return list ? `${BASE}videoseries?list=${list}${API()}` : ''
@@ -412,9 +480,12 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
   const s = TXT[lang] ?? TXT.es
   const [open, setOpen] = useState(preview)
   const [side, setSide] = useState<'left' | 'right'>(() => (read(SIDE_KEY) === 'left' ? 'left' : 'right'))
-  const [mode, setMode] = useState<Mode>(() => (preview || read(MODE_KEY) === 'top' ? 'top' : 'all'))
-  const frame = useRef<HTMLIFrameElement>(null)
   const m = MUSIC[skin]
+  // Modo guardado (compartido entre skins): "game" solo existe en las que tienen `game`; en las demás, "Populares" (top).
+  // La vista previa empieza en "Populares" (la del juego si la hay) y deja cambiar de modo sin guardarlo.
+  const [saved, setSaved] = useState<Mode>(() => { if (preview) return 'game'; const r = read(MODE_KEY); return r === 'top' || r === 'game' ? r : 'all' })
+  const mode: Mode = saved === 'game' && !m?.game ? 'top' : saved
+  const frame = useRef<HTMLIFrameElement>(null)
   // "Todas": la lista que tiene cargada la ventana (cambiarla recarga la ventana) y la pista que se le pide dentro de ella.
   const [list, setList] = useState<string>()
   // Vídeo que suena (15 nov 2026): la ventana de YouTube lo dice en sus mensajes (infoDelivery → videoData.video_id) al empezar cada uno.
@@ -440,18 +511,31 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
     window.addEventListener('message', onMsg)
     return () => { clearTimeout(timer); window.removeEventListener('message', onMsg) }
   }, [open])
+  // Bloque de 200 que tiene cargado la ventana en "Populares" (solo cambia en listas de más de 200; ver CHUNK). Vuelve al primero al cambiar de modo.
+  const [chunk, setChunk] = useState(0)
+  useEffect(() => setChunk(0), [mode, skin])
+  const chunks = m && mode !== 'all' ? Math.ceil(idsOf(m, mode, preview).length / CHUNK) : 1
   // "Populares": si una canción no se puede reproducir (bloqueada en el país, retirada…), pasa a la siguiente en vez de quedarse en el error.
+  // Con varios bloques: al acabar el último vídeo del bloque, la ventana vuelve sola al primero (loop=1); se nota en que la posición pasa
+  // del último al 0, y entonces se carga el bloque siguiente (tras el último, otra vez el primero).
   useEffect(() => {
-    if (!open || mode !== 'top') return
+    if (!open || mode === 'all') return
+    let prev: number | undefined
     const onMsg = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
-      let d: { event?: string } | null = null
+      let d: { event?: string; info?: { playlistIndex?: number; playlist?: string[] } | null } | null = null
       try { d = JSON.parse(e.data) } catch { return }
       if (d?.event === 'onError') frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'nextVideo', args: [] }), '*')
+      const idx = typeof d?.info === 'object' ? d?.info?.playlistIndex : undefined
+      const len = typeof d?.info === 'object' ? d?.info?.playlist?.length : undefined
+      if (chunks > 1 && typeof idx === 'number') {
+        if (idx === 0 && prev !== undefined && len && prev === len - 1) setChunk(c => (c + 1) % chunks)
+        prev = idx
+      }
     }
     window.addEventListener('message', onMsg)
     return () => window.removeEventListener('message', onMsg)
-  }, [open, mode])
+  }, [open, mode, chunks])
   const want = useRef(0)
   const skip = useRef<() => void>(undefined) // "Otra canción" en "Todas" (lo pone el efecto de abajo)
   useEffect(() => {
@@ -460,7 +544,7 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
     want.current = t.index
     setList(t.list)
   }, [open, mode, m])
-  const src = m && open ? srcOf(m, mode, list, preview) : ''
+  const src = m && open ? srcOf(m, mode, list, preview, chunk) : ''
   useEffect(() => {
     if (!open) return
     const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
@@ -511,10 +595,15 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
     else frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'command', func: 'nextVideo', args: [] }), '*')
   }
   const flip = () => { const n = side === 'right' ? 'left' : 'right'; setSide(n); write(SIDE_KEY, n) }
-  const pick = (n: Mode) => { if (n !== mode) { setMode(n); if (!preview) write(MODE_KEY, n) } }
+  const pick = (n: Mode) => { if (n !== mode) { setSaved(n); if (!preview) write(MODE_KEY, n) } }
+  // Opciones del selector: con `game` (FGO) son tres, "Populares" del juego y "Todo Fate" (`top`).
+  const modes: Mode[] = m.game ? ['all', 'game', 'top'] : ['all', 'top']
+  const icon = (k: Mode) => (k === 'all' ? SHUFFLE : k === 'top' && m.game ? STARS : STAR)
+  const label = (k: Mode): [string, string] => k === 'all' ? [s.allShort, s.all]
+    : k === 'top' && m.topName ? (m.topName[lang] ?? m.topName.es) : [s.topShort, s.top]
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
   const listen = () => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*')
-  const player = <iframe key={`${skin}:${mode}:${mode === 'all' ? list : ''}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
+  const player = <iframe key={`${skin}:${mode}:${mode === 'all' ? list : chunk}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
     allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
   return (
     <>
@@ -541,9 +630,9 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
             <div className="tv-bezel"><div className="tv-screen">{player}</div></div>
             <div className="tv-side">
               <div className="tv-knobs" role="radiogroup" aria-label={s.mode}>
-                {(['all', 'top'] as const).map(k => (
-                  <button key={k} role="radio" aria-checked={mode === k} className={`tv-knob ${mode === k ? 'on' : ''}`} onClick={() => pick(k)} title={k === 'all' ? s.all : s.top}>
-                    <i aria-hidden />{k === 'all' ? SHUFFLE : STAR}<span>{k === 'all' ? s.allShort : s.topShort}</span>
+                {modes.map(k => (
+                  <button key={k} role="radio" aria-checked={mode === k} className={`tv-knob ${mode === k ? 'on' : ''}`} onClick={() => pick(k)} title={label(k)[1]}>
+                    <i aria-hidden />{icon(k)}<span>{label(k)[0]}</span>
                   </button>
                 ))}
               </div>
@@ -576,9 +665,9 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
           </div>
           {/* Selector de modo: dos opciones con texto e icono propio (en el color de la skin), en vez de un solo botón con emoji. */}
           <div className="music-modes" role="radiogroup" aria-label={s.mode}>
-            {(['all', 'top'] as const).map(k => (
-              <button key={k} role="radio" aria-checked={mode === k} className={mode === k ? 'on' : ''} onClick={() => pick(k)} title={k === 'all' ? s.all : s.top}>
-                {k === 'all' ? SHUFFLE : STAR}<span>{k === 'all' ? s.allShort : s.topShort}</span>
+            {modes.map(k => (
+              <button key={k} role="radio" aria-checked={mode === k} className={mode === k ? 'on' : ''} onClick={() => pick(k)} title={label(k)[1]}>
+                {icon(k)}<span>{label(k)[0]}</span>
               </button>
             ))}
           </div>
