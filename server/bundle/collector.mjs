@@ -21674,6 +21674,13 @@ function dateIn(s, year) {
 		d: +m[2],
 		...t
 	};
+	m = /\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?(?:,?\s+(\d{4}))?\b/.exec(s);
+	if (m && MONTHS$19.includes(m[2].slice(0, 3).toLowerCase())) return {
+		y: m[3] ? +m[3] : year,
+		mo: MONTHS$19.indexOf(m[2].slice(0, 3).toLowerCase()),
+		d: +m[1],
+		...t
+	};
 	m = /(?:^|\s)(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/.exec(s);
 	if (m) return {
 		y: m[3] ? +m[3] : year,
@@ -21818,8 +21825,22 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 			approx: !after && a.h === void 0
 		};
 	}
-	let parts = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, "").split(SEP);
+	const body = line.replace(/^[^:]*?(period|duration|time|date|schedule)\s*:\s*/i, "");
+	let parts = body.split(SEP);
 	while (parts.length > 2 && !dateIn(parts[0], year)) parts = parts.slice(1);
+	const only = parts.length < 2 && postedAt !== void 0 ? /^(?:(?:event|season)\s+)?(?:until|ends?(?:\s+on)?|ending(?:\s+on)?)\s+(.+)$/i.exec(body.trim()) : null;
+	if (only) {
+		const b = dateIn(only[1], new Date(postedAt).getUTCFullYear());
+		if (!b) return null;
+		let end = Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59) + (b.h === void 0 ? 59e3 : 0);
+		if (end < postedAt - 30 * DAY$38 && !/\d{4}/.test(only[1])) end = Date.UTC(b.y + 1, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59);
+		return end > postedAt ? {
+			start: postedAt,
+			end,
+			afterMaint: null,
+			approx: true
+		} : null;
+	}
 	if (parts.length < 2) return null;
 	if (OPEN_END.test(parts.slice(1).join(" "))) {
 		const a = dateIn(parts[0], year);
@@ -21888,6 +21909,11 @@ var LABEL$3 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|detail
 * Nombre dentro de una frase. `loose` añade el patrón "X will be available", que solo vale en la propia línea del periodo (en una frase cualquiera
 * daba nombres como "A new hotfix for Stella Sora").
 */
+/**
+* Nombre del banner dentro de la frase del periodo: "… will be rated up in the Headhunting: Hunters of the Umbral Wilds between November 16, …"
+* (Arknights, 16 nov 2026). Antes el nombre era la cabecera 【New Operators】 y salía como evento, repitiendo el banner.
+*/
+var BANNER_IN = /\b(?:headhunting|banner|recruitment|summon|gacha|warp|wish|pick-?up)\s*[:：]\s*["“]?([^"”.!?:]{3,60}?)["”]?\s+(?:between|from|starting|until|on)\b/i;
 function sentenceName(c, loose = true) {
 	const n = (/\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|recruitment|banner|rerun|campaign|collab(?:oration)?|pick-?up|gacha|headhunting|summon)\s*[:：]\s*["“「『]?(.{3,80}?)["”」』]?\s+(?:is (?:coming|here|now|live|back)|will|has (?:begun|started|arrived)|returns?|starts?|begins?|runs?|arrives?)\b/i.exec(c) ?? /^the\s+["“]?(.{3,80}?)["”]?\s+(?:event|campaign)\s+(?:will|is|runs?|starts?|begins?)\b/i.exec(c) ?? /\b(?:event|campaign|recruitment|banner)\s*[[「『]([^\]」』]{2,60})[\]」』]\s*(?:will|is|has|begins?|starts?|returns?|arrives?|opens?|[!,.:]|$)/i.exec(c) ?? /["“]([^"”]{3,60})["”]\s+(?:event|campaign)\s+(?:will|is|has|starts?|begins?)\b/i.exec(c) ?? (loose ? /^["“]?([A-Z][^.!?]{2,70}?)["”]?\s+(?:will be|are|is)\s+(?:available|live|held|running)\b/.exec(c) : null))?.[1].trim().replace(/^[Tt]he\s+(?=[a-z])/, "").replace(/^(?:the\s+)?following\s+/i, "").replace(/^(?:(?:new|limited)\s+)+(?=\S)/i, "");
 	return n ? n.charAt(0).toUpperCase() + n.slice(1) : void 0;
@@ -21897,7 +21923,9 @@ function sentenceName(c, loose = true) {
 * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
 */
 function tidyName(s) {
-	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^announcements\s+(?=\S)/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
+	const asked = /^(?:did (?:someone|anyone|you) (?:just )?(?:say|hear)|guess what)[,:]?\s+(.{3,60}?)[\s?!⁉‼️]*$/iu.exec(s.trim());
+	if (asked) s = /[a-z]/.test(asked[1]) ? asked[1] : asked[1].toLowerCase().replace(/(^|\s)([a-z])/g, (_m, a, c) => a + c.toUpperCase());
+	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^announcements\s+(?=\S)/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/(?:\s+(?:start|end|opening|closing))?\s+notice$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
 }
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
@@ -22070,6 +22098,65 @@ function tweetImages(events, messages) {
 	});
 }
 /**
+* Título con el corchete de apertura perdido: el aviso de Path to Nowhere (14 nov 2026) empieza "Warmth Lingers] Companion Journey Event" y más abajo
+* dice "the [As Warmth Lingers] story". Se recupera el principio del propio texto; si no aparece, se quita el corchete suelto.
+*/
+function closeBracket(name, text) {
+	const at = name.indexOf("]");
+	if (at < 0 || name.slice(0, at).includes("[")) return name;
+	const head = name.slice(0, at).trim();
+	const esc = head.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+	const m = head ? new RegExp(`\\[([^\\[\\]\\n]{0,30}${esc})\\]`).exec(text) : null;
+	return (m ? `[${m[1]}]${name.slice(at + 1)}` : `${head} ${name.slice(at + 1).trim()}`).replace(/\s+/g, " ").trim();
+}
+/**
+* Personajes anunciados sin fecha ('NEW LIMITED SSR "Ichgo Kurosaki - Full Hollowfication" and his Weapon Stamp will be available soon!', BLEACH
+* 13 nov 2026). Banner estimado: desde el próximo día de banners del juego (BANNER_WEEKDAY, a la hora de DAY_HOURS) o, si no se conoce, una semana
+* después del aviso; 14 días. Solo avisos de las últimas 3 semanas y si ningún banner con fecha lo nombra ya.
+*/
+var BANNER_WEEKDAY = { bleach: 3 };
+var ANNOUNCED = /\b(?:new\s+)?(?:limited\s+)?(?:UR|SSR|[5-6]★|★[5-6]|[5-6]-star)\s+(?:character\s+)?["“]([^"”]{2,50})["”][^.!?\n]{0,60}?\b(?:available|coming|arriving)\s+soon\b/gi;
+function announcedBanners(gameId, msgs, dated, now) {
+	const out = [];
+	const low = (s) => s.toLowerCase();
+	for (const { text, at, image } of msgs) {
+		if (now - at > 21 * DAY$38) continue;
+		for (const x of text.replace(/[*_`]/g, "").matchAll(ANNOUNCED)) {
+			const name = x[1].trim();
+			if ([...dated, ...out].some((e) => e.kind === "banner" && (low(e.title).includes(low(name)) || e.featured.some((f) => low(f.name) === low(name))))) continue;
+			const wd = BANNER_WEEKDAY[gameId], [h, mi] = DAY_HOURS[gameId]?.start ?? [0, 0];
+			let start = at + 7 * DAY$38;
+			if (wd !== void 0) {
+				const d = new Date(at);
+				start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), h, mi);
+				while (start <= at || new Date(start).getUTCDay() !== wd) start += DAY$38;
+			}
+			const end = start + 14 * DAY$38 - 1e3;
+			if (end < now) continue;
+			out.push({
+				id: `${gameId}:banner:dc:upcoming:${name}`,
+				gameId,
+				kind: "banner",
+				title: name,
+				description: "⟦d.dcAnnounced⟧",
+				image,
+				start: new Date(start).toISOString(),
+				end: new Date(end).toISOString(),
+				items: [],
+				featured: [{
+					name,
+					rarity: 5
+				}],
+				pulls: 0,
+				official: true,
+				source: "api",
+				precision: "estimated"
+			});
+		}
+	}
+	return out;
+}
+/**
 * El lector de avisos, separado de Discord: también lee los avisos de las webs oficiales (Trickcal, `trickcal.ts`), pasados como mensajes
 * (`content` = texto del aviso, `timestamp` = publicación). Mensajes del más nuevo al más viejo, como los da Discord.
 */
@@ -22155,9 +22242,13 @@ function parseNotices(gameId, messages) {
 			})();
 			const prev = prevAt >= 0 ? clean$6(raw[prevAt]) : "";
 			const near = prev && prev.length <= 60 && !/[.!?,:;]$/.test(prev) && !isGreeting(prev) && !LABEL$3.test(prev) && !rangeIn(prev, year, msgZone) && /^[A-Z0-9"“「]/.test(prev) ? prev : "";
-			const lineName = inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c);
-			const name = tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, "");
+			const bannerName = BANNER_IN.exec(c)?.[1].trim();
+			const lineName = bannerName ?? (inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c));
+			let name = closeBracket(tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, ""), raw.join("\n"));
+			const costume = /^(?:(?:new|limited)\s+)*costumes?(?:\s+(?:introduction|gacha|showcase))?$/i.test(name) ? /\bcostume\s*\[([^\]]{3,60})\]/i.exec(raw.join(" "))?.[1].trim() : void 0;
+			if (costume) name = costume;
 			if (!name) continue;
+			if (/\b(?:PV|MV|trailer|teaser)\b/i.test(name)) continue;
 			if (near && !lineName) {
 				label = /gacha|banner|recruit|summon/i.test(near) ? near : label;
 				headAt = prevAt;
@@ -22176,6 +22267,7 @@ function parseNotices(gameId, messages) {
 			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$38) continue;
 			const ctx = [
 				name,
+				bannerName ? "banner" : "",
 				label,
 				name === heading && !fromHead ? clean$6(raw[headAt]).slice(0, 120) : "",
 				heading !== name && tidyName(heading) === name ? heading : ""
@@ -22216,7 +22308,7 @@ function parseNotices(gameId, messages) {
 				source: "api",
 				precision: approx ? "approx" : void 0,
 				open: r.open || void 0,
-				minor: kind === "event" && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?|packs?|bundles?)\b/i.test(name) || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : void 0,
+				minor: kind === "event" && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?|packs?|bundles?)\b/i.test(name) || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx) || !!costume) ? true : void 0,
 				description: kind === "event" ? summarize(section, { title: name }) : void 0
 			};
 			const stars = (name.match(/[★☆]\s*\d/g) ?? []).length;
@@ -22245,6 +22337,11 @@ function parseNotices(gameId, messages) {
 			out.push(b);
 		}
 	}
+	out.push(...announcedBanners(gameId, messages.map((m) => ({
+		text: textOf(m),
+		at: +new Date(m.timestamp),
+		image: imageOf(m)
+	})), out, now));
 	return {
 		events: out,
 		patches,

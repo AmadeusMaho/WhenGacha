@@ -998,3 +998,20 @@ Revisado contra las copias publicadas (rama `data`) y el código actual, no cont
   a menos de 3 semanas; el otro hereda su retrato. No en FGO ni Uma (sus estimados son banners futuros de JP o predicciones).
 - **Revisado y correcto** (parecían fallos): los "duplicados" de BD2 (evento, misión y pase de temporada), Trickcal (evento e historia, con otro fin),
   R:1999 (evento y sus partes I/II) y MONGIL; los nombres de E.G.O de Limbus con "::" (así los escribe el juego); los títulos en japonés de FGO (pedidos el 12 nov).
+
+## Lector de avisos de Discord: revisión con los canales reales (18 nov 2026)
+
+Comprobado en producción (040a481): los 15 canales responden y aportan eventos donde se espera. Ajustes en `discord.ts`, probados con los mensajes
+reales de los 15 canales y con `collect()` de esos juegos antes y después (solo cambia lo de esta lista; Trickcal, que pasa sus avisos web por el
+mismo lector, sale igual):
+- **Arknights**: "… rated up in the Headhunting: Hunters of the Umbral Wilds between …" da el banner con ese nombre (`BANNER_IN`); antes salía un
+  evento "New Operators" (la cabecera 【】 del tuit) que repetía el banner.
+- **Fechas con el día delante** ("19 Nov, 04:59", "5 Nov, 05:00 – 26 Nov, 04:59", tuits de NIKKE) y **solo el fin** ("Until 19 Nov, 04:59 (UTC+9)",
+  "Event ends 18 Nov"): empieza a la hora del mensaje, "≈". NIKKE pasa de 0 a 3 elementos de Discord (Solo Raid, evento especial, gacha de trajes).
+- **Trajes** ("Limited Costume Introduction … new limited costume [X]", NIKKE): el nombre es el del traje y va como menor.
+- **PtN**: título con el "[" perdido ("Warmth Lingers] …") → se recupera del texto ("[As Warmth Lingers] Companion Journey Event"; `closeBracket`).
+- **Blue Archive**: "Did someone say 200 FREE RECRUITMENTS ⁉️" → "200 Free Recruitments".
+- **Azur Lane**: los tuits de vídeo ("… Sale 2026 PV★", trailer, teaser, MV) ya no son eventos.
+- **BLEACH**: 'NEW LIMITED SSR "X" … will be available soon' → banner estimado (`announcedBanners`: próximo miércoles 11:00 UTC, 14 días) con la imagen
+  del aviso, hasta que un banner con fecha lo nombre. **Sin retrato**: BLEACH no tiene fuente de retratos de personajes.
+- **Limbus**: su canal solo tiene el mensaje de "seguir" del 6 nov; el seguimiento del canal oficial no llega (lo revisa el dueño en Discord).

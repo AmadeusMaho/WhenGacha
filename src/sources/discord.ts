@@ -72,6 +72,9 @@ function dateIn(s: string, year: number): { y: number; mo: number; d: number; h?
   if (m) return { y: +m[1], mo: +m[2] - 1, d: +m[3], ...t }
   m = /([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/.exec(s)
   if (m && MONTHS.includes(m[1].slice(0, 3).toLowerCase())) return { y: m[3] ? +m[3] : year, mo: MONTHS.indexOf(m[1].slice(0, 3).toLowerCase()), d: +m[2], ...t }
+  // Día antes del mes ("Until 19 Nov, 04:59 (UTC+9)", "Event ends 18 Nov", tuits de NIKKE 17 nov 2026).
+  m = /\b(\d{1,2})(?:st|nd|rd|th)?\s+([A-Za-z]{3,9})\.?(?:,?\s+(\d{4}))?\b/.exec(s)
+  if (m && MONTHS.includes(m[2].slice(0, 3).toLowerCase())) return { y: m[3] ? +m[3] : year, mo: MONTHS.indexOf(m[2].slice(0, 3).toLowerCase()), d: +m[1], ...t }
   m = /(?:^|\s)(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?/.exec(s)
   if (m) return { y: m[3] ? +m[3] : year, mo: +m[1] - 1, d: +m[2], ...t }
   // Texto copiado desde un cliente de Discord en español ("viernes, 30 de octubre de 2026 0:00"): sin zona, se marca aproximado.
@@ -167,6 +170,16 @@ export function rangeIn(line: string, year: number, fallbackZone: number, posted
   // Un guion dentro del nombre antes de las fechas ("New Battle UI - Angels' Stage is available between 11/12 - 11/26", Azur Lane): el trozo sin
   // fecha del principio no es el inicio del periodo.
   while (parts.length > 2 && !dateIn(parts[0], year)) parts = parts.slice(1)
+  // Solo el fin ("Until 19 Nov, 04:59 (UTC+9)" bajo "Season Duration", "Event ends 18 Nov (UTC+9)"; NIKKE): empieza a la hora del mensaje, aproximado.
+  const only = parts.length < 2 && postedAt !== undefined ? /^(?:(?:event|season)\s+)?(?:until|ends?(?:\s+on)?|ending(?:\s+on)?)\s+(.+)$/i.exec(body.trim()) : null
+  if (only) {
+    const b = dateIn(only[1], new Date(postedAt!).getUTCFullYear())
+    if (!b) return null
+    let end = Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59) + (b.h === undefined ? 59_000 : 0)
+    // "Until 3 Jan" escrito en diciembre: el año siguiente.
+    if (end < postedAt! - 30 * DAY && !/\d{4}/.test(only[1])) end = Date.UTC(b.y + 1, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59)
+    return end > postedAt! ? { start: postedAt!, end, afterMaint: null, approx: true } : null
+  }
   if (parts.length < 2) return null
   // Fin sin anunciar: se dibuja 6 semanas (`open`: la app no lo muestra como fecha).
   if (OPEN_END.test(parts.slice(1).join(' '))) {
@@ -231,6 +244,12 @@ const LABEL = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|detail
  * Nombre dentro de una frase. `loose` añade el patrón "X will be available", que solo vale en la propia línea del periodo (en una frase cualquiera
  * daba nombres como "A new hotfix for Stella Sora").
  */
+/**
+ * Nombre del banner dentro de la frase del periodo: "… will be rated up in the Headhunting: Hunters of the Umbral Wilds between November 16, …"
+ * (Arknights, 16 nov 2026). Antes el nombre era la cabecera 【New Operators】 y salía como evento, repitiendo el banner.
+ */
+const BANNER_IN = /\b(?:headhunting|banner|recruitment|summon|gacha|warp|wish|pick-?up)\s*[:：]\s*["“]?([^"”.!?:]{3,60}?)["”]?\s+(?:between|from|starting|until|on)\b/i
+
 function sentenceName(c: string, loose = true): string | undefined {
   // "The collab event, It's Showtime! Angels' Azur Stage, will be available…" (Azur Lane).
   const m = /\b(?:event|banner|rerun|campaign|collab(?:oration)?)\s*,\s*["“]?(.{3,80}?)["”]?\s*,\s+(?:will|is|has|runs?|starts?|begins?)\b/i.exec(c)
@@ -254,6 +273,9 @@ function sentenceName(c: string, loose = true): string | undefined {
  * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
  */
 export function tidyName(s: string): string {
+  // Titular en pregunta: "Did someone say 200 FREE RECRUITMENTS ⁉️" (Blue Archive, 10 nov 2026) → "200 Free Recruitments" (en mayúsculas, se capitaliza).
+  const asked = /^(?:did (?:someone|anyone|you) (?:just )?(?:say|hear)|guess what)[,:]?\s+(.{3,60}?)[\s?!⁉‼️]*$/iu.exec(s.trim())
+  if (asked) s = /[a-z]/.test(asked[1]) ? asked[1] : asked[1].toLowerCase().replace(/(^|\s)([a-z])/g, (_m, a: string, c: string) => a + c.toUpperCase())
   return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, '')
     // "📢 Announcements | 1st Anniversary Login Celebration! 📢" (BLEACH): `clean` ya quitó la barra y queda "Announcements 1st …".
     .replace(/^announcements\s+(?=\S)/i, '')
@@ -263,6 +285,8 @@ export function tidyName(s: string): string {
     // 'RERUN｜🐺 Upcoming Limited-Time "Debut" Summon Event: Silver wolf Queen' → "Silver wolf Queen".
     .replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, '')
     .replace(/\s+limited[- ]time (?:gacha|banner)$/i, '')
+    // "Solo Raid Start Notice" (NIKKE) → "Solo Raid".
+    .replace(/(?:\s+(?:start|end|opening|closing))?\s+notice$/i, '')
     // "Apex Challenge Starts Today!" (MHO) → "Apex Challenge".
     // Solo con "today/now" o con "!": "Execution Begins" (BLEACH) es el nombre del evento.
     .replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, '').trim() || s
@@ -435,6 +459,54 @@ export function tweetImages(events: GameEvent[], messages: Message[]): GameEvent
 }
 
 /**
+ * Título con el corchete de apertura perdido: el aviso de Path to Nowhere (14 nov 2026) empieza "Warmth Lingers] Companion Journey Event" y más abajo
+ * dice "the [As Warmth Lingers] story". Se recupera el principio del propio texto; si no aparece, se quita el corchete suelto.
+ */
+export function closeBracket(name: string, text: string): string {
+  const at = name.indexOf(']')
+  if (at < 0 || name.slice(0, at).includes('[')) return name
+  const head = name.slice(0, at).trim()
+  const esc = head.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const m = head ? new RegExp(`\\[([^\\[\\]\\n]{0,30}${esc})\\]`).exec(text) : null
+  return (m ? `[${m[1]}]${name.slice(at + 1)}` : `${head} ${name.slice(at + 1).trim()}`).replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Personajes anunciados sin fecha ('NEW LIMITED SSR "Ichgo Kurosaki - Full Hollowfication" and his Weapon Stamp will be available soon!', BLEACH
+ * 13 nov 2026). Banner estimado: desde el próximo día de banners del juego (BANNER_WEEKDAY, a la hora de DAY_HOURS) o, si no se conoce, una semana
+ * después del aviso; 14 días. Solo avisos de las últimas 3 semanas y si ningún banner con fecha lo nombra ya.
+ */
+const BANNER_WEEKDAY: Record<string, number> = { bleach: 3 } // BLEACH: miércoles, tras el mantenimiento
+const ANNOUNCED = /\b(?:new\s+)?(?:limited\s+)?(?:UR|SSR|[5-6]★|★[5-6]|[5-6]-star)\s+(?:character\s+)?["“]([^"”]{2,50})["”][^.!?\n]{0,60}?\b(?:available|coming|arriving)\s+soon\b/gi
+function announcedBanners(gameId: string, msgs: { text: string; at: number; image?: string }[], dated: GameEvent[], now: number): GameEvent[] {
+  const out: GameEvent[] = []
+  const low = (s: string) => s.toLowerCase()
+  for (const { text, at, image } of msgs) {
+    if (now - at > 21 * DAY) continue
+    for (const x of text.replace(/[*_`]/g, '').matchAll(ANNOUNCED)) {
+      const name = x[1].trim()
+      if ([...dated, ...out].some(e => e.kind === 'banner' && (low(e.title).includes(low(name)) || e.featured.some(f => low(f.name) === low(name))))) continue
+      const wd = BANNER_WEEKDAY[gameId], [h, mi] = DAY_HOURS[gameId]?.start ?? [0, 0]
+      let start = at + 7 * DAY
+      if (wd !== undefined) {
+        const d = new Date(at)
+        start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), h, mi)
+        while (start <= at || new Date(start).getUTCDay() !== wd) start += DAY
+      }
+      const end = start + 14 * DAY - 1000
+      if (end < now) continue
+      out.push({
+        // Imagen: la del aviso (arte del personaje). BLEACH no tiene fuente de retratos (docs/fuentes-y-proxy.md), así que el destacado va sin él.
+        id: `${gameId}:banner:dc:upcoming:${name}`, gameId, kind: 'banner', title: name, description: '⟦d.dcAnnounced⟧', image,
+        start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [{ name, rarity: 5 }], pulls: 0,
+        official: true, source: 'api', precision: 'estimated',
+      })
+    }
+  }
+  return out
+}
+
+/**
  * El lector de avisos, separado de Discord: también lee los avisos de las webs oficiales (Trickcal, `trickcal.ts`), pasados como mensajes
  * (`content` = texto del aviso, `timestamp` = publicación). Mensajes del más nuevo al más viejo, como los da Discord.
  */
@@ -519,9 +591,15 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       const prevAt = (() => { for (let j = i - 1; j > headAt || (j === headAt && !fromHead && j >= 0); j--) if (clean(raw[j])) return j; return -1 })()
       const prev = prevAt >= 0 ? clean(raw[prevAt]) : ''
       const near = prev && prev.length <= 60 && !/[.!?,:;]$/.test(prev) && !isGreeting(prev) && !LABEL.test(prev) && !rangeIn(prev, year, msgZone) && /^[A-Z0-9"“「]/.test(prev) ? prev : ''
-      const lineName = inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c)
-      const name = tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, '')
+      const bannerName = BANNER_IN.exec(c)?.[1].trim()
+      const lineName = bannerName ?? (inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c))
+      let name = closeBracket(tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, ''), raw.join('\n'))
+      // "【Limited Costume Introduction】 … new limited costume [Marian: Queen - Last Affection]" (NIKKE, 17 nov 2026): el nombre es el del traje.
+      const costume = /^(?:(?:new|limited)\s+)*costumes?(?:\s+(?:introduction|gacha|showcase))?$/i.test(name) ? /\bcostume\s*\[([^\]]{3,60})\]/i.exec(raw.join(' '))?.[1].trim() : undefined
+      if (costume) name = costume
       if (!name) continue
+      // Vídeos ("★Azur Lane Black Friday Sale 2026 PV★", 18 nov 2026): anuncian una campaña que ya viene con su propio aviso; no son eventos.
+      if (/\b(?:PV|MV|trailer|teaser)\b/i.test(name)) continue
       if (near && !lineName) { label = /gacha|banner|recruit|summon/i.test(near) ? near : label; headAt = prevAt }
       // "Reward Claiming Time: …" (Trickcal, Trick Dice) es el plazo para canjear lo ganado, no el evento: solo vale si el mensaje no dio otro periodo
       // para ese nombre (antes, con el evento ya terminado, salía como vigente hasta el fin del canje).
@@ -539,7 +617,7 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       // El tipo sale del nombre y, si no lo dice, del rótulo del periodo ("Recruitment Period") o de la frase de la que salió el nombre
       // ("Limited recruitment event: Boundless Journey, Endless Romance…").
       // También la cabecera de la que salió el nombre al limpiarlo ("Upcoming Limited-Time Summon Event: Get Together" → "Get Together", SoC).
-      const ctx = [name, label, name === heading && !fromHead ? clean(raw[headAt]).slice(0, 120) : '', heading !== name && tidyName(heading) === name ? heading : ''].join(' | ')
+      const ctx = [name, bannerName ? 'banner' : '', label, name === heading && !fromHead ? clean(raw[headAt]).slice(0, 120) : '', heading !== name && tidyName(heading) === name ? heading : ''].join(' | ')
       const kind: Kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)|\b(?:exclusive|event|limited|rerun) arrests?\b|\bsummon(?:ing)? event\b|probability of summoning/i.test(ctx) ? 'banner' : 'event'
       const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
       if (seen.has(id)) continue
@@ -569,7 +647,7 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
         // Y los sorteos de aspectos ('Agata - Polaris of Winter's Live Skin "After the Midnight Snow" event', SoC): la frase de la que salió el nombre lo dice.
         // Paquetes de pago ("The Heartful Hospital Bundle", "Choose-Your-Own-Gift Packs", "Wishsong Epiphany Packs", 18 nov 2026): ventas, no eventos.
         minor: kind === 'event' && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?|packs?|bundles?)\b/i.test(name)
-          || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : undefined,
+          || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx) || !!costume) ? true : undefined,
         // Resumen del apartado ("Event Intro: …", requisitos): como las fichas de Endfield. Solo eventos; los banners ya dicen a quién destacan.
         description: kind === 'event' ? summarize(section, { title: name }) : undefined,
       }
@@ -591,6 +669,7 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
     if (patch && !patches.some(p => p.version === patch.version)) patches.push(patch)
     for (const b of banners) if (!seen.has(b.id) && +new Date(b.end) > from) { seen.add(b.id); out.push(b) }
   }
+  out.push(...announcedBanners(gameId, messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp), image: imageOf(m) })), out, now))
   return { events: out, patches, codes: codesFrom(messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp) }))) }
 }
 
