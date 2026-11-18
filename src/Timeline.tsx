@@ -260,7 +260,8 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
   const ppd = ZOOMS[zoom].ppd
   const box = useRef<HTMLDivElement>(null)
   const [laneId, setLaneId] = useState<string>()
-  const labelW = narrow ? 64 : 176
+  // Móvil: columna de 48 px (antes 64) con avatar de 30: las barras ganan sitio, que es lo que importa en una pantalla estrecha.
+  const labelW = narrow ? 48 : 176
   const t0 = new Date(now - 3 * DAY).setHours(0, 0, 0, 0)
   const horizon = now + HORIZON_DAYS * DAY
   const visible = useMemo(
@@ -322,7 +323,7 @@ function Gantt({ state, games, now, open, filters, zoom, narrow, fold }: Ctx & {
               <div key={g.id} id={`g-${g.id}`} className={`tl-lane ${folded ? 'folded' : ''}`} style={cssVar(g)}>
                 <div className="tl-label">
                   <div className="tl-label-in">
-                    <GameAvatar game={g} state={state} size={narrow ? 34 : 36} />
+                    <GameAvatar game={g} state={state} size={narrow ? 30 : 36} />
                     {!narrow && <span><strong>{g.short}</strong><small>{g.name}</small></span>}
                     <FoldButton folded={folded} onClick={() => fold.toggle(g.id)} name={g.name} />
                   </div>
@@ -375,7 +376,13 @@ function Bar({ e, top, x, maxX, now, done, open }: { e: GameEvent; top: number; 
   const urgency = s > now ? 'upcoming' : en <= now ? 'ended' : e.open ? '' : left_ < DAY ? 'urgent' : left_ < 3 * DAY ? 'soon' : ''
   // Barra estrecha de algo en curso (se acaba pronto): una pastilla con lo que queda ("18h", "1d") para que no se pierda entre el texto
   // recortado. Solo la primera unidad de la cuenta atrás: cabe en barras de ~28 px.
-  const chip = s < now && en > now && !e.open && w < 150 ? countdown(left_).split(' ')[0] : ''
+  // Se decide por el sitio que le queda al texto, no por el ancho total: con 2–3 retratos (Uma, FGO) "quedan 5d 16h" ya no cabía en barras de
+  // 150–220 px y salía "quedan…". Medidas de App.css (comprobadas en el navegador): relleno 12 px a cada lado; caras de 30 px con margen -10 px y
+  // el hueco de 8 px de la fila entre cada una (-2 por cara de más), +6 tras la última y otro hueco de 8 antes del texto; sin caras, la miniatura de
+  // 30 px. El texto pequeño (.7rem) ocupa unos 6 px por carácter ("quedan 2d 22h" = 76 px).
+  const lead = 12 + (faces.length ? faces.length * 30 - (faces.length - 1) * 2 + 6 : 30) + 8
+  const fits = w - lead - 12 >= state.length * 6
+  const chip = s < now && en > now && !e.open && (w < 150 || !fits) ? countdown(left_).split(' ')[0] : ''
   return (
     <button
       className={`bar ${e.kind} ${done ? 'done' : ''} ${en < now ? 'past' : ''} ${s < now && en > now ? 'live' : ''} ${e.precision ? 'est' : ''} ${e.open ? 'open' : ''} ${urgency === 'urgent' || urgency === 'soon' ? urgency : ''}${chip ? ' has-chip' : ''}`}
