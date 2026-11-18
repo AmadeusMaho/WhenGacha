@@ -91,16 +91,19 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
   const filters: Filters = { kinds, hideDone, showMinor }
   const activeFilters = KIND_ORDER.filter(k => !kinds[k]).length + (hideDone ? 1 : 0) + (showMinor ? 1 : 0)
 
-  // Llegar desde "Mis gachas": se despliega ese juego y se baja hasta su fila / sección.
+  // Ir a un juego (desde "Mis gachas" o el selector "Ir a…"): se despliega y se baja hasta su fila / sección.
+  const jump = useCallback((id: string, done?: () => void) => {
+    setCollapsed(c => c.filter(x => x !== id))
+    return setTimeout(() => {
+      document.getElementById(`g-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      done?.()
+    }, 120)
+  }, [])
   useEffect(() => {
     if (!focusGame) return
-    setCollapsed(c => c.filter(x => x !== focusGame))
-    const timer = setTimeout(() => {
-      document.getElementById(`g-${focusGame}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      onFocused()
-    }, 120)
+    const timer = jump(focusGame, onFocused)
     return () => clearTimeout(timer)
-  }, [focusGame, onFocused])
+  }, [focusGame, onFocused, jump])
 
   const toggle = useCallback((id: string) => setCollapsed(c => (c.includes(id) ? c.filter(x => x !== id) : [...c, id])), [])
   const allFolded = tracked.length > 0 && tracked.every(g => collapsed.includes(g.id))
@@ -122,6 +125,20 @@ export default function TimelineTab(ctx: Ctx & { goMine: () => void; transition:
           <button className={view === 'timeline' ? 'on' : ''} onClick={() => transition(() => setView('timeline'))}>{t('view.line')}</button>
           <button className={view === 'grid' ? 'on' : ''} onClick={() => transition(() => setView('grid'))}>{t('view.grid')}</button>
         </div>
+        {/* Ir a un juego: lista nativa (en el móvil, la del sistema). Vuelve a "Ir a…" tras elegir, para poder repetir el mismo juego. */}
+        {tracked.length > 1 && !ordering && (
+          // Botón de icono: la lista va encima, invisible, y al tocarla se abre la del sistema.
+          <span className="goto-wrap" title={t('goto.aria')}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 6h10M4 12h7M4 18h10" /><path d="M18 8v10m-3-3 3 3 3-3" />
+            </svg>
+            <select className="goto" value="" aria-label={t('goto.aria')}
+              onChange={e => { const id = e.target.value; e.target.value = ''; if (id) jump(id) }}>
+              <option value="" disabled hidden>{t('goto.label')}</option>
+              {tracked.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </span>
+        )}
         <ZoneTag now={now} />
         <button className={`btn sm ghost fbtn ${activeFilters ? 'on' : ''}`} onClick={() => setSheet(true)} aria-haspopup="dialog">
           ☰ {t('filters.btn')}{activeFilters > 0 && <b className="badge">{activeFilters}</b>}

@@ -671,6 +671,17 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .ztag { flex: none; margin-left: auto; padding: 4px 10px; border-radius: 999px; font-size: .78rem; font-weight: 600; white-space: nowrap; color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); cursor: help; }
 .mbar .ztag + .fbtn { margin-left: 0; }
 
+/* "Ir a…" (Timeline.tsx): un <select> con aspecto de botón; la lista que se abre es la del sistema (en móvil, su selector nativo). */
+/* Botón redondo de icono; el <select> lo cubre entero con opacidad 0, así el toque abre la lista nativa (en móvil, la del sistema). */
+.goto-wrap { position: relative; flex: none; display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 999px;
+  color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); transition: color .2s, background .2s; }
+.goto-wrap:hover, .goto-wrap:focus-within { color: var(--text); background: rgba(255, 255, 255, .1); }
+.goto-wrap:focus-within { outline: 2px solid var(--acc2); outline-offset: 2px; }
+/* 16px: con menos, iOS hace zoom al tocar el campo. */
+.mbar .goto { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; appearance: none; -webkit-appearance: none; border: 0; }
+/* Las opciones las pinta el sistema: colores fijos legibles con cualquier skin. */
+.mbar .goto option { color: #111; background: #fff; }
+
 /* Tarjeta de "Mis gachas": la cabecera lleva a la línea de tiempo del juego */
 .gcard-hero.go { cursor: pointer; }
 .gcard-hero.go:focus-visible { outline: 2px solid var(--acc2); outline-offset: -2px; }

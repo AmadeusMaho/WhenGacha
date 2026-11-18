@@ -106,13 +106,39 @@ export default function App() {
 
   /** Cambios de pestaña/vista con transición suave del navegador (View Transitions), si existe. */
   const transition = useCallback((fn: () => void) => {
-    const doc = document as Document & { startViewTransition?: (cb: () => void) => unknown }
+    type VT = { ready?: Promise<unknown>; finished?: Promise<unknown>; updateCallbackDone?: Promise<unknown> }
+    const doc = document as Document & { startViewTransition?: (cb: () => void) => VT }
     if (!doc.startViewTransition || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { fn(); return }
-    doc.startViewTransition(() => { flushSync(fn); window.scrollTo({ top: 0, behavior: 'instant' }) })
+    const vt = doc.startViewTransition(() => { flushSync(fn); window.scrollTo({ top: 0, behavior: 'instant' }) })
+    // Dos cambios seguidos (deslizar o tocar pestañas rápido): el navegador salta la transición anterior y rechaza sus promesas ("Transition was skipped").
+    // El cambio de pestaña se hace igual; solo se evita el error sin capturar en la consola.
+    for (const p of [vt?.ready, vt?.finished, vt?.updateCallbackDone]) p?.catch(() => {})
   }, [])
   useEffect(() => { if ('startViewTransition' in document) document.documentElement.classList.add('has-vt') }, [])
   // El modal debe reflejar el estado más reciente (p. ej. "completado").
   const current = selected ? view.events.find(e => e.id === selected.id) ?? selected : null
+  // Móvil: deslizar a izquierda/derecha cambia de pestaña. Solo con el dedo, gestos claramente horizontales y rápidos, y nunca si empiezan sobre algo que
+  // ya se desplaza en horizontal (la línea de tiempo, carruseles), un campo, un deslizador o un diálogo: ahí el gesto es suyo.
+  const swipe = useRef<{ x: number; y: number; at: number } | null>(null)
+  const onTouchStart = (e: React.TouchEvent) => {
+    swipe.current = null
+    if (e.touches.length !== 1 || selected) return
+    for (let el = e.target as HTMLElement | null; el && el !== e.currentTarget; el = el.parentElement) {
+      if (el.matches('input, textarea, select, [role="dialog"], [role="slider"], .sheet')) return
+      const ox = getComputedStyle(el).overflowX
+      if ((ox === 'auto' || ox === 'scroll') && el.scrollWidth > el.clientWidth + 2) return
+    }
+    swipe.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, at: Date.now() }
+  }
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const s = swipe.current
+    swipe.current = null
+    if (!s || !e.changedTouches.length) return
+    const dx = e.changedTouches[0].clientX - s.x, dy = e.changedTouches[0].clientY - s.y
+    if (Date.now() - s.at > 700 || Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2) return
+    const i = TABS.findIndex(([id]) => id === tab) + (dx < 0 ? 1 : -1)
+    if (i >= 0 && i < TABS.length) transition(() => setTab(TABS[i][0]))
+  }
   const goMine = () => transition(() => setTab('mine'))
   const goGame = (id: string) => transition(() => { setFocusGame(id); setTab('timeline') })
 
@@ -138,7 +164,7 @@ export default function App() {
         </div>
       </header>
       {status.failed && <div className="banner-err">{t('sync.failed', { games: status.failed.map(name => { const g = games.find(x => x.name === name); const ts = g && state.synced[g.id]; return ts ? `${name} (${ago(ts)})` : name }).join(', ') })}</div>}
-      <main key={tab}>
+      <main key={tab} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {tab === 'timeline' && <TimelineTab {...ctx} goMine={goMine} transition={transition} focusGame={focusGame} onFocused={() => setFocusGame(undefined)} />}
         {tab === 'mine' && <MyGachas ctx={ctx} goGame={goGame} />}
         {tab === 'patches' && <Patches {...ctx} goMine={goMine} />}
