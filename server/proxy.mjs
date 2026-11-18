@@ -27,6 +27,7 @@ const DISCORD_CHANNEL_IDS = new Set((process.env.DISCORD_CHANNELS ?? '').split('
 const DISCORD_UA = 'DiscordBot (https://github.com/AmadeusMaho/WhenGacha, 1.0)'
 const MAX_BODY = 8 * 1024 * 1024
 const STALE_MAX = 7 * 24 * 3_600_000
+const NO_STALE = process.env.PROXY_NO_STALE === '1'
 
 const MIN = 60_000
 const HOUR = 60 * MIN
@@ -68,7 +69,8 @@ const SOURCES = [
   { name: 'uma.moe', ttl: 30 * MIN, test: u => u.hostname === 'uma.moe' && u.pathname.startsWith('/resources/') },
   // Umamusume: lista de personajes de umapyoi.net (API pública, robots.txt "Allow: /") para poner el retrato de cada destacado.
   // Una sola ruta y caché de un día: la lista apenas cambia.
-  { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && u.pathname === '/api/v1/character/list' && !u.search },
+  // También la lista de trajes y la de cartas de apoyo (uma.ts: qué traje o qué carta sale en cada banner, por su id).
+  { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && /^\/api\/v1\/(character\/list|outfit|support)$/.test(u.pathname) && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive|other-games\/starsavior)\/banners$/.test(u.pathname) },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765|Aniimo\/archives\/(622475|619365))$/.test(u.pathname) },
@@ -191,7 +193,8 @@ const SOURCES = [
   { name: 'limbus', ttl: 30 * MIN, test: u => u.hostname === 'limbus-assets.eldritchtools.com' && /^\/data\/(timers|identities_mini|egos_mini)\.json$/.test(u.pathname) },
   { name: 'atlasacademy', ttl: 30 * MIN, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/NA\/(basic_event|nice_gacha|basic_servant)\.json$/.test(u.pathname) },
   // FGO: lo que viene a NA según JP (fgo.ts, fromJp): eventos JP de Atlas Academy y la lista de banners de GamePress (robots.txt solo cierra /admin/).
-  { name: 'atlasacademy-jp', ttl: 12 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && u.pathname === '/export/JP/basic_event_lang_en.json' },
+  // También los Servants de JP con nombre en inglés: retratos de los banners futuros con Servants que aún no salieron en NA (fgo.ts).
+  { name: 'atlasacademy-jp', ttl: 12 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/JP\/basic_(event|servant)_lang_en\.json$/.test(u.pathname) },
   { name: 'gamepress-fgo', ttl: 12 * HOUR, test: u => u.hostname === 'grandorder.gamepress.gg' && u.pathname === '/summon-banner-list' },
   // Ficha de un evento de FGO, solo para su arte (`banner`); hasta 6 por ciclo. El arte no cambia: caché larga.
   { name: 'atlasacademy-event', ttl: 24 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/nice\/NA\/event\/\d{4,6}$/.test(u.pathname) },
@@ -351,7 +354,9 @@ async function getCached(url, ttl) {
   seen.set(url, { last: now, ttl })
   const hit = cache.get(url)
   if (hit && now - hit.at < hit.ttl) return { entry: hit, state: 'HIT' }
-  if (hit && now - hit.at < STALE_MAX) { // caducado: se sirve lo guardado y se renueva en segundo plano
+  // caducado: se sirve lo guardado y se renueva en segundo plano. Salvo con PROXY_NO_STALE=1 (scripts/snapshot.mjs): un proceso que dura un par de
+  // minutos no llega a usar lo renovado y publicaba copias con avisos de Discord de hasta 7 días (18 nov 2026: BLEACH sin su evento de aniversario).
+  if (hit && now - hit.at < STALE_MAX && !NO_STALE) {
     if (now >= (retryAt.get(url) ?? 0)) refresh(url, ttl).catch(() => {})
     return { entry: hit, state: 'STALE' }
   }

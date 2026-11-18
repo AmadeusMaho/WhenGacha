@@ -34,7 +34,7 @@ export function carryOver(prev: Snapshot | null | undefined, next: Snapshot, now
   const kept = prev.events
     .filter(o => Date.parse(o.end) > now && now - (o.seen ?? prev.updated) < DAY && !matches(o))
     .map(o => ({ ...o, seen: o.seen ?? prev.updated }))
-  if (kept.length) console.warn(`[collector] ${next.id}: ${kept.length} elementos de la copia anterior (su fuente no respondió): ${kept.map(e => e.title).slice(0, 5).join(', ')}`)
+  if (kept.length) console.warn(`[collector] ${next.id}: una fuente no respondió; se mantienen ${kept.length} elementos vigentes de la copia anterior`)
   return kept.length ? { ...next, events: [...next.events, ...kept] } : next
 }
 

@@ -49,10 +49,13 @@ export async function syncPocketGamerCodes(slug: string): Promise<PromoCode[]> {
 export function pocketGamerCodes(doc: Document): PromoCode[] {
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
   // "Active Stella Sora codes" (h2) o, en otras páginas, h2 "Epic Seven codes" + h3 "Active codes".
+  // Aniimo (18 nov 2026): h2 "Aniimo codes" y, debajo, "Active" / "Expired" en negrita (un <strong> suelto), sin cabecera propia.
   const head = [...doc.querySelectorAll('h2, h3')].find(h => /active/i.test(text(h)) && /codes?/i.test(text(h)))
+    ?? [...doc.querySelectorAll('strong, b')].find(h => /^active(?: codes?)?:?$/i.test(text(h)))
   if (!head) throw new Error('pocketgamer: no se encontró la lista de códigos activos')
   const out: PromoCode[] = []
   for (let n = head.nextElementSibling; n && !/^H2$/.test(n.tagName); n = n.nextElementSibling) {
+    if (/^(?:H[3-4]|STRONG|B|P)$/.test(n.tagName) && /^(?:expired|inactive)\b/i.test(text(n))) break
     if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break
     for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
       const line = text(li)

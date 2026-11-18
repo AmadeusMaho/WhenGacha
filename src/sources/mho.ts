@@ -68,7 +68,8 @@ async function events(gameId: string): Promise<GameEvent[]> {
   const heads = [...doc.querySelectorAll('h2')]
   const key = (s: string) => s.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, '')
   const out: GameEvent[] = []
-  const list = heads.find(h => /ongoing events/i.test(text(h)))
+  // "Ongoing Events" hasta nov 2026; desde el 17 nov, "Current MHO Events and End Dates".
+  const list = heads.find(h => /ongoing events|current\b.*\bevents/i.test(text(h)))
   let table: Element | null = null
   for (let n = list?.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) if (n.tagName === 'TABLE' || n.querySelector('table')) { table = n.tagName === 'TABLE' ? n : n.querySelector('table'); break }
   if (!table) throw new Error('gamewith MHO: no se encontró la lista de eventos')
@@ -101,6 +102,13 @@ async function banners(gameId: string): Promise<GameEvent[]> {
   const now = Date.now(), from = now - 3 * DAY
   const out: GameEvent[] = []
   const table = [...doc.querySelectorAll('table')].find(t => /banner/i.test(text(t.querySelector('th'))))
+  // Retratos: la misma página enlaza a cada aventurero (/adventurers/<nombre>) con su icono de 100×100 dentro del enlace.
+  const faces = new Map<string, string>()
+  for (const a of doc.querySelectorAll('a[href*="/adventurers/"]')) {
+    const img = [...a.querySelectorAll('img')].find(i => Number(i.getAttribute('width')) >= 48)?.getAttribute('src')
+    const name = text(a).toLowerCase()
+    if (img?.startsWith('https://') && name && !faces.has(name)) faces.set(name, img)
+  }
   for (const tr of table?.querySelectorAll('tr') ?? []) {
     const cells = [...tr.children].filter(c => c.tagName === 'TD')
     if (cells.length < 2) continue
@@ -115,7 +123,7 @@ async function banners(gameId: string): Promise<GameEvent[]> {
       id: `${gameId}:banner:gw:${title}:${new Date(r[0]).toISOString().slice(0, 10)}`, gameId, kind: 'banner', title,
       description: rotating ? '⟦d.mhoRotating⟧' : '⟦d.charBanner⟧', image: cells[0].querySelector('img')?.getAttribute('src') || undefined,
       start: new Date(r[0]).toISOString(), end: new Date(r[1]).toISOString(), items: [],
-      featured: who ? [{ name: who, rarity: 5, tag: rotating ? 'Standard Contract' : undefined }] : [], pulls: 0, source: 'api', precision: 'approx',
+      featured: who ? [{ name: who, rarity: 5, tag: rotating ? 'Standard Contract' : undefined, icon: faces.get(who.toLowerCase()) }] : [], pulls: 0, source: 'api', precision: 'approx',
     })
   }
   if (!out.length && !table) throw new Error('gamewith MHO: no se encontró la tabla de banners')

@@ -20439,10 +20439,11 @@ async function syncPocketGamerCodes(slug) {
 }
 function pocketGamerCodes(doc) {
 	const text = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
-	const head = [...doc.querySelectorAll("h2, h3")].find((h) => /active/i.test(text(h)) && /codes?/i.test(text(h)));
+	const head = [...doc.querySelectorAll("h2, h3")].find((h) => /active/i.test(text(h)) && /codes?/i.test(text(h))) ?? [...doc.querySelectorAll("strong, b")].find((h) => /^active(?: codes?)?:?$/i.test(text(h)));
 	if (!head) throw new Error("pocketgamer: no se encontró la lista de códigos activos");
 	const out = [];
 	for (let n = head.nextElementSibling; n && !/^H2$/.test(n.tagName); n = n.nextElementSibling) {
+		if (/^(?:H[3-4]|STRONG|B|P)$/.test(n.tagName) && /^(?:expired|inactive)\b/i.test(text(n))) break;
 		if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break;
 		for (const li of n.tagName === "LI" ? [n] : [...n.querySelectorAll("li")]) {
 			const line = text(li);
@@ -20860,7 +20861,7 @@ function pullsIn(game, lines) {
 	for (const raw of lines) {
 		const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, "Ten Recruitment Ticket").replace(/\b1[- ]Recruitment Ticket/gi, "Single Recruitment Ticket");
 		if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue;
-		for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) {
+		for (const m of l.matchAll(/([A-Za-z](?:[A-Za-z'& ]|-(?=[A-Za-z]))*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) {
 			add(m[1], num$1(m[2]));
 			addAny(m[1].split(/[,:;]/).pop() ?? "", num$1(m[2]));
 		}
@@ -21620,6 +21621,27 @@ var MONTHS$19 = [
 function htmlText(html) {
 	return html.replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|h\d|tr)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#0?39;/g, "'").split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n");
 }
+/**
+* Texto e imágenes de los componentes. Infinity Nikki (18 nov 2026) publica sus avisos de versión así: `content` y `embeds` llegan vacíos y todo
+* va en `components`, de modo que el lector los veía vacíos ("VERSION 2.11 PT. 2" con sus fechas y banners).
+*/
+function componentsOf(m) {
+	const text = [], images = [];
+	const walk = (cs) => {
+		for (const c of cs ?? []) {
+			if (typeof c.content === "string") text.push(c.content);
+			for (const it of c.items ?? []) if (it.media?.url) images.push(it.media.url);
+			if (c.media?.url) images.push(c.media.url);
+			walk(c.components);
+			if (c.accessory) walk([c.accessory]);
+		}
+	};
+	walk(m.components);
+	return {
+		text: text.join("\n"),
+		images
+	};
+}
 var env$1 = globalThis.process?.env;
 /** Canal de Discord de un juego, desde DISCORD_CHANNELS ("stellasora:123,bluearchive:456"). Solo en el servidor. */
 function discordChannel(gameId) {
@@ -21838,7 +21860,7 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 * Ruido de los avisos reenviados: la mención del rol que los anuncia ("@News Feed", "@Schale news"), el aviso de tuit nuevo y los enlaces.
 * Sin esto, el título de un aviso de Azur Lane era "@News Feed https://twitter.com/…".
 */
-var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "").replace(/^\s*(?:\*\*|__)?[^()\n*]{1,40}\(@\w{1,30}\)(?:\s+on\s+(?:X|Twitter))?(?:\*\*|__)?\s*$/i, "");
+var noise = (s) => s.replace(/<?https?:\/\/\S+>?/g, "").replace(/<a?:[\w~]+:\d+>/g, "").replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, "").replace(/^\s*(?:\*\*|__)@\w{1,30}(?:\*\*|__)\s*$/, "").replace(/^\s*a new (tweet|post) has been posted!?\s*/i, "").replace(/^\s*(?:\*\*|__)?[^()\n*]{1,40}\(@\w{1,30}\)(?:\s+on\s+(?:X|Twitter))?(?:\*\*|__)?\s*$/i, "");
 /**
 * Tuits de Readybot (Trickcal, 12 nov 2026): "Trickcal:Chibi Go" y "@trickcal_en" en dos líneas antes del texto. El nombre de la cuenta no es el de
 * ningún evento (salía "Trickcal:Chibi Go" de título): se vacían las dos líneas. Va antes de `noise`, que ya borra la del "@".
@@ -21875,7 +21897,7 @@ function sentenceName(c, loose = true) {
 * "Candice Limited-Time Gacha" (BLEACH) → "Soi Fon", "Candice"; "Candice Themed Event: Execution Begins" → "Execution Begins".
 */
 function tidyName(s) {
-	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
+	return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, "").replace(/^announcements\s+(?=\S)/i, "").replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, "").replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, "").replace(/^(?:rerun\s*[｜|:]\s*)?[\p{Extended_Pictographic}️\s]*(?:upcoming\s+|new\s+)?(?:limited[- ]time\s+)?(?:["“]?debut["”]?\s+)?(?:summon(?:ing)?|recruitment|gacha|rate[- ]up)\s+event\s*[:：]\s*/iu, "").replace(/\s+limited[- ]time (?:gacha|banner)$/i, "").replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, "").trim() || s;
 }
 /** Tipo delante del nombre en una cabecera: "Event: X", "Limited Headhunting: X", "New Pick-Up Recruitment: X". */
 var TYPE_PREFIX = /^(?:(?:new|limited(?:-time)?|special|unique|collab(?:oration)?|rerun)\s+){0,3}(?:event|banner|recruitment|headhunting|pick-?up(?:\s+recruitment)?|gacha|summon|resonance|warp|wish|rerun)\s*[:：]\s*/i;
@@ -21910,6 +21932,20 @@ function joinStartEnd(lines) {
 		out[i] = `${out[i].trimEnd()} – ${clean$6(out[i + 2])}`;
 		out[i + 1] = "";
 		out[i + 2] = "";
+	}
+	for (let i = 0; i < out.length; i++) {
+		const a = /^\s*(?:\*\*)?(?:starting|starts?|begins?|beginning)\s+(?:on\s+|from\s+)?([A-Za-z]{3,9}\.?\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b/i.exec(out[i]);
+		const y = (/* @__PURE__ */ new Date()).getUTCFullYear();
+		if (!a || /lasts?\s+(?:for\s+)?\d/i.test(out[i]) || rangeIn(clean$6(out[i]), y, 0)) continue;
+		for (let j = i + 1, seen = 0; j < out.length && seen < 3; j++) {
+			if (!clean$6(out[j])) continue;
+			seen++;
+			const b = /\blasts?\s+(?:for\s+)?(\d{1,3})\s+(?:consecutive\s+|straight\s+)?days?\b/i.exec(out[j]);
+			if (!b || rangeIn(clean$6(out[j]), y, 0)) continue;
+			out[j] = `${clean$6(out[i])} ${clean$6(out[j])}`;
+			out[i] = `Starts on ${a[1]}, lasts for ${b[1]} days`;
+			break;
+		}
 	}
 	return out;
 }
@@ -22038,12 +22074,16 @@ function tweetImages(events, messages) {
 * (`content` = texto del aviso, `timestamp` = publicación). Mensajes del más nuevo al más viejo, como los da Discord.
 */
 function parseNotices(gameId, messages) {
-	const textOf = (m) => discordStamps([m.content, ...(m.embeds ?? []).flatMap((e) => [
-		e.title ? `**${e.title}**` : "",
-		e.description ?? "",
-		...(e.fields ?? []).flatMap((f) => [`**${f.name}**`, f.value])
-	])].join("\n")).replace(/\\([^\w\s])/g, "$1");
-	const imageOf = (m) => m.attachments?.find((a) => /^image\//.test(a.content_type ?? "") || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url ?? m.embeds?.find((e) => e.image?.url)?.image?.url ?? m.embeds?.find((e) => e.thumbnail?.url)?.thumbnail?.url;
+	const textOf = (m) => discordStamps([
+		m.content,
+		...(m.embeds ?? []).flatMap((e) => [
+			e.title ? `**${e.title}**` : "",
+			e.description ?? "",
+			...(e.fields ?? []).flatMap((f) => [`**${f.name}**`, f.value])
+		]),
+		componentsOf(m).text
+	].join("\n")).replace(/\\([^\w\s])/g, "$1");
+	const imageOf = (m) => m.attachments?.find((a) => /^image\//.test(a.content_type ?? "") || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url ?? m.embeds?.find((e) => e.image?.url)?.image?.url ?? m.embeds?.find((e) => e.thumbnail?.url)?.thumbnail?.url ?? componentsOf(m).images[0];
 	const maintEnd = /* @__PURE__ */ new Map();
 	const maintAt = /* @__PURE__ */ new Map();
 	for (const m of messages) {
@@ -22176,7 +22216,7 @@ function parseNotices(gameId, messages) {
 				source: "api",
 				precision: approx ? "approx" : void 0,
 				open: r.open || void 0,
-				minor: kind === "event" && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?)\b/i.test(name) || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : void 0,
+				minor: kind === "event" && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?|packs?|bundles?)\b/i.test(name) || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : void 0,
 				description: kind === "event" ? summarize(section, { title: name }) : void 0
 			};
 			const stars = (name.match(/[★☆]\s*\d/g) ?? []).length;
@@ -22676,7 +22716,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 		if (per) {
 			if (pickup) {
 				const rerun = pickup.startsWith("[RERUN] ");
-				const name = pickup.replace("[RERUN] ", "");
+				const name = pickup.replace("[RERUN] ", "").replace(/^(?:\s*\[[A-Z][A-Z ]{1,20}\]\s*)+/, "").trim();
 				push("banner", name, per[1], per[2], {
 					description: `⟦d.charBanner⟧${rerun ? " · Rerun" : ""}`,
 					featured: [{
@@ -24170,7 +24210,7 @@ async function events(gameId) {
 	const heads = [...doc.querySelectorAll("h2")];
 	const key = (s) => s.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, "");
 	const out = [];
-	const list = heads.find((h) => /ongoing events/i.test(text$10(h)));
+	const list = heads.find((h) => /ongoing events|current\b.*\bevents/i.test(text$10(h)));
 	let table = null;
 	for (let n = list?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) if (n.tagName === "TABLE" || n.querySelector("table")) {
 		table = n.tagName === "TABLE" ? n : n.querySelector("table");
@@ -24212,6 +24252,12 @@ async function banners(gameId) {
 	const now = Date.now(), from = now - 3 * DAY$30;
 	const out = [];
 	const table = [...doc.querySelectorAll("table")].find((t) => /banner/i.test(text$10(t.querySelector("th"))));
+	const faces = /* @__PURE__ */ new Map();
+	for (const a of doc.querySelectorAll("a[href*=\"/adventurers/\"]")) {
+		const img = [...a.querySelectorAll("img")].find((i) => Number(i.getAttribute("width")) >= 48)?.getAttribute("src");
+		const name = text$10(a).toLowerCase();
+		if (img?.startsWith("https://") && name && !faces.has(name)) faces.set(name, img);
+	}
 	for (const tr of table?.querySelectorAll("tr") ?? []) {
 		const cells = [...tr.children].filter((c) => c.tagName === "TD");
 		if (cells.length < 2) continue;
@@ -24234,7 +24280,8 @@ async function banners(gameId) {
 			featured: who ? [{
 				name: who,
 				rarity: 5,
-				tag: rotating ? "Standard Contract" : void 0
+				tag: rotating ? "Standard Contract" : void 0,
+				icon: faces.get(who.toLowerCase())
 			}] : [],
 			pulls: 0,
 			source: "api",
@@ -25349,7 +25396,7 @@ function mongilNotice(gameId, a, launch) {
 		const how = block.findIndex((l) => /how to participate/i.test(l));
 		const description = how >= 0 ? block.slice(how + 1).filter((l) => /^-/.test(l)).slice(0, 2).map((l) => l.replace(/^-\s*/, "")).join(" ") || void 0 : void 0;
 		const rewards = pullsIn("mongil", block.filter((l) => !/^⟪img/.test(l) && !/^(?:craft|power up|complete|clear|reach|obtain|use|log in)\b/i.test(l)));
-		const named = rewards.items.length ? [] : block.slice(block.findIndex((l) => /key rewards|rewards$/i.test(l)) + 1).filter((l) => !/^⟪img|^-|^※|rewards$|^✨/i.test(l) && /^[A-Z]/.test(l) && l.length < 60).flatMap((l) => l.split(/\s*\/\s*/)).slice(0, 6);
+		const named = rewards.items.length ? [] : block.slice(block.findIndex((l) => /key rewards|rewards$/i.test(l)) + 1).filter((l) => !/^⟪img|^-|^※|rewards$|^✨/i.test(l) && /^[A-Z]/.test(l) && l.length < 60 && !/[.!?]$/.test(l) && !/^thank/i.test(l)).flatMap((l) => l.split(/\s*\/\s*/)).slice(0, 6);
 		const icons = /* @__PURE__ */ new Map();
 		block.forEach((l, j) => {
 			const src = /^⟪img:(.+)⟫$/.exec(l)?.[1];
@@ -27528,6 +27575,29 @@ function gamepressBanners(html) {
 		return [];
 	}
 }
+/**
+* Nombres de GamePress que no coinciden con los de Atlas (NA): sus nombres sin spoiler (不夜城のアサシン = Wu Zetian, 不夜城のキャスター = Scheherazade)
+* y "Demon King Nobunaga (Oda Nobunaga)", que en Atlas es "Oda Nobunaga" a secas, igual que la Archer: se fija por id (la Avenger).
+*/
+var GP_ALIAS = {
+	"assassin of the nightless city": 602700,
+	"caster of the nightless city": 503e3,
+	"archer of shinjuku": 202300,
+	"avenger of shinjuku": 1100500,
+	"demon king nobunaga": 1100700
+};
+/** Clave de nombre: minúsculas, sin tildes ni guiones ("Edmond Dantès" = "Edmond Dantes", "Ono-no-Komachi" = "Ono no Komachi"). */
+var svtKey = (s) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ").trim();
+function servantByGpName(name, byName, svt, all = []) {
+	const k = svtKey(name);
+	const alias = GP_ALIAS[k];
+	if (alias && svt.has(alias)) return svt.get(alias);
+	const exact = byName.get(k);
+	if (exact) return exact;
+	const m = /^(.+?)\s*\(([^)]+)\)$/.exec(k);
+	if (!m) return void 0;
+	return all.find((s) => svtKey(s.name) === m[1] && s.className?.toLowerCase() === m[2].replace(/\s/g, "")) ?? byName.get(m[2]);
+}
 async function fromJp(gameId, naEvents, svt) {
 	const now = Date.now(), to = now + 120 * DAY$18;
 	const [jpRes, gpRes] = await Promise.allSettled([fetch(viaProxy("https://api.atlasacademy.io/export/JP/basic_event_lang_en.json")).then((r) => {
@@ -27592,7 +27662,8 @@ async function fromJp(gameId, naEvents, svt) {
 			precision: "estimated"
 		});
 	}
-	const byName = new Map([...svt.values()].map((s) => [s.name.toLowerCase(), s]));
+	const jpSvt = await fetch(viaProxy("https://api.atlasacademy.io/export/JP/basic_servant_lang_en.json")).then((r) => r.ok ? r.json() : []).catch(() => []);
+	const byName = new Map([...jpSvt, ...svt.values()].map((s) => [svtKey(s.name), s]));
 	for (const b of list) {
 		const js = day(b.jp_start_date), je = day(b.jp_end_date);
 		if (b.na_start_date || isNaN(js) || js <= reached || /lucky bag/i.test(b.name)) continue;
@@ -27600,7 +27671,7 @@ async function fromJp(gameId, naEvents, svt) {
 		if (en < now || s > to || en <= s) continue;
 		const names = (b.servant_profile_future_banner ?? []).map((x) => x?.banner_servant?.name?.trim()).filter((n) => !!n);
 		const featured = [...new Set(names)].slice(0, 3).map((name) => {
-			const sv = byName.get(name.toLowerCase());
+			const sv = servantByGpName(name, byName, svt, [...svt.values(), ...jpSvt]);
 			return {
 				name,
 				icon: sv?.face,
@@ -30093,22 +30164,72 @@ var MINOR = /(training|breeding) reward|celebration missions|missions,? part/i;
 var clean = (s) => s?.replace(/<br\s*\/?>/gi, " · ").replace(/<[^>]+>/g, "").trim() || void 0;
 /** Clave para emparejar nombres: sin variantes "(…)", espacios, puntos ni apóstrofos ("K.S. Miracle" = "K.S.Miracle"). */
 var nameKey = (s) => s.replace(/\s*\(.*?\)/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-/**
-* Retrato oficial de cada Uma (las fichas de personaje de la web oficial), por nombre, desde la lista pública de umapyoi.net.
-* uma.moe solo da los nombres de los destacados; sin esto la ventana del banner mostraba solo texto. Si falla, se sigue sin retratos.
-*/
-async function portraits() {
-	try {
-		const res = await fetch(viaProxy("https://umapyoi.net/api/v1/character/list"));
-		if (!res.ok) return /* @__PURE__ */ new Map();
-		const list = await res.json();
-		return new Map(list.filter((c) => c.name_en && c.thumb_img?.startsWith("https://")).map((c) => [nameKey(c.name_en), c.thumb_img]));
-	} catch {
-		return /* @__PURE__ */ new Map();
+async function lookups() {
+	const get = async (path) => {
+		try {
+			const r = await fetch(viaProxy(`https://umapyoi.net/api/v1/${path}`));
+			return r.ok ? await r.json() : [];
+		} catch {
+			return [];
+		}
+	};
+	const [cl, ol, sl] = await Promise.all([
+		get("character/list"),
+		get("outfit"),
+		get("support")
+	]);
+	const bare = (t) => t?.replace(/^\[|\]$/g, "").trim() ?? "";
+	return {
+		chars: new Map(cl.filter((c) => c.game_id && c.name_en).map((c) => [c.game_id, {
+			name: c.name_en,
+			thumb: c.thumb_img?.startsWith("https://") ? c.thumb_img : void 0
+		}])),
+		outfits: new Map(ol.filter((o) => o.id && o.title).map((o) => [o.id, bare(o.title)])),
+		supports: new Map(sl.filter((s) => s.id && s.title_en).map((s) => [s.id, {
+			chara: s.chara_id ?? 0,
+			title: bare(s.title_en)
+		}]))
+	};
+}
+var RARITY = [
+	"",
+	"R",
+	"SR",
+	"SSR"
+];
+/** Imágenes: la de cada carta de apoyo, de uma.moe (la misma fuente de la cronología); la de cada traje, de GameTora (/images, permitido en su robots.txt). */
+var supportImg = (id) => `${BASE$1}/assets/images/support_card/half/support_card_s_${id}.png`;
+var outfitImg = (id) => `https://gametora.com/images/umamusume/characters/thumb/chara_stand_${Math.floor(id / 100)}_${id}.png`;
+/** Destacados de un banner a partir de sus ids. `null` si no se reconoce ninguno (entonces se usan los nombres de uma.moe). */
+function featuredFromIds(ids, support, lk) {
+	const out = [];
+	for (const id of ids) if (support) {
+		const s = lk.supports.get(id);
+		if (!s) continue;
+		const name = lk.chars.get(s.chara)?.name ?? s.title;
+		if (out.some((f) => f.name === name)) continue;
+		out.push({
+			name,
+			rarity: Math.floor(id / 1e4),
+			tag: [RARITY[Math.floor(id / 1e4)], name !== s.title ? s.title : ""].filter(Boolean).join(" · "),
+			icon: supportImg(id)
+		});
+	} else {
+		const c = lk.chars.get(Math.floor(id / 100));
+		if (!c) continue;
+		if (out.some((f) => f.name === c.name)) continue;
+		out.push({
+			name: c.name,
+			rarity: 3,
+			tag: lk.outfits.get(id),
+			icon: id % 100 === 1 ? c.thumb ?? outfitImg(id) : outfitImg(id)
+		});
 	}
+	return out.length ? out : null;
 }
 async function syncUma(gameId) {
-	const [res, faces] = await Promise.all([fetch(viaProxy(`${BASE$1}/resources/current/banner_timeline.json`)), portraits()]);
+	const [res, lk] = await Promise.all([fetch(viaProxy(`${BASE$1}/resources/current/banner_timeline.json`)), lookups()]);
+	const faces = new Map([...lk.chars.values()].filter((c) => c.thumb).map((c) => [nameKey(c.name), c.thumb]));
 	if (!res.ok) throw new Error(`uma.moe → HTTP ${res.status}`);
 	const json = await res.json();
 	const from = Date.now() - 3 * DAY$5;
@@ -30119,7 +30240,9 @@ async function syncUma(gameId) {
 		const s = +new Date(r.global_release_date), e = +new Date(r.estimated_end_date);
 		if (!(e > s) || e < from || s > to) continue;
 		const kind = kindOf(r.type);
-		const names = (r.card_type === "support" ? r.related_support_card_names : r.related_characters) ?? [];
+		const support = r.card_type === "support";
+		const byId = kind === "banner" ? featuredFromIds(r.pickup_card_ids ?? [], support, lk) : null;
+		const names = byId?.map((f) => f.name) ?? (support ? r.related_support_card_names : r.related_characters) ?? [];
 		const uniq = [...new Set(names)];
 		const label = kind === "banner" ? r.card_type === "support" ? "⟦d.supportCards⟧" : "⟦d.umas⟧" : void 0;
 		events.push({
@@ -30132,11 +30255,11 @@ async function syncUma(gameId) {
 			start: r.global_release_date,
 			end: r.estimated_end_date,
 			items: [],
-			featured: kind === "banner" ? uniq.slice(0, 3).map((name) => ({
+			featured: kind !== "banner" ? [] : byId ? byId.slice(0, 3) : uniq.slice(0, 3).map((name) => ({
 				name,
 				rarity: 3,
-				icon: r.card_type === "support" ? void 0 : faces.get(nameKey(name))
-			})) : [],
+				icon: support ? void 0 : faces.get(nameKey(name))
+			})),
 			pulls: 0,
 			source: "api",
 			minor: kind === "event" && MINOR.test(r.title) ? true : void 0,
@@ -31254,9 +31377,34 @@ function dedupeEvents(events) {
 	}
 	return out;
 }
+/**
+* Banners estimados (personaje anunciado sin fecha: Arman en soc.ts, Lou en mongil.ts) que ya tienen banner con fecha: sobra el estimado. SoC, 18 nov 2026:
+* salían a la vez "Golden Gleam, Ironblood Code" (aviso oficial con Arman) y "Arman" (estimado). Mismo destacado y a menos de 3 semanas; el que se queda
+* hereda el retrato del estimado si no tenía.
+*/
+var ANNOUNCED_GUESS = /* @__PURE__ */ new Set(["soc", "mongil"]);
+function dropAnnounced(events) {
+	const W = 18144e5;
+	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+	const dated = events.filter((e) => e.kind === "banner" && e.precision !== "estimated");
+	const drop = /* @__PURE__ */ new Set();
+	for (const est of events) {
+		if (est.kind !== "banner" || est.precision !== "estimated" || !est.featured.length) continue;
+		const names = new Set(est.featured.map((f) => key(f.name)));
+		const twin = dated.find((d) => Math.abs(Date.parse(d.start) - Date.parse(est.start)) <= W && d.featured.some((f) => names.has(key(f.name))));
+		if (!twin) continue;
+		drop.add(est);
+		twin.featured = twin.featured.map((f) => f.icon ? f : {
+			...f,
+			icon: est.featured.find((x) => key(x.name) === key(f.name))?.icon
+		});
+	}
+	return drop.size ? events.filter((e) => !drop.has(e)) : events;
+}
 async function syncSource(game) {
 	const raw = () => STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game);
 	const s0 = !discordChannel(game.id) ? await raw() : game.id === "azurlane" ? await officialFirst(raw(), syncDiscord(game.id)) : await officialFirst(syncDiscord(game.id), raw());
+	if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events);
 	if (game.id === "trickcal" && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []));
 	const s1 = await withItemIcons$1(game.id, game.id === "azurlane" ? azurPolish(s0) : game.id === "stellasora" ? ssPolish(s0) : s0);
 	const s = {
@@ -31392,7 +31540,7 @@ function carryOver(prev, next, now = Date.now()) {
 		...o,
 		seen: o.seen ?? prev.updated
 	}));
-	if (kept.length) console.warn(`[collector] ${next.id}: ${kept.length} elementos de la copia anterior (su fuente no respondió): ${kept.map((e) => e.title).slice(0, 5).join(", ")}`);
+	if (kept.length) console.warn(`[collector] ${next.id}: una fuente no respondió; se mantienen ${kept.length} elementos vigentes de la copia anterior`);
 	return kept.length ? {
 		...next,
 		events: [...next.events, ...kept]

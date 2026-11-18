@@ -134,6 +134,33 @@ export function gamepressBanners(html: string): GpBanner[] {
   try { return JSON.parse(html.slice(j, k + 1)) as GpBanner[] } catch { return [] }
 }
 
+/**
+ * Nombres de GamePress que no coinciden con los de Atlas (NA): sus nombres sin spoiler (不夜城のアサシン = Wu Zetian, 不夜城のキャスター = Scheherazade)
+ * y "Demon King Nobunaga (Oda Nobunaga)", que en Atlas es "Oda Nobunaga" a secas, igual que la Archer: se fija por id (la Avenger).
+ */
+const GP_ALIAS: Record<string, number> = {
+  'assassin of the nightless city': 602700,
+  'caster of the nightless city': 503000,
+  'archer of shinjuku': 202300, // James Moriarty
+  'avenger of shinjuku': 1100500, // Hessian Lobo  'demon king nobunaga (oda nobunaga)': 1100700,
+  'demon king nobunaga': 1100700,
+}
+/** Clave de nombre: minúsculas, sin tildes ni guiones ("Edmond Dantès" = "Edmond Dantes", "Ono-no-Komachi" = "Ono no Komachi"). */
+const svtKey = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/-/g, ' ').replace(/\s+/g, ' ').trim()
+export function servantByGpName(name: string, byName: Map<string, RawServant>, svt: Map<number, RawServant>, all: RawServant[] = []): RawServant | undefined {
+  const k = svtKey(name)
+  const alias = GP_ALIAS[k]
+  if (alias && svt.has(alias)) return svt.get(alias)
+  const exact = byName.get(k)
+  if (exact) return exact
+  const m = /^(.+?)\s*\(([^)]+)\)$/.exec(k)
+  if (!m) return undefined
+  // "Medusa (Saber)", "Li Shuwen (Assassin)": Atlas los llama "Medusa" / "Li Shuwen" y los distingue por la clase.
+  const byClass = all.find(s => svtKey(s.name) === m[1] && s.className?.toLowerCase() === m[2].replace(/\s/g, ''))
+  // "Otro nombre (Nombre de NA)": el de dentro del paréntesis.
+  return byClass ?? byName.get(m[2])
+}
+
 async function fromJp(gameId: string, naEvents: RawEvent[], svt: Map<number, RawServant>): Promise<GameEvent[]> {
   const now = Date.now(), to = now + 120 * DAY
   const [jpRes, gpRes] = await Promise.allSettled([
@@ -185,7 +212,10 @@ async function fromJp(gameId: string, naEvents: RawEvent[], svt: Map<number, Raw
     })
   }
 
-  const byName = new Map([...svt.values()].map(s => [s.name.toLowerCase(), s]))
+  // Servants de JP (nombre en inglés) para los que aún no están en NA; los de NA mandan si existen en los dos.
+  const jpSvt = await fetch(viaProxy('https://api.atlasacademy.io/export/JP/basic_servant_lang_en.json'))
+    .then(r => (r.ok ? (r.json() as Promise<RawServant[]>) : [])).catch(() => [] as RawServant[])
+  const byName = new Map([...jpSvt, ...svt.values()].map(s => [svtKey(s.name), s]))
   for (const b of list) {
     const js = day(b.jp_start_date), je = day(b.jp_end_date)
     // Ya en NA, sin fecha, anterior a lo alcanzado o de pago (Lucky Bag).
@@ -193,7 +223,7 @@ async function fromJp(gameId: string, naEvents: RawEvent[], svt: Map<number, Raw
     const s = open(js), en = close(isNaN(je) ? js + 14 * DAY : je)
     if (en < now || s > to || en <= s) continue
     const names = (b.servant_profile_future_banner ?? []).map(x => x?.banner_servant?.name?.trim()).filter((n): n is string => !!n)
-    const featured: Featured[] = [...new Set(names)].slice(0, 3).map(name => { const sv = byName.get(name.toLowerCase()); return { name, icon: sv?.face, rarity: sv?.rarity, tag: sv?.className } })
+    const featured: Featured[] = [...new Set(names)].slice(0, 3).map(name => { const sv = servantByGpName(name, byName, svt, [...svt.values(), ...jpSvt]); return { name, icon: sv?.face, rarity: sv?.rarity, tag: sv?.className } })
     const title = b.name.replace(/^\[JP\]\s*/, '').trim()
     out.push({
       id: `${gameId}:banner:gp:${b.id}`, gameId, kind: 'banner', title: featured.length ? featured.map(f => f.name).join(' / ') : title,

@@ -770,7 +770,11 @@ notas de una actualización valen 3 semanas), una página más de `prydwen` (`/o
   - **De dónde sacan ellos la información**: de la cuenta oficial de X **@BleachSRgame** (los artículos de hideoutgacha enlazan sus tuits) y del
     Discord oficial; el texto de anigacha es el del aviso oficial ("Event Period: November 4, 2026 (after maintenance) to November 25, 2026,
     03:59:59"), que nuestro lector ya entiende. Es decir, la misma fuente que nuestro canal de Discord `bleach`.
-  - **Lo que falta (dueño)**: el canal `bleach` sigue el #game-news y el #codes del Discord oficial EU&NA desde el 12 nov, sin avisos aún. Para tener
+  - **18 nov 2026**: el canal (`1570431869290553477`) ya recibe avisos. El lector no leía el login de aniversario porque reparte inicio y duración en
+    dos frases ("Starting November 20th, …" / "This celebration will last for 14 consecutive days"): `joinStartEnd` las une ahora en
+    "Starts on …, lasts for N days" (solo si ninguna de las dos líneas trae ya un periodo). Probado con los 15 canales: solo cambia BLEACH.
+    Los "STANDARD Pulls" no cuentan como tiradas (son del banner estándar). El adelanto "NEW LIMITED SSR … will be available soon!" no trae fecha: no sale.
+  - **Lo que falta (dueño)**: el canal `bleach` sigue el #game-news y el #codes del Discord oficial EU&NA desde el 12 nov. Para tener
     todos los avisos, añadir también al canal un reenvío de los tuits de **@BleachSRgame** (como el "News Feed" que ya tienen Stella Sora y Trickcal).
 - **Duplicados por prefijo** (`dedupeEvents` en `syncSource`): el mismo evento con y sin "Limited Event:" / "New Event:" / "Limited Recruitment:"
   (el tuit de Stella Sora lo deja; su web no) se une si coincide el tipo y el periodo (±1 h), con la imagen y la descripción de cualquiera de los dos.
@@ -939,3 +943,58 @@ emergencia, seguridad, lanzador, compensación y los resúmenes de nikke.gg (`ni
 **Azur Lane, Ejercicios: añadido** (`alExercise` en cycles.ts). Referencia: una captura del juego que encontró el dueño, "Season Time 0d 00:08:31" el lunes 16 dic 2024
 a las 03:53 (GMT-3) → la temporada acabó a las 07:00 UTC (00:00 UTC-7). Hasta el 16 nov 2026 hay 700 días = 50 temporadas de 14 días, así que el ciclo sigue cuadrando.
 Va marcado "≈" porque es un cálculo: si el juego corre el ciclo, se cambia la referencia.
+
+## Uma, FGO, MHO, PtN y códigos (18 nov 2026)
+
+Revisado contra las copias publicadas (rama `data`) y el código actual, no contra notas anteriores de este documento.
+
+- **Umamusume: cartas de apoyo y trajes** (`uma.ts`, `featuredFromIds`). uma.moe trae `pickup_card_ids`, que identifican la carta exacta; antes se usaban sus
+  nombres, y fallaba en dos cosas: las cartas de apoyo salían con su título como si fuera una Uma ("Heirs to the Throne", "Progenitors and Guides") y los trajes
+  alternativos salían con el retrato del traje básico (Haru Urara con [First Urara ♪ Saku Sakura] = id `105202`). Ahora:
+  - Personaje: id de 6 cifras = personaje (4) + traje (2). Nombre del personaje, el traje como etiqueta (`tag`) y la imagen de ESE traje
+    (GameTora, `/images/umamusume/characters/thumb/chara_stand_<personaje>_<traje>.png`; su robots.txt permite `/images`). El básico (…01) usa la ficha oficial.
+  - Carta de apoyo: id de 5 cifras, la primera es la rareza (3 SSR, 2 SR, 1 R). Nombre del personaje, "SSR · <título>" de etiqueta e imagen de la carta de
+    uma.moe (`assets/images/support_card/half/support_card_s_<id>.png`). Una misma carta en dos rarezas sale una vez (la de más rareza).
+  - Datos: umapyoi.net `/api/v1/character/list`, `/api/v1/outfit` y `/api/v1/support` (3 consultas, caché de un día; añadidas al proxy). Si umapyoi
+    falla, se vuelve a los nombres de uma.moe. GameTora no se consulta (solo sus imágenes, que carga el navegador).
+- **FGO: retratos de los banners futuros de GamePress** (`servantByGpName`). GamePress usa nombres sin spoiler o distintos de Atlas: alias fijos en `GP_ALIAS`
+  ("Assassin/Caster of the Nightless City" = Wu Zetian / Scheherazade, "Archer/Avenger of Shinjuku" = Moriarty / Hessian Lobo, "Demon King Nobunaga" = la Avenger);
+  variantes de clase ("Medusa (Saber)") por nombre + clase; sin tildes ni guiones ("Edmond Dantès", "Ono-no-Komachi"); y los Servants que aún no están en NA,
+  desde `export/JP/basic_servant_lang_en.json` (añadido al proxy, 12 h). Probado: 0 destacados sin retrato (antes 18 en la fuente; el recolector tapaba casi todos con la wiki).
+- **MHO**: GameWith renombró la sección de eventos ("Ongoing Events" → "Current MHO Events and End Dates") y el lector dejó de encontrarla; se aceptan las dos.
+  Retratos de los banners (Midori, Rhodes): el icono de 100×100 que la propia página pone en el enlace a cada aventurero.
+- **Recompensas con guion** (`pullsIn`, todos los juegos): "S-Class Soul Mark x10" se leía "Class Soul Mark". Ahora se admite el guion pegado entre letras
+  ("S-Class", "High-Level", "Dual-Track"); uno con espacios ("Event - Reward x5") sigue partiendo el nombre. Probado con los 15 canales de Discord (sin cambios) y
+  los avisos de PtN (solo cambian esos nombres). Con el nombre completo, la wiki de PtN ya da icono a S-Class Soul Mark, S-Class Cognitive Essence y Super-Level Material Supply Chest.
+- **Sin icono (sin fuente)**: PtN Dual-Track Warrant, Memento Film, S-Class Transcendent Beacon y Resonant Shard (la wiki no tiene los archivos). Infinity Nikki:
+  trajes Snowbloom Wishsong y Cheese and Sword, y Cherished Rose, Wishful Bird y Love's Answer (la wiki aún no tiene sus páginas; el recolector los pondrá cuando las suba).
+- **Códigos de PocketGamer descartados para PGR, AFK Journey y Epic Seven**: sus listas "activas" mezclan códigos caducados (AFK: PUMPKIN2025, SANTAJOURNEY…;
+  Epic Seven: más de 30, casi todos de 6 letras de las partidas del E7WC; PGR: 4 dudosos, uno en minúsculas). Mejor ninguno que códigos que no funcionan.
+- **Copias de `npm run snapshot` con datos viejos (arreglado)**: el proxy sirve lo caducado (hasta 7 días) y lo renueva en segundo plano, pero el script dura un par
+  de minutos, no llegaba a usar lo renovado y además no guardaba la caché (solo se guardaba cada 5 min): la de disco seguía siendo del 14–15 nov. Las copias
+  publicadas llevaban avisos de Discord de esos días. Ahora el script pone `PROXY_NO_STALE=1` (lo caducado se pide de nuevo; mismas peticiones, solo que
+  esperando) y llama a `flushCache()` al terminar. Efecto medido el 18 nov: BD2 12 → 25 vigentes, Arknights 7 → 11, NIKKE 12 → 16, AFK 8 → 11, Azur Lane 9 → 13,
+  MONGIL 8 → 11, BLEACH 0 → 1; Trickcal 4 → 1 códigos (los otros tres ya habían caducado en su fuente). El servidor no cambia.
+- **BLEACH sin copia nueva**: el script descartaba como "sin datos" una copia sin eventos aunque tuviera códigos; ahora vale si tiene códigos.
+- **BD2**: "[LIMITED]Bittersweet Bunny Darian" → se quitan las etiquetas entre corchetes delante del nombre (ya tiene retrato). **MONGIL**: la despedida
+  "Thank you." del aviso salía como recompensa. **Sin icono**: MHO Scale Pigment (no está en la lista de objetos de GameWith); MONGIL Greater Growth Chow,
+  Catnip Spray y los Puree (el aviso no les pone imagen y la wiki no los tiene).
+
+## Consola, PocketGamer y revisión de calidad (18 nov 2026, segunda parte)
+
+- **Consola del servidor** (`server/collector.mjs`): los avisos de las fuentes se repetían en cada ciclo y tapaban las visitas. Ahora los de cada juego salen la
+  primera vez y cuando cambian (las cifras no cuentan como cambio); si se repiten, se callan y salen una vez al día en "se repite desde hace N h". "<juego>: N
+  elementos" solo si cambia la cifra, y las copias adoptadas de GitHub en una sola línea. El aviso de `carryOver` dice ahora "una fuente no respondió; se mantienen
+  N elementos vigentes de la copia anterior", sin la lista de nombres. Las visitas no cambian.
+  - Aniimo en Botkeep: `game8 … HTTP 502` es el bloqueo de Game8 a la IP del servidor (ver 13 nov); seguirá saliendo una vez y luego en el resumen diario.
+- **PocketGamer** (`pocketGamerCodes`): Aniimo pone "Active" / "Expired" en negrita bajo un h2 "Aniimo codes", sin cabecera propia; se acepta ese formato.
+  Probado con los otros 6 juegos que lo usan: mismos códigos.
+- **Discord, Components V2**: Infinity Nikki publica sus avisos de versión con el texto en `components` (flags 32768) y `content`/`embeds` vacíos; el lector los
+  veía vacíos. `componentsOf` saca su texto e imágenes. Con eso entran los 4 banners de la 2.11 parte 2. Solo ese canal usa el formato hoy.
+- **Discord, tuits**: el título del embed "**@SwordofConva**" (la cuenta, en negrita) se tomaba como cabecera; SoC sacaba el banner de Arman como evento
+  "@SwordofConva". Se quita la cuenta sola en negrita.
+- **Paquetes de pago** ("… Bundle", "… Packs") del lector de Discord: menores (ocultos por defecto), como las tiendas de aspectos.
+- **Banner estimado ya anunciado** (`dropAnnounced` en index.ts, solo SoC y MONGIL): se quita el estimado ("Arman") si hay uno con fecha del mismo personaje
+  a menos de 3 semanas; el otro hereda su retrato. No en FGO ni Uma (sus estimados son banners futuros de JP o predicciones).
+- **Revisado y correcto** (parecían fallos): los "duplicados" de BD2 (evento, misión y pase de temporada), Trickcal (evento e historia, con otro fin),
+  R:1999 (evento y sus partes I/II) y MONGIL; los nombres de E.G.O de Limbus con "::" (así los escribe el juego); los títulos en japonés de FGO (pedidos el 12 nov).

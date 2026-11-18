@@ -126,7 +126,9 @@ export function pullsIn(game: string, lines: string[]): { pulls: number; items: 
     // Compensaciones de mantenimiento y precios no son recompensas del evento.
     if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue
     // La x de multiplicar va tras un espacio o pegada a la cifra: "Apex 8" no es "Ape ×8" (BLEACH, "reach Apex 8 or above").
-    for (const m of l.matchAll(/([A-Za-z][A-Za-z'& ]*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
+    // Guion solo pegado entre letras ("S-Class Soul Mark", "High-Level Material Supply Chest", PtN): antes se perdía lo de delante del guion.
+    // Uno con espacios ("Event - Reward x5") sigue partiendo el nombre.
+    for (const m of l.matchAll(/([A-Za-z](?:[A-Za-z'& ]|-(?=[A-Za-z]))*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) { add(m[1], num(m[2])); addAny(m[1].split(/[,:;]/).pop() ?? '', num(m[2])) }
     for (const m of l.matchAll(/\b(\d[\d,]*)\s+([A-Z][A-Za-z' ]*?)(?=[,.;:)!]|\s+(?:and|to|from|in|for)\b|$)/g)) add(m[2], num(m[1]))
   }
   let pulls = 0

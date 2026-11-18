@@ -71,7 +71,9 @@ export function mongilNotice(gameId: string, a: Article, launch?: number): GameE
     // Fuera las líneas de misión ("Craft 5★ Equipment x1", "Power up one 5★ Equipment to Lv. 18"): son requisitos, no recompensas.
     const rewards = pullsIn('mongil', block.filter(l => !/^⟪img/.test(l) && !/^(?:craft|power up|complete|clear|reach|obtain|use|log in)\b/i.test(l)))
     const named = rewards.items.length ? [] : block.slice(block.findIndex(l => /key rewards|rewards$/i.test(l)) + 1)
-      .filter(l => !/^⟪img|^-|^※|rewards$|^✨/i.test(l) && /^[A-Z]/.test(l) && l.length < 60).flatMap(l => l.split(/\s*\/\s*/)).slice(0, 6)
+      // Sin frases (la despedida "Thank you." del final del aviso salía como recompensa, 18 nov 2026): un nombre de objeto no acaba en punto.
+      .filter(l => !/^⟪img|^-|^※|rewards$|^✨/i.test(l) && /^[A-Z]/.test(l) && l.length < 60 && !/[.!?]$/.test(l) && !/^thank/i.test(l))
+      .flatMap(l => l.split(/\s*\/\s*/)).slice(0, 6)
     // Icono de cada recompensa: en los avisos, la imagen va justo antes del nombre ("⟪img⟫ / Compass of Destiny x1").
     const icons = new Map<string, string>()
     block.forEach((l, j) => {

@@ -16,6 +16,9 @@ const BRANCH = process.env.SNAPSHOT_BRANCH || 'data'
 const PUBLISH = process.argv.includes('--publish')
 // Caché del proxy propia de este script (no se mezcla con la del servidor local).
 process.env.DATA_DIR ??= path.join(ROOT, '.cache', 'snapshot-proxy')
+// Lo caducado se pide de nuevo en vez de servirse viejo: este proceso dura un par de minutos y no llegaba a usar lo renovado en segundo plano
+// (publicaba avisos de Discord de hasta 7 días). Mismas peticiones que antes, solo que esperando la respuesta. Ver getCached en server/proxy.mjs.
+process.env.PROXY_NO_STALE ??= '1'
 
 // Token y canales de Discord del equipo del dueño (`.env.local`, que nunca se sube): sin ellos, las copias que publica este script saldrían sin los
 // anuncios de Discord y, al ser más recientes, el servidor podría adoptarlas en lugar de las suyas (que sí los tienen). Las variables ya definidas
@@ -59,7 +62,8 @@ for (const g of mod.games()) {
       log(`${g.id}: 0 elementos (se publica vacía)`)
       continue
     }
-    if (!snap.events.length) throw new Error('sin datos')
+    // Sin eventos pero con códigos (BLEACH entre avisos) también es una copia válida: antes se descartaba y la publicada se quedaba días sin códigos nuevos.
+    if (!snap.events.length && !snap.codes?.length) throw new Error('sin datos')
     if (old && old.events.length > snap.events.length * 1.4 && Date.now() - old.updated < 12 * 3_600_000) {
       log(`${g.id}: ${snap.events.length} elementos (menos que los ${old.events.length} de la copia anterior): se conserva la anterior`)
       await writeFile(path.join(dir, `${g.id}.json`), JSON.stringify(old)) // en un equipo sin copia local, la anterior vendría de la rama publicada
@@ -87,6 +91,8 @@ try {
   log(`upcoming: ${list.items.length} juegos`)
 } catch (err) { log(`upcoming: ERROR ${String(err.message ?? err).slice(0, 100)}`) }
 await writeFile(path.join(dir, 'index.json'), JSON.stringify({ generatedAt: Date.now(), games: summary }))
+// La caché del proxy solo se guardaba cada 5 min y este proceso acaba antes: la de disco seguía siendo la del 15 nov.
+await proxy.flushCache?.().catch(() => {})
 
 if (!PUBLISH) { log(`copias en ${dir}`); process.exit(0) }
 

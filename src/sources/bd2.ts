@@ -216,7 +216,8 @@ function parseNotice(gameId: string, n: Notice, m: Maint, out: GameEvent[], seen
     if (per) {
       if (pickup) {
         const rerun = pickup.startsWith('[RERUN] ')
-        const name = pickup.replace('[RERUN] ', '')
+        // Otras etiquetas delante del nombre ("[LIMITED]Bittersweet Bunny Darian", 18 nov 2026) tampoco son parte de él.
+        const name = pickup.replace('[RERUN] ', '').replace(/^(?:\s*\[[A-Z][A-Z ]{1,20}\]\s*)+/, '').trim()
         push('banner', name, per[1], per[2], { description: `⟦d.charBanner⟧${rerun ? ' · Rerun' : ''}`, featured: [{ name, rarity: 5 }] })
         pickup = ''
         continue

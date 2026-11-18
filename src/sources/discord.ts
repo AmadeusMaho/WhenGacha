@@ -26,7 +26,28 @@ export function htmlText(html: string): string {
     .split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n')
 }
 
-export interface Message { id: string; content: string; timestamp: string; embeds?: Embed[]; attachments?: { url: string; content_type?: string }[] }
+/** Componentes de un mensaje "Components V2" (flags 32768): texto (tipo 10), contenedores y secciones con más componentes, galerías (tipo 12). */
+interface Component { type: number; content?: string; components?: Component[]; accessory?: Component; items?: { media?: { url?: string } }[]; media?: { url?: string } }
+export interface Message { id: string; content: string; timestamp: string; embeds?: Embed[]; attachments?: { url: string; content_type?: string }[]; components?: Component[] }
+
+/**
+ * Texto e imágenes de los componentes. Infinity Nikki (18 nov 2026) publica sus avisos de versión así: `content` y `embeds` llegan vacíos y todo
+ * va en `components`, de modo que el lector los veía vacíos ("VERSION 2.11 PT. 2" con sus fechas y banners).
+ */
+export function componentsOf(m: Message): { text: string; images: string[] } {
+  const text: string[] = [], images: string[] = []
+  const walk = (cs?: Component[]) => {
+    for (const c of cs ?? []) {
+      if (typeof c.content === 'string') text.push(c.content)
+      for (const it of c.items ?? []) if (it.media?.url) images.push(it.media.url)
+      if (c.media?.url) images.push(c.media.url)
+      walk(c.components)
+      if (c.accessory) walk([c.accessory])
+    }
+  }
+  walk(m.components)
+  return { text: text.join('\n'), images }
+}
 
 const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
 
@@ -178,6 +199,8 @@ const noise = (s: string) => s.replace(/<?https?:\/\/\S+>?/g, '')
   // Emojis propios del servidor ("<:3_:801450203134689291>"): quedaban en el título del aviso.
   .replace(/<a?:[\w~]+:\d+>/g, '')
   .replace(/^\s*@\S+(?:\s+(?:news|feed|updates?|announcements?|notifications?|alerts?))?\s*/i, '')
+  // La cuenta sola en negrita: título del embed de un tuit ("**@SwordofConva**", SoC, 18 nov 2026). Se tomaba como cabecera y tapaba el nombre real.
+  .replace(/^\s*(?:\*\*|__)@\w{1,30}(?:\*\*|__)\s*$/, '')
   .replace(/^\s*a new (tweet|post) has been posted!?\s*/i, '')
   // Tuits reenviados: la línea del autor ("DuetNightAbyss (@DNAbyss_EN)") no es el nombre de nada.
   // También en negrita, como título del embed de Readybot ("**Trickcal:Chibi Go (@trickcal_en) on X**").
@@ -232,6 +255,8 @@ function sentenceName(c: string, loose = true): string | undefined {
  */
 export function tidyName(s: string): string {
   return s.replace(/^(?:event\s+)?(?:preview|announcement|notice|reminder)\s*[:：]\s*/i, '')
+    // "📢 Announcements | 1st Anniversary Login Celebration! 📢" (BLEACH): `clean` ya quitó la barra y queda "Announcements 1st …".
+    .replace(/^announcements\s+(?=\S)/i, '')
     .replace(/^.{0,30}?\bthemed event(?:\s*\d+)?\s*[:：]\s*/i, '')
     .replace(/^limited[- ]time (?:gacha|banner|event)\s*[:：]\s*/i, '')
     // "Upcoming Limited-Time Summon Event: Get Together" (Sword of Convallaria) → "Get Together".
@@ -287,6 +312,24 @@ function joinStartEnd(lines: string[]): string[] {
       out[i] = `${out[i].trimEnd()} – ${clean(out[i + 2])}`
       out[i + 1] = ''
       out[i + 2] = ''
+    }
+  }
+  // Inicio y duración en frases separadas (BLEACH, 16 nov 2026: "Starting November 20th, simply log in each day…" y, dos líneas después,
+  // "This celebration will last for 14 consecutive days…") → "Starts on November 20th, lasts for 14 days", que `rangeIn` (LASTS) entiende.
+  // La frase original se conserva en la línea de la duración, para que sigan contando sus recompensas y tiradas.
+  for (let i = 0; i < out.length; i++) {
+    const a = /^\s*(?:\*\*)?(?:starting|starts?|begins?|beginning)\s+(?:on\s+|from\s+)?([A-Za-z]{3,9}\.?\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})\b/i.exec(out[i])
+    // Solo si ninguna de las dos líneas trae ya un periodo propio ("Begins Nov 3 – Nov 10"): entonces no se toca nada (los demás juegos siguen igual).
+    const y = new Date().getUTCFullYear()
+    if (!a || /lasts?\s+(?:for\s+)?\d/i.test(out[i]) || rangeIn(clean(out[i]), y, 0)) continue
+    for (let j = i + 1, seen = 0; j < out.length && seen < 3; j++) {
+      if (!clean(out[j])) continue
+      seen++
+      const b = /\blasts?\s+(?:for\s+)?(\d{1,3})\s+(?:consecutive\s+|straight\s+)?days?\b/i.exec(out[j])
+      if (!b || rangeIn(clean(out[j]), y, 0)) continue
+      out[j] = `${clean(out[i])} ${clean(out[j])}`
+      out[i] = `Starts on ${a[1]}, lasts for ${b[1]} days`
+      break
     }
   }
   return out
@@ -396,11 +439,11 @@ export function tweetImages(events: GameEvent[], messages: Message[]): GameEvent
  * (`content` = texto del aviso, `timestamp` = publicación). Mensajes del más nuevo al más viejo, como los da Discord.
  */
 export function parseNotices(gameId: string, messages: Message[]): GameSync {
-  const textOf = (m: Message) => discordStamps([m.content, ...(m.embeds ?? []).flatMap(e => [e.title ? `**${e.title}**` : '', e.description ?? '', ...(e.fields ?? []).flatMap(f => [`**${f.name}**`, f.value])])].join('\n'))
+  const textOf = (m: Message) => discordStamps([m.content, ...(m.embeds ?? []).flatMap(e => [e.title ? `**${e.title}**` : '', e.description ?? '', ...(e.fields ?? []).flatMap(f => [`**${f.name}**`, f.value])]), componentsOf(m).text].join('\n'))
     // Los embeds de vxtwitter escapan el Markdown ("Gift\: ABC", "23\:59 \(UTC\+8\)"): se quitan esas barras antes de leer.
     .replace(/\\([^\w\s])/g, '$1')
   const imageOf = (m: Message) => m.attachments?.find(a => /^image\//.test(a.content_type ?? '') || /\.(png|jpe?g|webp|gif)(\?|$)/i.test(a.url))?.url
-    ?? m.embeds?.find(e => e.image?.url)?.image?.url ?? m.embeds?.find(e => e.thumbnail?.url)?.thumbnail?.url
+    ?? m.embeds?.find(e => e.image?.url)?.image?.url ?? m.embeds?.find(e => e.thumbnail?.url)?.thumbnail?.url ?? componentsOf(m).images[0]
 
   // Fin real de cada mantenimiento ("Maintenance … 2026/10/19 13:00 - 21:00 (UTC-7)"), por día de inicio.
   const maintEnd = new Map<string, number>()
@@ -524,7 +567,8 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
         precision: approx ? 'approx' : undefined, open: r.open || undefined,
         // Tienda de cosméticos (muebles, aspectos de equipo, interfaz de combate, módulos; Azur Lane): campaña menor, oculta por defecto.
         // Y los sorteos de aspectos ('Agata - Polaris of Winter's Live Skin "After the Midnight Snow" event', SoC): la frase de la que salió el nombre lo dice.
-        minor: kind === 'event' && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?)\b/i.test(name)
+        // Paquetes de pago ("The Heartful Hospital Bundle", "Choose-Your-Own-Gift Packs", "Wishsong Epiphany Packs", 18 nov 2026): ventas, no eventos.
+        minor: kind === 'event' && (/\b(?:furniture|gear skins?|battle ui|augment modules?|skins? (?:shop|sale)|outfit sale|frames?|stickers?|packs?|bundles?)\b/i.test(name)
           || /\blive skin\b|\bskin event\b|\boutfit event\b/i.test(ctx)) ? true : undefined,
         // Resumen del apartado ("Event Intro: …", requisitos): como las fichas de Endfield. Solo eventos; los banners ya dicen a quién destacan.
         description: kind === 'event' ? summarize(section, { title: name }) : undefined,

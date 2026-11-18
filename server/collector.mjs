@@ -53,10 +53,46 @@ async function save(snap) {
   } catch (err) { console.error(`[collector] no se pudo guardar ${snap.id}: ${err.message}`) }
 }
 
+/*
+ * Consola tranquila (18 nov 2026): los avisos de las fuentes ("[aniimo] game8 … HTTP 502") se repetían en cada ciclo y tapaban las visitas.
+ * Los de cada juego se muestran la primera vez y cuando cambian; si se repiten igual, se callan y salen en un resumen diario (`quietSummary`).
+ * "<juego>: N elementos" solo sale si cambia la cifra. Los errores del propio recolector (copia rechazada) se muestran siempre.
+ */
+const lastNotes = new Map() // juego → firma de sus avisos del último ciclo
+const repeating = new Map() // juego → { notes, since, times }
+const lastCount = new Map()
+const sig = notes => notes.map(n => n.replace(/\d+/g, '#')).join('\n')
+
+export async function quietly(id, fn) {
+  const notes = []
+  const orig = { warn: console.warn, error: console.error }
+  const keep = (...a) => notes.push(a.map(x => (x instanceof Error ? x.message : String(x))).join(' '))
+  console.warn = keep
+  console.error = keep
+  try { return await fn() } finally {
+    console.warn = orig.warn
+    console.error = orig.error
+    const s = sig(notes)
+    if (notes.length && s !== lastNotes.get(id)) { for (const n of notes) console.warn(n); repeating.delete(id) }
+    else if (notes.length) { const r = repeating.get(id) ?? { notes, since: Date.now(), times: 0 }; r.notes = notes; r.times++; repeating.set(id, r) }
+    else repeating.delete(id)
+    lastNotes.set(id, s)
+  }
+}
+
+/** Una vez al día: qué avisos se siguen repitiendo (y desde cuándo), en una sola línea por juego. */
+export function quietSummary() {
+  for (const [id, r] of repeating) {
+    const h = Math.round((Date.now() - r.since) / 3_600_000)
+    console.warn(`[collector] ${id}: se repite desde hace ${h} h (${r.times} ciclos): ${r.notes.map(n => n.replace(/^\[[^\]]+\]\s*/, '')).join(' · ').slice(0, 300)}`)
+  }
+}
+setInterval(quietSummary, 24 * 3_600_000).unref()
+
 async function collectOne(g) {
   try {
     // Si una fuente falló en este ciclo, sus eventos vigentes de la copia anterior se conservan (carryOver, src/collector.ts).
-    const snap = mod.carryOver(snapshots.get(g.id), await mod.collect(g.id))
+    const snap = await quietly(g.id, async () => mod.carryOver(snapshots.get(g.id), await mod.collect(g.id)))
     // Una copia sin nada (p. ej. todas las fuentes caídas) no pisa una buena anterior.
     const cur = snapshots.get(g.id)
     if (!snap.events.length && cur?.events.length) throw new Error('sin datos nuevos')
@@ -67,7 +103,8 @@ async function collectOne(g) {
     snapshots.set(g.id, snap)
     failures.delete(g.id)
     await save(snap)
-    console.log(`[collector] ${g.id}: ${snap.events.length} elementos`)
+    if (lastCount.get(g.id) !== snap.events.length) console.log(`[collector] ${g.id}: ${snap.events.length} elementos${lastCount.has(g.id) ? ` (antes ${lastCount.get(g.id)})` : ''}`)
+    lastCount.set(g.id, snap.events.length)
   } catch (err) {
     failures.set(g.id, { at: Date.now(), message: err.message })
     console.error(`[collector] ${g.id}: ${err.message} (se conserva la copia anterior)`)
@@ -98,6 +135,8 @@ const REMOTE_MAX_AGE = 48 * 3_600_000
 
 async function pullRemote() {
   if (!mod) return
+  // Una sola línea por pasada con los juegos adoptados (antes, una por juego: hasta 35 líneas cada vez que llegaban las copias del PC).
+  const adopted = []
   for (const g of games) {
     try {
       const res = await sourceFetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/snapshots/${g.id}.json`)
@@ -113,9 +152,11 @@ async function pullRemote() {
       if (!(newer && (!cur || alive(snap) >= alive(cur) * 0.7)) && !richer) continue
       snapshots.set(g.id, snap)
       await save(snap)
-      console.log(`[collector] ${g.id}: copia adoptada de ${REPO}@${BRANCH} (${snap.events.length} elementos, de hace ${Math.round((Date.now() - snap.updated) / 60_000)} min)`)
+      adopted.push(g.id)
+      lastCount.set(g.id, snap.events.length)
     } catch { /* sin copia remota o ilegible: se sigue con la propia */ }
   }
+  if (adopted.length) console.log(`[collector] copias de ${REPO}@${BRANCH} adoptadas: ${adopted.length === games.length ? 'todos los juegos' : adopted.join(', ')}`)
 }
 
 export async function startCollector() {

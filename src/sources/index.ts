@@ -278,6 +278,30 @@ function dedupeEvents(events: GameEvent[]): GameEvent[] {
   return out
 }
 
+/**
+ * Banners estimados (personaje anunciado sin fecha: Arman en soc.ts, Lou en mongil.ts) que ya tienen banner con fecha: sobra el estimado. SoC, 18 nov 2026:
+ * salían a la vez "Golden Gleam, Ironblood Code" (aviso oficial con Arman) y "Arman" (estimado). Mismo destacado y a menos de 3 semanas; el que se queda
+ * hereda el retrato del estimado si no tenía.
+ */
+// Solo los juegos con ese banner "anunciado sin fecha". No en FGO ni Uma: sus estimados son banners futuros de JP o predicciones que pueden repetir
+// personaje con uno en curso sin ser el mismo. Un juego nuevo con el patrón de Arman/Lou se añade aquí.
+const ANNOUNCED_GUESS = new Set(['soc', 'mongil'])
+export function dropAnnounced(events: GameEvent[]): GameEvent[] {
+  const W = 21 * 86_400_000
+  const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const dated = events.filter(e => e.kind === 'banner' && e.precision !== 'estimated')
+  const drop = new Set<GameEvent>()
+  for (const est of events) {
+    if (est.kind !== 'banner' || est.precision !== 'estimated' || !est.featured.length) continue
+    const names = new Set(est.featured.map(f => key(f.name)))
+    const twin = dated.find(d => Math.abs(Date.parse(d.start) - Date.parse(est.start)) <= W && d.featured.some(f => names.has(key(f.name))))
+    if (!twin) continue
+    drop.add(est)
+    twin.featured = twin.featured.map(f => (f.icon ? f : { ...f, icon: est.featured.find(x => key(x.name) === key(f.name))?.icon }))
+  }
+  return drop.size ? events.filter(e => !drop.has(e)) : events
+}
+
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
   // Avisos oficiales publicados en Steam (steam.ts): mandan sobre las fuentes de siempre, como los de Discord.
@@ -287,6 +311,7 @@ export async function syncSource(game: Game): Promise<GameSync> {
   const s0 = !discordChannel(game.id) ? await raw()
     : game.id === 'azurlane' ? await officialFirst(raw(), syncDiscord(game.id))
     : await officialFirst(syncDiscord(game.id), raw())
+  if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events)
   // Trickcal: imágenes de sus tuits oficiales (sus avisos web no traen ninguna).
   if (game.id === 'trickcal' && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []))
   const s1 = await withItemIcons(game.id, game.id === 'azurlane' ? azurPolish(s0) : game.id === 'stellasora' ? ssPolish(s0) : s0)
