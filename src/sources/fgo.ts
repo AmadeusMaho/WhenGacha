@@ -1,6 +1,7 @@
 import { viaProxy } from '../net'
-import type { Featured, GameEvent } from '../types'
+import type { Featured, GameEvent, RewardItem } from '../types'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * Fate/Grand Order (servidor NA) desde la API abierta de Atlas Academy (datos extraídos del propio juego).
@@ -18,12 +19,72 @@ const summonArt = (imageId?: number) => imageId ? `https://static.atlasacademy.i
 /** Máximo de fichas de evento que se piden por ciclo (solo para su arte). */
 const MAX_EVENT_ART = 6
 
-/** Arte de un evento: el campo `banner` de su ficha (`/nice/NA/event/<id>`); las campañas y quests sueltas no tienen. */
-async function eventArt(id: number): Promise<string | undefined> {
-  const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/NA/event/${id}`))
-  if (!res.ok) return undefined
-  const banner = ((await res.json()) as { banner?: string }).banner
-  return typeof banner === 'string' && banner.startsWith('https://static.atlasacademy.io/') ? banner : undefined
+/**
+ * Ficha de un evento (`/nice/<NA|JP>/event/<id>`): su arte (`banner`; las campañas y quests sueltas no tienen), sus guerras (las quests del evento)
+ * y su tienda.
+ */
+interface EventShop { name: string; setNum: number; limitNum: number; payType?: string; targetIds?: number[]; cost?: { item?: { name?: string; icon?: string }; amount?: number } }
+interface EventInfo { banner?: string; warIds?: number[]; shop?: EventShop[] }
+async function eventInfo(region: 'NA' | 'JP', id: number): Promise<EventInfo | undefined> {
+  const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/${region}/event/${id}`))
+  return res.ok ? (await res.json()) as EventInfo : undefined
+}
+const artOf = (info?: EventInfo) => (typeof info?.banner === 'string' && info.banner.startsWith('https://static.atlasacademy.io/') ? info.banner : undefined)
+
+/**
+ * Recompensas de un evento (18 nov 2026), de los datos del propio juego en Atlas Academy:
+ *  - Las de primera vez de cada quest de su guerra (`/nice/<región>/war/<id>`, `spots[].quests[].gifts`): ahí van los Saint Quartz, los Summon
+ *    Ticket y las frutas de AP del evento (Mystery House Crafters: 20 SQ y 3 tickets = 9,7 tiradas), y el servant de regalo (`eventSvtJoin`).
+ *  - De la tienda, lo que sí cuenta (Crystallized Lore, tickets, frutas…) con su límite; y los canjes de "un ★5 a elegir" (100 Million Downloads:
+ *    un ticket para uno de 43 servants), como el propio ticket.
+ * Solo los objetos de `GIFTS` (los ids son los mismos en NA y en JP, así que valen para lo que viene de JP); el resto (materiales, QP, CE de la
+ * tienda) no se lista. No incluye los bonus de inicio de sesión ni las misiones maestras: Atlas no los da por evento.
+ */
+const ITEM_ICON = (n: number) => `https://static.atlasacademy.io/NA/Items/${n}.png`
+const GIFTS: Record<number, { name: string; icon: string }> = {
+  2: { name: 'Saint Quartz', icon: ITEM_ICON(6) },
+  6: { name: 'Saint Quartz', icon: ITEM_ICON(6) },
+  16: { name: 'Saint Quartz Fragment', icon: ITEM_ICON(16) },
+  4001: { name: 'Summon Ticket', icon: ITEM_ICON(4001) },
+  100: { name: 'Golden Fruit', icon: ITEM_ICON(100) },
+  101: { name: 'Silver Fruit', icon: ITEM_ICON(101) },
+  6999: { name: 'Crystallized Lore', icon: ITEM_ICON(6999) },
+  7999: { name: 'Holy Grail', icon: ITEM_ICON(7999) },
+  1000: { name: 'Lantern of Chaldea', icon: ITEM_ICON(1000) },
+}
+const MAX_REWARD_EVENTS = 6
+interface WarGift { objectId: number; type: string; num: number }
+async function eventRewards(region: 'NA' | 'JP', info: EventInfo, svt: Map<number, RawServant>): Promise<{ items: RewardItem[]; pulls: number }> {
+  const sum = new Map<string, RewardItem>()
+  const add = (name: string, icon: string | undefined, n: number) => { const x = sum.get(name); if (x) x.amount += n; else sum.set(name, { name, amount: n, icon }) }
+  for (const war of (info.warIds ?? []).slice(0, 2)) {
+    const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/${region}/war/${war}`))
+    if (!res.ok) continue
+    const w = (await res.json()) as { spots?: { quests?: { gifts?: WarGift[] }[] }[] }
+    for (const g of (w.spots ?? []).flatMap(sp => sp.quests ?? []).flatMap(q => q.gifts ?? [])) {
+      const known = g.type === 'item' ? GIFTS[g.objectId] : undefined
+      if (known) add(known.name, known.icon, g.num)
+      else if (g.type === 'eventSvtJoin' || g.type === 'servant') {
+        const sv = svt.get(g.objectId)
+        if (sv) add(sv.name, sv.face, 1)
+      }
+    }
+  }
+  const shop = info.shop ?? []
+  for (const it of shop) {
+    const known = Object.values(GIFTS).find(k => k.name === it.name)
+    if (known && it.limitNum > 0) add(known.name, known.icon, it.setNum * it.limitNum)
+  }
+  // Canje de "un servant a elegir": muchas filas de un servant cada una, todas por 1 del mismo objeto del evento.
+  const pick = shop.filter(it => it.cost?.amount === 1 && it.limitNum === 1 && (it.targetIds ?? []).some(id => svt.has(id)))
+  const ticket = pick[0]?.cost?.item
+  if (pick.length >= 5 && ticket?.name && pick.every(it => it.cost?.item?.name === ticket.name)) add(ticket.name, ticket.icon, 1)
+  const items = [...sum.values()]
+  // Saint Quartz y Summon Ticket → tiradas con las reglas de FGO (3 SQ = 1); los fragmentos, 7 por SQ.
+  const frag = sum.get('Saint Quartz Fragment')?.amount ?? 0
+  const sq = (sum.get('Saint Quartz')?.amount ?? 0) + Math.floor(frag / 7)
+  const { pulls } = pullsIn('fgo', [`Saint Quartz x${sq}`, `Summon Ticket x${sum.get('Summon Ticket')?.amount ?? 0}`])
+  return { items, pulls }
 }
 interface RawServant { id: number; name: string; rarity?: number; face?: string; className?: string }
 
@@ -88,7 +149,12 @@ export async function syncFgo(gameId: string): Promise<GameSync> {
   // Arte de los eventos principales (no las campañas), en serie y con tope; las campañas que nombran un evento entre comillas
   // ("\"Mystery House Crafters\" Related Servant Bond…") usan el arte de ese evento.
   const main = events.filter(e => e.kind === 'event' && !e.minor).slice(0, MAX_EVENT_ART)
-  for (const e of main) e.image = await eventArt(+e.id.split(':').pop()!).catch(() => undefined)
+  const infos = new Map<string, EventInfo | undefined>()
+  for (const e of main) {
+    const info = await eventInfo('NA', +e.id.split(':').pop()!).catch(() => undefined)
+    infos.set(e.id, info)
+    e.image = artOf(info)
+  }
   for (const e of events) {
     if (e.kind !== 'event' || e.image) continue
     const quoted = /"([^"]{4,})"/.exec(e.title)?.[1]
@@ -96,6 +162,28 @@ export async function syncFgo(gameId: string): Promise<GameSync> {
     if (parent) e.image = parent.image
   }
   const future = await fromJp(gameId, evs, svt).catch(err => { console.warn('[fgo] JP:', (err as Error)?.message ?? err); return [] as GameEvent[] })
+
+  // Recompensas: primero los de NA con guerra propia, luego lo que viene de JP (los mismos ids de objeto), hasta MAX_REWARD_EVENTS por ciclo.
+  const jpSvt = future.length
+    ? await fetch(viaProxy('https://api.atlasacademy.io/export/JP/basic_servant_lang_en.json')).then(r => (r.ok ? (r.json() as Promise<RawServant[]>) : [])).catch(() => [] as RawServant[])
+    : []
+  const allSvt = new Map([...jpSvt.map(s => [s.id, s] as const), ...svt])
+  let budget = MAX_REWARD_EVENTS
+  for (const e of main) {
+    const info = infos.get(e.id)
+    if (!info?.warIds?.length && !info?.shop?.length) continue
+    if (budget-- <= 0) break
+    Object.assign(e, await eventRewards('NA', info, svt).catch(() => ({ items: [], pulls: 0 })))
+  }
+  for (const e of future.filter(f => f.kind === 'event' && !f.minor).sort((a, b) => a.start.localeCompare(b.start))) {
+    if (budget-- <= 0) break
+    const info = await eventInfo('JP', +e.id.split(':').pop()!).catch(() => undefined)
+    if (!info) continue
+    // JP: los nombres de su tienda van en japonés; solo cuentan las guerras (ids de objeto) y el canje por ticket se omite.
+    const r = await eventRewards('JP', { warIds: info.warIds }, allSvt).catch(() => ({ items: [], pulls: 0 }))
+    e.items = r.items
+    e.pulls = r.pulls
+  }
   return { events: [...events, ...future], patches: [], codes: [] }
 }
 
@@ -181,7 +269,10 @@ async function fromJp(gameId: string, naEvents: RawEvent[], svt: Map<number, Raw
       .map(b => ({ at: day(b.na_start_date), lag: day(b.na_start_date) - day(b.jp_start_date) })),
     ...jp.filter(e => e.type === 'eventQuest' && na.has(e.id) && !/revival|rerun|recollection/i.test(e.name))
       .map(e => ({ at: pstDay(na.get(e.id)!.startedAt), lag: pstDay(na.get(e.id)!.startedAt) - jstDay(e.startedAt) })),
-  ].filter(p => p.lag > 300 * DAY).sort((a, b) => b.at - a.at).slice(0, 5)
+  ].filter(p => p.lag > 300 * DAY).sort((a, b) => b.at - a.at)
+    // Solo lo del último mes: NA cambia de ritmo a saltos (699 días hasta septiembre de 2026, 729 desde Mystery House Crafters). Con los 5 últimos
+    // a secas, si GamePress no respondía quedaban campañas de julio y septiembre y lo que viene de JP salía un mes antes (18 nov 2026).
+    .filter((p, _, all) => all[0].at - p.at <= 30 * DAY).slice(0, 5)
   const lag = median(pairs.map(p => p.lag))
   if (isNaN(lag)) return []
   const days = Math.round(lag / DAY)

@@ -93,6 +93,7 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
       precision: 'approx',
     })
   }))
+  const pageOf = new Map(rows.map(r => [`${gameId}:event:${r.event + r.startTime}`, r.event]))
   const events = compact(rows.map(r => {
     const rerun = /\/Rerun$/i.test(r.event)
     const title = rerun ? `${r.event.replace(/\/Rerun$/i, '')} (Rerun)` : r.event
@@ -113,12 +114,68 @@ export async function syncArknights(gameId: string): Promise<GameSync> {
   const missing = refined.events.filter(e => !e.image && e.kind !== 'banner')
   const names = (e: GameEvent) => { const n = e.title.replace(/\s*\(Rerun\)$/i, ''); return [`EN ${n} Rerun banner.png`, `EN ${n} banner.png`, `CN ${n} banner.png`] }
   const guessed = missing.length ? await fileMap('arknights.wiki.gg', missing.flatMap(names)) : new Map<string, string>()
-  return { ...refined, events: refined.events.map(e => {
+  const withArt = refined.events.map(e => {
     if (e.image || e.kind === 'banner') return e
     const cands = names(e).filter(n => /\(Rerun\)$/i.test(e.title) || !/ Rerun banner/.test(n))
     const image = cands.map(n => guessed.get(norm(n))).find(Boolean)
     return image ? { ...e, image } : e
+  })
+  // Recompensas de la página del evento en la wiki (los que el cliente no da): una sola consulta.
+  const need = withArt.filter(e => e.kind !== 'banner' && !e.items.length && pageOf.has(e.id))
+  const rewards = need.length ? await akPageRewards(need.map(e => pageOf.get(e.id)!)).catch(() => new Map<string, AkPage>()) : new Map<string, AkPage>()
+  // El inicio de sesión de la página ("==Hunting Time Login Event==") es su propio evento si sale aparte (datos del cliente, que solo suman el
+  // Orundum): entonces va a ese evento, completo (también los permisos), y no se repite en el principal.
+  const loginOf = new Map<string, RewardItem[]>()
+  for (const pg of rewards.values()) if (pg.login && withArt.some(e => e.title.toLowerCase() === pg.login!.name.toLowerCase())) loginOf.set(pg.login.name.toLowerCase(), pg.login.items)
+  const withPulls = (e: GameEvent, items: RewardItem[]): GameEvent => {
+    // Tiradas: Orundum (600) y permisos de reclutamiento (cualquier "… Headhunting Permit" = 1); el Originite Prime se cambia por 180 Orundum.
+    const op = items.find(i => i.name === 'Originite Prime')?.amount ?? 0
+    const lines = items.map(i => (/headhunting permit$/i.test(i.name) && !/ten-roll/i.test(i.name) ? `Headhunting Permit x${i.amount}` : `${i.name} x${i.amount}`))
+    if (op) lines.push(`Orundum x${op * 180}`)
+    return { ...e, items, pulls: pullsIn('arknights', lines).pulls }
+  }
+  return { ...refined, events: withArt.map(e => {
+    const login = loginOf.get(e.title.toLowerCase())
+    if (login && login.length > e.items.length) return withPulls(e, login)
+    const pg = rewards.get(pageOf.get(e.id) ?? '')
+    if (!pg || e.items.length) return e
+    const items = [...pg.items, ...(pg.login && !loginOf.has(pg.login.name.toLowerCase()) ? pg.login.items : [])]
+    return items.length ? withPulls(e, items) : e
   }) }
+}
+
+interface AkPage { items: RewardItem[]; login?: { name: string; items: RewardItem[] } }
+
+/**
+ * Recompensas de la página de cada evento en arknights.wiki.gg (18 nov 2026): el inicio de sesión del evento (`{{Login reward cell|day=2|item1=Orundum,200|…}}`)
+ * y el Originite Prime de primera vez de sus misiones («All TD operations are worth {{Cur|Originite Prime|31}}»). Las tiendas de packs (de pago) no.
+ * Las reediciones tienen su propia página ("A Flurry to the Flame/Rerun").
+ */
+async function akPageRewards(pages: string[]): Promise<Map<string, AkPage>> {
+  const out = new Map<string, AkPage>()
+  const titles = [...new Set(pages)].slice(0, 50)
+  const qs = new URLSearchParams({ action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main', titles: titles.join('|'), format: 'json', formatversion: '2', origin: '*' })
+  const res = await fetch(viaProxy(`https://arknights.wiki.gg/api.php?${qs}`))
+  if (!res.ok) return out
+  for (const p of ((await res.json())?.query?.pages ?? []) as { title: string; revisions?: { slots?: { main?: { content?: string } } }[] }[]) {
+    const text = p.revisions?.[0]?.slots?.main?.content ?? ''
+    const tally = () => {
+      const sum = new Map<string, number>()
+      const add = (name: string, n: number) => { if (name && n > 0) sum.set(name, (sum.get(name) ?? 0) + n) }
+      // Lo que cuenta primero; el resto (materiales) detrás.
+      const order = (n: string) => (/^orundum$|headhunting permit$|^originite prime$/i.test(n) ? 0 : 1)
+      const list = () => [...sum].map(([name, amount]) => ({ name, amount })).sort((a, b) => order(a.name) - order(b.name))
+      return { add, list }
+    }
+    const login = tally(), main = tally()
+    for (const cell of text.matchAll(/\{\{\s*Login reward cell([^}]*)\}\}/gi))
+      for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) login.add(m[1].trim(), Number(m[2].replace(/,/g, '')))
+    for (const m of text.matchAll(/operations are worth \{\{\s*Cur\s*\|\s*Originite Prime\s*\|\s*(\d+)/gi)) main.add('Originite Prime', Number(m[1]))
+    const loginName = /==\s*([^=\n]+?)\s+Login Event\s*==/i.exec(text)?.[1]
+    const li = login.list()
+    out.set(p.title, { items: main.list(), login: li.length ? { name: loginName ?? '', items: li } : undefined })
+  }
+  return out
 }
 
 /**
@@ -212,6 +269,9 @@ async function endfieldDetails(titles: string[]): Promise<Map<string, { descript
       const n = m[1].trim(), v = Number(m[2].replace(/,/g, ''))
       if (!/=/.test(n) && v > (tot.get(n) ?? 0)) tot.set(n, v)
     }
+    // Echoes of War: la recompensa de cada dificultad va al final de su plantilla ("|Oroberyl:100,T-Creds:25000").
+    for (const m of w.matchAll(/^\|\s*((?:[A-Za-z][^:|{}\n=/]{1,50}:\s*\d[\d,]*\s*,?\s*)+)$/gm))
+      for (const x of m[1].matchAll(/([A-Za-z][^:,]{1,50}?)\s*:\s*(\d[\d,]*)/g)) tot.set(x[1].trim(), (tot.get(x[1].trim()) ?? 0) + Number(x[2].replace(/,/g, '')))
     const items = [...tot].map(([name, amount]) => ({ name, amount })).sort((a, b) => Number(/oroberyl|permit/i.test(b.name)) - Number(/oroberyl|permit/i.test(a.name)) || b.amount - a.amount).slice(0, 10)
     out.set(p.title, { description, items })
   }
@@ -227,7 +287,11 @@ export async function syncEndfield(gameId: string): Promise<GameSync> {
   ])
 
   const [files, details] = await Promise.all([fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image)]),
-    endfieldDetails(events.map(r => r.Event)).catch(err => { console.warn('[endfield] fichas:', (err as Error)?.message ?? err); return new Map<string, { description: string; items: RewardItem[] }>() })])
+    // "Season of Fervor" (la temporada de Echoes of War) tiene su página como "Echoes of War: Season of Fervor".
+    endfieldDetails(events.flatMap(r => (/^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event]))).then(d => {
+      for (const r of events) if (!d.get(r.Event)?.items.length && d.has(`Echoes of War: ${r.Event}`)) d.set(r.Event, d.get(`Echoes of War: ${r.Event}`)!)
+      return d
+    }).catch(err => { console.warn('[endfield] fichas:', (err as Error)?.message ?? err); return new Map<string, { description: string; items: RewardItem[] }>() })])
   const evs = compact(events.map(r => make(gameId, /challenge/i.test(r.Type) ? 'challenge' : 'event', r.Event + r.AmeuStartTime, r.Event,
     toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), { image: r.Image ? files.get(norm(r.Image)) : undefined, description: [r.Type ? `⟦d.efType|${r.Type}⟧` : '', details.get(r.Event)?.description ?? ''].filter(Boolean).join('\n') || undefined, servers: asiaOf(r),
     items: details.get(r.Event)?.items ?? [], pulls: pullsIn('endfield', (details.get(r.Event)?.items ?? []).map(i => `${i.name} x${i.amount}`)).pulls })))

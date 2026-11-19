@@ -1,6 +1,7 @@
-import type { GameEvent } from '../types'
+import type { GameEvent, RewardItem } from '../types'
 import { viaProxy } from '../net'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * Fuentes que se leen del HTML ya renderizado de una wiki MediaWiki (API `action=parse`):
@@ -112,11 +113,11 @@ const sinceDay = () => new Date(Date.now() - 3 * DAY).toISOString().slice(0, 10)
 async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
   const since = sinceDay()
   const [evs, raids] = await Promise.all([
-    bucket(`bucket('events').select('id','original_id','category','name_en','start_date','end_date','promo','banner').where('server','GL').where('end_date','>','${since}').limit(200).run()`),
+    bucket(`bucket('events').select('id','original_id','category','name_en','start_date','end_date','promo','banner','page_name').where('server','GL').where('end_date','>','${since}').limit(200).run()`),
     bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [] as BucketRow[]),
   ])
   const skip = new Set(['PermanentEvent', 'Guide mission'])
-  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean; challenge?: string }[] = []
+  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean; challenge?: string; page?: string }[] = []
   for (const r of evs) {
     const s = +new Date(String(r.start_date ?? '')), e = +new Date(String(r.end_date ?? ''))
     const title = String(r.name_en ?? '').trim()
@@ -130,6 +131,7 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
       rerun: id > 10000 && orig > 0 && id !== orig && id % 10000 === orig % 10000,
       // Ejercicio conjunto (Joint Firing Drill): rotatorio, no evento.
       challenge: r.category === 'Joint Firepower Exercise' ? '⟦d.baDrill⟧' : undefined,
+      page: r.page_name ? String(r.page_name) : undefined,
     })
   }
   for (const r of raids) {
@@ -146,6 +148,7 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
     })
   }
   const thumbs = await fileThumbs(rows.map(r => r.file).filter((f): f is string => !!f), 320).catch(() => new Map<string, string>())
+  const rewards = await baPageRewards(rows.filter(r => r.page && !r.challenge).map(r => r.page!)).catch(() => new Map<string, RewardItem[]>())
   return rows.map(r => ({
     id: r.id,
     gameId,
@@ -155,12 +158,45 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
     image: r.file ? thumbs.get(r.file) : undefined,
     start: new Date(r.s).toISOString(),
     end: new Date(r.e).toISOString(),
-    items: [],
+    items: rewards.get(r.page ?? '') ?? [],
     featured: [],
-    pulls: 0,
+    pulls: pullsIn('bluearchive', (rewards.get(r.page ?? '') ?? []).map(i => `${i.name} x${i.amount}`)).pulls,
     minor: r.minor || undefined,
     source: 'api' as const,
   }))
+}
+
+/**
+ * Recompensas de la página de cada evento en bluearchive.wiki (18 nov 2026; `page_name` del Bucket): los Pyroxene de primera vez de sus fases
+ * ("=Stage Info=", columna FirstClear: `{{ItemCard|Pyroxene|quantity=20|…}}`) y de sus misiones y minijuegos, y la alumna que regala
+ * (`{{CharacterCard|Chiaki (Swimsuit)|…}}`). Sin la tienda de canje (se paga con la moneda del evento). Una consulta para todas.
+ */
+async function baPageRewards(pages: string[]): Promise<Map<string, RewardItem[]>> {
+  const out = new Map<string, RewardItem[]>()
+  const titles = [...new Set(pages)].slice(0, 50)
+  if (!titles.length) return out
+  const qs = new URLSearchParams({ action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main', titles: titles.join('|'), format: 'json', formatversion: '2', origin: '*' })
+  const res = await fetch(viaProxy(`${BA_API}?${qs}`))
+  if (!res.ok) return out
+  const json = await res.json()
+  const back = new Map<string, string>()
+  for (const n of json?.query?.normalized ?? []) back.set(n.to, n.from)
+  for (const p of (json?.query?.pages ?? []) as { title: string; revisions?: { slots?: { main?: { content?: string } } }[] }[]) {
+    const text = p.revisions?.[0]?.slots?.main?.content ?? ''
+    const at = text.search(/^=\s*Stage Info\s*=\s*$/m)
+    if (at < 0) continue
+    // Sin la tienda de canje (hasta el siguiente apartado del mismo nivel o más alto).
+    const body = text.slice(at).replace(/==\s*Exchange Shop\s*==[\s\S]*?(?=\n==?[^=])/i, '')
+    const pyro = [...body.matchAll(/\{\{\s*ItemCard\s*\|\s*Pyroxene\s*\|\s*quantity\s*=\s*([\d,]+)/gi)].reduce((n, m) => n + Number(m[1].replace(/,/g, '')), 0)
+    const student = /\{\{\s*CharacterCard\s*\|\s*([^|}]+?)\s*\|/i.exec(body)?.[1]
+    const items: RewardItem[] = [...(pyro ? [{ name: 'Pyroxene', amount: pyro }] : []), ...(student ? [{ name: student, amount: 1 }] : [])]
+    if (items.length) out.set(back.get(p.title) ?? p.title, items)
+  }
+  // Icono de la alumna: su retrato en esta wiki ("Chiaki (Swimsuit).png"); la del juego en el catálogo es la de Fandom, que no los tiene todos.
+  const students = [...out.values()].flatMap(list => list.filter(i => i.name !== 'Pyroxene').map(i => `File:${i.name}.png`))
+  const icons = students.length ? await fileThumbs(students, 96).catch(() => new Map<string, string>()) : new Map<string, string>()
+  for (const list of out.values()) for (const i of list) i.icon ??= icons.get(`File:${i.name}.png`)
+  return out
 }
 
 /**

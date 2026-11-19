@@ -171,5 +171,10 @@ export async function syncCznEvents(gameId: string): Promise<GameSync> {
     }
   }
   if (evs.status === 'fulfilled') for (const a of evs.value) { const e = fromEventPost(gameId, a); if (e) add(e) }
+  // Tiradas gratis anunciadas en el propio título ("Nightmare Carnival: 70 Free Normal Rescues Distribution", 1.er aniversario): cada una es una tirada.
+  for (const e of out) {
+    const m = !e.items.length && /\b(\d{1,4})\s+Free\s+((?:Normal |Limited )?Rescues?)\b/i.exec(e.title)
+    if (m) { e.items = [{ name: m[2].replace(/s$/i, ''), amount: +m[1] }]; e.pulls = +m[1] }
+  }
   return { events: out, patches: [], codes: [] }
 }

@@ -134,6 +134,8 @@ async function withWikiImages(game: Game, events: GameEvent[]): Promise<GameEven
 const ICON_FILES: Partial<Record<string, (n: string) => string[]>> = {
   ptn: n => [`${n} Skin1 Icon.png`],
   mongil: n => [`${n.replace(/\s+/g, '')}Portrait.png`],
+  // Epic Seven ("Yufine s.png"). Los banners de trajes ("Bunny Girl Mafia Yufine", 18 nov 2026) no tienen archivo propio: el del héroe (la última palabra).
+  epic7: n => [`${n} s.png`, `${n.split(/\s+/).pop()} s.png`],
   gfl2: n => [`${n} Covenant Avatar.png`],
   wuwa: n => [`Resonator ${n}.png`],
   // HI3: arma de 5★/4★ ("Key of Mirroring (5) (Icon).png") y pieza superior del set de estigmas ("Let Time Be Your Name (T).png"); las valquirias, por su página.
@@ -146,7 +148,7 @@ async function withFeaturedIcons(game: Game, events: GameEvent[]): Promise<GameE
   if (!host) return events
   const now = Date.now()
   const names = [...new Set(events.filter(e => e.kind === 'banner' && +new Date(e.end) > now).flatMap(e => e.featured.filter(f => !f.icon).map(f => f.full ?? f.name)))]
-    .filter(n => n.length > 1 && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES)
+    .filter(n => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES)
   if (!names.length) return events
   const own = ICON_FILES[game.id]
   // Los archivos de icono llevan el nombre corto: "Groza (GFL2)" (página) → "Groza Covenant Avatar.png".

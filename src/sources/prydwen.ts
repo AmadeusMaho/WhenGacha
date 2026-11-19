@@ -17,6 +17,8 @@ interface Config {
   regions: string[]
   /** Ajusta el fin cuando la página no da la hora real de cierre; el resultado se marca como aproximado. */
   fixEnd?: (iso: string) => string
+  /** Retratos de su CDN (solo donde la wiki del juego no los tiene; en WuWa los de la wiki tienen otro estilo y algún nombre no casa). */
+  icons?: boolean
 }
 
 const HOUR = 3_600_000
@@ -29,7 +31,7 @@ const nikkeEnd = (iso: string) => {
 export const PRYDWEN: Record<string, Config> = {
   wuwa: { slug: 'wuthering-waves', regions: ['na', 'eu', 'asia'] },
   nte: { slug: 'neverness-to-everness', regions: ['na', 'eu', 'asia'] },
-  czn: { slug: 'chaos-zero-nightmare', regions: ['global'] },
+  czn: { slug: 'chaos-zero-nightmare', regions: ['global'], icons: true },
   nikke: { slug: 'nikke', regions: ['global'], fixEnd: nikkeEnd },
   // MONGIL: STAR DIVE (13 nov 2026): página bajo /other-games/, mismo formato; las tres regiones con las mismas horas.
   mongil: { slug: 'other-games/mongil-star-dive', regions: ['na', 'eu', 'asia'] },
@@ -51,6 +53,7 @@ export async function syncPrydwen(gameId: string, key: keyof typeof PRYDWEN): Pr
 
   const out: GameEvent[] = []
   const seen = new Set<string>()
+  const iconBase = cfg.icons && [...doc.querySelectorAll('img[src*="/characters/"]')].map(i => /^(https:\/\/cdn\.prydwen\.gg\/images\/[a-z0-9-]+\/characters\/)[a-z0-9_]+_icon\.webp$/.exec(i.getAttribute('src') ?? '')?.[1]).find(Boolean)
   doc.querySelectorAll('article[data-banner-card]').forEach(card => {
     const timer = card.querySelector('[data-banner-timer]') as HTMLElement | null
     const name = text(card.querySelector('.banner-name'))
@@ -64,7 +67,12 @@ export async function syncPrydwen(gameId: string, key: keyof typeof PRYDWEN): Pr
     const weapon = card.getAttribute('data-category') === 'weapon'
     const phase = text(card.closest('[data-banner-block]')?.querySelector('.phase-summary h3'))
     const rank = stars(text(card.querySelector('.rarity')))
-    const featured: Featured[] = weapon ? [] : [{ name, rarity: rank }]
+    // Retrato (18 nov 2026): Prydwen guarda el icono de cada personaje en su CDN con nombre fijo, el de los de probabilidad aumentada de la
+    // propia tarjeta (`…/images/chaos/characters/beryl_icon.webp`); el del destacado es el de su página (`/characters/rossweisse` →
+    // `rossweisse_icon.webp`, comprobado con los cuatro de CZN que su wiki no tiene). Solo en los juegos con `icons` y si la página usa esa ruta
+    // (con guiones no siempre casa: "yangyang-xuanling" no tiene icono).
+    const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(card.querySelector('a.banner-card-link')?.getAttribute('href') ?? '')?.[1]
+    const featured: Featured[] = weapon ? [] : [{ name, rarity: rank, ...(slug && iconBase ? { icon: `${iconBase}${slug.replace(/-/g, '_')}_icon.webp` } : {}) }]
     const id = `${gameId}:banner:${key}:${name}:${start}`
     if (seen.has(id)) return
     seen.add(id)

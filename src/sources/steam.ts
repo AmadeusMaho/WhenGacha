@@ -32,7 +32,11 @@ const CLAN_IMG = 'https://clan.akamai.steamstatic.com/images'
 
 /** BBCode de Steam → texto por líneas; las cabeceras ([h1]–[h3], [b] en su propia línea) pasan a "**…**", que el lector toma como título. */
 export function steamText(bb: string): string {
+  // Corchetes escapados ("\[Prismatic Hourglass] ×10", DNA): son texto, no etiquetas. Sin protegerlos, la limpieza de BBCode de abajo se comía
+  // "[Prismatic Hourglass]" entero y los eventos de DNA salían sin recompensas (18 nov 2026).
+  const OPEN = '\u0001', CLOSE = '\u0002'
   return bb
+    .replace(/\\\[([^\]\n]{1,80})\]/g, `${OPEN}$1${CLOSE}`).replace(/\\\[/g, OPEN).replace(/\\\]/g, CLOSE)
     .replace(/\{STEAM_CLAN_IMAGE\}\S*/g, '')
     .replace(/\[img[^\]]*\][\s\S]*?\[\/img\]/gi, '')
     .replace(/\[previewyoutube[^\]]*\][\s\S]*?\[\/previewyoutube\]/gi, '')
@@ -42,7 +46,7 @@ export function steamText(bb: string): string {
     // Resto de etiquetas BBCode, también con atributos ("[p align=\"center\"]", "[url=…]") y el HTML que algunos avisos pegan.
     .replace(/\[\/?[a-z][a-z0-9]*(?:[= ][^\]]*)?\]/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-    .replace(/\\\[/g, '[').replace(/\\\]/g, ']')
+    .replace(/\\\[/g, '[').replace(/\\\]/g, ']').replace(new RegExp(OPEN, 'g'), '[').replace(new RegExp(CLOSE, 'g'), ']')
     .replace(/&nbsp;/g, ' ').replace(/[ \t]+/g, ' ')
     .split('\n').map(l => l.trim()).join('\n').replace(/\n{3,}/g, '\n\n')
 }

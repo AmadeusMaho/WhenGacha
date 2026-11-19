@@ -47,6 +47,26 @@ const isTitle = (l: string) => !l.startsWith('@@IMG') && !l.startsWith('※') &&
 /** "[A Series of Dusks · Chamber of Sounds]" → sin corchetes; "New Arrivals in [Roar Jukebox: …]" → lo de dentro. */
 const cleanName = (l: string) => (/\[([^\]]+)\]/.exec(l)?.[1] ?? l).trim()
 
+/**
+ * "[Main Rewards]: Clear Drops, [Confetti Strip], Growth Materials" (avisos desde la 3.9, 23 oct 2026: ya no dan cantidades) → objetos sin cifra
+ * (amount 0). Sin los genéricos ("Growth Materials", "Insight Materials", "and more") ni lo que no es un objeto suelto.
+ */
+export function mainRewards(section: string[]): { name: string; amount: number }[] {
+  const line = section.find(l => /^\[?Main Rewards\]?\s*:/i.test(l))
+    // Sin "[Main Rewards]": la frase de la introducción ("log in for 3 days to claim Collaboration Building [When the World Was Small],
+    // Delicate Insight Package, and more.", Ducks in the Suitcase, 3.9).
+    ?? section.map(l => /^\[Event Intro\]\s*:?.*?\b(?:to claim|to obtain|to get|and claim|and obtain)\s+(.+?)\.?\s*$/i.exec(l)?.[1]?.replace(/\s+and\s+(?:unlock|exchange|increase|use)\b.*$/i, '')).find(Boolean)
+  if (!line) return []
+  return line.replace(/^\[?Main Rewards\]?\s*:\s*/i, '').split(/\s*,\s*/)
+    .map(x => x.replace(/^(?:and\s+)?more$/i, '').replace(/\s*,?\s*and more$/i, '').replace(/^Part of\s+/i, '').trim())
+    // "New 6-Star Psychube - [Arrow of Verdict]" → "Arrow of Verdict"; "[Confetti Strip]" → "Confetti Strip".
+    // "Unitone · [Ripples on the Water]" se queda entero: "Ripples on the Water" solo es el nombre del banner.
+    .map(x => (x.includes('·') ? x : /\[([^\]]+)\]\s*$/.exec(x)?.[1] ?? x).replace(/[[\]]/g, '').trim())
+    .filter(x => x.length >= 3 && x.length <= 50 && !/\b(?:materials|and more)\b/i.test(x))
+    .filter((x, i, all) => all.indexOf(x) === i)
+    .slice(0, 10).map(name => ({ name, amount: 0 }))
+}
+
 export async function syncBluepoch(gameId: string): Promise<GameSync> {
   const qs = new URLSearchParams({ gameId: '60001', informationType: '', current: '1', pageSize: '10' })
   const res = await fetch(viaProxy(`${API}?${qs}`))
@@ -128,7 +148,7 @@ export async function syncBluepoch(gameId: string): Promise<GameSync> {
       if (marks[k].ev.kind === 'banner') return
       const { pulls, items } = pullsIn('reverse1999', ls.slice(a, b))
       marks[k].ev.pulls = pulls
-      marks[k].ev.items = items
+      marks[k].ev.items = items.length ? items : mainRewards(ls.slice(Math.max(a, marks[k].title), b))
       // Resumen desde el título del propio evento (segments alarga el tramo hacia atrás para las recompensas).
       marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
     })

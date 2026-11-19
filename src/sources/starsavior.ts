@@ -224,6 +224,8 @@ export function starPost(post: SteamPost, ends: Map<number, number> = new Map())
     if (!p) continue
     const label = sub || section
     let title = titleOf(label)
+    // "6. Event" a secas: el nombre va entrecomillado en su primera línea («▶ “Ruins Exploration Boost Missions” event will begin.», 19 nov 2026).
+    if (/^(?:new |other )?events?$/i.test(title)) title = clean(block.map(x => /(?:^|\s)[‘"“]\s*([^"”’]{3,80}?)\s*[’"”]/.exec(x)?.[1]).find(Boolean) ?? title)
     const ctx = [...block, ...lines.slice(i + 1, i + 6)].join(' ')
     const season = /(cosmo gate|guild defense) prism season (\d+)/i.exec(`${section} ${sub} ${ctx}`)
     if (season) title = `${season[1].replace(/\b\w/g, c => c.toUpperCase())} Prism Season ${season[2]}`
@@ -236,7 +238,11 @@ export function starPost(post: SteamPost, ends: Map<number, number> = new Map())
     if (own && !sectionImg) sectionImg = own
     const firstImg = own ?? sectionImg
     const description = clean(block.filter(x => !/period\s*:/i.test(x) && !/^※/.test(x)).join(' ').replace(/^▶\s*/, '')).slice(0, 320) || undefined
-    raws.push({ title, kind, ...p, description, image: firstImg, items: [], featured: [], ...(MINOR.test(title) ? { minor: true } : {}),
+    // Personajes de regalo: «Earn Savior Gille and Arcana 'Never Ending Dance' through the … Celebration Missions» (la única recompensa que las
+    // notas dan con nombre; el resto va en imágenes). Su retrato, el del aviso si lo hay.
+    const gift = /\bearn (?:the )?savior\s+([^,]{2,40}?)\s+and arcana\s+['‘"“]([^'’"”]{2,50})['’"”]/i.exec(block.join(' '))
+    const items: RewardItem[] = gift ? [{ name: clean(gift[1]), amount: 1, icon: images.get(nameKey(clean(gift[1]))) }, { name: clean(gift[2]), amount: 1 }] : []
+    raws.push({ title, kind, ...p, description, image: firstImg, items, featured: [], ...(MINOR.test(title) && !gift ? { minor: true } : {}),
       // El primer evento del primer apartado "New Event:" (4-1. 'Main Stream Episode 8: At the End of the Journey').
       ...(/^new event:/i.test(section) && !raws.some(r => r.headline) ? { headline: true } : {}) })
   }

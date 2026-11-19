@@ -484,7 +484,8 @@ function announcedBanners(gameId: string, msgs: { text: string; at: number; imag
   for (const { text, at, image } of msgs) {
     if (now - at > 21 * DAY) continue
     for (const x of text.replace(/[*_`]/g, '').matchAll(ANNOUNCED)) {
-      const name = x[1].trim()
+      // Erratas de los propios avisos ("Ichgo Kurosaki", BLEACH 18 nov 2026).
+      const name = x[1].trim().replace(/\bIchgo\b/, 'Ichigo')
       if ([...dated, ...out].some(e => e.kind === 'banner' && (low(e.title).includes(low(name)) || e.featured.some(f => low(f.name) === low(name))))) continue
       const wd = BANNER_WEEKDAY[gameId], [h, mi] = DAY_HOURS[gameId]?.start ?? [0, 0]
       let start = at + 7 * DAY
@@ -496,9 +497,10 @@ function announcedBanners(gameId: string, msgs: { text: string; at: number; imag
       const end = start + 14 * DAY - 1000
       if (end < now) continue
       out.push({
-        // Imagen: la del aviso (arte del personaje). BLEACH no tiene fuente de retratos (docs/fuentes-y-proxy.md), así que el destacado va sin él.
+        // Imagen: la del aviso (arte del personaje). BLEACH no tiene otra fuente de retratos (docs/fuentes-y-proxy.md): el mismo arte sirve de
+        // retrato del destacado (la app lo recorta por arriba, como los trajes de BD2).
         id: `${gameId}:banner:dc:upcoming:${name}`, gameId, kind: 'banner', title: name, description: '⟦d.dcAnnounced⟧', image,
-        start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [{ name, rarity: 5 }], pulls: 0,
+        start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [{ name, rarity: 5, icon: image }], pulls: 0,
         official: true, source: 'api', precision: 'estimated',
       })
     }

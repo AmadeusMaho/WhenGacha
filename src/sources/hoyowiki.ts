@@ -49,11 +49,31 @@ export async function eventPages(host: string, pages: string[]): Promise<Map<str
     const block = /\{\{\s*Event Rewards([\s\S]*?)\}\}/i.exec(text)?.[1]
     const items = block ? [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)]
       .map(m => ({ name: m[1].trim(), amount: Number(m[2].replace(/,/g, '')) }))
-      .filter(i => i.amount > 0 && !/^sort$/i.test(i.name)) : []
+      .filter(i => i.amount > 0 && !/^sort$/i.test(i.name)) : cardListTotal(text)
     const description = wikiSummary(text, p.title)
     if (items.length || description) out.set(back.get(p.title) ?? p.title, { items, description })
   }
   return out
+}
+
+/**
+ * Sin {{Event Rewards}}: el total en `{{Card List|Polychrome*40; Official Investigator Log*10}}` tras "Total Rewards" o bajo "==Reward Preview=="
+ * (ZZZ, 18 nov 2026: The Final Callback, Angels Support Operation…). Solo esa lista, no las de cada fila (se contarían dos veces).
+ */
+export function cardListTotal(text: string): Reward[] {
+  const at = text.search(/'''\s*Total Rewards\s*:?\s*'''|==\s*(?:Total Rewards|Reward Preview)\s*==/i)
+  if (at < 0) return []
+  const near = text.slice(at, at + 1500)
+  const list = /\{\{\s*Card List\s*\|(?:\s*1\s*=)?([^}]*)\}\}/i.exec(near)?.[1]
+  if (list) {
+    return list.split(';').map(x => /^\s*([^*|=]+?)\s*\*\s*([\d,]+)\s*(?:\{[^}]*\})?\s*$/.exec(x)).filter((m): m is RegExpExecArray => !!m)
+      .map(m => ({ name: m[1].trim(), amount: Number(m[2].replace(/,/g, '')) })).filter(i => i.amount > 0)
+  }
+  // "===Total Rewards===" con fichas sueltas: {{Card |Boopon |10 |rank=S}} (los inicios de sesión de ZZZ).
+  const head = /==\s*Total Rewards\s*==|'''\s*Total Rewards/i.test(near.slice(0, 40))
+  const end = near.slice(4).search(/\n==/)
+  return head ? [...near.slice(0, end < 0 ? undefined : end + 4).matchAll(/\{\{\s*Card\s*\|\s*([^|}]+?)\s*\|\s*([\d,]+)\s*[|}]/gi)]
+    .map(m => ({ name: m[1].trim(), amount: Number(m[2].replace(/,/g, '')) })).filter(i => i.amount > 0) : []
 }
 
 /** Solo las recompensas (compatibilidad). */
@@ -115,6 +135,21 @@ export async function syncHoyoWiki(gameId: string, host: string, pullGame?: Pull
       if (!pg.items.length) continue
       e.items = pg.items
       e.pulls = pullsIn(pullGame, pg.items.map(i => `${i.name} x${i.amount}`)).pulls
+    }
+    // Eventos que se repiten (inicios de sesión, pruebas de agentes de ZZZ): la página general no trae recompensas, cada edición tiene la suya
+    // con su fecha de inicio en hora del servidor ('"En-Nah" Into Your Lap/2026-11-11'). Una consulta más, solo si hace falta.
+    const dated = new Map<string, GameEvent>()
+    for (const e of out) {
+      const page = pageOf.get(e.id)
+      if (e.items.length || !page || page.includes('/')) continue
+      dated.set(`${page}/${new Date(+new Date(e.start) + SERVER * 3_600_000).toISOString().slice(0, 10)}`, e)
+    }
+    const sub = dated.size ? await eventPages(host, [...dated.keys()]).catch(() => new Map<string, { items: Reward[]; description?: string }>()) : new Map<string, { items: Reward[]; description?: string }>()
+    for (const [page, e] of dated) {
+      const items = sub.get(page)?.items
+      if (!items?.length) continue
+      e.items = items
+      e.pulls = pullsIn(pullGame, items.map(i => `${i.name} x${i.amount}`)).pulls
     }
   }
   return { events: out, patches: [], codes: [] }

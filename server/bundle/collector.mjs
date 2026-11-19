@@ -20859,7 +20859,7 @@ function pullsIn(game, lines) {
 		found.set(n, (found.get(n) ?? 0) + amount);
 	};
 	for (const raw of lines) {
-		const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, "Ten Recruitment Ticket").replace(/\b1[- ]Recruitment Ticket/gi, "Single Recruitment Ticket");
+		const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, "Ten Recruitment Ticket").replace(/\b1[- ]Recruitment Ticket/gi, "Single Recruitment Ticket").replace(/\[([^\][]{2,60})\](?=\s*(?:×|x\s?\d))/gi, "$1");
 		if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue;
 		for (const m of l.matchAll(/([A-Za-z](?:[A-Za-z'& ]|-(?=[A-Za-z]))*?)(?:\s*×\s?|\s+x\s?|x(?=\d))(\d[\d,]*)/g)) {
 			add(m[1], num$1(m[2]));
@@ -21081,6 +21081,18 @@ function lines$4(html) {
 var isTitle = (l) => !l.startsWith("@@IMG") && !l.startsWith("※") && l.length <= 90 && !/[.]$/.test(l) && !/^\d/.test(l) && !l.replace(/\[[^\]]*\]/g, "X").includes(":");
 /** "[A Series of Dusks · Chamber of Sounds]" → sin corchetes; "New Arrivals in [Roar Jukebox: …]" → lo de dentro. */
 var cleanName = (l) => (/\[([^\]]+)\]/.exec(l)?.[1] ?? l).trim();
+/**
+* "[Main Rewards]: Clear Drops, [Confetti Strip], Growth Materials" (avisos desde la 3.9, 23 oct 2026: ya no dan cantidades) → objetos sin cifra
+* (amount 0). Sin los genéricos ("Growth Materials", "Insight Materials", "and more") ni lo que no es un objeto suelto.
+*/
+function mainRewards(section) {
+	const line = section.find((l) => /^\[?Main Rewards\]?\s*:/i.test(l)) ?? section.map((l) => /^\[Event Intro\]\s*:?.*?\b(?:to claim|to obtain|to get|and claim|and obtain)\s+(.+?)\.?\s*$/i.exec(l)?.[1]?.replace(/\s+and\s+(?:unlock|exchange|increase|use)\b.*$/i, "")).find(Boolean);
+	if (!line) return [];
+	return line.replace(/^\[?Main Rewards\]?\s*:\s*/i, "").split(/\s*,\s*/).map((x) => x.replace(/^(?:and\s+)?more$/i, "").replace(/\s*,?\s*and more$/i, "").replace(/^Part of\s+/i, "").trim()).map((x) => (x.includes("·") ? x : /\[([^\]]+)\]\s*$/.exec(x)?.[1] ?? x).replace(/[[\]]/g, "").trim()).filter((x) => x.length >= 3 && x.length <= 50 && !/\b(?:materials|and more)\b/i.test(x)).filter((x, i, all) => all.indexOf(x) === i).slice(0, 10).map((name) => ({
+		name,
+		amount: 0
+	}));
+}
 async function syncBluepoch(gameId) {
 	const qs = new URLSearchParams({
 		gameId: "60001",
@@ -21182,7 +21194,7 @@ async function syncBluepoch(gameId) {
 			if (marks[k].ev.kind === "banner") return;
 			const { pulls, items } = pullsIn("reverse1999", ls.slice(a, b));
 			marks[k].ev.pulls = pulls;
-			marks[k].ev.items = items;
+			marks[k].ev.items = items.length ? items : mainRewards(ls.slice(Math.max(a, marks[k].title), b));
 			marks[k].ev.description ??= summarize(ls.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 		});
 	}
@@ -21584,6 +21596,16 @@ async function syncCznEvents(gameId) {
 	if (evs.status === "fulfilled") for (const a of evs.value) {
 		const e = fromEventPost(gameId, a);
 		if (e) add(e);
+	}
+	for (const e of out) {
+		const m = !e.items.length && /\b(\d{1,4})\s+Free\s+((?:Normal |Limited )?Rescues?)\b/i.exec(e.title);
+		if (m) {
+			e.items = [{
+				name: m[2].replace(/s$/i, ""),
+				amount: +m[1]
+			}];
+			e.pulls = +m[1];
+		}
 	}
 	return {
 		events: out,
@@ -22122,7 +22144,7 @@ function announcedBanners(gameId, msgs, dated, now) {
 	for (const { text, at, image } of msgs) {
 		if (now - at > 21 * DAY$38) continue;
 		for (const x of text.replace(/[*_`]/g, "").matchAll(ANNOUNCED)) {
-			const name = x[1].trim();
+			const name = x[1].trim().replace(/\bIchgo\b/, "Ichigo");
 			if ([...dated, ...out].some((e) => e.kind === "banner" && (low(e.title).includes(low(name)) || e.featured.some((f) => low(f.name) === low(name))))) continue;
 			const wd = BANNER_WEEKDAY[gameId], [h, mi] = DAY_HOURS[gameId]?.start ?? [0, 0];
 			let start = at + 7 * DAY$38;
@@ -22145,7 +22167,8 @@ function announcedBanners(gameId, msgs, dated, now) {
 				items: [],
 				featured: [{
 					name,
-					rarity: 5
+					rarity: 5,
+					icon: image
 				}],
 				pulls: 0,
 				official: true,
@@ -23552,15 +23575,17 @@ async function banners$3(gameId) {
 	const found = [];
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
 		if (n.tagName !== "H3") continue;
-		let info = "", image;
+		let info = "", image, skinImg;
 		for (let k = n.nextElementSibling; k && !/^H[23]$/.test(k.tagName); k = k.nextElementSibling) {
-			image ??= imgOf$1(k);
+			if (k.tagName === "TABLE") skinImg ??= imgOf$1(k);
+			else image ??= imgOf$1(k);
 			info += " " + text$12(k);
 		}
 		found.push({
 			name: text$12(n),
 			info,
-			image
+			image,
+			skinImg
 		});
 	}
 	const parsed = found.map((f) => {
@@ -23594,7 +23619,8 @@ async function banners$3(gameId) {
 			featured: skin ? [{
 				name: skin,
 				rarity: 5,
-				tag: owner
+				tag: owner,
+				icon: b.skinImg
 			}] : [],
 			pulls: 0,
 			source: "api",
@@ -25358,7 +25384,8 @@ var PRYDWEN = {
 	},
 	czn: {
 		slug: "chaos-zero-nightmare",
-		regions: ["global"]
+		regions: ["global"],
+		icons: true
 	},
 	nikke: {
 		slug: "nikke",
@@ -25389,6 +25416,7 @@ async function syncPrydwen(gameId, key) {
 	const from = Date.now() - 3 * DAY$26;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
+	const iconBase = cfg.icons && [...doc.querySelectorAll("img[src*=\"/characters/\"]")].map((i) => /^(https:\/\/cdn\.prydwen\.gg\/images\/[a-z0-9-]+\/characters\/)[a-z0-9_]+_icon\.webp$/.exec(i.getAttribute("src") ?? "")?.[1]).find(Boolean);
 	doc.querySelectorAll("article[data-banner-card]").forEach((card) => {
 		const timer = card.querySelector("[data-banner-timer]");
 		const name = text$7(card.querySelector(".banner-name"));
@@ -25401,9 +25429,11 @@ async function syncPrydwen(gameId, key) {
 		const weapon = card.getAttribute("data-category") === "weapon";
 		const phase = text$7(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
 		const rank = stars(text$7(card.querySelector(".rarity")));
+		const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(card.querySelector("a.banner-card-link")?.getAttribute("href") ?? "")?.[1];
 		const featured = weapon ? [] : [{
 			name,
-			rarity: rank
+			rarity: rank,
+			...slug && iconBase ? { icon: `${iconBase}${slug.replace(/-/g, "_")}_icon.webp` } : {}
 		}];
 		const id = `${gameId}:banner:${key}:${name}:${start}`;
 		if (seen.has(id)) return;
@@ -26259,7 +26289,8 @@ var DAY$22 = 864e5;
 var CLAN_IMG$2 = "https://clan.akamai.steamstatic.com/images";
 /** BBCode de Steam → texto por líneas; las cabeceras ([h1]–[h3], [b] en su propia línea) pasan a "**…**", que el lector toma como título. */
 function steamText(bb) {
-	return bb.replace(/\{STEAM_CLAN_IMAGE\}\S*/g, "").replace(/\[img[^\]]*\][\s\S]*?\[\/img\]/gi, "").replace(/\[previewyoutube[^\]]*\][\s\S]*?\[\/previewyoutube\]/gi, "").replace(/\[h[1-3]\]([\s\S]*?)\[\/h[1-3]\]/gi, (_m, t) => `\n**${t.replace(/\[[^\]]+\]/g, "").trim()}**\n`).replace(/^\s*\[b\]([^\n]{1,90}?)\[\/b\]\s*$/gim, (_m, t) => `**${t.trim()}**`).replace(/\[\*\]/g, "\n• ").replace(/\[\/?[a-z][a-z0-9]*(?:[= ][^\]]*)?\]/gi, "\n").replace(/<[^>]+>/g, " ").replace(/\\\[/g, "[").replace(/\\\]/g, "]").replace(/&nbsp;/g, " ").replace(/[ \t]+/g, " ").split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n");
+	const OPEN = "", CLOSE = "";
+	return bb.replace(/\\\[([^\]\n]{1,80})\]/g, `${OPEN}$1${CLOSE}`).replace(/\\\[/g, OPEN).replace(/\\\]/g, CLOSE).replace(/\{STEAM_CLAN_IMAGE\}\S*/g, "").replace(/\[img[^\]]*\][\s\S]*?\[\/img\]/gi, "").replace(/\[previewyoutube[^\]]*\][\s\S]*?\[\/previewyoutube\]/gi, "").replace(/\[h[1-3]\]([\s\S]*?)\[\/h[1-3]\]/gi, (_m, t) => `\n**${t.replace(/\[[^\]]+\]/g, "").trim()}**\n`).replace(/^\s*\[b\]([^\n]{1,90}?)\[\/b\]\s*$/gim, (_m, t) => `**${t.trim()}**`).replace(/\[\*\]/g, "\n• ").replace(/\[\/?[a-z][a-z0-9]*(?:[= ][^\]]*)?\]/gi, "\n").replace(/<[^>]+>/g, " ").replace(/\\\[/g, "[").replace(/\\\]/g, "]").replace(new RegExp(OPEN, "g"), "[").replace(new RegExp(CLOSE, "g"), "]").replace(/&nbsp;/g, " ").replace(/[ \t]+/g, " ").split("\n").map((l) => l.trim()).join("\n").replace(/\n{3,}/g, "\n\n");
 }
 async function syncSteamNews(gameId) {
 	const app = STEAM_APPS[gameId];
@@ -27012,6 +27043,7 @@ function starPost(post, ends = /* @__PURE__ */ new Map()) {
 		const p = periodOf(pm[2], year, posted, maint);
 		if (!p) continue;
 		let title = titleOf(sub || section);
+		if (/^(?:new |other )?events?$/i.test(title)) title = clean$3(block.map((x) => /(?:^|\s)[‘"“]\s*([^"”’]{3,80}?)\s*[’"”]/.exec(x)?.[1]).find(Boolean) ?? title);
 		const ctx = [...block, ...lines.slice(i + 1, i + 6)].join(" ");
 		const season = /(cosmo gate|guild defense) prism season (\d+)/i.exec(`${section} ${sub} ${ctx}`);
 		if (season) title = `${season[1].replace(/\b\w/g, (c) => c.toUpperCase())} Prism Season ${season[2]}`;
@@ -27021,15 +27053,24 @@ function starPost(post, ends = /* @__PURE__ */ new Map()) {
 		if (own && !sectionImg) sectionImg = own;
 		const firstImg = own ?? sectionImg;
 		const description = clean$3(block.filter((x) => !/period\s*:/i.test(x) && !/^※/.test(x)).join(" ").replace(/^▶\s*/, "")).slice(0, 320) || void 0;
+		const gift = /\bearn (?:the )?savior\s+([^,]{2,40}?)\s+and arcana\s+['‘"“]([^'’"”]{2,50})['’"”]/i.exec(block.join(" "));
+		const items = gift ? [{
+			name: clean$3(gift[1]),
+			amount: 1,
+			icon: images.get(nameKey$1(clean$3(gift[1])))
+		}, {
+			name: clean$3(gift[2]),
+			amount: 1
+		}] : [];
 		raws.push({
 			title,
 			kind,
 			...p,
 			description,
 			image: firstImg,
-			items: [],
+			items,
 			featured: [],
-			...MINOR$3.test(title) ? { minor: true } : {},
+			...MINOR$3.test(title) && !gift ? { minor: true } : {},
 			.../^new event:/i.test(section) && !raws.some((r) => r.headline) ? { headline: true } : {}
 		});
 	}
@@ -27537,12 +27578,99 @@ var DAY$18 = 864e5;
 var summonArt = (imageId) => imageId ? `https://static.atlasacademy.io/NA/SummonBanners/img_summon_${imageId}.png` : void 0;
 /** Máximo de fichas de evento que se piden por ciclo (solo para su arte). */
 var MAX_EVENT_ART = 6;
-/** Arte de un evento: el campo `banner` de su ficha (`/nice/NA/event/<id>`); las campañas y quests sueltas no tienen. */
-async function eventArt(id) {
-	const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/NA/event/${id}`));
-	if (!res.ok) return void 0;
-	const banner = (await res.json()).banner;
-	return typeof banner === "string" && banner.startsWith("https://static.atlasacademy.io/") ? banner : void 0;
+async function eventInfo(region, id) {
+	const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/${region}/event/${id}`));
+	return res.ok ? await res.json() : void 0;
+}
+var artOf = (info) => typeof info?.banner === "string" && info.banner.startsWith("https://static.atlasacademy.io/") ? info.banner : void 0;
+/**
+* Recompensas de un evento (18 nov 2026), de los datos del propio juego en Atlas Academy:
+*  - Las de primera vez de cada quest de su guerra (`/nice/<región>/war/<id>`, `spots[].quests[].gifts`): ahí van los Saint Quartz, los Summon
+*    Ticket y las frutas de AP del evento (Mystery House Crafters: 20 SQ y 3 tickets = 9,7 tiradas), y el servant de regalo (`eventSvtJoin`).
+*  - De la tienda, lo que sí cuenta (Crystallized Lore, tickets, frutas…) con su límite; y los canjes de "un ★5 a elegir" (100 Million Downloads:
+*    un ticket para uno de 43 servants), como el propio ticket.
+* Solo los objetos de `GIFTS` (los ids son los mismos en NA y en JP, así que valen para lo que viene de JP); el resto (materiales, QP, CE de la
+* tienda) no se lista. No incluye los bonus de inicio de sesión ni las misiones maestras: Atlas no los da por evento.
+*/
+var ITEM_ICON = (n) => `https://static.atlasacademy.io/NA/Items/${n}.png`;
+var GIFTS = {
+	2: {
+		name: "Saint Quartz",
+		icon: ITEM_ICON(6)
+	},
+	6: {
+		name: "Saint Quartz",
+		icon: ITEM_ICON(6)
+	},
+	16: {
+		name: "Saint Quartz Fragment",
+		icon: ITEM_ICON(16)
+	},
+	4001: {
+		name: "Summon Ticket",
+		icon: ITEM_ICON(4001)
+	},
+	100: {
+		name: "Golden Fruit",
+		icon: ITEM_ICON(100)
+	},
+	101: {
+		name: "Silver Fruit",
+		icon: ITEM_ICON(101)
+	},
+	6999: {
+		name: "Crystallized Lore",
+		icon: ITEM_ICON(6999)
+	},
+	7999: {
+		name: "Holy Grail",
+		icon: ITEM_ICON(7999)
+	},
+	1e3: {
+		name: "Lantern of Chaldea",
+		icon: ITEM_ICON(1e3)
+	}
+};
+var MAX_REWARD_EVENTS = 6;
+async function eventRewards(region, info, svt) {
+	const sum = /* @__PURE__ */ new Map();
+	const add = (name, icon, n) => {
+		const x = sum.get(name);
+		if (x) x.amount += n;
+		else sum.set(name, {
+			name,
+			amount: n,
+			icon
+		});
+	};
+	for (const war of (info.warIds ?? []).slice(0, 2)) {
+		const res = await fetch(viaProxy(`https://api.atlasacademy.io/nice/${region}/war/${war}`));
+		if (!res.ok) continue;
+		const w = await res.json();
+		for (const g of (w.spots ?? []).flatMap((sp) => sp.quests ?? []).flatMap((q) => q.gifts ?? [])) {
+			const known = g.type === "item" ? GIFTS[g.objectId] : void 0;
+			if (known) add(known.name, known.icon, g.num);
+			else if (g.type === "eventSvtJoin" || g.type === "servant") {
+				const sv = svt.get(g.objectId);
+				if (sv) add(sv.name, sv.face, 1);
+			}
+		}
+	}
+	const shop = info.shop ?? [];
+	for (const it of shop) {
+		const known = Object.values(GIFTS).find((k) => k.name === it.name);
+		if (known && it.limitNum > 0) add(known.name, known.icon, it.setNum * it.limitNum);
+	}
+	const pick = shop.filter((it) => it.cost?.amount === 1 && it.limitNum === 1 && (it.targetIds ?? []).some((id) => svt.has(id)));
+	const ticket = pick[0]?.cost?.item;
+	if (pick.length >= 5 && ticket?.name && pick.every((it) => it.cost?.item?.name === ticket.name)) add(ticket.name, ticket.icon, 1);
+	const items = [...sum.values()];
+	const frag = sum.get("Saint Quartz Fragment")?.amount ?? 0;
+	const { pulls } = pullsIn("fgo", [`Saint Quartz x${(sum.get("Saint Quartz")?.amount ?? 0) + Math.floor(frag / 7)}`, `Summon Ticket x${sum.get("Summon Ticket")?.amount ?? 0}`]);
+	return {
+		items,
+		pulls
+	};
 }
 async function getJson$1(file) {
 	const res = await fetch(viaProxy(`${BASE$3}/${file}.json`));
@@ -27616,7 +27744,12 @@ async function syncFgo(gameId) {
 		});
 	}
 	const main = events.filter((e) => e.kind === "event" && !e.minor).slice(0, MAX_EVENT_ART);
-	for (const e of main) e.image = await eventArt(+e.id.split(":").pop()).catch(() => void 0);
+	const infos = /* @__PURE__ */ new Map();
+	for (const e of main) {
+		const info = await eventInfo("NA", +e.id.split(":").pop()).catch(() => void 0);
+		infos.set(e.id, info);
+		e.image = artOf(info);
+	}
 	for (const e of events) {
 		if (e.kind !== "event" || e.image) continue;
 		const quoted = /"([^"]{4,})"/.exec(e.title)?.[1];
@@ -27627,6 +27760,29 @@ async function syncFgo(gameId) {
 		console.warn("[fgo] JP:", err?.message ?? err);
 		return [];
 	});
+	const jpSvt = future.length ? await fetch(viaProxy("https://api.atlasacademy.io/export/JP/basic_servant_lang_en.json")).then((r) => r.ok ? r.json() : []).catch(() => []) : [];
+	const allSvt = new Map([...jpSvt.map((s) => [s.id, s]), ...svt]);
+	let budget = MAX_REWARD_EVENTS;
+	for (const e of main) {
+		const info = infos.get(e.id);
+		if (!info?.warIds?.length && !info?.shop?.length) continue;
+		if (budget-- <= 0) break;
+		Object.assign(e, await eventRewards("NA", info, svt).catch(() => ({
+			items: [],
+			pulls: 0
+		})));
+	}
+	for (const e of future.filter((f) => f.kind === "event" && !f.minor).sort((a, b) => a.start.localeCompare(b.start))) {
+		if (budget-- <= 0) break;
+		const info = await eventInfo("JP", +e.id.split(":").pop()).catch(() => void 0);
+		if (!info) continue;
+		const r = await eventRewards("JP", { warIds: info.warIds }, allSvt).catch(() => ({
+			items: [],
+			pulls: 0
+		}));
+		e.items = r.items;
+		e.pulls = r.pulls;
+	}
 	return {
 		events: [...events, ...future],
 		patches: [],
@@ -27723,7 +27879,7 @@ async function fromJp(gameId, naEvents, svt) {
 	})), ...jp.filter((e) => e.type === "eventQuest" && na.has(e.id) && !/revival|rerun|recollection/i.test(e.name)).map((e) => ({
 		at: pstDay(na.get(e.id).startedAt),
 		lag: pstDay(na.get(e.id).startedAt) - jstDay(e.startedAt)
-	}))].filter((p) => p.lag > 300 * DAY$18).sort((a, b) => b.at - a.at).slice(0, 5);
+	}))].filter((p) => p.lag > 300 * DAY$18).sort((a, b) => b.at - a.at).filter((p, _, all) => all[0].at - p.at <= 30 * DAY$18).slice(0, 5);
 	const lag = median(pairs.map((p) => p.lag));
 	if (isNaN(lag)) return [];
 	const days = Math.round(lag / DAY$18);
@@ -27931,7 +28087,7 @@ var sinceDay = () => (/* @__PURE__ */ new Date(Date.now() - 3 * DAY$17)).toISOSt
 */
 async function blueArchiveBucket(gameId) {
 	const since = sinceDay();
-	const [evs, raids] = await Promise.all([bucket(`bucket('events').select('id','original_id','category','name_en','start_date','end_date','promo','banner').where('server','GL').where('end_date','>','${since}').limit(200).run()`), bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [])]);
+	const [evs, raids] = await Promise.all([bucket(`bucket('events').select('id','original_id','category','name_en','start_date','end_date','promo','banner','page_name').where('server','GL').where('end_date','>','${since}').limit(200).run()`), bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [])]);
 	const skip = /* @__PURE__ */ new Set(["PermanentEvent", "Guide mission"]);
 	const rows = [];
 	for (const r of evs) {
@@ -27946,7 +28102,8 @@ async function blueArchiveBucket(gameId) {
 			e,
 			file: r.promo ?? r.banner,
 			rerun: id > 1e4 && orig > 0 && id !== orig && id % 1e4 === orig % 1e4,
-			challenge: r.category === "Joint Firepower Exercise" ? "⟦d.baDrill⟧" : void 0
+			challenge: r.category === "Joint Firepower Exercise" ? "⟦d.baDrill⟧" : void 0,
+			page: r.page_name ? String(r.page_name) : void 0
 		});
 	}
 	for (const r of raids) {
@@ -27964,6 +28121,7 @@ async function blueArchiveBucket(gameId) {
 		});
 	}
 	const thumbs = await fileThumbs(rows.map((r) => r.file).filter((f) => !!f), 320).catch(() => /* @__PURE__ */ new Map());
+	const rewards = await baPageRewards(rows.filter((r) => r.page && !r.challenge).map((r) => r.page)).catch(() => /* @__PURE__ */ new Map());
 	return rows.map((r) => ({
 		id: r.id,
 		gameId,
@@ -27973,12 +28131,57 @@ async function blueArchiveBucket(gameId) {
 		image: r.file ? thumbs.get(r.file) : void 0,
 		start: new Date(r.s).toISOString(),
 		end: new Date(r.e).toISOString(),
-		items: [],
+		items: rewards.get(r.page ?? "") ?? [],
 		featured: [],
-		pulls: 0,
+		pulls: pullsIn("bluearchive", (rewards.get(r.page ?? "") ?? []).map((i) => `${i.name} x${i.amount}`)).pulls,
 		minor: r.minor || void 0,
 		source: "api"
 	}));
+}
+/**
+* Recompensas de la página de cada evento en bluearchive.wiki (18 nov 2026; `page_name` del Bucket): los Pyroxene de primera vez de sus fases
+* ("=Stage Info=", columna FirstClear: `{{ItemCard|Pyroxene|quantity=20|…}}`) y de sus misiones y minijuegos, y la alumna que regala
+* (`{{CharacterCard|Chiaki (Swimsuit)|…}}`). Sin la tienda de canje (se paga con la moneda del evento). Una consulta para todas.
+*/
+async function baPageRewards(pages) {
+	const out = /* @__PURE__ */ new Map();
+	const titles = [...new Set(pages)].slice(0, 50);
+	if (!titles.length) return out;
+	const qs = new URLSearchParams({
+		action: "query",
+		prop: "revisions",
+		rvprop: "content",
+		rvslots: "main",
+		titles: titles.join("|"),
+		format: "json",
+		formatversion: "2",
+		origin: "*"
+	});
+	const res = await fetch(viaProxy(`${BA_API}?${qs}`));
+	if (!res.ok) return out;
+	const json = await res.json();
+	const back = /* @__PURE__ */ new Map();
+	for (const n of json?.query?.normalized ?? []) back.set(n.to, n.from);
+	for (const p of json?.query?.pages ?? []) {
+		const text = p.revisions?.[0]?.slots?.main?.content ?? "";
+		const at = text.search(/^=\s*Stage Info\s*=\s*$/m);
+		if (at < 0) continue;
+		const body = text.slice(at).replace(/==\s*Exchange Shop\s*==[\s\S]*?(?=\n==?[^=])/i, "");
+		const pyro = [...body.matchAll(/\{\{\s*ItemCard\s*\|\s*Pyroxene\s*\|\s*quantity\s*=\s*([\d,]+)/gi)].reduce((n, m) => n + Number(m[1].replace(/,/g, "")), 0);
+		const student = /\{\{\s*CharacterCard\s*\|\s*([^|}]+?)\s*\|/i.exec(body)?.[1];
+		const items = [...pyro ? [{
+			name: "Pyroxene",
+			amount: pyro
+		}] : [], ...student ? [{
+			name: student,
+			amount: 1
+		}] : []];
+		if (items.length) out.set(back.get(p.title) ?? p.title, items);
+	}
+	const students = [...out.values()].flatMap((list) => list.filter((i) => i.name !== "Pyroxene").map((i) => `File:${i.name}.png`));
+	const icons = students.length ? await fileThumbs(students, 96).catch(() => /* @__PURE__ */ new Map()) : /* @__PURE__ */ new Map();
+	for (const list of out.values()) for (const i of list) i.icon ??= icons.get(`File:${i.name}.png`);
+	return out;
 }
 /**
 * Cupones de Blue Archive Global puestos a mano: el aviso oficial (#game-news de Discord) trae el código solo dentro de la imagen,
@@ -28226,6 +28429,19 @@ async function syncKuro(gameId) {
 		marks[k].ev.items = items;
 		marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 	});
+	for (const ev of out.filter((e) => !e.items.length && !e.minor)) {
+		const pv = menu.find((a) => /^Event Preview\s*\|/i.test(a.articleTitle) && a.articleTitle.includes(`[${ev.title}]`) && now - at$3(a.startTime, ASIA) < 60 * DAY$16);
+		if (!pv) continue;
+		const r = await fetch(viaProxy(`${CDN}/article/${pv.articleId}.json`)).catch(() => null);
+		if (!r?.ok) continue;
+		const ls = lines$2((await r.json()).articleContent ?? "");
+		const k = ls.findIndex((l) => /^✦?\s*Rewards?\s*✦?\s*:?$/i.test(l));
+		const { pulls, items } = pullsIn("wuwa", k >= 0 ? ls.slice(k + 1, k + 3) : ls.filter((l) => /^✦?\s*Rewards?\s*✦?\s*:/i.test(l)));
+		if (items.length) {
+			ev.items = items;
+			ev.pulls = pulls;
+		}
+	}
 	const next = menu.find((a) => at$3(a.startTime, ASIA) > at$3(notes.startTime, ASIA) && /Version Preview .*Scheduled for Release on ([A-Z][a-z]+) (\d{1,2})/i.test(a.articleTitle));
 	if (next && !isNaN(versionStart)) {
 		const nm = /Version ([\d.]+)/.exec(next.articleTitle)?.[1];
@@ -28656,6 +28872,16 @@ function pageRewards(text) {
 	const per = perPull;
 	const pulls = Math.round(items.reduce((n, i) => n + i.amount * per(i.name), 0) * 10) / 10;
 	items.sort((x, y) => per(y.name) - per(x.name));
+	if (!items.length) {
+		const named = body.split("\n").filter((l) => /\b(?:get|claim|obtain|reward|earn)/i.test(l) && !PAID_LINE.test(l) && !/^\s*\{\{\s*Quote/i.test(l)).flatMap((l) => [...l.matchAll(/\{\{\s*currency\s*\|\s*([^|}]+?)\s*\}\}/gi)].map((m) => /^crystal$/i.test(m[1]) ? "Crystals" : m[1]));
+		return {
+			items: [...new Set(named)].slice(0, 8).map((name) => ({
+				name,
+				amount: 0
+			})),
+			pulls: 0
+		};
+	}
 	return {
 		items: items.slice(0, 10),
 		pulls
@@ -28892,7 +29118,7 @@ async function eventPages(host, pages) {
 		const items = block ? [...block.matchAll(/\|\s*([^=|\n]+?)\s*=\s*([\d,]+)\s*(?=\n|\||$)/g)].map((m) => ({
 			name: m[1].trim(),
 			amount: Number(m[2].replace(/,/g, ""))
-		})).filter((i) => i.amount > 0 && !/^sort$/i.test(i.name)) : [];
+		})).filter((i) => i.amount > 0 && !/^sort$/i.test(i.name)) : cardListTotal(text);
 		const description = wikiSummary(text, p.title);
 		if (items.length || description) out.set(back.get(p.title) ?? p.title, {
 			items,
@@ -28900,6 +29126,26 @@ async function eventPages(host, pages) {
 		});
 	}
 	return out;
+}
+/**
+* Sin {{Event Rewards}}: el total en `{{Card List|Polychrome*40; Official Investigator Log*10}}` tras "Total Rewards" o bajo "==Reward Preview=="
+* (ZZZ, 18 nov 2026: The Final Callback, Angels Support Operation…). Solo esa lista, no las de cada fila (se contarían dos veces).
+*/
+function cardListTotal(text) {
+	const at = text.search(/'''\s*Total Rewards\s*:?\s*'''|==\s*(?:Total Rewards|Reward Preview)\s*==/i);
+	if (at < 0) return [];
+	const near = text.slice(at, at + 1500);
+	const list = /\{\{\s*Card List\s*\|(?:\s*1\s*=)?([^}]*)\}\}/i.exec(near)?.[1];
+	if (list) return list.split(";").map((x) => /^\s*([^*|=]+?)\s*\*\s*([\d,]+)\s*(?:\{[^}]*\})?\s*$/.exec(x)).filter((m) => !!m).map((m) => ({
+		name: m[1].trim(),
+		amount: Number(m[2].replace(/,/g, ""))
+	})).filter((i) => i.amount > 0);
+	const head = /==\s*Total Rewards\s*==|'''\s*Total Rewards/i.test(near.slice(0, 40));
+	const end = near.slice(4).search(/\n==/);
+	return head ? [...near.slice(0, end < 0 ? void 0 : end + 4).matchAll(/\{\{\s*Card\s*\|\s*([^|}]+?)\s*\|\s*([\d,]+)\s*[|}]/gi)].map((m) => ({
+		name: m[1].trim(),
+		amount: Number(m[2].replace(/,/g, ""))
+	})).filter((i) => i.amount > 0) : [];
 }
 async function syncHoyoWiki(gameId, host, pullGame) {
 	const qs = new URLSearchParams({
@@ -28964,6 +29210,19 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 			if (!pg.items.length) continue;
 			e.items = pg.items;
 			e.pulls = pullsIn(pullGame, pg.items.map((i) => `${i.name} x${i.amount}`)).pulls;
+		}
+		const dated = /* @__PURE__ */ new Map();
+		for (const e of out) {
+			const page = pageOf.get(e.id);
+			if (e.items.length || !page || page.includes("/")) continue;
+			dated.set(`${page}/${(/* @__PURE__ */ new Date(+new Date(e.start) + SERVER * 36e5)).toISOString().slice(0, 10)}`, e);
+		}
+		const sub = dated.size ? await eventPages(host, [...dated.keys()]).catch(() => /* @__PURE__ */ new Map()) : /* @__PURE__ */ new Map();
+		for (const [page, e] of dated) {
+			const items = sub.get(page)?.items;
+			if (!items?.length) continue;
+			e.items = items;
+			e.pulls = pullsIn(pullGame, items.map((i) => `${i.name} x${i.amount}`)).pulls;
 		}
 	}
 	return {
@@ -30324,6 +30583,66 @@ function featuredFromIds(ids, support, lk) {
 	}
 	return out.length ? out : null;
 }
+/**
+* Recompensas de los eventos de historia (18 nov 2026), de GameTora (gametora.com; su robots.txt solo cierra /patron-zone, /loc/ y poco más):
+*  - /umamusume/events/story-events: la lista con el nombre en inglés de Global (`name_en`, y el de antes `name_en_old`: "Sweet Memories ♥ Tea Time",
+*    el que usa uma.moe) y su página (`url_name`).
+*  - /umamusume/events/story-event-<n>: `eventRewardsData.rewards`, las recompensas por puntos del evento ({item_id, item_num, points}), con las
+*    cifras de Global (Sweet Memories: 1500 Carats, 2 + 2 Scout Tickets…). Los datos van en el JSON de Next.js de la página (`__NEXT_DATA__`).
+* Solo los objetos de `GT_ITEMS` (nombres de Global de su `items.json`) y la carta de apoyo del evento (id de 5 cifras); el resto (Monies, puntos
+* de amistad, materiales) no se lista. Iconos: los de GameTora (/images). Las campañas, carreras y misiones no tienen fuente de recompensas.
+* 1 página de lista y hasta 4 de evento por ciclo (caché de 24 h en el proxy).
+*/
+var GT = "https://gametora.com";
+var GT_ITEMS = [
+	[43, "Carats"],
+	[41, "Trainee Scout Ticket"],
+	[111, "Support Card Scout Ticket"],
+	[44, "Dream Glimmer"],
+	[160, "Book of Hints"],
+	[161, "Textbook of Hints"],
+	[95, "Alarm Clock"]
+];
+var gtIcon = (id) => `${GT}/images/umamusume/items/item_icon_${String(id).padStart(5, "0")}.png`;
+var nextData = (html) => {
+	try {
+		return JSON.parse(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? "null")?.props?.pageProps;
+	} catch {
+		return;
+	}
+};
+var MAX_STORY_PAGES = 4;
+async function withStoryRewards(events, lk) {
+	const now = Date.now();
+	const want = events.filter((e) => e.kind === "event" && !e.minor && +new Date(e.end) > now).sort((a, b) => a.start.localeCompare(b.start));
+	if (!want.length) return;
+	const stories = nextData(await fetch(viaProxy(`${GT}/umamusume/events/story-events`)).then((r) => r.ok ? r.text() : "").catch(() => ""))?.storyEventData ?? [];
+	let pages = MAX_STORY_PAGES;
+	for (const e of want) {
+		const k = nameKey(e.title);
+		const st = stories.find((x) => [x.name_en, x.name_en_old].some((n) => n && nameKey(n) === k));
+		if (!st || !/^story-event-\d+$/.test(st.url_name) || pages-- <= 0) continue;
+		const rewards = nextData(await fetch(viaProxy(`${GT}/umamusume/events/${st.url_name}`)).then((r) => r.ok ? r.text() : "").catch(() => ""))?.eventRewardsData?.rewards ?? [];
+		const sum = /* @__PURE__ */ new Map();
+		for (const r of rewards) sum.set(r.item_id, (sum.get(r.item_id) ?? 0) + r.item_num);
+		const items = GT_ITEMS.filter(([id]) => sum.has(id)).map(([id, name]) => ({
+			name,
+			amount: sum.get(+id),
+			icon: gtIcon(+id)
+		}));
+		for (const [id, n] of sum) {
+			const sc = id >= 1e4 && id < 4e4 ? lk.supports.get(id) : void 0;
+			if (sc) items.push({
+				name: `${RARITY[Math.floor(id / 1e4)]} ${lk.chars.get(sc.chara)?.name ?? sc.title}`,
+				amount: n,
+				icon: supportImg(id)
+			});
+		}
+		if (!items.length) continue;
+		e.items = items;
+		e.pulls = pullsIn("uma", items.map((i) => `${i.name} x${i.amount}`)).pulls;
+	}
+}
 async function syncUma(gameId) {
 	const [res, lk] = await Promise.all([fetch(viaProxy(`${BASE$1}/resources/current/banner_timeline.json`)), lookups()]);
 	const faces = new Map([...lk.chars.values()].filter((c) => c.thumb).map((c) => [nameKey(c.name), c.thumb]));
@@ -30363,6 +30682,7 @@ async function syncUma(gameId) {
 			precision: r.is_confirmed === false ? "estimated" : void 0
 		});
 	}
+	await withStoryRewards(events, lk).catch((err) => console.warn("[uma] GameTora:", err?.message ?? err));
 	return {
 		events: withRaceNames(events),
 		patches: [],
@@ -30930,6 +31250,7 @@ async function syncArknights(gameId) {
 			precision: "approx"
 		});
 	}));
+	const pageOf = new Map(rows.map((r) => [`${gameId}:event:${r.event + r.startTime}`, r.event]));
 	const base = {
 		events: [...compact(rows.map((r) => {
 			const title = /\/Rerun$/i.test(r.event) ? `${r.event.replace(/\/Rerun$/i, "")} (Rerun)` : r.event;
@@ -30968,17 +31289,91 @@ async function syncArknights(gameId) {
 		];
 	};
 	const guessed = missing.length ? await fileMap("arknights.wiki.gg", missing.flatMap(names)) : /* @__PURE__ */ new Map();
+	const withArt = refined.events.map((e) => {
+		if (e.image || e.kind === "banner") return e;
+		const image = names(e).filter((n) => /\(Rerun\)$/i.test(e.title) || !/ Rerun banner/.test(n)).map((n) => guessed.get(norm(n))).find(Boolean);
+		return image ? {
+			...e,
+			image
+		} : e;
+	});
+	const need = withArt.filter((e) => e.kind !== "banner" && !e.items.length && pageOf.has(e.id));
+	const rewards = need.length ? await akPageRewards(need.map((e) => pageOf.get(e.id))).catch(() => /* @__PURE__ */ new Map()) : /* @__PURE__ */ new Map();
+	const loginOf = /* @__PURE__ */ new Map();
+	for (const pg of rewards.values()) if (pg.login && withArt.some((e) => e.title.toLowerCase() === pg.login.name.toLowerCase())) loginOf.set(pg.login.name.toLowerCase(), pg.login.items);
+	const withPulls = (e, items) => {
+		const op = items.find((i) => i.name === "Originite Prime")?.amount ?? 0;
+		const lines = items.map((i) => /headhunting permit$/i.test(i.name) && !/ten-roll/i.test(i.name) ? `Headhunting Permit x${i.amount}` : `${i.name} x${i.amount}`);
+		if (op) lines.push(`Orundum x${op * 180}`);
+		return {
+			...e,
+			items,
+			pulls: pullsIn("arknights", lines).pulls
+		};
+	};
 	return {
 		...refined,
-		events: refined.events.map((e) => {
-			if (e.image || e.kind === "banner") return e;
-			const image = names(e).filter((n) => /\(Rerun\)$/i.test(e.title) || !/ Rerun banner/.test(n)).map((n) => guessed.get(norm(n))).find(Boolean);
-			return image ? {
-				...e,
-				image
-			} : e;
+		events: withArt.map((e) => {
+			const login = loginOf.get(e.title.toLowerCase());
+			if (login && login.length > e.items.length) return withPulls(e, login);
+			const pg = rewards.get(pageOf.get(e.id) ?? "");
+			if (!pg || e.items.length) return e;
+			const items = [...pg.items, ...pg.login && !loginOf.has(pg.login.name.toLowerCase()) ? pg.login.items : []];
+			return items.length ? withPulls(e, items) : e;
 		})
 	};
+}
+/**
+* Recompensas de la página de cada evento en arknights.wiki.gg (18 nov 2026): el inicio de sesión del evento (`{{Login reward cell|day=2|item1=Orundum,200|…}}`)
+* y el Originite Prime de primera vez de sus misiones («All TD operations are worth {{Cur|Originite Prime|31}}»). Las tiendas de packs (de pago) no.
+* Las reediciones tienen su propia página ("A Flurry to the Flame/Rerun").
+*/
+async function akPageRewards(pages) {
+	const out = /* @__PURE__ */ new Map();
+	const titles = [...new Set(pages)].slice(0, 50);
+	const qs = new URLSearchParams({
+		action: "query",
+		prop: "revisions",
+		rvprop: "content",
+		rvslots: "main",
+		titles: titles.join("|"),
+		format: "json",
+		formatversion: "2",
+		origin: "*"
+	});
+	const res = await fetch(viaProxy(`https://arknights.wiki.gg/api.php?${qs}`));
+	if (!res.ok) return out;
+	for (const p of (await res.json())?.query?.pages ?? []) {
+		const text = p.revisions?.[0]?.slots?.main?.content ?? "";
+		const tally = () => {
+			const sum = /* @__PURE__ */ new Map();
+			const add = (name, n) => {
+				if (name && n > 0) sum.set(name, (sum.get(name) ?? 0) + n);
+			};
+			const order = (n) => /^orundum$|headhunting permit$|^originite prime$/i.test(n) ? 0 : 1;
+			const list = () => [...sum].map(([name, amount]) => ({
+				name,
+				amount
+			})).sort((a, b) => order(a.name) - order(b.name));
+			return {
+				add,
+				list
+			};
+		};
+		const login = tally(), main = tally();
+		for (const cell of text.matchAll(/\{\{\s*Login reward cell([^}]*)\}\}/gi)) for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) login.add(m[1].trim(), Number(m[2].replace(/,/g, "")));
+		for (const m of text.matchAll(/operations are worth \{\{\s*Cur\s*\|\s*Originite Prime\s*\|\s*(\d+)/gi)) main.add("Originite Prime", Number(m[1]));
+		const loginName = /==\s*([^=\n]+?)\s+Login Event\s*==/i.exec(text)?.[1];
+		const li = login.list();
+		out.set(p.title, {
+			items: main.list(),
+			login: li.length ? {
+				name: loginName ?? "",
+				items: li
+			} : void 0
+		});
+	}
+	return out;
 }
 /**
 * Imagen de los reclutamientos rotativos (Standard / Kernel, que vienen de los datos del cliente): la wiki sube una por rotación ("EN Standard Pool 179 banner.png",
@@ -31084,6 +31479,7 @@ async function endfieldDetails(titles) {
 			const n = m[1].trim(), v = Number(m[2].replace(/,/g, ""));
 			if (!/=/.test(n) && v > (tot.get(n) ?? 0)) tot.set(n, v);
 		}
+		for (const m of w.matchAll(/^\|\s*((?:[A-Za-z][^:|{}\n=/]{1,50}:\s*\d[\d,]*\s*,?\s*)+)$/gm)) for (const x of m[1].matchAll(/([A-Za-z][^:,]{1,50}?)\s*:\s*(\d[\d,]*)/g)) tot.set(x[1].trim(), (tot.get(x[1].trim()) ?? 0) + Number(x[2].replace(/,/g, "")));
 		const items = [...tot].map(([name, amount]) => ({
 			name,
 			amount
@@ -31116,7 +31512,10 @@ async function syncEndfield(gameId) {
 			order_by: "StartTime"
 		})
 	]);
-	const [files, details] = await Promise.all([fileMap(EF, [...events.map((r) => r.Image), ...banners.map((r) => r.Image)]), endfieldDetails(events.map((r) => r.Event)).catch((err) => {
+	const [files, details] = await Promise.all([fileMap(EF, [...events.map((r) => r.Image), ...banners.map((r) => r.Image)]), endfieldDetails(events.flatMap((r) => /^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event])).then((d) => {
+		for (const r of events) if (!d.get(r.Event)?.items.length && d.has(`Echoes of War: ${r.Event}`)) d.set(r.Event, d.get(`Echoes of War: ${r.Event}`));
+		return d;
+	}).catch((err) => {
 		console.warn("[endfield] fichas:", err?.message ?? err);
 		return /* @__PURE__ */ new Map();
 	})]);
@@ -31758,6 +32157,7 @@ async function withWikiImages(game, events) {
 var ICON_FILES = {
 	ptn: (n) => [`${n} Skin1 Icon.png`],
 	mongil: (n) => [`${n.replace(/\s+/g, "")}Portrait.png`],
+	epic7: (n) => [`${n} s.png`, `${n.split(/\s+/).pop()} s.png`],
 	gfl2: (n) => [`${n} Covenant Avatar.png`],
 	wuwa: (n) => [`Resonator ${n}.png`],
 	honkai3: (n) => [
@@ -31772,7 +32172,7 @@ async function withFeaturedIcons(game, events) {
 	const host = game.wiki?.host;
 	if (!host) return events;
 	const now = Date.now();
-	const names = [...new Set(events.filter((e) => e.kind === "banner" && +new Date(e.end) > now).flatMap((e) => e.featured.filter((f) => !f.icon).map((f) => f.full ?? f.name)))].filter((n) => n.length > 1 && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES);
+	const names = [...new Set(events.filter((e) => e.kind === "banner" && +new Date(e.end) > now).flatMap((e) => e.featured.filter((f) => !f.icon).map((f) => f.full ?? f.name)))].filter((n) => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES);
 	if (!names.length) return events;
 	const own = ICON_FILES[game.id];
 	const candidates = (full) => [.../* @__PURE__ */ new Set([full, full.replace(/\s*\((?:GFL2|character)\)$/i, "")])].flatMap((n) => [

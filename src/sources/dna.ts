@@ -87,15 +87,17 @@ async function banners(gameId: string): Promise<{ events: GameEvent[]; patches: 
   const out: GameEvent[] = []
   const patches: Patch[] = []
   const head = [...doc.querySelectorAll('h2')].find(h => /Limited[- ]Time Myriad/i.test(text(h)))
-  const found: { name: string; info: string; image?: string }[] = []
+  const found: { name: string; info: string; image?: string; skinImg?: string }[] = []
   for (let n = head?.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
     if (n.tagName !== 'H3') continue
-    let info = '', image: string | undefined
+    let info = '', image: string | undefined, skinImg: string | undefined
     for (let k = n.nextElementSibling; k && !/^H[23]$/.test(k.tagName); k = k.nextElementSibling) {
-      image ??= imgOf(k)
+      // La tabla "Rate-Up Character Skins" trae la imagen del aspecto (vertical, 400×550): es el retrato del destacado.
+      if (k.tagName === 'TABLE') skinImg ??= imgOf(k)
+      else image ??= imgOf(k)
       info += ' ' + text(k)
     }
-    found.push({ name: text(n), info, image })
+    found.push({ name: text(n), info, image, skinImg })
   }
   // Los banners de una misma versión acaban juntos: si uno no dice su fin, toma el del otro que empezó el mismo día.
   const parsed = found.map(f => {
@@ -118,7 +120,7 @@ async function banners(gameId: string): Promise<{ events: GameEvent[]; patches: 
     out.push({
       id: `${gameId}:banner:g8:${b.name}:${new Date(b.s).toISOString().slice(0, 10)}`, gameId, kind: 'banner', title: b.name,
       description: '⟦d.dnaMyriad⟧', image: b.image, start: new Date(b.s).toISOString(), end: new Date(end).toISOString(),
-      items: [], featured: skin ? [{ name: skin, rarity: 5, tag: owner }] : [], pulls: 0, source: 'api', precision: 'approx', open: !e || undefined,
+      items: [], featured: skin ? [{ name: skin, rarity: 5, tag: owner, icon: b.skinImg }] : [], pulls: 0, source: 'api', precision: 'approx', open: !e || undefined,
     })
     const v = /Version (?:update )?(\d+\.\d+)/i.exec(b.info)?.[1]
     if (v && !patches.some(p => p.version === v))

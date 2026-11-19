@@ -1,6 +1,7 @@
-import type { Featured, GameEvent, Kind } from '../types'
+import type { Featured, GameEvent, Kind, RewardItem } from '../types'
 import { viaProxy } from '../net'
 import type { GameSync } from './ennead'
+import { pullsIn } from './pulls'
 
 /**
  * Cronología del servidor Global de Umamusume desde los recursos públicos de uma.moe.
@@ -93,6 +94,52 @@ export function featuredFromIds(ids: number[], support: boolean, lk: Lookups): F
   return out.length ? out : null
 }
 
+/**
+ * Recompensas de los eventos de historia (18 nov 2026), de GameTora (gametora.com; su robots.txt solo cierra /patron-zone, /loc/ y poco más):
+ *  - /umamusume/events/story-events: la lista con el nombre en inglés de Global (`name_en`, y el de antes `name_en_old`: "Sweet Memories ♥ Tea Time",
+ *    el que usa uma.moe) y su página (`url_name`).
+ *  - /umamusume/events/story-event-<n>: `eventRewardsData.rewards`, las recompensas por puntos del evento ({item_id, item_num, points}), con las
+ *    cifras de Global (Sweet Memories: 1500 Carats, 2 + 2 Scout Tickets…). Los datos van en el JSON de Next.js de la página (`__NEXT_DATA__`).
+ * Solo los objetos de `GT_ITEMS` (nombres de Global de su `items.json`) y la carta de apoyo del evento (id de 5 cifras); el resto (Monies, puntos
+ * de amistad, materiales) no se lista. Iconos: los de GameTora (/images). Las campañas, carreras y misiones no tienen fuente de recompensas.
+ * 1 página de lista y hasta 4 de evento por ciclo (caché de 24 h en el proxy).
+ */
+const GT = 'https://gametora.com'
+const GT_ITEMS: [number, string][] = [
+  [43, 'Carats'], [41, 'Trainee Scout Ticket'], [111, 'Support Card Scout Ticket'], [44, 'Dream Glimmer'], [160, 'Book of Hints'], [161, 'Textbook of Hints'], [95, 'Alarm Clock'],
+]
+const gtIcon = (id: number) => `${GT}/images/umamusume/items/item_icon_${String(id).padStart(5, '0')}.png`
+const nextData = (html: string) => { try { return JSON.parse(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? 'null')?.props?.pageProps } catch { return undefined } }
+interface GtStory { url_name: string; name_en?: string; name_en_old?: string }
+const MAX_STORY_PAGES = 4
+
+async function withStoryRewards(events: GameEvent[], lk: Lookups): Promise<void> {
+  const now = Date.now()
+  const want = events.filter(e => e.kind === 'event' && !e.minor && +new Date(e.end) > now).sort((a, b) => a.start.localeCompare(b.start))
+  if (!want.length) return
+  const list = await fetch(viaProxy(`${GT}/umamusume/events/story-events`)).then(r => (r.ok ? r.text() : '')).catch(() => '')
+  const stories = (nextData(list)?.storyEventData ?? []) as GtStory[]
+  let pages = MAX_STORY_PAGES
+  for (const e of want) {
+    const k = nameKey(e.title)
+    const st = stories.find(x => [x.name_en, x.name_en_old].some(n => n && nameKey(n) === k))
+    if (!st || !/^story-event-\d+$/.test(st.url_name) || pages-- <= 0) continue
+    const html = await fetch(viaProxy(`${GT}/umamusume/events/${st.url_name}`)).then(r => (r.ok ? r.text() : '')).catch(() => '')
+    const rewards = (nextData(html)?.eventRewardsData?.rewards ?? []) as { item_id: number; item_num: number }[]
+    const sum = new Map<number, number>()
+    for (const r of rewards) sum.set(r.item_id, (sum.get(r.item_id) ?? 0) + r.item_num)
+    const items: RewardItem[] = GT_ITEMS.filter(([id]) => sum.has(id)).map(([id, name]) => ({ name, amount: sum.get(+id)!, icon: gtIcon(+id) }))
+    // La carta de apoyo del evento (SSR que se gana con puntos): id de 5 cifras.
+    for (const [id, n] of sum) {
+      const sc = id >= 10000 && id < 40000 ? lk.supports.get(id) : undefined
+      if (sc) items.push({ name: `${RARITY[Math.floor(id / 10000)]} ${lk.chars.get(sc.chara)?.name ?? sc.title}`, amount: n, icon: supportImg(id) })
+    }
+    if (!items.length) continue
+    e.items = items
+    e.pulls = pullsIn('uma', items.map(i => `${i.name} x${i.amount}`)).pulls
+  }
+}
+
 export async function syncUma(gameId: string): Promise<GameSync> {
   const [res, lk] = await Promise.all([fetch(viaProxy(`${BASE}/resources/current/banner_timeline.json`)), lookups()])
   const faces = new Map([...lk.chars.values()].filter(c => c.thumb).map(c => [nameKey(c.name), c.thumb!]))
@@ -131,6 +178,7 @@ export async function syncUma(gameId: string): Promise<GameSync> {
       precision: r.is_confirmed === false ? 'estimated' : undefined,
     })
   }
+  await withStoryRewards(events, lk).catch(err => console.warn('[uma] GameTora:', (err as Error)?.message ?? err))
   return { events: withRaceNames(events), patches: [], codes: [] }
 }
 

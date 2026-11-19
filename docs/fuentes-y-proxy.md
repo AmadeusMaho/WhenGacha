@@ -1015,3 +1015,79 @@ mismo lector, sale igual):
 - **BLEACH**: 'NEW LIMITED SSR "X" … will be available soon' → banner estimado (`announcedBanners`: próximo miércoles 11:00 UTC, 14 días) con la imagen
   del aviso, hasta que un banner con fecha lo nombre. **Sin retrato**: BLEACH no tiene fuente de retratos de personajes.
 - **Limbus**: su canal solo tiene el mensaje de "seguir" del 6 nov; el seguimiento del canal oficial no llega (lo revisa el dueño en Discord).
+
+## Revisión de fuentes con lo publicado (18 nov 2026, noche)
+
+Medido en `/data/*.json` de producción (lo vigente y no menor de los 35 juegos). Arreglos:
+- **Reverse: 1999** (regresión): desde la 3.9 (aviso del 23 oct 2026) Bluepoch escribe "[Main Rewards]: Clear Drops, [Confetti Strip], …" sin cantidades y
+  `pullsIn` no leía nada (2 de 19 eventos con recompensas). `mainRewards` (bluepoch.ts) las toma como objetos sin cifra (amount 0), sin los genéricos
+  ("Growth Materials", "… Materials", "and more"): 16 de 19.
+- **WuWa**: las notas de parche no traen recompensas desde la 3.8 y la wiki de Fandom no tiene páginas de los eventos nuevos (5 de 6 no existen). El
+  "Event Preview | [Nombre] … Coming Soon!" de Kuro sí ("✦Rewards✦ Astrite x1200, …"): `syncKuro` lo lee para los eventos sin recompensas (una consulta por
+  evento con adelanto, cacheada). **Sin fuente**: los eventos sin adelanto (inicio de sesión, combate, Lollo) no publican sus recompensas en ningún sitio.
+- **DNA**: `steamText` borraba los nombres entre corchetes escapados ("\[Prismatic Hourglass] ×10") como si fueran etiquetas BBCode, y `pullsIn` no
+  leía "[X] ×10". Arreglados los dos. **Sin fuente**: el resto de eventos de DNA no detalla recompensas (ni Steam ni Game8; la wiki se paró en marzo).
+  **Retratos** de los banners Myriad: la imagen del aspecto de la tabla "Rate-Up Character Skins" de Game8 (Will Beneath the Wind no la tiene: sin retrato).
+- **De rebote** (el arreglo de `pullsIn` con "[X] ×N"): CZN Nightmare Dream Park pasa de 1 a 8 recompensas ("Abyssal Core [Time-Limited] x15"…).
+- **Epic Seven**: retratos de su wiki ("<Nombre> s.png"); los banners de trajes ("Bunny Girl Mafia Yufine") usan el del héroe. Los artefactos ("A Boss's
+  Dignity") no tienen archivo.
+- **Sin fuente de retratos** (comprobado hoy): MONGIL Rue, Lou y M.A.D (ni wiki.gg ni Prydwen, que solo da el arte del banner) e Infinity Nikki
+  (Ballad of Thriving Life, New Wishes Evermore, Snowbloom Wishsong, Cheese and Sword: sin página en su wiki todavía).
+
+## Fuentes nuevas de recompensas y retratos (18 nov 2026, segunda pasada)
+
+Buscado juego por juego lo que seguía sin recompensas o sin retrato. Fuentes nuevas:
+- **FGO** (`fgo.ts`, `eventRewards`): Atlas Academy, datos del propio juego. Las recompensas de primera vez de las quests de la guerra del evento
+  (`/nice/<NA|JP>/war/<id>`: Saint Quartz, Summon Ticket, frutas de AP, Crystallized Lore, Holy Grail y el servant de regalo) y lo que cuenta de la tienda
+  (`/nice/<región>/event/<id>`, con su límite), más el canje "un ★5 a elegir" (el ticket). Los ids de objeto son los mismos en NA y en JP, así que también
+  salen en lo que viene de JP. Mystery House Crafters: 20 SQ + 3 tickets = 9,7 tiradas y Van Gogh (Miner). Hasta 6 eventos por ciclo; proxy
+  `atlasacademy-event` (ficha y guerra, NA y JP, caché 24 h; la guerra pesa ~500 KB sin comprimir). No incluye los bonus de inicio de sesión ni las
+  misiones maestras (Atlas no los da por evento).
+- **FGO, retraso JP → NA**: se mide solo con las parejas del último mes. Con las 5 últimas a secas, si GamePress no respondía quedaban campañas de
+  julio–septiembre (699 días) y lo que viene de JP salía un mes antes (Pohjola's Christmas Eve el 11 nov en vez del 11 dic; el retraso real es 729).
+- **Umamusume** (`uma.ts`, `withStoryRewards`): GameTora (robots.txt sin restricciones aquí). La lista `/umamusume/events/story-events` (nombre de
+  Global, también el antiguo que usa uma.moe) y la página de cada evento de historia (`eventRewardsData`, recompensas por puntos con id de objeto).
+  Se listan Carats, Scout Tickets, Dream Glimmer, libros de pistas, Alarm Clock y la SSR del evento (iconos de GameTora): 1500 Carats + 4 tickets =
+  14 tiradas por evento. 1 lista y hasta 4 páginas por ciclo (proxy `gametora`, 24 h). Campañas, carreras y misiones: sin fuente.
+- **CZN** (`prydwen.ts`, `icons: true`): retratos del CDN de Prydwen (`…/images/chaos/characters/<slug>_icon.webp`, el slug del enlace de la tarjeta).
+  Solo en CZN: en WuWa la wiki tiene los suyos y algún slug con guiones no tiene icono.
+- **StarSavior**: "6. Event" ya no sale como un evento llamado "Event" (el nombre va entrecomillado en su línea); y los personajes de regalo de las notas
+  («Earn Savior Gille and Arcana 'Never Ending Dance' through …») van como recompensas.
+- **Reverse: 1999**: el retrato de "X" (los nombres de una letra se descartaban en `withFeaturedIcons`; su archivo es "X Icon.png").
+- **BLEACH**: los banners anunciados por Discord usan el arte del aviso como retrato (no hay otra fuente) y se corrige la errata "Ichgo" del aviso.
+
+**Sin fuente** (comprobado hoy, no repetir):
+- **NIKKE**: la wiki describe las recompensas sin cifras ("Items will be given with every login…"); ni nikke.gg ni otras guías las listan.
+- **DNA**: las notas de Steam solo dan el inicio de sesión (ya se lee); GameWith dejó la guía en diciembre de 2025.
+- **WuWa**: los eventos sin "Event Preview" de Kuro.
+- **StarSavior**: el resto de recompensas va en imágenes.
+- **Retratos**: MONGIL M.A.D, Rue y Lou (ni wiki.gg, ni Kaiden.gg, ni GameWith); Infinity Nikki (sus trajes nuevos no están en su wiki y el aviso
+  trae una sola imagen para los cuatro); el artefacto de Epic Seven (solo el arte del banner); Suikoden Kasumi y Suigetsu ("Not yet released" en Kaiden).
+- **Iconos de objetos de Epic Seven** (Faint Guiding Stone, Hero/Artifact Summon Ticket, cofres): su wiki no tiene esos archivos.
+
+## Tercera pasada de recompensas (18 nov 2026, noche)
+
+- **ZZZ** (`hoyowiki.ts`): muchas páginas no usan `{{Event Rewards}}` sino `{{Card List|Polychrome*40; …}}` tras "Total Rewards" o bajo "==Reward Preview==",
+  o fichas sueltas `{{Card|Boopon|10}}` en "===Total Rewards===" (`cardListTotal`). Los eventos que se repiten (inicios de sesión, pruebas de agentes)
+  tienen una página por edición con su fecha de inicio en hora del servidor ('"En-Nah" Into Your Lap/2026-11-11'): se pide si la general no trae nada.
+  Ganan The Final Callback, Angels Support Operation y "En-Nah" Into Your Lap.
+- **Arknights** (`wiki.ts`, `akPageRewards`): página del evento en arknights.wiki.gg: su inicio de sesión (`{{Login reward cell|…|item1=Orundum,200}}`)
+  y el Originite Prime de sus misiones («All TD operations are worth {{Cur|Originite Prime|31}}»; 1 OP = 180 Orundum para las tiradas). Si el
+  inicio de sesión sale como evento aparte ("Hunting Time", del cliente, que solo suma el Orundum), sus recompensas van a ese evento, completas
+  (con los 2 permisos especiales: 1 → 3 tiradas), y no se repiten en el principal. Los permisos con nombre ("… Headhunting Permit") cuentan 1.
+  Las tiendas de packs (de pago) no cuentan.
+- **Blue Archive** (`mediawiki.ts`, `baPageRewards`): el Bucket da `page_name` de cada evento; de su página, los Pyroxene desde "=Stage Info="
+  (primera vez, misiones y minijuegos, sin la tienda de canje) y la alumna de regalo (`{{CharacterCard|…}}`, icono de bluearchive.wiki). Set Sail!:
+  670 Pyroxene (5,6 tiradas) y Chiaki (Swimsuit). Los raids siguen sin cifras (dependen del rango).
+- **Endfield**: "Season of Fervor" es la página "Echoes of War: Season of Fervor"; sus recompensas van al final de cada dificultad
+  ("|Oroberyl:100,T-Creds:25000") y ahora se suman (900 Oroberyl).
+- **Honkai 3rd**: las páginas sin cifras («Clear the chapter to get {{currency|Dreaming Toward Dawn Gift Box}}, {{currency|Crystals}}… and more»)
+  listan esos objetos sin cantidad, como R:1999.
+- **Reverse: 1999**: sin "[Main Rewards]", la frase de "[Event Intro]" ("log in for 3 days to claim Collaboration Building [When the World Was Small],
+  Delicate Insight Package, and more").
+- **CZN**: "Nightmare Carnival: 70 Free Normal Rescues Distribution" → 70 tiradas (del título).
+- **Bluepoch** corta la conexión de vez en cuando (`ECONNRESET` → 502 en el proxy, dos veces hoy): el recolector conserva la copia anterior.
+
+**Sin fuente** (comprobado hoy): GFL2 Iliad (la tienda de la página está vacía todavía), PtN (sin páginas de los eventos nuevos), PGR (la página de la
+versión describe sin cifras), Aniimo (ni Steam ni Game8 dan las de estos eventos), Infinity Nikki (sin páginas; Alison's Travel Shop es una
+tienda), los eventos de aumento de botín (HSR Planar Fissure/Relic Recon/Realm of the Strange, R:1999 Double Echoes): no reparten nada.

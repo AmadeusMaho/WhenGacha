@@ -122,7 +122,9 @@ export function pullsIn(game: string, lines: string[]): { pulls: number; items: 
   }
   for (const raw of lines) {
     // "10-Recruitment Ticket" (Blue Archive) → "Ten Recruitment Ticket": un nombre que empieza por letra, que es lo que leen las expresiones de abajo.
+    // "\[Prismatic Hourglass] ×10" (avisos de DNA en Steam): sin los corchetes, que cortaban el nombre antes de la cifra.
     const l = raw.replace(/\b10[- ]Recruitment Ticket/gi, 'Ten Recruitment Ticket').replace(/\b1[- ]Recruitment Ticket/gi, 'Single Recruitment Ticket')
+      .replace(/\[([^\][]{2,60})\](?=\s*(?:×|x\s?\d))/gi, '$1')
     // Compensaciones de mantenimiento y precios no son recompensas del evento.
     if (/compensation|price:|cost|consumes|purchase/i.test(l)) continue
     // La x de multiplicar va tras un espacio o pegada a la cifra: "Apex 8" no es "Ape ×8" (BLEACH, "reach Apex 8 or above").

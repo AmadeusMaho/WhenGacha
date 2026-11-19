@@ -114,6 +114,20 @@ export async function syncKuro(gameId: string): Promise<GameSync> {
     // atrás sobre cabeceras ajenas ("[New Resonator]") para no perder recompensas, y su biografía salía como descripción.
     marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
   })
+  // Las notas de parche no dan recompensas desde la 3.8 (12 nov 2026); el "Event Preview | [Nombre] … Coming Soon!" de cada evento sí
+  // ("✦Rewards✦" / "Astrite x1200, Graduation Season (Event Sigil), …"). Solo para los eventos que siguen sin recompensas y con adelanto de los
+  // últimos 60 días: una consulta por evento (el proxy la guarda), normalmente una o dos por versión.
+  for (const ev of out.filter(e => !e.items.length && !e.minor)) {
+    const pv = menu.find(a => /^Event Preview\s*\|/i.test(a.articleTitle) && a.articleTitle.includes(`[${ev.title}]`) && now - at(a.startTime, ASIA) < 60 * DAY)
+    if (!pv) continue
+    const r = await fetch(viaProxy(`${CDN}/article/${pv.articleId}.json`)).catch(() => null)
+    if (!r?.ok) continue
+    const ls = lines(((await r.json()) as { articleContent?: string }).articleContent ?? '')
+    const k = ls.findIndex(l => /^✦?\s*Rewards?\s*✦?\s*:?$/i.test(l))
+    const reward = k >= 0 ? ls.slice(k + 1, k + 3) : ls.filter(l => /^✦?\s*Rewards?\s*✦?\s*:/i.test(l))
+    const { pulls, items } = pullsIn('wuwa', reward)
+    if (items.length) { ev.items = items; ev.pulls = pulls }
+  }
   // Pase de batalla (Pioneer Podcast): toda la versión, del fin del mantenimiento al inicio del de la siguiente. El inicio de ese mantenimiento
   // sale de su "Update Maintenance Notice" si ya existe; si no, del día del "Version Preview … Scheduled for Release on November 12th (UTC+8)"
   // a las 04:00 (UTC+8), la hora habitual, marcado "≈".

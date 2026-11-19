@@ -70,6 +70,8 @@ const SOURCES = [
   // Umamusume: lista de personajes de umapyoi.net (API pública, robots.txt "Allow: /") para poner el retrato de cada destacado.
   // Una sola ruta y caché de un día: la lista apenas cambia.
   // También la lista de trajes y la de cartas de apoyo (uma.ts: qué traje o qué carta sale en cada banner, por su id).
+  // Umamusume: recompensas de los eventos de historia en GameTora (lista y página de cada evento; robots.txt sin restricciones aquí). uma.ts.
+  { name: 'gametora', ttl: 24 * HOUR, test: u => u.hostname === 'gametora.com' && /^\/umamusume\/events\/(story-events|story-event-\d{1,3})$/.test(u.pathname) && !u.search },
   { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && /^\/api\/v1\/(character\/list|outfit|support)$/.test(u.pathname) && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
   { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive|other-games\/starsavior)\/banners$/.test(u.pathname) },
@@ -196,8 +198,9 @@ const SOURCES = [
   // También los Servants de JP con nombre en inglés: retratos de los banners futuros con Servants que aún no salieron en NA (fgo.ts).
   { name: 'atlasacademy-jp', ttl: 12 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/export\/JP\/basic_(event|servant)_lang_en\.json$/.test(u.pathname) },
   { name: 'gamepress-fgo', ttl: 12 * HOUR, test: u => u.hostname === 'grandorder.gamepress.gg' && u.pathname === '/summon-banner-list' },
-  // Ficha de un evento de FGO, solo para su arte (`banner`); hasta 6 por ciclo. El arte no cambia: caché larga.
-  { name: 'atlasacademy-event', ttl: 24 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/nice\/NA\/event\/\d{4,6}$/.test(u.pathname) },
+  // Ficha de un evento de FGO (arte, guerras y tienda; NA y, para lo que viene, JP) y sus guerras (recompensas de las quests, ~500 KB sin
+  // comprimir): hasta 6 fichas de NA y 6 eventos con recompensas por ciclo (fgo.ts). No cambian: caché larga.
+  { name: 'atlasacademy-event', ttl: 24 * HOUR, test: u => u.hostname === 'api.atlasacademy.io' && /^\/nice\/(NA|JP)\/(event|war)\/\d{4,6}$/.test(u.pathname) },
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && /^\/(nikke-banner-history|trickcal-chibi-go-banner-history|guides\/trickcal-revive-codes)\/$/.test(u.pathname) },
   // Epic Seven: calendario de banners (bannerhistory.app, su robots.txt permite /en/) y avisos oficiales de STOVE (tablones Events=988 y Game Maintenance=986).
   { name: 'bannerhistory', ttl: 6 * HOUR, test: u => u.hostname === 'bannerhistory.app' && u.pathname === '/en/e7-pickup-history' },
@@ -277,7 +280,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'bbs-api-os.hoyolab.com': 3000, 'mobilematters.gg': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'bbs-api-os.hoyolab.com': 3000, 'mobilematters.gg': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'gametora.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */ }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

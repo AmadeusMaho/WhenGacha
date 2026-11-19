@@ -83,6 +83,13 @@ function pageRewards(text: string): { items: { name: string; amount: number }[];
   const pulls = Math.round(items.reduce((n, i) => n + i.amount * per(i.name), 0) * 10) / 10
   // Primero lo que sirve para tirar; después el resto (máx. 10).
   items.sort((x, y) => per(y.name) - per(x.name))
+  if (!items.length) {
+    // Sin cifras ("Clear the chapter to get {{currency|Dreaming Toward Dawn Gift Box}}, {{currency|Crystals}}, … and more", 18 nov 2026): los
+    // objetos que nombra, sin cantidad (amount 0), como hace R:1999. Solo frases de recompensa, no de gasto.
+    const named = body.split('\n').filter(l => /\b(?:get|claim|obtain|reward|earn)/i.test(l) && !PAID_LINE.test(l) && !/^\s*\{\{\s*Quote/i.test(l))
+      .flatMap(l => [...l.matchAll(/\{\{\s*currency\s*\|\s*([^|}]+?)\s*\}\}/gi)].map(m => (/^crystal$/i.test(m[1]) ? 'Crystals' : m[1])))
+    return { items: [...new Set(named)].slice(0, 8).map(name => ({ name, amount: 0 })), pulls: 0 }
+  }
   return { items: items.slice(0, 10), pulls }
 }
 
