@@ -613,6 +613,8 @@ Un solo servidor con el horario de Corea (KST): sin selector en `servers.ts`. Po
   10:00 KST». Banners de «◆ Special Search Schedule» («2 Special Searches begin: Caller of the Ancestors, Dorothea / Wail of the Vengeful Dead» + «* Period»):
   "Título, Nombre" = Vanguard; sin coma, arma, o título de un Vanguard sacado de los pases («[Intelligence Division's Wildcard, Yui Pass]» → Yui).
   Las "Part 1/2" de un evento se unen. Logins de 7 días y bingos de crecimiento salen como pequeños. Los pases y packs de pago no.
+  Las búsquedas temporales «◆ New Feature – FairyNet: Special Dash» («will be available from Oct 8 to Oct 22») salen como banner con los Vanguards
+  de su lista «Available Vanguards/Mercenaries» (los que no tienen carta en ninguna fuente se omiten); la «Start Dash» no caduca y no sale.
 - **Recompensas e iconos**: gacha.gg `/horizon-walker/events`, la tienda de canje del evento en curso («On now», cantidad × límite por evento, con icono).
   Sus fechas van atrasadas (actualizada el 9 nov): solo se usan sus objetos. Un evento recién empezado sale sin recompensas hasta que gacha.gg lo añada.
   **Sin icono**: Extercium (ni gacha.gg ni los avisos publican su imagen; se probaron los nombres de archivo del juego) y lo que no esté en las tiendas (`HW_ICONS` cubre billetes, contratos y materiales comunes).
@@ -635,6 +637,10 @@ Horas en KST, sin selector de servidor. Por ciclo: 2 JSON de MAD Viewer (`madvie
   `/data/events.json` (inicio y fin exactos, fin de las fases, cartel, destacados, tienda, caja de premios y asistencia, con nombre e icono de cada objeto)
   y `/data/gacha_banners.json` («Rate-Up Summon (Yomi)», periodo, 120 Seeds y 200 de kilometraje). Recompensas = asistencia + tienda (por su límite) +
   primera ronda de la caja + premios por tiradas. Tiradas: billetes Rate-Up + Seeds / 120.
+- **Eventos de misiones** (`missions` de tipo "event_hub" con fin en rewards.json): los de puntos diarios («Tied Together by Fate»: misiones que
+  suman puntos y premios por tramos; las que se reinician cada día cuentan una vez por día) y los de cada banner («Sparkling Signal, New Encounter!: Yomi»,
+  billetes Rate-Up por conseguir y subir a la destacada; pequeños y sin tiradas, porque solo pagan si la consigues). Sin cartel: las pestañas del juego
+  son ilustraciones subidas de tono; el del banner lleva el retrato.
 - **Iconos**: los del juego en MAD Viewer (`/icons/char/Icon_CH0003.webp`, `/icons/item/…`, `/icons/banner/…`): todo con icono.
 - **Códigos**: lootandwaifus (tabla "Working codes", sin recompensas). game.guide y gacha.gg dicen que no hay activos: las listas no coinciden.
 - **Modos con temporada** (`/data/rewards.json` y `/data/archive.json` de MAD Viewer): Arena y Total War (una semana cada 28 días) e Infinity Archive (28

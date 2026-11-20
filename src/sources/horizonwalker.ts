@@ -58,7 +58,8 @@ export const HW_ICONS = new Map<string, string>([
 
 const clean = (s: string) => s.replace(/[\s ]+/g, ' ').trim()
 const iso = (t: number) => new Date(t).toISOString()
-export const hwKey = (s: string) => s.toLowerCase().replace(/[‘’'"“”]/g, '').replace(/\s*[–—-]\s*part \d+\s*$/i, '').replace(/[^a-z0-9]+/g, ' ').trim()
+// Sin tildes: «Fleure de Vanité 92» (Steam) = «Fleure de Vanite 92» (gacha.gg).
+export const hwKey = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[‘’'"“”]/g, '').replace(/\s*[–—-]\s*part \d+\s*$/i, '').replace(/[^a-z0-9]+/g, ' ').trim()
 
 /** Día KST («Nov 19, 2026», «November 5») → medianoche KST en ms (UTC). */
 function dayOf(s: string, year: number): number | null {
@@ -98,7 +99,9 @@ const imgOf = (l: string | undefined) => { const m = IMG.exec(l ?? ''); return m
 
 export interface HwRaw { kind: 'event' | 'banner'; title: string; start: number; end: number; image?: string; description?: string; minor?: boolean
   /** Banner: nombres de la línea («Caller of the Ancestors, Dorothea»), uno por banner. */
-  who?: string; rerun?: boolean }
+  who?: string; rerun?: boolean
+  /** "FairyNet: … Dash": los Vanguards que pueden salir (lista «Available Vanguards/Mercenaries»). */
+  pool?: string[] }
 
 /** Notas de un parche: eventos y banners con su periodo, imágenes de los Vanguards y armas nuevos, títulos "Título, Nombre" y fecha. */
 export function hwPost(post: SteamPost): { raws: HwRaw[]; art: Map<string, string>; titles: Map<string, string>; update: number | null; headline?: string } {
@@ -134,6 +137,18 @@ export function hwPost(post: SteamPost): { raws: HwRaw[]; art: Map<string, strin
       // Arte de los Vanguards y armas nuevos (no de los trajes: esos van en "New Costumes" y no se usan).
       const nv = /^new (vanguard|weapon)\s*:\s*(.+)$/i.exec(section)
       if (nv && sectionArt) art.set(hwKey(nv[2]), sectionArt)
+      continue
+    }
+    // «◆ New Feature – FairyNet: Special Dash» + «* FairyNet: Special Dash will be available from Oct 8 to Oct 22.»: búsqueda temporal de pago
+    // (refrescos gratis y compras el resultado). Empieza tras el mantenimiento y acaba a las 10:00 KST, como los banners. La "Start Dash" del
+    // aniversario no caduca ("not a limited-time Search"): no se muestra.
+    const dash = /fairynet:\s*(.+?dash)\s+will be available from\s+([A-Z][a-z]+\.? \d{1,2})\s+to\s+([A-Z][a-z]+\.? \d{1,2})/i.exec(l)
+    if (dash) {
+      const a = dayOf(dash[2], year), b = dayOf(dash[3], year)
+      const at = lines.findIndex((x, k) => k > i && /^available vanguards/i.test(x))
+      const pool: string[] = []
+      for (let k = at + 1; at > 0 && k < lines.length && !/^◆/.test(lines[k]) && pool.length < 12; k++) if (/^[A-Z][A-Za-z' -]{1,30}$/.test(lines[k])) pool.push(clean(lines[k]))
+      if (a != null && b != null) raws.push({ kind: 'banner', title: `FairyNet: ${clean(dash[1])}`, start: a + AFTER * HOUR, end: b + 10 * HOUR, image: sectionArt, pool })
       continue
     }
     if (/special search/i.test(section)) {
@@ -291,6 +306,14 @@ export async function syncHorizonWalker(gameId: string, now = Date.now()): Promi
       const k = `${x.kind}:${hwKey(x.title)}:${iso(x.start).slice(0, 10)}`
       // Del aviso más reciente al más antiguo: manda el último (las "Part 2" repiten el periodo de la "Part 1").
       if (byKey.has(k)) continue
+      if (x.kind === 'banner' && x.pool) {
+        // FairyNet Dash: todos los Vanguards que pueden salir, con su carta.
+        // Sin los que no tienen carta en ninguna fuente (algún mercenario): todo destacado lleva retrato.
+        const featured = x.pool.map(n => ({ name: n, tag: 'EX', icon: pics.chars.get(hwKey(n)) ?? art.get(hwKey(n)) })).filter(f => f.icon)
+        byKey.set(k, { id: `${gameId}:banner:steam:${hwKey(x.title)}:${iso(x.start).slice(0, 10)}`, gameId, kind: 'banner', title: x.title, start: iso(x.start), end: iso(x.end),
+          image: x.image, items: [], featured, pulls: 0, source: 'api', official: true, description: '⟦d.hwDash⟧' })
+        continue
+      }
       if (x.kind === 'banner') {
         const { title, f, weapon } = featuredOf(x.who ?? x.title)
         byKey.set(k, { id: `${gameId}:banner:steam:${hwKey(title)}:${iso(x.start).slice(0, 10)}`, gameId, kind: 'banner', title, start: iso(x.start), end: iso(x.end),

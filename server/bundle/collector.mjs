@@ -27401,7 +27401,7 @@ var HW_ICONS = /* @__PURE__ */ new Map([
 ]);
 var clean$3 = (s) => s.replace(/[\s ]+/g, " ").trim();
 var iso$3 = (t) => new Date(t).toISOString();
-var hwKey = (s) => s.toLowerCase().replace(/[‘’'"“”]/g, "").replace(/\s*[–—-]\s*part \d+\s*$/i, "").replace(/[^a-z0-9]+/g, " ").trim();
+var hwKey = (s) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[‘’'"“”]/g, "").replace(/\s*[–—-]\s*part \d+\s*$/i, "").replace(/[^a-z0-9]+/g, " ").trim();
 /** Día KST («Nov 19, 2026», «November 5») → medianoche KST en ms (UTC). */
 function dayOf(s, year) {
 	const m = /([A-Z][a-z]{2,8})\.?\s+(\d{1,2})(?:,\s*(\d{4}))?/.exec(s);
@@ -27465,6 +27465,22 @@ function hwPost(post) {
 			pending = null;
 			const nv = /^new (vanguard|weapon)\s*:\s*(.+)$/i.exec(section);
 			if (nv && sectionArt) art.set(hwKey(nv[2]), sectionArt);
+			continue;
+		}
+		const dash = /fairynet:\s*(.+?dash)\s+will be available from\s+([A-Z][a-z]+\.? \d{1,2})\s+to\s+([A-Z][a-z]+\.? \d{1,2})/i.exec(l);
+		if (dash) {
+			const a = dayOf(dash[2], year), b = dayOf(dash[3], year);
+			const at = lines.findIndex((x, k) => k > i && /^available vanguards/i.test(x));
+			const pool = [];
+			for (let k = at + 1; at > 0 && k < lines.length && !/^◆/.test(lines[k]) && pool.length < 12; k++) if (/^[A-Z][A-Za-z' -]{1,30}$/.test(lines[k])) pool.push(clean$3(lines[k]));
+			if (a != null && b != null) raws.push({
+				kind: "banner",
+				title: `FairyNet: ${clean$3(dash[1])}`,
+				start: a + AFTER * HOUR$3,
+				end: b + 10 * HOUR$3,
+				image: sectionArt,
+				pool
+			});
 			continue;
 		}
 		if (/special search/i.test(section)) {
@@ -27707,6 +27723,29 @@ async function syncHorizonWalker(gameId, now = Date.now()) {
 		for (const x of r.raws) {
 			const k = `${x.kind}:${hwKey(x.title)}:${iso$3(x.start).slice(0, 10)}`;
 			if (byKey.has(k)) continue;
+			if (x.kind === "banner" && x.pool) {
+				const featured = x.pool.map((n) => ({
+					name: n,
+					tag: "EX",
+					icon: pics.chars.get(hwKey(n)) ?? art.get(hwKey(n))
+				})).filter((f) => f.icon);
+				byKey.set(k, {
+					id: `${gameId}:banner:steam:${hwKey(x.title)}:${iso$3(x.start).slice(0, 10)}`,
+					gameId,
+					kind: "banner",
+					title: x.title,
+					start: iso$3(x.start),
+					end: iso$3(x.end),
+					image: x.image,
+					items: [],
+					featured,
+					pulls: 0,
+					source: "api",
+					official: true,
+					description: "⟦d.hwDash⟧"
+				});
+				continue;
+			}
 			if (x.kind === "banner") {
 				const { title, f, weapon } = featuredOf(x.who ?? x.title);
 				byKey.set(k, {
@@ -27850,6 +27889,8 @@ function madItems(e, refs) {
 var madPulls = (items) => Math.round(items.reduce((n, i) => n + (/rate-up summon ticket/i.test(i.name) ? i.amount : /^seeds?$/i.test(i.name) ? i.amount / 120 : 0), 0) * 10) / 10;
 /** Nombre del Partner del título del banner: «Rate-Up Summon (Dan Xi (Halloween))» → «Dan Xi (Halloween)». */
 var bannerName = (s) => /\((.+)\)\s*$/.exec(s)?.[1] ?? s;
+/** Código de Partner → nombre, de los banners Rate-Up («Rate-Up Summon (Yomi)», CH0003 → Yomi). */
+var partnerNames = (ban) => new Map(ban.banners.filter((b) => b.kind === "pickup" && b.pickups.length === 1).map((b) => [b.pickups[0], bannerName(b.name.en)]));
 function madEvents(gameId, ev, ban, now = Date.now()) {
 	const out = [];
 	const names = /* @__PURE__ */ new Map();
@@ -28015,6 +28056,58 @@ function madModes(gameId, m, now = Date.now()) {
 	});
 	return out;
 }
+/**
+* Eventos de misiones (rewards.json de MAD Viewer, `missions` de tipo "event_hub" con fecha de fin): los de puntos que se reinician cada día
+* («Tied Together by Fate»: misiones diarias que suman puntos y premios por 4, 8, 12… puntos) y las misiones de cada banner («Sparkling Signal,
+* New Encounter!»: billetes Rate-Up por conseguir y subir de estrellas a la destacada). Sin cartel: las pestañas del juego son ilustraciones
+* subidas de tono; el de cada banner lleva el retrato de su Partner.
+* Tiradas: solo las de puntos; las del banner devuelven billetes por tirar en él (cuentan solo si la consigues), así que van sin tiradas.
+*/
+function madMissions(gameId, r, names, now = Date.now()) {
+	const out = [];
+	const refs = r.refs ?? {};
+	const groups = r.rewardGroups ?? {};
+	for (const m of r.missions ?? []) {
+		if (m.type !== "event_hub" || !m.open || m.open.end.startsWith("2099")) continue;
+		const end = iso$2(m.open.end);
+		if (+new Date(end) < now - 2592e5) continue;
+		const days = Math.max(1, Math.round((Date.parse(m.open.end) - Date.parse(m.open.start)) / 864e5));
+		const sum = /* @__PURE__ */ new Map();
+		const add = (id, times = 1) => {
+			for (const a of groups[id ?? ""] ?? []) sum.set(a.ref, (sum.get(a.ref) ?? 0) + (a.amount[0] ?? 0) * times);
+		};
+		for (const s of m.point?.steps ?? []) add(s.rewards);
+		for (const g of m.groups ?? []) for (const q of g.quests) for (const l of q.levels ?? []) add(l.rewards, m.reset === "daily" ? days : 1);
+		const items = [...sum].filter(([ref, n]) => n > 0 && refs[ref] && !/^goods:(?:[1-9]\d{3})$/.test(ref) && !/^deco:/.test(ref)).map(([ref, n]) => ({
+			name: refs[ref].name.en,
+			amount: n,
+			icon: itemIcon(refs[ref].icon)
+		}));
+		const rank = (n) => /rate-up summon ticket/i.test(n) ? 0 : /^seeds?$/i.test(n) ? 1 : /summon ticket/i.test(n) ? 2 : 3;
+		items.sort((a, b) => rank(a.name) - rank(b.name));
+		const who = m.pickup ? names.get(m.pickup) ?? m.pickup : void 0;
+		out.push({
+			id: `${gameId}:event:madv:mission:${m.id}`,
+			gameId,
+			kind: "event",
+			title: who ? `${m.name?.en ?? "Missions"}: ${who}` : m.name?.en ?? `Missions ${m.id}`,
+			start: iso$2(m.open.start),
+			end,
+			items: items.slice(0, 10),
+			featured: m.pickup ? [{
+				name: who,
+				icon: charIcon(m.pickup),
+				rarity: 3
+			}] : [],
+			pulls: m.pickup ? 0 : madPulls(items),
+			description: m.pickup ? "⟦d.madPickupMissions⟧" : "⟦d.madMissions⟧",
+			source: "api",
+			official: true,
+			...m.pickup ? { minor: true } : {}
+		});
+	}
+	return out;
+}
 /** Tabla "Working codes" de lootandwaifus (rejilla `.modular-table`, varios códigos por fila y sin recompensas); se para en "Expired codes". */
 function madCodes(doc) {
 	const text = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
@@ -28058,10 +28151,14 @@ async function syncMakeDrama(gameId, now = Date.now()) {
 		...ar.status === "fulfilled" ? { archive: ar.value } : {}
 	};
 	return {
-		events: [...madEvents(gameId, ev.status === "fulfilled" ? ev.value : {
-			events: [],
-			refs: {}
-		}, ban.status === "fulfilled" ? ban.value : { banners: [] }, now), ...madModes(gameId, modes, now)],
+		events: [
+			...madEvents(gameId, ev.status === "fulfilled" ? ev.value : {
+				events: [],
+				refs: {}
+			}, ban.status === "fulfilled" ? ban.value : { banners: [] }, now),
+			...madModes(gameId, modes, now),
+			...rw.status === "fulfilled" ? madMissions(gameId, rw.value, partnerNames(ban.status === "fulfilled" ? ban.value : { banners: [] }), now) : []
+		],
 		patches: [],
 		codes: codes.status === "fulfilled" ? codes.value : []
 	};

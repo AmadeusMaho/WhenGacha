@@ -76,6 +76,9 @@ export const madPulls = (items: RewardItem[]) =>
 
 /** Nombre del Partner del título del banner: «Rate-Up Summon (Dan Xi (Halloween))» → «Dan Xi (Halloween)». */
 const bannerName = (s: string) => /\((.+)\)\s*$/.exec(s)?.[1] ?? s
+/** Código de Partner → nombre, de los banners Rate-Up («Rate-Up Summon (Yomi)», CH0003 → Yomi). */
+const partnerNames = (ban: { banners: MadBanner[] }) =>
+  new Map(ban.banners.filter(b => b.kind === 'pickup' && b.pickups.length === 1).map(b => [b.pickups[0], bannerName(b.name.en)] as [string, string]))
 
 export function madEvents(gameId: string, ev: { events: MadEvent[]; refs: Record<string, Ref> }, ban: { banners: MadBanner[] }, now = Date.now()): GameEvent[] {
   const out: GameEvent[] = []
@@ -172,6 +175,48 @@ export function madModes(gameId: string, m: MadModes, now = Date.now()): GameEve
   return out
 }
 
+interface Quest { desc?: Lang; levels?: { rewards?: string }[] }
+interface Mission { id: number; type?: string; name?: Lang; pickup?: string; open?: Window; reset?: string
+  point?: { name?: Lang; steps: { need: number; rewards: string }[] }; groups?: { quests: Quest[] }[] }
+export interface MadRewards { missions?: Mission[]; rewardGroups?: Record<string, Amount[]>; refs?: Record<string, Ref> }
+
+/**
+ * Eventos de misiones (rewards.json de MAD Viewer, `missions` de tipo "event_hub" con fecha de fin): los de puntos que se reinician cada día
+ * («Tied Together by Fate»: misiones diarias que suman puntos y premios por 4, 8, 12… puntos) y las misiones de cada banner («Sparkling Signal,
+ * New Encounter!»: billetes Rate-Up por conseguir y subir de estrellas a la destacada). Sin cartel: las pestañas del juego son ilustraciones
+ * subidas de tono; el de cada banner lleva el retrato de su Partner.
+ * Tiradas: solo las de puntos; las del banner devuelven billetes por tirar en él (cuentan solo si la consigues), así que van sin tiradas.
+ */
+export function madMissions(gameId: string, r: MadRewards, names: Map<string, string>, now = Date.now()): GameEvent[] {
+  const out: GameEvent[] = []
+  const refs = r.refs ?? {}
+  const groups = r.rewardGroups ?? {}
+  for (const m of r.missions ?? []) {
+    if (m.type !== 'event_hub' || !m.open || m.open.end.startsWith('2099')) continue
+    const end = iso(m.open.end)
+    if (+new Date(end) < now - 3 * 86_400_000) continue
+    const days = Math.max(1, Math.round((Date.parse(m.open.end) - Date.parse(m.open.start)) / 86_400_000))
+    const sum = new Map<string, number>()
+    const add = (id: string | undefined, times = 1) => { for (const a of groups[id ?? ''] ?? []) sum.set(a.ref, (sum.get(a.ref) ?? 0) + (a.amount[0] ?? 0) * times) }
+    for (const s of m.point?.steps ?? []) add(s.rewards)
+    // Las misiones que se reinician cada día pagan una vez por día del periodo.
+    for (const g of m.groups ?? []) for (const q of g.quests) for (const l of q.levels ?? []) add(l.rewards, m.reset === 'daily' ? days : 1)
+    const items = [...sum].filter(([ref, n]) => n > 0 && refs[ref] && !/^goods:(?:[1-9]\d{3})$/.test(ref) && !/^deco:/.test(ref))
+      .map(([ref, n]) => ({ name: refs[ref].name.en, amount: n, icon: itemIcon(refs[ref].icon) }))
+    const rank = (n: string) => (/rate-up summon ticket/i.test(n) ? 0 : /^seeds?$/i.test(n) ? 1 : /summon ticket/i.test(n) ? 2 : 3)
+    items.sort((a, b) => rank(a.name) - rank(b.name))
+    const who = m.pickup ? names.get(m.pickup) ?? m.pickup : undefined
+    out.push({
+      id: `${gameId}:event:madv:mission:${m.id}`, gameId, kind: 'event', title: who ? `${m.name?.en ?? 'Missions'}: ${who}` : m.name?.en ?? `Missions ${m.id}`,
+      start: iso(m.open.start), end, items: items.slice(0, 10),
+      featured: m.pickup ? [{ name: who!, icon: charIcon(m.pickup), rarity: 3 }] : [],
+      pulls: m.pickup ? 0 : madPulls(items), description: m.pickup ? '⟦d.madPickupMissions⟧' : '⟦d.madMissions⟧',
+      source: 'api', official: true, ...(m.pickup ? { minor: true } : {}),
+    })
+  }
+  return out
+}
+
 /** Tabla "Working codes" de lootandwaifus (rejilla `.modular-table`, varios códigos por fila y sin recompensas); se para en "Expired codes". */
 export function madCodes(doc: Document): PromoCode[] {
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
@@ -210,6 +255,7 @@ export async function syncMakeDrama(gameId: string, now = Date.now()): Promise<G
     ...(ar.status === 'fulfilled' ? { archive: ar.value } : {}),
   }
   const events = [...madEvents(gameId, ev.status === 'fulfilled' ? ev.value : { events: [], refs: {} }, ban.status === 'fulfilled' ? ban.value : { banners: [] }, now),
-    ...madModes(gameId, modes, now)]
+    ...madModes(gameId, modes, now),
+    ...(rw.status === 'fulfilled' ? madMissions(gameId, rw.value, partnerNames(ban.status === 'fulfilled' ? ban.value : { banners: [] }), now) : [])]
   return { events, patches: [], codes: codes.status === 'fulfilled' ? codes.value : [] }
 }
