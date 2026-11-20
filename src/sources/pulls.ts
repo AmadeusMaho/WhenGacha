@@ -99,6 +99,10 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // MAke Drama: MAD: 120 Seeds por invocación (precio de los banners Rate-Up en los datos del juego); cada Rate-Up Summon Ticket es 1. Los Regular
   // Summon Ticket son del banner permanente: no se cuentan.
   makedrama: [{ item: /^seeds?$/i, per: 120 }, { item: /^rate-up summon tickets?$/i, per: 1 }],
+  // Fire Emblem Heroes: una sesión de 5 tiradas cuesta 5+4+4+4+3 = 20 Orbes (wiki, "Summoning"): 4 Orbes por tirada.
+  feh: [{ item: /^orbs?$/i, per: 4 }],
+  // Sword Master Story: cada Ruby Summon Ticket es 1 tirada. Lo que cuesta una tirada en Rubíes no lo publica ninguna guía: no se convierte.
+  swordmaster: [{ item: /^ruby summ?on tickets?$/i, per: 1 }],
   suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }

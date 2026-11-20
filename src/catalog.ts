@@ -56,6 +56,12 @@ const ART: Record<string, string> = {
   // MAke Drama: MAD (19 nov 2026): fondo de la portada de su web oficial (hero-main-bg, 1920×1080). Juego +18: NUNCA las capturas de Steam
   // (explícitas); las de la App Store son de la interfaz.
   makedrama: 'https://mad.wemadeconnect.com/assets/img/hero/hero-main-bg.png',
+  // Fire Emblem Heroes (20 nov 2026): imagen para compartir de su web oficial (fire-emblem-heroes.com, ogp.jpg, 1000×628; lleva el logo).
+  feh: 'https://fire-emblem-heroes.com/en/ogp.jpg?date=20211202',
+  // Resident Evil Survival Unit (20 nov 2026): imagen para compartir de su web oficial (1280×720). Las capturas de la App Store llevan rótulos.
+  resu: 'https://www.residentevil-survivalunit.com/assets/images/en/og_image_20251118.png',
+  // Sword Master Story (20 nov 2026): fondo de su página de Steam (page_bg_raw, 1438×810), revisado a mano.
+  swordmaster: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4239590/c83d5fb0ef6bc12c99ab0912b8cab7d1e3050765/page_bg_raw.jpg?t=1794557640',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -149,7 +155,17 @@ export const CATALOG: Game[] = [
   // lootandwaifus (src/sources/makedrama.ts). Un solo servicio para todas las regiones (KST).
   def('makedrama', 'MAke Drama: MAD', 'MAD', 'Wemade Connect', '#ff7eb6', '#3a1838', 14, '', 'MAke Drama: MAD', 'makedrama',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/57/cb/23/57cb236d-afb7-a4a8-8f2f-8ea97fd4798a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Fire Emblem Heroes: tablas Cargo de su wiki (feheroes.fandom.com, horas exactas en UTC): banners con sus héroes, eventos con recompensas, Arena,
+  // Aether Raids, versiones y lo que ya está cargado de los días siguientes (src/sources/feh.ts). Un solo servidor mundial. Sin códigos de canje.
+  def('feh', 'Fire Emblem Heroes', 'FEH', 'Nintendo', '#e8c15a', '#2a2350', 0, 'feheroes.fandom.com', 'Fire Emblem Heroes', 'feh',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/96/db/1c/96db1c94-c09f-e15b-0ebb-c7f269a6beb6/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
+  // Resident Evil Survival Unit y Sword Master Story: sin web de avisos con fechas (src/sources/mobilegames.ts). Parche de la App Store, códigos y,
+  // si el dueño sigue sus anuncios, eventos por Discord (canales "resu" y "swordmaster"). Sword Master Story: también Steam en cuanto publique avisos.
+  { ...def('resu', 'Resident Evil Survival Unit', 'RESU', 'JOYCITY', '#c9a24a', '#1f2a33', 0, '', 'Resident Evil Survival Unit', 'resu',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/0e/f7/c1/0ef7c171-e955-2473-351d-3e39caaedfad/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
+  { ...def('swordmaster', 'Sword Master Story', 'SMS', 'SuperPlanet', '#7fb2ff', '#2b1f4a', 0, '', 'Sword Master Story', 'swordmaster',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/de/41/4b/de414bc6-326d-5c77-d571-e0c0c604b6c6/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1c/63/de/1c63de28-b001-b1c3-ecb6-7fb9895ae0c1/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'), wip: true },

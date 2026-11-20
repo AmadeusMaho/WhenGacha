@@ -277,6 +277,16 @@ const ECON: Record<string, Econ> = {
   // Horizon Walker (19 nov 2026): 100 Extercium por Special Search; 1% de EX y la 50.ª es siempre EX, y todos los EX del banner son el destacado
   // (gacha.gg, "Special Search calculator"): pity 50. El contador pasa de un banner al siguiente. Ninguna guía publica cuánto Extercium gratis dan
   // las diarias: sin `sources`, cada jugador pone las suyas. Extercium no tiene icono publicado.
+  // Fire Emblem Heroes (20 nov 2026): 20 Orbes por sesión de 5 tiradas (5/4/4/4/3, wiki "Summoning"): 4 por tirada. Cada 40 tiradas en un mismo banner
+  // se elige un destacado gratis ("spark", wiki): pity 40. Los Orbes gratis llegan sobre todo de eventos, bonificaciones de inicio de sesión y
+  // misiones con fecha, que la app ya trae con sus recompensas (feh.ts); Arena y Aether Raids pagan según el rango y ninguna guía actual da cifras
+  // fiables: sin `sources`, cada jugador pone las suyas.
+  feh: { currency: 'Orb', icon: 'Orb', iconUrl: 'https://static.wikia.nocookie.net/feheroes_gamepedia_en/images/9/96/Orb.png/revision/latest/scale-to-width-down/150?cb=20180221174350', per: 4, pass: 0, pity: 40, sources: [],
+    inputs: [{ id: 'arena', name: 'Arena', per: 'week' }, { id: 'aether', name: 'Aether Raids', per: 'week' }] },
+  // Sword Master Story (20 nov 2026): se tira con Rubíes o con Ruby Summon Tickets (los códigos dan 200–700 Rubíes o billetes). Ninguna guía
+  // publica el precio en Rubíes de una tirada ni la medida del "Guarantee Gauge" (con la barra llena, un 5★ seguro): `per` es un valor de partida
+  // (300) que cada jugador cambia en la ficha, y las diarias son un campo propio.
+  swordmaster: { currency: 'Ruby', ticket: 'Ruby Summon Ticket', per: 300, pass: 0, pity: 0, sources: [], inputs: [{ id: 'daily', name: 'Daily quests', per: 'day' }] },
   horizonwalker: { currency: 'Extercium', ticket: 'FairyNet Special Search Ticket', per: 100, pass: 0, pity: 50, sources: [] },
   // MAke Drama: MAD (19 nov 2026): 120 Seeds por invocación, 1200 la de 10 (datos del juego en MAD Viewer y gacha.gg); 2% el destacado y sin pity,
   // pero cada tirada da 1 de kilometraje y con 200 se canjea el destacado (el kilometraje pasa al banner siguiente): pity 200.

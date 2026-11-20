@@ -287,6 +287,8 @@ export function tidyName(s: string): string {
     .replace(/\s+limited[- ]time (?:gacha|banner)$/i, '')
     // "Solo Raid Start Notice" (NIKKE) → "Solo Raid".
     .replace(/(?:\s+(?:start|end|opening|closing))?\s+notice$/i, '')
+    // "Vaccine Lab Alliance Tournament Event Preview" (RE Survival Unit, 16 nov 2026) → "Vaccine Lab Alliance Tournament".
+    .replace(/\s+(?:event\s+)?preview$/i, '')
     // "Apex Challenge Starts Today!" (MHO) → "Apex Challenge".
     // Solo con "today/now" o con "!": "Execution Begins" (BLEACH) es el nombre del evento.
     .replace(/\s+(?:(?:starts?|begins?|returns?)\s+(?:today|now)|is (?:now )?live|now live|is here)\s*!*$|\s+(?:starts?|begins?)\s*!+$/i, '').trim() || s
@@ -393,7 +395,8 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
  * Hora del servidor de los juegos cuyos avisos dicen "(server time)" sin zona. Duet Night Abyss: servidor de América, UTC-5 (dna.ts).
  * Path to Nowhere: servidor global de América, UTC-7 (ptn.ts; "November 4th, 14:00 - December 2nd, 13:59 (Server Time)" en sus avisos de X).
  */
-const SERVER_ZONE: Record<string, number> = { dna: -5, ptn: -7 }
+// Sword Master Story: sus avisos van en la hora del servidor, UTC+9 («The schedule is based on the server's timezone (UTC+9)», Discord, 27 oct 2026).
+const SERVER_ZONE: Record<string, number> = { dna: -5, ptn: -7, swordmaster: 9 }
 
 /** Línea de un periodo por región: "Asia/HMT/SEA: July 23, 2026, 10:00 - …", "Europe: …", "America: …". */
 const REGION = /^(?:(?:asia|europe|eu|americas?|na|north america|sea|hmt|tw|hk|mo|jp|kr|global|other regions?)[\s/,&]*)+[:：]\s*/i
@@ -599,6 +602,17 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       // "【Limited Costume Introduction】 … new limited costume [Marian: Queen - Last Affection]" (NIKKE, 17 nov 2026): el nombre es el del traje.
       const costume = /^(?:(?:new|limited)\s+)*costumes?(?:\s+(?:introduction|gacha|showcase))?$/i.test(name) ? /\bcostume\s*\[([^\]]{3,60})\]/i.exec(raw.join(' '))?.[1].trim() : undefined
       if (costume) name = costume
+      // Fases de un mismo aviso ("■ Phase 2 Event Period", "1st Anniversary Event Notice" de RE Survival Unit, 8 nov 2026): el nombre es el título
+      // del aviso más la fase ("1st Anniversary – Phase 2"); antes salía "Phase 2 Event Period".
+      const phase = /^(phase|part|week|round)\s*(\d+)(?:\s+(?:event\s+)?(?:period|schedule|duration))?$/i.exec(name)
+      // Un aviso largo llega partido en varios mensajes seguidos: si este trozo empieza por un apartado ("4. 1st Anniversary Retrospective"), el
+      // título es el del primer trozo, el mensaje anterior que empiece por un titular (publicado como mucho 10 min antes).
+      const titleOf = (x: Message) => pickRegion(joinStartEnd(dropTweetAuthor(textOf(x).split('\n')).map(noise))).map(clean).find(Boolean)
+      const own = raw.map(clean).find(Boolean)
+      const msgTitle = !phase || (own && !/^\d+\.\s/.test(own)) ? own : messages
+        .filter(x => +new Date(x.timestamp) < +new Date(m.timestamp) && +new Date(m.timestamp) - +new Date(x.timestamp) < 10 * 60_000)
+        .sort((a, b) => +new Date(b.timestamp) - +new Date(a.timestamp)).map(titleOf).find(t => t && !/^\d+\.\s/.test(t))
+      if (phase && msgTitle) name = `${tidyName(msgTitle).replace(/\s+events?$/i, '')} – ${phase[1][0].toUpperCase()}${phase[1].slice(1).toLowerCase()} ${phase[2]}`
       if (!name) continue
       // Vídeos ("★Azur Lane Black Friday Sale 2026 PV★", 18 nov 2026): anuncian una campaña que ya viene con su propio aviso; no son eventos.
       if (/\b(?:PV|MV|trailer|teaser)\b/i.test(name)) continue
@@ -684,7 +698,12 @@ const NOT_CODE = /^(REDEEM|REDEMPTION|CODES?|REWARDS?|EXPIRES?|EXPIRATION|VALID|
  */
 export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
   const out: PromoCode[] = []
-  for (const { text, at } of msgs) {
+  for (const { text: full, at } of msgs) {
+    // "the error code "OR-FGEMF-20" is currently being displayed when making a payment" (Sword Master Story, 13 oct 2026): un código de error no es
+    // de canje; sin esto salía "FGEMF".
+    const text = full.replace(/\berror codes?\b[^\n]*/gi, '')
+    // Avisos de que los códigos viejos caducan ("Old Coupons Expire Before the Update!", SMS 26 oct 2026): la lista es de códigos que dejan de valer.
+    if (/\b(?:old\s+)?(?:coupons?|codes?)\s+(?:will\s+)?expire\b/i.test(full)) continue
     // Honkai 3 da los de cumpleaños sin decir "code" ("Elysia's Gift: ZBL0W0QI8T"): solo con esa etiqueta y si mezcla letras y cifras.
     const gifts = [...text.matchAll(/\bgift\s*[:：]\s*`?([A-Z0-9]{8,16})`?/gi)].map(m => m[1]).filter(c => /\d/.test(c) && /[A-Z]/.test(c))
     const named = /\bcodes?\b/i.test(text)
@@ -701,6 +720,9 @@ export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
       .map(m => `${clean(m[1]).replace(/^.*\b(?:for|get|obtain|receive|claim|rewards?:?)\s+/i, '')} ×${m[2].trim()}`)
     const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1]
       ?? /validity\s*:[^\n]*?[~～]\s*(?:\d{1,2}:\d{2},?\s*)?([A-Za-z]{3,9}\.? \d{1,2})/i.exec(text)?.[1] // "Validity: Today ~ 23:59, DEC 11 (UTC+8)"
+    // Ya caducado (el día entero de margen por la zona horaria): no se ofrece.
+    const untilAt = until ? Date.parse(/\d{4}/.test(until) ? until.replace(/\//g, '-') : `${until.replace('.', '')} ${new Date(at).getUTCFullYear()}`) : NaN
+    if (untilAt && untilAt + DAY < Date.now()) continue
     for (const code of found) {
       if (out.some(c => c.code.toUpperCase() === code.toUpperCase()) || /^(?:code|codes)$/i.test(code)) continue
       out.push({ code, rewards: [...rewards.slice(0, 6), ...(until ? [`Until ${until}`] : [])] })

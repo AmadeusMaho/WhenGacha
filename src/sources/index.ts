@@ -26,6 +26,8 @@ import { syncAniimo, ANIIMO_ICONS } from './aniimo'
 import { syncStarSavior, STARSAVIOR_ICONS } from './starsavior'
 import { syncHorizonWalker, HORIZONWALKER_ICONS } from './horizonwalker'
 import { syncMakeDrama } from './makedrama'
+import { syncFeh } from './feh'
+import { syncResu, syncSwordMaster } from './mobilegames'
 import { azurPolish, syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
@@ -398,6 +400,11 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'horizonwalker': return syncHorizonWalker(id)
     // MAke Drama: MAD: eventos, recompensas y banners de MAD Viewer (datos del juego, KST) + códigos de lootandwaifus.
     case 'makedrama': return syncMakeDrama(id)
+    // Fire Emblem Heroes: tablas Cargo de su wiki en una sola petición (feh.ts; la API corta tras 2–3 consultas seguidas).
+    case 'feh': return syncFeh(id)
+    // RE Survival Unit y Sword Master Story: sin web de avisos; parche de la App Store y códigos (mobilegames.ts). Eventos por Discord/Steam.
+    case 'resu': return syncResu(id)
+    case 'swordmaster': return syncSwordMaster(id)
     case 'fgo': return syncFgo(id)
     case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
     case 'limbus': return syncLimbus(id)

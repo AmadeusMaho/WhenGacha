@@ -1159,3 +1159,42 @@ GitHub Actions, y esos juegos solo los leían de Game8. Arreglos:
 - **AFK Journey**: códigos de PocketGamer (`afk-journey`; su wiki no los lista; antes 0). Revisadas el mismo día y descartadas: Epic Seven (la lista
   de PocketGamer mezcla códigos de E7WC sin fecha ni recompensas, muchos caducados), PGR (casi todos del servidor de Taiwán), y Arknights, NIKKE,
   Limbus, FGO, Onmyoji, Suikoden y Uma (PocketGamer no tiene lista: redirige o 404).
+
+## Fire Emblem Heroes, Resident Evil Survival Unit y Sword Master Story (20 nov 2026)
+
+**Fire Emblem Heroes** (`src/sources/feh.ts`): todo sale de las tablas Cargo de la **Fire Emblem Heroes Wiki** (feheroes.fandom.com, CC BY-SA), en UTC:
+banners (`SummoningEvents` + `SummoningEventFocuses` + `Units`, con el retrato «<Unidad> Face FC.webp»), 20 tipos de evento con sus recompensas
+(`…Rewards` + icono de `Items`), bonificaciones de inicio de sesión de cada evento (con sus Orbes), Arena y Aether Raids (la temporada de la wiki y la
+siguiente calculada), versiones (`VersionUpdates`) y lo que la wiki ya tiene cargado de los días siguientes (lo próximo).
+- **Ojo: la API `cargoquery` de esa wiki responde "ratelimited" tras 2–3 consultas seguidas.** Por eso todas las consultas van como
+  `{{#cargo_query:…|format=table}}` dentro de UNA petición `action=parse` (en la función de parser el parámetro es `join on`, con espacio),
+  otra para las recompensas y una de `imageinfo` para retratos e iconos: 3 peticiones por ciclo, caché de 12 h (fuente `wiki` del proxy) y
+  6 s entre peticiones (`GAP`). No partirlo en consultas sueltas.
+- Las filas de recompensas no tienen `EndTime` (una por día o por tramo): se piden las de los últimos 45 días y cada una va al evento en cuyo periodo cae.
+- Sin códigos de canje (FEH no tiene). Calculadora: 4 Orbes por tirada (20 por sesión de 5), spark a las 40; Arena y Aether Raids como campos propios.
+
+**Resident Evil Survival Unit** y **Sword Master Story** (`src/sources/mobilegames.ts`): investigados a fondo y **sin fuente web con fechas de eventos**:
+- RE SU: la web oficial no tiene noticias (manda a Discord, X, Facebook); su centro de ayuda (oqupie) y el de SMS (zendesk) solo tienen FAQ; el Naver
+  Lounge de RE SU tiene un único aviso; no hay wiki (Fandom/wiki.gg), ni página en Game8, GameWith, Prydwen, gacha.gg o lootandwaifus; Reddit da 403.
+  RE SU no está en Steam. Sword Master Story tiene ficha en Steam (app 4239590, "Coming soon") sin avisos: ya está en `STEAM_APPS` y sus notas
+  entrarán solas cuando publique.
+- Lo que sí sale: el **parche de la App Store** (versión, fecha y notas oficiales vía la API de Apple) y los **códigos** (RE SU: PocketGamer, con
+  códigos con espacios como «HAPPY NEW FEAR 2026»; SMS: ucngame con caducidad y PocketGamer de respaldo, cuya lista "activa" arrastra 100+ códigos viejos).
+- Eventos y banners: por Discord si se siguen sus canales de anuncios (discord.gg/resu y discord.gg/4rXZX6VRk6) como "resu" y "swordmaster" en
+  `DISCORD_CHANNELS`. Mientras no haya eventos, salen "En construcción" (`wip`).
+- Calculadora: RE SU no tiene gacha de pago (héroes por compra directa y expedientes), sin economía. SMS: Rubíes y Ruby Summon Tickets; el precio en
+  Rubíes de una tirada no lo publica nadie: 300 es un valor de partida que cada jugador cambia en la ficha.
+- **Actualización (20 nov 2026, noche)**: canales `resu` (1573197473164562502, sigue #resu-announcements y #promo-codes de RE SU) y `swordmaster`
+  (1573197526595801149, sigue #announcements📢 de SMS) añadidos a `DISCORD_CHANNELS` en `.env.local`; **falta ponerlos en Botkeep** (y en el secret de
+  GitHub Actions si se usa). "Follow" solo reenvía avisos nuevos: lo vigente se copió a mano de los anuncios (`RESU_SEEDS` en
+  `mobilegames.ts`: aniversario de RE SU desde el 5 nov, World Transfer 29 nov–5 dic UTC; SMS sin eventos a mano: "En construcción" hasta que Discord traiga uno con fecha, por decisión del dueño). Cada semilla
+  se apaga sola al pasar su fin (o `maxDays` si el fin está abierto). SMS publica sus horas en UTC+9 (`SERVER_ZONE` de discord.ts).
+  RE SU tiene además #game-update (notas de cada versión): conviene seguirlo también. Las notas largas de SMS van en
+  swordmaster-cdn.supermembers.net/next/update_note/update_note_<versión>_en.html (sin índice: no sirve como fuente automática).
+- **Más eventos y lector de Discord (20 nov 2026, madrugada)**: repasados a mano #resu-announcements (desde el 17 sep), #game-update de RE SU y
+  #announcements📢 de SMS (desde el 2 oct; casi todo en imágenes: aspecto gratuito Wedding Dress Haru, Nera de pago y adelanto "Who is next?" de un
+  héroe sin nombre). `RESU_SEEDS` lleva ahora las 3 fases del aniversario, los dos eventos de la tienda web (menores), el Vaccine Lab Alliance
+  Tournament (23 nov–27 dic) y la World Transfer. Sus banners no tienen fecha: ninguno se lista. El lector (`parseNotices`) se probó con esos avisos
+  reales y se corrigió: fases de un mismo aviso ("Phase 2 Event Period" → "1st Anniversary – Phase 2", buscando el título en el trozo anterior si el
+  aviso llega partido), "… Event Preview" fuera del título, los "error code …" no son códigos de canje, los avisos de "Old Coupons Expire" no dan
+  códigos y no se ofrecen códigos cuyo "Until" ya pasó. Comparado con el lector anterior en los 15 canales que ya funcionaban.

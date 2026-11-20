@@ -14,6 +14,8 @@ export const STEAM_APPS: Partial<Record<string, number>> = {
   dna: 3950020,
   // Infinity Nikki: avisos de versión con sus eventos y banners (2.11, 12 nov 2026), aunque la wiki vaya atrasada.
   infinitynikki: 3164330,
+  // Sword Master Story (20 nov 2026): ficha de Steam "Coming soon", aún sin avisos. Sus notas de actualización entrarán solas cuando las publique.
+  swordmaster: 4239590,
   // Probados y descartados (12 nov 2026): Epic Seven (5019180; repite los avisos de STOVE, que ya se leen, con HTML suelto), Honkai 3rd (1671200;
   // "From 12:00, OCT 29 to 12:00, NOV 19", formato que el lector aún no entiende), Limbus (1973530), Blue Archive (3557620) y Uma (3224770):
   // sus avisos de Steam no traen periodos legibles. BLEACH y MHO no están en Steam.

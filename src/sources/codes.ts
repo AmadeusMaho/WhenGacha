@@ -40,8 +40,9 @@ export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
  * apartado "Expired". Las recompensas vienen como "10 Premium Salmon Puree, 1 Purple Upgrade Stone" o "Hope Luxite x300"; algunas solo dicen
  * "rewards" (sin detalle). 1 página por juego, caché de 6 h en el proxy.
  */
-export async function syncPocketGamerCodes(slug: string): Promise<PromoCode[]> {
-  const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/codes/`))
+export async function syncPocketGamerCodes(slug: string, page = 'codes'): Promise<PromoCode[]> {
+  // Sword Master Story la llama "coupon-codes" (/swordmaster-story/coupon-codes/).
+  const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/${page}/`))
   if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`)
   return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), 'text/html'))
 }
@@ -50,7 +51,8 @@ export function pocketGamerCodes(doc: Document): PromoCode[] {
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
   // "Active Stella Sora codes" (h2) o, en otras páginas, h2 "Epic Seven codes" + h3 "Active codes".
   // Aniimo (18 nov 2026): h2 "Aniimo codes" y, debajo, "Active" / "Expired" en negrita (un <strong> suelto), sin cabecera propia.
-  const head = [...doc.querySelectorAll('h2, h3')].find(h => /active/i.test(text(h)) && /codes?/i.test(text(h)))
+  // Sword Master Story (20 nov 2026): "Active Sword Master Story coupons".
+  const head = [...doc.querySelectorAll('h2, h3')].find(h => /active/i.test(text(h)) && /codes?|coupons?/i.test(text(h)))
     ?? [...doc.querySelectorAll('strong, b')].find(h => /^active(?: codes?)?:?$/i.test(text(h)))
   if (!head) throw new Error('pocketgamer: no se encontró la lista de códigos activos')
   const out: PromoCode[] = []
@@ -59,7 +61,11 @@ export function pocketGamerCodes(doc: Document): PromoCode[] {
     if (/^H[3-4]$/.test(n.tagName) && /expired|inactive/i.test(text(n))) break
     for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
       const line = text(li)
-      const code = (/^([A-Za-z0-9_!]{4,30})(?=[\s:–-]|$)/.exec(line)?.[1] ?? '').trim()
+      // Códigos con espacios en negrita al principio ("<strong>HAPPY NEW FEAR 2026 -</strong> 3x 10K Hero EXP…", "4M SURVIVORS", Resident Evil
+      // Survival Unit, 20 nov 2026): el de la negrita entero. Solo si lleva espacio; los demás siguen por la expresión de siempre.
+      const bold = li.firstElementChild?.tagName === 'STRONG' && line.startsWith(text(li.firstElementChild)) ? text(li.firstElementChild).replace(/[\s:–-]+$/, '') : ''
+      const spaced = / /.test(bold) && /^[A-Z0-9][A-Z0-9 ]{2,28}[A-Z0-9]$/.test(bold) ? bold : ''
+      const code = spaced || (/^([A-Za-z0-9_!]{4,30})(?=[\s:–-]|$)/.exec(line)?.[1] ?? '').trim()
       // Una frase ("There are no expired codes right now.") no es un código (los de PtN sí mezclan mayúsculas: "EternalStrings").
       if (!code || /^(?:there|no|these|this|all|we|the|currently|check)\b/i.test(line) || /\bno (?:active |expired |new )?codes?\b/i.test(line)
         || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
