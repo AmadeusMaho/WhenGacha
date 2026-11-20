@@ -96,7 +96,34 @@ export async function syncMobileMattersCodes(slug: string): Promise<PromoCode[]>
   return out
 }
 
+/**
+ * Respaldo de PocketGamer para los de Game8 (19 nov 2026): Game8 rechaza las IP de Botkeep y de GitHub Actions (su WAF), y CZN, Endfield y DNA
+ * salían en producción sin ningún código. Si Game8 falla o no da nada, se usa PocketGamer; si responde, se le añaden los que solo tenga PocketGamer.
+ */
+const PG_FALLBACK: Record<string, string> = { czn: 'chaos-zero-nightmare', endfield: 'arknights-endfield', dna: 'duet-night-abyss' }
+
+/** Fuera los que ya pasaron su "Until November 17" (Game8 los deja en la tabla de activos unos días). Un día de margen por la zona horaria. */
+export function notExpired(codes: PromoCode[], now = Date.now()): PromoCode[] {
+  return codes.filter(c => {
+    const m = /^Until ([A-Z][a-z]+) (\d{1,2})(?:, (\d{4}))?$/.exec(c.rewards.find(r => r.startsWith('Until ')) ?? '')
+    if (!m) return true
+    const year = m[3] ? [+m[3]] : [new Date(now).getUTCFullYear() - 1, new Date(now).getUTCFullYear(), new Date(now).getUTCFullYear() + 1]
+    const at = year.map(y => Date.parse(`${m[1]} ${m[2]}, ${y} 23:59 UTC`)).filter(t => !isNaN(t))
+      .reduce((best, t) => (isNaN(best) || Math.abs(t - now) < Math.abs(best - now) ? t : best), NaN)
+    return isNaN(at) || now < at + 86_400_000
+  })
+}
+
 export async function syncGame8Codes(api: string): Promise<PromoCode[]> {
+  const pg = PG_FALLBACK[api]
+  const [g8, alt] = await Promise.allSettled([game8Codes(api), pg ? syncPocketGamerCodes(pg) : Promise.resolve([] as PromoCode[])])
+  const main = g8.status === 'fulfilled' ? g8.value : []
+  const extra = alt.status === 'fulfilled' ? alt.value.filter(c => !main.some(m => m.code.toUpperCase() === c.code.toUpperCase())) : []
+  if (g8.status === 'rejected' && (!pg || alt.status === 'rejected')) throw g8.reason
+  return notExpired([...main, ...extra])
+}
+
+async function game8Codes(api: string): Promise<PromoCode[]> {
   const path = GAME8_CODES[api]
   if (!path) return []
   const res = await fetch(viaProxy(`https://game8.co/games/${path}`))

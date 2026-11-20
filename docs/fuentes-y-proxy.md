@@ -602,6 +602,49 @@ Sin fuentes nuevas en el proxy: la API de noticias de Steam (`steam`), dos pági
 - Calculadora: 38 por tirada, sin pity confirmado (las guías hablan de canjear el traje por 3000 Lightweave Fragments), diarias 30 Glimmer (Daily
   Activity; games.gg, mmodude y nerdschalk; Mobalytics dice 400, parece un error).
 
+## Horizon Walker (añadido el 19 nov 2026)
+
+`src/sources/horizonwalker.ts`. Gentlemaniac; global en Steam (app 3279780), Google Play, App Store y Erolabs desde el 25 ago 2025. **Juego +18**: solo se usan
+el arte de los eventos, el del Vanguard o arma nuevos, los retratos de carta y los trajes que no sean explícitos (regla del dueño); nunca escenas de afecto.
+Un solo servidor con el horario de Corea (KST): sin selector en `servers.ts`. Por ciclo: 1 consulta a Steam (`steam`, 20 avisos), 3 páginas de gacha.gg
+(`gachagg`, caché de 12 h) y 1 de ucngame (`ucngame`).
+- **Eventos y banners (oficial)**: notas de parche de Steam («《Horizon Walker》l Patch Note», cada dos jueves, mantenimiento 09:00–12:00 KST). Cada «◆ …» con
+  «Event Period: Nov 19, 2026 (Thu) after maintenance ~ Dec 3, 2026 (Thu) before maintenance» (after = 12:00 KST, before = 09:00 KST) o «… ~ Dec 17, 2026 (Thu)
+  10:00 KST». Banners de «◆ Special Search Schedule» («2 Special Searches begin: Caller of the Ancestors, Dorothea / Wail of the Vengeful Dead» + «* Period»):
+  "Título, Nombre" = Vanguard; sin coma, arma, o título de un Vanguard sacado de los pases («[Intelligence Division's Wildcard, Yui Pass]» → Yui).
+  Las "Part 1/2" de un evento se unen. Logins de 7 días y bingos de crecimiento salen como pequeños. Los pases y packs de pago no.
+- **Recompensas e iconos**: gacha.gg `/horizon-walker/events`, la tienda de canje del evento en curso («On now», cantidad × límite por evento, con icono).
+  Sus fechas van atrasadas (actualizada el 9 nov): solo se usan sus objetos. Un evento recién empezado sale sin recompensas hasta que gacha.gg lo añada.
+  **Sin icono**: Extercium (ni gacha.gg ni los avisos publican su imagen; se probaron los nombres de archivo del juego) y lo que no esté en las tiendas (`HW_ICONS` cubre billetes, contratos y materiales comunes).
+- **Retratos**: cartas de gacha.gg (`/characters`, `<nombre>-card.webp`) y armas (`/weapons`); un Vanguard o arma recién salidos, la imagen de su apartado
+  «◆ New Vanguard: X» / «◆ New Weapon: X» de las notas.
+- **Códigos**: ucngame («Valid until November 30th, 2026»; se quitan los caducados). PocketGamer redirige a noticias, lootandwaifus no tiene página y
+  gacha.gg no lista ninguno.
+- **Lo próximo**: los avisos no anuncian con nombre lo siguiente (la hoja de ruta va en imagen). Solo la siguiente actualización como versión estimada (+14 días).
+- **Calculadora**: 100 Extercium por Special Search; 1% de EX, la 50.ª siempre EX y es el destacado (gacha.gg): pity 50. **Sin ingresos diarios publicados**
+  (19 nov 2026: NamuWiki responde 403, gacha.gg no lo da y la guía japonesa de note.com solo dice que las diarias y semanales dan Extercium, sin cifra;
+  el calendario de login da billetes del banner permanente). Cada jugador pone los suyos.
+- **Rotatorios**: Special Operation, Recovery Operations y Arena sin temporadas con fecha.
+
+## MAke Drama: MAD (añadido el 19 nov 2026)
+
+`src/sources/makedrama.ts`. Wemade Connect; Corea desde el 4 jun 2026 y global (mismo servicio, mismas fechas) desde el 8 oct 2026. **Juego +18**: las capturas
+de Steam son explícitas y NO se usan; el arte del catálogo es el fondo de su web oficial (mad.wemadeconnect.com) y los retratos son los iconos de cara.
+Horas en KST, sin selector de servidor. Por ciclo: 2 JSON de MAD Viewer (`madviewer`, caché de 6 h) y 1 página de lootandwaifus.
+- **Eventos, recompensas y banners**: MAD Viewer (mad.altterisk.cc, base de datos de fans hecha con los datos del juego; robots.txt "Allow: /"):
+  `/data/events.json` (inicio y fin exactos, fin de las fases, cartel, destacados, tienda, caja de premios y asistencia, con nombre e icono de cada objeto)
+  y `/data/gacha_banners.json` («Rate-Up Summon (Yomi)», periodo, 120 Seeds y 200 de kilometraje). Recompensas = asistencia + tienda (por su límite) +
+  primera ronda de la caja + premios por tiradas. Tiradas: billetes Rate-Up + Seeds / 120.
+- **Iconos**: los del juego en MAD Viewer (`/icons/char/Icon_CH0003.webp`, `/icons/item/…`, `/icons/banner/…`): todo con icono.
+- **Códigos**: lootandwaifus (tabla "Working codes", sin recompensas). game.guide y gacha.gg dicen que no hay activos: las listas no coinciden.
+- **Modos con temporada** (`/data/rewards.json` y `/data/archive.json` de MAD Viewer): Arena y Total War (una semana cada 28 días) e Infinity Archive (28
+  días), con hora exacta y también las temporadas ya programadas (Arena hasta feb 2027): son lo próximo con fecha. Arena y Total War pagan según el
+  puesto: salen sin tiradas y en la calculadora son elecciones; Infinity Archive da 1200 Seeds fijos.
+- **Lo próximo de eventos y banners: sin fuente**. No publica avisos en Steam desde el prerregistro (solo Naver Cafe y X, sin página legible; NamuWiki
+  responde 403 a las lecturas automáticas y las notas de LanceDEX se cargan con JavaScript). Banners de 14 días que cambian los jueves.
+- **Calculadora**: 120 Seeds por tirada, 2% el destacado, kilometraje 200 (pasa al banner siguiente): pity 200. Diarias 60 Seeds (misión diaria: 20 + 40),
+  Infinity Archive 1200 cada 28 días; Arena (30–1500) y Total War (700–1500) por puesto.
+
 ## StarSavior (añadido el 16 nov 2026)
 
 `src/sources/starsavior.ts`. Studiobside, global desde el 19 mar 2026 (PC/Steam, iOS, Android). Dos servidores, **Global** y **Asia** (Corea, Japón y Asia fusionados el 22 oct 2026), pero **con el mismo horario**: un solo parche, horas en UTC y el mantenimiento de los jueves a la vez (01:00 UTC = 10:00 JST en los avisos japoneses). Sin selector en `servers.ts`.
@@ -1091,3 +1134,22 @@ Buscado juego por juego lo que seguía sin recompensas o sin retrato. Fuentes nu
 **Sin fuente** (comprobado hoy): GFL2 Iliad (la tienda de la página está vacía todavía), PtN (sin páginas de los eventos nuevos), PGR (la página de la
 versión describe sin cifras), Aniimo (ni Steam ni Game8 dan las de estos eventos), Infinity Nikki (sin páginas; Alison's Travel Shop es una
 tienda), los eventos de aumento de botín (HSR Planar Fissure/Relic Recon/Realm of the Strange, R:1999 Double Echoes): no reparten nada.
+
+## Códigos de CZN, Endfield y DNA en producción (19 nov 2026)
+
+La copia publicada de CZN, Endfield, DNA y MHO salía **sin ningún código**, aunque en local salían bien: Game8 (su WAF) rechaza las IP de Botkeep y de
+GitHub Actions, y esos juegos solo los leían de Game8. Arreglos:
+- `syncGame8Codes` usa **PocketGamer** de respaldo (`PG_FALLBACK`: chaos-zero-nightmare, arknights-endfield, duet-night-abyss): si Game8 falla o no
+  da nada, los de PocketGamer; si responde, se le añaden los que solo tenga PocketGamer. Proxy `pocketgamer`: tres rutas nuevas.
+- Fuera los códigos que ya pasaron su "Until November 17" (`notExpired`, un día de margen): Game8 los deja unos días en la tabla de activos.
+  PocketGamer no da fechas: con Game8 bloqueado, un código caducado puede seguir saliendo hasta que PocketGamer lo mueva.
+- `carryOver` también conserva los **códigos**: si un ciclo no trae ninguno y la copia anterior sí, se mantienen (sin los caducados) hasta 3 días
+  desde que una fuente los dio por última vez (`codesSeen`).
+- **MHO**: PocketGamer no tiene lista ("does it have them?"); sus códigos siguen dependiendo de GameWith y Game8. Si GameWith también rechaza las IP
+  de servidores, solo llegan desde la tarea del PC.
+- **Blue Archive** (mismo día): en las ejecuciones de GitHub Actions bluearchive.wiki falla, y con ella el cupón puesto a mano (`BA_CODES`), que solo
+  se añadía si la wiki respondía: la copia publicada salía con 0 códigos. Ahora el cupón no depende de la wiki. Los eventos de la wiki (raids, Set
+  Sail!…) siguen llegando por la tarea del PC; en Actions los conserva carryOver (24 h desde la última vez que se vieron).
+- **AFK Journey**: códigos de PocketGamer (`afk-journey`; su wiki no los lista; antes 0). Revisadas el mismo día y descartadas: Epic Seven (la lista
+  de PocketGamer mezcla códigos de E7WC sin fecha ni recompensas, muchos caducados), PGR (casi todos del servidor de Taiwán), y Arknights, NIKKE,
+  Limbus, FGO, Onmyoji, Suikoden y Uma (PocketGamer no tiene lista: redirige o 404).

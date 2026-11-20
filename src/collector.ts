@@ -1,6 +1,7 @@
 import { DOMParser } from 'linkedom'
 import { CATALOG } from './catalog'
 import { staleMs, syncSource } from './sources'
+import { notExpired } from './sources/codes'
 import type { Game, GameEvent, Patch, PromoCode } from './types'
 
 /**
@@ -15,6 +16,8 @@ export interface Snapshot {
   events: GameEvent[]
   patches: Patch[]
   codes: PromoCode[]
+  /** Si los códigos vienen de una copia anterior (su fuente no respondió): cuándo los dio una fuente por última vez (ms). */
+  codesSeen?: number
 }
 
 const DAY = 86_400_000
@@ -27,6 +30,7 @@ const tkey = (t: string) => t.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, '')
  * Cada evento arrastrado guarda `seen` (cuándo lo dio una fuente por última vez); a las 24 h sin confirmarse se suelta.
  */
 export function carryOver(prev: Snapshot | null | undefined, next: Snapshot, now = Date.now()): Snapshot {
+  next = carryCodes(prev, next, now)
   if (!prev?.events?.length) return next
   const matches = (o: GameEvent) => next.events.some(n => n.id === o.id || ((n.kind === 'banner') === (o.kind === 'banner')
     && (tkey(n.title) === tkey(o.title) || tkey(n.title).includes(tkey(o.title)) || tkey(o.title).includes(tkey(n.title)))
@@ -36,6 +40,21 @@ export function carryOver(prev: Snapshot | null | undefined, next: Snapshot, now
     .map(o => ({ ...o, seen: o.seen ?? prev.updated }))
   if (kept.length) console.warn(`[collector] ${next.id}: una fuente no respondió; se mantienen ${kept.length} elementos vigentes de la copia anterior`)
   return kept.length ? { ...next, events: [...next.events, ...kept] } : next
+}
+
+/**
+ * Códigos: si este ciclo no trae ninguno y la copia anterior sí, se conservan (sin los que ya pasaron su "Until …") hasta 3 días desde que una
+ * fuente los dio por última vez. Caso real (19 nov 2026): Game8 rechaza las IP de servidores y CZN, Endfield, DNA y MHO salían sin códigos.
+ */
+const CODES_KEEP = 3 * DAY
+function carryCodes(prev: Snapshot | null | undefined, next: Snapshot, now: number): Snapshot {
+  if (next.codes.length || !prev?.codes?.length) return next
+  const seen = prev.codesSeen ?? prev.updated
+  if (now - seen > CODES_KEEP) return next
+  const codes = notExpired(prev.codes, now)
+  if (!codes.length) return next
+  console.warn(`[collector] ${next.id}: sin códigos en este ciclo; se mantienen ${codes.length} de la copia anterior`)
+  return { ...next, codes, codesSeen: seen }
 }
 
 /** Trae la URL de una fuente (a través del proxy del servidor, con su caché y sus límites). */

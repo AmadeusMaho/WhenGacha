@@ -93,6 +93,12 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // StarSavior: 200 Stellagems por Observation (gamingonphone, reseña); cada billete de Observation (destacado, estándar o exclusivo) es 1 tirada.
   // Los "Envelope" son sobres con varios billetes de contenido variable: no se cuentan.
   starsavior: [{ item: /^stellagems?$/i, per: 200 }, { item: /observation tickets?$/i, per: 1 }],
+  // Horizon Walker: 100 Extercium por Special Search (gacha.gg, "50 pulls cost 5,000 Extercium"); cada FairyNet Special Search Ticket es 1 tirada.
+  // Los Multi-Search Ticket son del banner permanente y los "Piece" hay que juntarlos: no se cuentan.
+  horizonwalker: [{ item: /^extercium$/i, per: 100 }, { item: /^fairynet special search tickets?$/i, per: 1 }],
+  // MAke Drama: MAD: 120 Seeds por invocación (precio de los banners Rate-Up en los datos del juego); cada Rate-Up Summon Ticket es 1. Los Regular
+  // Summon Ticket son del banner permanente: no se cuentan.
+  makedrama: [{ item: /^seeds?$/i, per: 120 }, { item: /^rate-up summon tickets?$/i, per: 1 }],
   suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
 }

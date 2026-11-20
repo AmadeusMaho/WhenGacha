@@ -51,6 +51,11 @@ const ART: Record<string, string> = {
   aniimo: 'https://kg-web-cdn.akamaized.net/master/official-website/worldx_office_frontend/images/first-page/pc/1p/hero-bg-20261023.webp',
   // StarSavior (16 nov 2026): fondo de la portada de su web oficial (starsavior.com, 2560×1440, sin texto). Las capturas de la App Store llevan rótulos.
   starsavior: 'https://starsavior.com/api/home/en/pc/background-019a75ae-573f-77d9-a224-9a6968fe0ce2.webp',
+  // Horizon Walker (19 nov 2026): arte de la biblioteca de Steam (library_hero, sin rótulos; juego +18: se revisó que no es explícita).
+  horizonwalker: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3279780/library_hero.jpg',
+  // MAke Drama: MAD (19 nov 2026): fondo de la portada de su web oficial (hero-main-bg, 1920×1080). Juego +18: NUNCA las capturas de Steam
+  // (explícitas); las de la App Store son de la interfaz.
+  makedrama: 'https://mad.wemadeconnect.com/assets/img/hero/hero-main-bg.png',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
 }
 
@@ -136,6 +141,14 @@ export const CATALOG: Game[] = [
   // + banners de Prydwen + códigos de PocketGamer (src/sources/starsavior.ts). Servidores Global y Asia con el mismo horario (UTC).
   def('starsavior', 'StarSavior', 'SSV', 'Studiobside', '#8fb4ff', '#1b2350', 0, '', 'StarSavior', 'starsavior',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/03/41/8c/03418cef-3e90-3737-3f01-de3bdcce0e4c/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Horizon Walker: notas de parche oficiales de Steam (horas exactas en KST: eventos, Special Search de Vanguards y armas, logins) + tiendas de
+  // evento, retratos e iconos de gacha.gg + códigos de ucngame (src/sources/horizonwalker.ts). Un solo servidor (KST).
+  def('horizonwalker', 'Horizon Walker', 'HZW', 'Gentlemaniac', '#f0b64a', '#2a1d3d', 14, '', 'Horizon Walker', 'horizonwalker',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/31/b5/83/31b583bf-10b9-f689-d624-fb1b363d6134/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // MAke Drama: MAD: datos del juego de MAD Viewer (eventos con recompensas, banners Rate-Up, retratos e iconos; horas exactas en KST) + códigos de
+  // lootandwaifus (src/sources/makedrama.ts). Un solo servicio para todas las regiones (KST).
+  def('makedrama', 'MAke Drama: MAD', 'MAD', 'Wemade Connect', '#ff7eb6', '#3a1838', 14, '', 'MAke Drama: MAD', 'makedrama',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/57/cb/23/57cb236d-afb7-a4a8-8f2f-8ea97fd4798a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"; src/sources/bleach.ts).
   { ...def('bleach', 'BLEACH: Soul Resonance', 'BSR', 'Nuverse', '#ff8a65', '#3e1c12', 0, '', 'BLEACH: Soul Resonance', 'bleach',

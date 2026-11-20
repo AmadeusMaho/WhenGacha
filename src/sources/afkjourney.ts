@@ -2,6 +2,7 @@ import { viaProxy } from '../net'
 import type { GameEvent, Kind, RewardItem } from '../types'
 import type { GameSync } from './ennead'
 import { cardList } from './challenges'
+import { syncPocketGamerCodes } from './codes'
 import { pullsIn } from './pulls'
 
 /**
@@ -133,7 +134,8 @@ async function bannerArt(rows: { p: Page; heroes: string[]; file: string }[]) {
 }
 
 export async function syncAfkJourney(gameId: string): Promise<GameSync> {
-  const [ev, bn] = await Promise.allSettled([events(gameId), banners(gameId)])
+  // Códigos (19 nov 2026): la lista de PocketGamer (al día; la wiki no los lista). Antes el juego salía sin ninguno.
+  const [ev, bn, cd] = await Promise.allSettled([events(gameId), banners(gameId), syncPocketGamerCodes('afk-journey')])
   if (ev.status === 'rejected' && bn.status === 'rejected') throw ev.reason
-  return { events: [...(ev.status === 'fulfilled' ? ev.value : []), ...(bn.status === 'fulfilled' ? bn.value : [])], patches: [], codes: [] }
+  return { events: [...(ev.status === 'fulfilled' ? ev.value : []), ...(bn.status === 'fulfilled' ? bn.value : [])], patches: [], codes: cd.status === 'fulfilled' ? cd.value : [] }
 }

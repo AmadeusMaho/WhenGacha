@@ -274,6 +274,22 @@ const ECON: Record<string, Econ> = {
   // canjea el destacado (tychara.com, "Gacha System"): se cuenta como pity de 200. El pase de pago (Stellagem Supply) da 120 al día durante 30.
   // Ninguna guía publica cuántas Stellagems gratis dan las diarias, las semanales o el Gauntlet: sin `sources`, cada jugador pone las suyas.
   starsavior: { currency: 'Stellagem', icon: 'Stellagem', iconUrl: '/icons/starsavior-stellagem.webp', ticket: 'Featured Observation Ticket', per: 200, pass: 120, pity: 200, sources: [] },
+  // Horizon Walker (19 nov 2026): 100 Extercium por Special Search; 1% de EX y la 50.ª es siempre EX, y todos los EX del banner son el destacado
+  // (gacha.gg, "Special Search calculator"): pity 50. El contador pasa de un banner al siguiente. Ninguna guía publica cuánto Extercium gratis dan
+  // las diarias: sin `sources`, cada jugador pone las suyas. Extercium no tiene icono publicado.
+  horizonwalker: { currency: 'Extercium', ticket: 'FairyNet Special Search Ticket', per: 100, pass: 0, pity: 50, sources: [] },
+  // MAke Drama: MAD (19 nov 2026): 120 Seeds por invocación, 1200 la de 10 (datos del juego en MAD Viewer y gacha.gg); 2% el destacado y sin pity,
+  // pero cada tirada da 1 de kilometraje y con 200 se canjea el destacado (el kilometraje pasa al banner siguiente): pity 200.
+  // Ingresos (rewards.json y archive.json de MAD Viewer, datos del juego): misión diaria 60 Seeds (20 + 40 en los puntos 3 y 5); Infinity Archive
+  // 1200 por temporada de 28 días (las metas de puntuación). Arena y Total War pagan según el puesto, una semana cada 28 días: elecciones.
+  //  - Arena: 30/60/90/120 al ascender a Plata/Oro/Platino/Master y, al cerrar, 600 (Master), 800 (Top 500), 1000 (Top 300), 1200 (Top 100).
+  //  - Total War: 300 por puntuación (hasta 44 000 puntos) + 400/600/800/1000/1200 según el rango final (Bronce a Master).
+  makedrama: { currency: 'Seed', ticket: 'Rate-Up Summon Ticket', iconUrl: 'https://mad.altterisk.cc/icons/item/Icon_Goods_gem_free.webp', per: 120, pass: 0, pity: 200,
+    sources: [daily(60), { name: 'Infinity Archive', amount: 1200, per: 'every', every: 28, anchor: '2026-11-05T01:30:00Z', endgame: true }],
+    choices: [
+      { id: 'arena', name: 'Arena', per: 'every', every: 28, options: [['—', 0], ['Silver', 30], ['Gold', 90], ['Platinum', 180], ['Master', 900], ['Top 500', 1100], ['Top 300', 1300], ['Top 100', 1500]].map(([label, amount]) => ({ label: String(label), amount: Number(amount) })) },
+      { id: 'totalwar', name: 'Total War', per: 'every', every: 28, options: [['—', 0], ['Bronze', 700], ['Silver', 900], ['Gold', 1100], ['Platinum', 1300], ['Master', 1500]].map(([label, amount]) => ({ label: String(label), amount: Number(amount) })) },
+    ] },
   aniimo: { currency: 'Glimmer', icon: 'Glimmer', iconUrl: 'https://img.game8.co/4622704/d376c11890317af3680c75d5276f4e89.png/show', ticket: 'Lightweave Ticket', per: 38, pass: 0, pity: 0, sources: [daily(30)] },
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },
 }

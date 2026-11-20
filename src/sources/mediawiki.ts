@@ -212,7 +212,13 @@ const baCodes = () => BA_CODES.filter(c => +new Date(c.until) > Date.now())
   .map(c => ({ code: c.code, rewards: [...c.rewards, `Until ${new Date(c.until).toUTCString().slice(5, 16)} (UTC)`] }))
 
 export async function syncBlueArchive(gameId: string): Promise<GameSync> {
-  const s = await syncBlueArchiveWiki(gameId)
+  // El cupón puesto a mano no depende de la wiki: desde GitHub Actions bluearchive.wiki falla (19 nov 2026) y el cupón desaparecía de la copia
+  // publicada con todo lo demás. Sin wiki, los eventos de la copia anterior los conserva carryOver y los de Discord llegan aparte.
+  const s = await syncBlueArchiveWiki(gameId).catch(err => {
+    if (!baCodes().length) throw err
+    console.warn('[bluearchive] wiki:', (err as Error)?.message ?? err)
+    return { events: [], patches: [], codes: [] } as GameSync
+  })
   return { ...s, codes: [...s.codes, ...baCodes()] }
 }
 
