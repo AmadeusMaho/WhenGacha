@@ -177,9 +177,9 @@ export function hwPost(post: SteamPost): { raws: HwRaw[]; art: Map<string, strin
     }
     // Login de 7 días: el nombre va en la línea anterior («A new 7-Day Login Event, [Caller of the Ancestors, Dorothea], begins.»).
     const login = lines.slice(Math.max(0, i - 3), i).map(x => /7-day login event,\s*【([^】]+)】/i.exec(x)?.[1]).find(Boolean)
-    if (login) { raws.push({ kind: 'event', title: `7-Day Login: ${clean(login)}`, ...r, image: sectionArt, description: '⟦d.hwLogin⟧', minor: true }); continue }
+    if (login) { raws.push({ kind: 'event', title: `7-Day Login: ${clean(login)}`, ...r, image: sectionArt, description: '⟦d.hwLogin⟧' }); continue }
     const growth = /^new vanguard growth support event\s*:\s*(.+)$/i.exec(section) ?? /^new vanguard:\s*(.+?) growth support event$/i.exec(section)
-    if (growth) raws.push({ kind: 'event', title: `Growth Support: ${clean(growth[1])}`, ...r, description: '⟦d.hwGrowth⟧', minor: true })
+    if (growth) raws.push({ kind: 'event', title: `Growth Support: ${clean(growth[1])}`, ...r, description: '⟦d.hwGrowth⟧' })
   }
   return { raws, art, titles, update, headline }
 }

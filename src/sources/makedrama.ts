@@ -186,6 +186,7 @@ export interface MadRewards { missions?: Mission[]; rewardGroups?: Record<string
  * New Encounter!»: billetes Rate-Up por conseguir y subir de estrellas a la destacada). Sin cartel: las pestañas del juego son ilustraciones
  * subidas de tono; el de cada banner lleva el retrato de su Partner.
  * Tiradas: solo las de puntos; las del banner devuelven billetes por tirar en él (cuentan solo si la consigues), así que van sin tiradas.
+ * Ninguno va como campaña menor (`minor`): el dueño los quiere a la vista (19 nov 2026).
  */
 export function madMissions(gameId: string, r: MadRewards, names: Map<string, string>, now = Date.now()): GameEvent[] {
   const out: GameEvent[] = []
@@ -211,7 +212,7 @@ export function madMissions(gameId: string, r: MadRewards, names: Map<string, st
       start: iso(m.open.start), end, items: items.slice(0, 10),
       featured: m.pickup ? [{ name: who!, icon: charIcon(m.pickup), rarity: 3 }] : [],
       pulls: m.pickup ? 0 : madPulls(items), description: m.pickup ? '⟦d.madPickupMissions⟧' : '⟦d.madMissions⟧',
-      source: 'api', official: true, ...(m.pickup ? { minor: true } : {}),
+      source: 'api', official: true,
     })
   }
   return out

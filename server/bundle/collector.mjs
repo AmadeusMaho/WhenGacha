@@ -27532,8 +27532,7 @@ function hwPost(post) {
 				title: `7-Day Login: ${clean$3(login)}`,
 				...r,
 				image: sectionArt,
-				description: "⟦d.hwLogin⟧",
-				minor: true
+				description: "⟦d.hwLogin⟧"
 			});
 			continue;
 		}
@@ -27542,8 +27541,7 @@ function hwPost(post) {
 			kind: "event",
 			title: `Growth Support: ${clean$3(growth[1])}`,
 			...r,
-			description: "⟦d.hwGrowth⟧",
-			minor: true
+			description: "⟦d.hwGrowth⟧"
 		});
 	}
 	return {
@@ -28062,6 +28060,7 @@ function madModes(gameId, m, now = Date.now()) {
 * New Encounter!»: billetes Rate-Up por conseguir y subir de estrellas a la destacada). Sin cartel: las pestañas del juego son ilustraciones
 * subidas de tono; el de cada banner lleva el retrato de su Partner.
 * Tiradas: solo las de puntos; las del banner devuelven billetes por tirar en él (cuentan solo si la consigues), así que van sin tiradas.
+* Ninguno va como campaña menor (`minor`): el dueño los quiere a la vista (19 nov 2026).
 */
 function madMissions(gameId, r, names, now = Date.now()) {
 	const out = [];
@@ -28102,8 +28101,7 @@ function madMissions(gameId, r, names, now = Date.now()) {
 			pulls: m.pickup ? 0 : madPulls(items),
 			description: m.pickup ? "⟦d.madPickupMissions⟧" : "⟦d.madMissions⟧",
 			source: "api",
-			official: true,
-			...m.pickup ? { minor: true } : {}
+			official: true
 		});
 	}
 	return out;
