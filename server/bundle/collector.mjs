@@ -21465,8 +21465,15 @@ function pgrPainCage(gameId, now = Date.now()) {
 	return [0, 1].map((k) => {
 		const s = start + k * 7 * DAY$42;
 		return {
-			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$42 - 1e3, "⟦d.pgrCage⟧", true, now),
-			image: "/icons/pgr-pain-cage.webp"
+			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$42 - 1e3, "⟦d.pgrCage⟧ ⟦d.upTo|36 Phantom Pain Scar⟧", true, now),
+			image: "/icons/pgr-pain-cage.webp",
+			items: [{
+				name: "Phantom Pain Scar",
+				amount: 36
+			}, {
+				name: "Cogs",
+				amount: 6e4
+			}]
 		};
 	});
 }
