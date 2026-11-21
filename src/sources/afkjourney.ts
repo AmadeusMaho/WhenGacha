@@ -134,8 +134,9 @@ async function bannerArt(rows: { p: Page; heroes: string[]; file: string }[]) {
 }
 
 export async function syncAfkJourney(gameId: string): Promise<GameSync> {
-  // Códigos (19 nov 2026): la lista de PocketGamer (al día; la wiki no los lista). Antes el juego salía sin ninguno.
-  const [ev, bn, cd] = await Promise.allSettled([events(gameId), banners(gameId), syncPocketGamerCodes('afk-journey')])
+  // Códigos (19 nov 2026): la lista de PocketGamer (la wiki no los lista). Su lista "activa" arrastra años de códigos con los nuevos arriba (84 el
+  // 21 nov 2026: AFKJGIFT2024, PUMPKIN2025…): se corta en el primero que delata ser viejo (staleCode en codes.ts).
+  const [ev, bn, cd] = await Promise.allSettled([events(gameId), banners(gameId), syncPocketGamerCodes('afk-journey', 'codes', true)])
   if (ev.status === 'rejected' && bn.status === 'rejected') throw ev.reason
   return { events: [...(ev.status === 'fulfilled' ? ev.value : []), ...(bn.status === 'fulfilled' ? bn.value : [])], patches: [], codes: cd.status === 'fulfilled' ? cd.value : [] }
 }

@@ -374,8 +374,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'infinitynikki': return syncInfinityNikki(id)
     // Duet Night Abyss: Game8 (eventos, banners Myriad, códigos) + Immersive Theatre (ciclo de 28 días); con canal de Discord ("dna"), sus anuncios mandan.
     case 'dna': return syncDna(id).then(s => ({ ...s, patches: finalize(s.patches, game.patchCycleDays) }))
-    // Trickcal: Chibi Go: banners y códigos de lootandwaifus; eventos y horas exactas solo por Discord (tuits oficiales, canal "trickcal").
-    // + los "Event Notice" de su web oficial (biligames), con hora exacta: mandan sobre lootandwaifus.
+    // Trickcal: Chibi Go: "Event Notice" de su web oficial (biligames, hora exacta; mandan) + banners y códigos de lootandwaifus.
+    // Discord (tuits oficiales, canal "trickcal") añade lo que la web no publique.
     case 'trickcal': return officialFirst(syncTrickcalNews(id), syncTrickcal(id))
     // Girls' Frontline 2: IOP Wiki (eventos del servidor global con hora exacta y recompensas de su tienda, banners con sus muñecas). Códigos por Discord.
     // + avisos oficiales de su web (sunborngame), con imagen y hora exacta: mandan.
@@ -383,7 +383,7 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     // Monster Hunter Outlanders: GameWith (eventos con recompensas, banners, temporada, Monster Challenge, códigos) + códigos de Game8.
     // + los "Update Notice" oficiales de su web (Level Infinite), con los eventos que vienen en hora exacta: mandan.
     case 'mho': return officialFirst(syncMhoNews(id), syncMho(id))
-    // BLEACH: Soul Resonance: códigos de game.guide; eventos y banners solo por Discord (canal "bleach"), sin fuente web permitida.
+    // BLEACH: Soul Resonance: códigos de game.guide (menos los caducados según PocketGamer) y banners fechados a mano (SEEDS); el resto, Discord.
     case 'bleach': return syncBleach()
     // Onmyoji: "Events/Global" de su wiki de Fandom (eventos y convocatorias con imagen; solo días, "≈"). Sin recompensas ni códigos (sin fuente).
     case 'onmyoji': return syncOnmyoji(id)
@@ -391,7 +391,7 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'ptn': return syncPtn(id)
     // Sword of Convallaria: GameWith (banners con retrato, eventos; solo fin) + avisos oficiales de XD (hora exacta) + códigos de PocketGamer.
     case 'soc': return syncSoc(id)
-    // MONGIL: STAR DIVE: banners de Prydwen + códigos de PocketGamer; eventos solo por Discord (canal "mongil"), sin fuente web al día.
+    // MONGIL: STAR DIVE: eventos (con recompensas) de los avisos oficiales del foro de Netmarble + banners de Prydwen + códigos de PocketGamer (mongil.ts).
     case 'mongil': return syncMongil(id)
     // Suikoden STAR LEAP: Kaiden.gg (banners con retrato, Event RPG con recompensas, regalos de la caja, Transient Chamber y lo próximo, estimado).
     case 'suikoden': return syncSuikoden(id)

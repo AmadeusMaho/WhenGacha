@@ -40,11 +40,27 @@ export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
  * apartado "Expired". Las recompensas vienen como "10 Premium Salmon Puree, 1 Purple Upgrade Stone" o "Hope Luxite x300"; algunas solo dicen
  * "rewards" (sin detalle). 1 página por juego, caché de 6 h en el proxy.
  */
-export async function syncPocketGamerCodes(slug: string, page = 'codes'): Promise<PromoCode[]> {
+/** `cut`: la lista va de más nueva a más vieja (AFK Journey): se corta en el primer código viejo en vez de quitar solo los que lo delatan. */
+export async function syncPocketGamerCodes(slug: string, page = 'codes', cut = false): Promise<PromoCode[]> {
   // Sword Master Story la llama "coupon-codes" (/swordmaster-story/coupon-codes/).
   const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/${page}/`))
   if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`)
-  return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), 'text/html'))
+  const all = pocketGamerCodes(new DOMParser().parseFromString(await res.text(), 'text/html'))
+  const first = cut ? all.findIndex(c => staleCode(c)) : -1
+  return first >= 0 ? all.slice(0, first) : all.filter(c => !staleCode(c))
+}
+
+/**
+ * Código que delata ser viejo aunque una lista "activa" lo mantenga (PocketGamer no da fechas; 21 nov 2026: PtN LDPlayer2022, SoC PEACE2025EN,
+ * AFK AFKJGIFT2024…): un año anterior al actual en el código, o una campaña de temporada fuera de su época (Navidad en dic–ene,
+ * Halloween en oct–nov, April Fools en abril, Mooncake en sep–oct).
+ */
+export function staleCode(c: PromoCode, now = new Date()): boolean {
+  const year = now.getUTCFullYear(), month = now.getUTCMonth()
+  // Solo en el código: en las recompensas "2000 Gold" no es un año.
+  if ([...c.code.matchAll(/(?<!\d)20(1[5-9]|2\d)(?!\d)/g)].some(m => 2000 + +m[1] < year)) return true
+  const season: [RegExp, number[]][] = [[/santa|xmas|christmas/i, [11, 0]], [/pumpkin|halloween|jackolantern/i, [9, 10]], [/aprilfool/i, [3]], [/mooncake/i, [8, 9]]]
+  return season.some(([re, months]) => re.test(c.code) && !months.includes(month))
 }
 
 /**

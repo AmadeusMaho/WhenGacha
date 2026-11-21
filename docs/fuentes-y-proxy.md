@@ -1231,3 +1231,18 @@ portada vacía o vieja; BannerHistory registra NIKKE solo hasta septiembre. Pend
 BD2, Daphne, Aniimo, StarSavior, Suikoden, MONGIL, SoC, PtN, Horizon Walker y MAD.
 **Producción**: Game8 da 502 al servidor (sabido) y `mad.altterisk.cc` (MAD Viewer) responde 403 al UA del servidor (bloqueo de 24 h del proxy); GFL2
 lleva ciclos sin una de sus fuentes. Las copias de la tarea del PC (rama `data`) sí los traen y el servidor las adopta.
+
+### Segunda parte de la auditoría (21 nov 2026)
+
+Pasado el recolector por los 19 juegos restantes desde este PC: todas sus fuentes responden. Contrastado a mano:
+- **Coinciden**: Azur Lane (portada de su wiki: Black Friday, It's Showtime! y Bayard; sin construcción limitada, los barcos del evento son
+  recompensas), MONGIL (foro oficial de Netmarble, avisos en inglés del 10 y 18 nov: los mismos eventos; Game8 de MONGIL está parado en junio, no
+  sirve), Onmyoji (15 eventos del 11 nov en su wiki; solo carteles, sin páginas con detalles: sigue sin fuente de descripciones y recompensas),
+  R:1999 (eventos de la 3.9 en su wiki).
+- **Sin contraste posible**: HI3, PGR y AFK (sus portadas de Fandom están vacías o sin calendario); PtN, Daphne, BD2, StarSavior, Horizon Walker y
+  MAD se leen ya de su fuente oficial o de la misma wiki que habría que usar para comparar.
+- **Códigos viejos de PocketGamer** (`staleCode` en codes.ts): sus listas "activas" no tienen fechas y arrastran códigos caducados. Ahora se quitan
+  los que lo delatan: un año pasado en el código (LDPlayer2022, PEACE2025EN) o una campaña de temporada fuera de su época (HappyAprilFools, Mooncake,
+  Santa, Pumpkin). AFK Journey, cuya lista va de nueva a vieja, se corta en el primero viejo (`cut`): 84 → 9 códigos.
+- **Comentarios desfasados**: los de `index.ts` que decían "solo por Discord" para MONGIL (lee el foro oficial de Netmarble), Trickcal (lee los avisos
+  de su web) y BLEACH (semillas y códigos) estaban viejos; corregidos. No fiarse de esos comentarios: mirar el `sync*` de cada juego.
