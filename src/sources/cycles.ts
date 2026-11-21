@@ -93,3 +93,24 @@ export function pgrPainCage(gameId: string, now = Date.now()): GameEvent[] {
       ] }
   })
 }
+
+/**
+ * Punishing: Gray Raven · War Zone: semanal, de lunes a domingo, 07:00–20:00 UTC (Gray Ravens wiki, "War Zone": "appears once a week, running
+ * from Monday - Sunday, 7:00 - 20:00 UTC"). Tope: las misiones semanales de participación, 600 Black Cards y 40.000 Cogs (base ×1; el Global las da
+ * dobles o triples mientras se sincroniza con CN). La War Zone Influence depende del rango: no se suma.
+ */
+export function pgrWarZone(gameId: string, now = Date.now()): GameEvent[] {
+  const d = new Date(now)
+  const back = (d.getUTCDay() - 1 + 7) % 7
+  let start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - back, 7)
+  if (start > now) start -= 7 * DAY
+  const W = 'https://static.wikitide.net/pgrwiki/thumb'
+  return [0, 1].map(k => {
+    const s = start + k * 7 * DAY
+    return { ...ev(gameId, 'War Zone', s, s + 6 * DAY + 13 * HOUR - 1000, '⟦d.pgrWarZone⟧ ⟦d.upTo|600 Black Cards⟧', false, now),
+      items: [
+        { name: 'Black Card', amount: 600, icon: `${W}/2/2e/Item-BlackCard.png/46px-Item-BlackCard.png` },
+        { name: 'Cogs', amount: 40000, icon: `${W}/a/a3/Item-Cogs.png/46px-Item-Cogs.png` },
+      ] }
+  })
+}

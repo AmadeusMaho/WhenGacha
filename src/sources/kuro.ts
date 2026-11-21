@@ -339,6 +339,27 @@ function pgrAt(s: string): number {
   return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0) : NaN
 }
 
+/**
+ * Recompensas que la nota de PGR solo nombra, sin cantidades (21 nov 2026: "Sign in … to claim all rewards, including Basic Construct R&D Tickets";
+ * "… to obtain Trade Vouchers, CUB R&D Tickets, Event Construct R&D Tickets, [Assessment Manual Shard Choice], and [Generic - Final Alternate
+ * Coating]"). Van sin cifra (amount 0), como en R:1999; los genéricos ("Collectibles", "training materials") no.
+ */
+export function namedRewards(lines: string[]): { name: string; amount: number }[] {
+  const out: { name: string; amount: number }[] = []
+  for (const l of lines) {
+    const m = /\b(?:including|to obtain|obtain|earn|grants?)\s+(.+?)(?:\s*\(|\.\s|\.$|$)/i.exec(l)
+    if (!m) continue
+    for (let part of m[1].split(/\s*,\s*(?:and\s+)?|\s+and\s+/)) {
+      part = part.replace(/^\[|\]$/g, '').replace(/^(?:the|a|an)\s+/i, '').trim()
+      if (!/^[A-Z0-9]/.test(part) || part.length > 50 || /\s(?:to|your|you|for|with)\s/i.test(part) || /^(?:collectibles?|rewards?|.*\bmaterials?|items?)$/i.test(part)) continue
+      const name = part.replace(/(?<![sS])s$/, '').replace(/Tickets$/, 'Ticket')
+      if (!out.some(o => o.name === name)) out.push({ name, amount: 0 })
+    }
+    if (out.length) break
+  }
+  return out.slice(0, 8)
+}
+
 export async function syncPgr(gameId: string): Promise<GameSync> {
   const res = await fetch(viaProxy(`${PGR_CDN}/ArticleMenu.json`))
   if (!res.ok) throw new Error(`pgr ArticleMenu → HTTP ${res.status}`)
@@ -397,7 +418,7 @@ export async function syncPgr(gameId: string): Promise<GameSync> {
     if (marks[k].ev.kind === 'banner') return
     const { pulls, items } = pullsIn('pgr', text.slice(a, b))
     marks[k].ev.pulls = pulls
-    marks[k].ev.items = items
+    marks[k].ev.items = items.length ? items : namedRewards(text.slice(a, b))
     marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title })
   })
   if (!out.length) throw new Error(`pgr: sin eventos vigentes en ${notes.articleId}`)

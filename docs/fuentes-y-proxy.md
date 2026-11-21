@@ -385,7 +385,7 @@ Cuánto aporta gachafocus (medido): NIKKE 3 → 12 elementos, Blue Archive 4 →
 | NTE | Hunter's Crucible | eventos (Game8/neverness), reclasificado | descripción |
 | Endfield, Uma, Limbus, BD2 | propios de cada fuente | — | — |
 
-**Sin rotatorios por falta de fuente fiable:** PGR (la página "War Zone" de la wiki es de 2023), HI3 Abyss (horario no documentado),
+**Sin rotatorios por falta de fuente fiable:** HI3 Abyss (horario no documentado),
 Epic Seven (STOVE solo publica el resumen al acabar cada temporada de World Arena; Game8 no tiene lista de eventos de E7) y Stella Sora (sin información). PGR y HI3 no están en Game8. FGO no tiene.
 
 ## AFK Journey (añadido el 7 nov 2026) y candidatos descartados
@@ -1265,3 +1265,15 @@ Pasado el recolector por los 19 juegos restantes desde este PC: todas sus fuente
 - **Topes "(hasta X por ciclo)"** (clave `d.upTo`), solo con cifra de la wiki: HI3 Memorial Arena hasta 140 Crystals (Exalted: 100 por puntuación +
   20 por cada jefe SSS) y FEH Arena hasta 5 Orbes y 3.500 Hero Feathers (nivel 21). **Sin tope publicado** (no se inventa): Aether Raids, raids de
   Blue Archive, Limbo de R:1999, Exercise de Azur Lane y el resto. PGR Phantom Pain Cage: hasta 450 Black Cards, 72 Phantom Pain Scar y 104.000 Cogs por semana (zona Ultimate, base ×1; Gray Ravens wiki, la que indicó el dueño: la de Fandom está desfasada y no tiene las misiones semanales con Black Cards).
+
+### PGR con la wiki de Gray Ravens (21 nov 2026, noche)
+
+El dueño indicó grayravens.com (Miraheze, apoyada por Kuro) como fuente de PGR; la de Fandom está desfasada. Lo que aporta:
+- **Phantom Pain Cage**: hasta 450 Black Cards (400 de las 8 misiones semanales + 50 de la puntuación), 72 Phantom Pain Scar y 104.000 Cogs.
+- **War Zone** (`pgrWarZone`, nuevo rotatorio): lunes a domingo, 07:00–20:00 UTC; hasta 600 Black Cards y 40.000 Cogs de sus misiones semanales.
+  Cifras base ×1: mientras el Global se sincroniza con CN las da dobles o triples. Iconos de static.wikitide.net.
+- **Recompensas sin cifra** de la nota de versión (`namedRewards` en kuro.ts): "including …" / "to obtain …" (7-Day Sign-In: Basic Construct R&D
+  Ticket; Tactical Assessment Manual: Trade Voucher, CUB R&D Ticket…). Endeavorer's Charm solo nombra genéricos ("Collectibles and character
+  training materials"): sin recompensas.
+- **Sin fuente**: códigos (Gray Ravens no tiene página; su buscador pide verificación antirrobots) y el destacado de "Expedition Supply" (es un
+  pozo de suministro con un selector de Omniframe S, no un banner de personaje).

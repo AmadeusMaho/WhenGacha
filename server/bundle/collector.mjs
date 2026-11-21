@@ -21488,6 +21488,33 @@ function pgrPainCage(gameId, now = Date.now()) {
 		};
 	});
 }
+/**
+* Punishing: Gray Raven · War Zone: semanal, de lunes a domingo, 07:00–20:00 UTC (Gray Ravens wiki, "War Zone": "appears once a week, running
+* from Monday - Sunday, 7:00 - 20:00 UTC"). Tope: las misiones semanales de participación, 600 Black Cards y 40.000 Cogs (base ×1; el Global las da
+* dobles o triples mientras se sincroniza con CN). La War Zone Influence depende del rango: no se suma.
+*/
+function pgrWarZone(gameId, now = Date.now()) {
+	const d = new Date(now);
+	const back = (d.getUTCDay() - 1 + 7) % 7;
+	let start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - back, 7);
+	if (start > now) start -= 7 * DAY$42;
+	const W = "https://static.wikitide.net/pgrwiki/thumb";
+	return [0, 1].map((k) => {
+		const s = start + k * 7 * DAY$42;
+		return {
+			...ev(gameId, "War Zone", s, s + 6 * DAY$42 + 13 * HOUR$12 - 1e3, "⟦d.pgrWarZone⟧ ⟦d.upTo|600 Black Cards⟧", false, now),
+			items: [{
+				name: "Black Card",
+				amount: 600,
+				icon: `${W}/2/2e/Item-BlackCard.png/46px-Item-BlackCard.png`
+			}, {
+				name: "Cogs",
+				amount: 4e4,
+				icon: `${W}/a/a3/Item-Cogs.png/46px-Item-Cogs.png`
+			}]
+		};
+	});
+}
 // src/sources/stove.ts
 /** Últimos `size` avisos de un tablón (el resumen trae unos 1000 caracteres del cuerpo). */
 async function articles(board, size) {
@@ -30298,6 +30325,29 @@ function pgrAt(s) {
 	const m = /(\d{4})\/(\d{1,2})\/(\d{1,2})(?:,?\s*(\d{1,2}):(\d{2}))?/.exec(s);
 	return m ? Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0) : NaN;
 }
+/**
+* Recompensas que la nota de PGR solo nombra, sin cantidades (21 nov 2026: "Sign in … to claim all rewards, including Basic Construct R&D Tickets";
+* "… to obtain Trade Vouchers, CUB R&D Tickets, Event Construct R&D Tickets, [Assessment Manual Shard Choice], and [Generic - Final Alternate
+* Coating]"). Van sin cifra (amount 0), como en R:1999; los genéricos ("Collectibles", "training materials") no.
+*/
+function namedRewards(lines) {
+	const out = [];
+	for (const l of lines) {
+		const m = /\b(?:including|to obtain|obtain|earn|grants?)\s+(.+?)(?:\s*\(|\.\s|\.$|$)/i.exec(l);
+		if (!m) continue;
+		for (let part of m[1].split(/\s*,\s*(?:and\s+)?|\s+and\s+/)) {
+			part = part.replace(/^\[|\]$/g, "").replace(/^(?:the|a|an)\s+/i, "").trim();
+			if (!/^[A-Z0-9]/.test(part) || part.length > 50 || /\s(?:to|your|you|for|with)\s/i.test(part) || /^(?:collectibles?|rewards?|.*\bmaterials?|items?)$/i.test(part)) continue;
+			const name = part.replace(/(?<![sS])s$/, "").replace(/Tickets$/, "Ticket");
+			if (!out.some((o) => o.name === name)) out.push({
+				name,
+				amount: 0
+			});
+		}
+		if (out.length) break;
+	}
+	return out.slice(0, 8);
+}
 async function syncPgr(gameId) {
 	const res = await fetch(viaProxy(`${PGR_CDN}/ArticleMenu.json`));
 	if (!res.ok) throw new Error(`pgr ArticleMenu → HTTP ${res.status}`);
@@ -30381,7 +30431,7 @@ async function syncPgr(gameId) {
 		if (marks[k].ev.kind === "banner") return;
 		const { pulls, items } = pullsIn("pgr", text.slice(a, b));
 		marks[k].ev.pulls = pulls;
-		marks[k].ev.items = items;
+		marks[k].ev.items = items.length ? items : namedRewards(text.slice(a, b));
 		marks[k].ev.description = summarize(text.slice(Math.max(a, marks[k].title) + 1, b), { title: marks[k].ev.title });
 	});
 	if (!out.length) throw new Error(`pgr: sin eventos vigentes en ${notes.articleId}`);
@@ -33924,7 +33974,11 @@ async function syncSourceRaw(game) {
 		}
 		case "pgr": return syncPgr(id).then((s) => ({
 			...s,
-			events: [...s.events, ...pgrPainCage(id)]
+			events: [
+				...s.events,
+				...pgrPainCage(id),
+				...pgrWarZone(id)
+			]
 		}));
 		case "honkai3": return both(syncHonkai3(id), syncHi3Official(id)).then((s) => ({
 			...s,
