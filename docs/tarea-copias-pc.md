@@ -13,6 +13,18 @@ al repositorio; sin ellos, las copias saldrían sin los anuncios de Discord.
 
 Todos los comandos son para **PowerShell** y se ejecutan en el PC.
 
+## Tras formatear (o en un PC nuevo): `Instalar recolector.bat`
+
+**Antes de formatear, guarda fuera del PC `app\.env.local`** (token y canales de Discord: no está en el repositorio y no se puede recuperar de él).
+
+1. Instala Node.js y Git: `winget install OpenJS.NodeJS.LTS` y `winget install Git.Git`.
+2. Clona el repositorio (`git clone https://github.com/AmadeusMaho/WhenGacha app`) y copia tu `.env.local` dentro de `app\`.
+3. Doble clic en **`Instalar recolector.bat`** (raíz del repositorio). Comprueba Node, Git, `.env.local` y el acceso a GitHub (si hace falta,
+   abre el inicio de sesión), instala las dependencias y registra la tarea con `scripts\install-task.ps1`: cada 3 h, oculta, y recupera las
+   ejecuciones perdidas con el PC apagado. Lanza la primera en el momento. Se puede volver a ejecutar sin problema (sustituye la tarea).
+
+Lo de abajo es lo mismo paso a paso, a mano.
+
 ## Crear la tarea (cada 3 horas)
 
 ```powershell
