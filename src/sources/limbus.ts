@@ -152,5 +152,33 @@ export async function syncLimbus(gameId: string): Promise<GameSync> {
   extra.forEach(t => add(t, 'event'))
   add(timers.banners?.main, 'banner')
   timers.banners?.others?.forEach(t => add(t, 'banner'))
-  return { events, patches: [], codes: [] }
+  return { events: await withAnnounced(events), patches: [], codes: [] }
+}
+
+/**
+ * Banners anunciados que Eldritch Tools aún lista sin identidades (21 nov 2026: "B2F Skein Nest & B3F Drying Room", del 26 nov): la wiki los
+ * nombra en "==Upcoming Banners==" de Extraction/Banner_History ("* November 26th:" y debajo "**{{Icons|IDNumber3}} 3-Star Haute Couture::Le Rouge
+ * B2F Skein Nest Gregor Identity"). Una consulta, solo si hace falta. Sin retrato hasta que Eldritch Tools publique sus ids.
+ */
+async function withAnnounced(events: GameEvent[]): Promise<GameEvent[]> {
+  const need = events.filter(e => e.kind === 'banner' && !e.featured.length && +new Date(e.start) > Date.now() - DAY)
+  if (!need.length) return events
+  const qs = new URLSearchParams({ action: 'parse', page: 'Extraction/Banner_History', prop: 'wikitext', format: 'json', origin: '*' })
+  const text: string = await fetch(viaProxy(`${WIKI}?${qs}`)).then(r => (r.ok ? r.json() : null)).then(j => j?.parse?.wikitext?.['*'] ?? '').catch(() => '')
+  const at = text.search(/==\s*Upcoming Banners\s*==/i)
+  if (at < 0) return events
+  const block = text.slice(at, at + 4000).split(/\n==[^=]/)[0]
+  const byDay = new Map<string, Featured[]>() // "11-26" → destacados
+  let cur = ''
+  for (const line of block.split('\n')) {
+    const d = /^\*\s*([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?\s*:/.exec(line)
+    if (d) { const mi = MONTHS.indexOf(d[1].toLowerCase()); cur = mi >= 0 ? `${String(mi + 1).padStart(2, '0')}-${d[2].padStart(2, '0')}` : ''; continue }
+    if (/^\*[^*]/.test(line)) { cur = ''; continue }
+    const m = /^\*\*.*?(\d)-Star (.+?) (Yi Sang|Faust|Don Quixote|Ry[oō]sh[uū]|Meursault|Hong Lu|Heathcliff|Ishmael|Rodion|Sinclair|Outis|Gregor) (Identity|E\.G\.O)/i.exec(line)
+    if (!cur || !m) continue
+    const f: Featured = m[4].toLowerCase() === 'identity' ? { name: `${m[2].trim()} ${m[3]}`, rarity: +m[1] } : { name: `E.G.O ${m[3]}`, tag: 'E.G.O' }
+    byDay.set(cur, [...(byDay.get(cur) ?? []), f])
+  }
+  // El banner empieza a las 12:00 KST (03:00 UTC): su día en UTC es el del aviso.
+  return events.map(e => (need.includes(e) && byDay.has(e.start.slice(5, 10)) ? { ...e, featured: byDay.get(e.start.slice(5, 10))!.slice(0, 6) } : e))
 }

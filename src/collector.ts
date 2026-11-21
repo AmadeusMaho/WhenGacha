@@ -167,7 +167,7 @@ async function withFeaturedIcons(game: Game, events: GameEvent[]): Promise<GameE
   if (!host) return events
   const now = Date.now()
   const names = [...new Set(events.filter(e => e.kind === 'banner' && +new Date(e.end) > now).flatMap(e => e.featured.filter(f => !f.icon).map(f => f.full ?? f.name)))]
-    .filter(n => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES)
+    .filter(n => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n) && n !== 'TBD').slice(0, MAX_FACES) // TBD: anunciado sin nombre (ennead.ts)
   if (!names.length) return events
   const own = ICON_FILES[game.id]
   // Los archivos de icono llevan el nombre corto: "Groza (GFL2)" (página) → "Groza Covenant Avatar.png".

@@ -89,8 +89,10 @@ function mapEvent(gameId: string, kind: Kind, r: Raw, suffix = ''): GameEvent {
 }
 
 function mapBanner(gameId: string, r: Raw, idx: number): GameEvent {
-  const chars = [...(r.characters ?? []), ...(r.agents ?? [])]
-  const gear = [...(r.weapons ?? []), ...(r.light_cones ?? []), ...(r.w_engines ?? [])]
+  // Lo anunciado sin nombre todavía (p. ej. los W-Engines de la versión siguiente) llega con `name: ""`: sale como "TBD" (antes titulaba " / ").
+  const named = (c: RawChar): RawChar => (c.name?.trim() ? c : { ...c, name: 'TBD' })
+  const chars = [...(r.characters ?? []), ...(r.agents ?? [])].map(named)
+  const gear = [...(r.weapons ?? []), ...(r.light_cones ?? []), ...(r.w_engines ?? [])].map(named)
   const top = chars.filter(c => star(c) === 5)
   const featured: Featured[] = (top.length ? top : chars.slice(0, 1)).map(c => ({ name: c.name, icon: c.icon, rarity: star(c), tag: c.element ?? c.profession, full: c.full_name }))
   const gearTop = gear.filter(c => star(c) === 5).slice(0, 2)

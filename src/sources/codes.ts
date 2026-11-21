@@ -47,6 +47,26 @@ export async function syncPocketGamerCodes(slug: string, page = 'codes'): Promis
   return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), 'text/html'))
 }
 
+/**
+ * Códigos que PocketGamer da por caducados (lista bajo "Expired"/"Inactive", hasta el siguiente h2). Sirve para quitar los que otra fuente
+ * sigue listando como activos (BLEACH, 21 nov 2026: game.guide mantenía THEEND, THEEND2, TEKKENTACHIKAZE… que PocketGamer ya da por caducados).
+ */
+export async function pocketGamerExpired(slug: string): Promise<Set<string>> {
+  const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/codes/`))
+  if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
+  const out = new Set<string>()
+  const head = [...doc.querySelectorAll('h2, h3, h4, strong, b, p')].find(h => /^(?:expired|inactive)(?: [a-z ]*codes?)?:?$/i.test(text(h)))
+  const top = head?.tagName === 'STRONG' || head?.tagName === 'B' ? head.parentElement : head
+  for (let n = top?.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling)
+    for (const li of n.tagName === 'LI' ? [n] : [...n.querySelectorAll('li')]) {
+      const code = /^([A-Za-z0-9_!]{4,30})(?=[\s:–-]|$)/.exec(text(li))?.[1]
+      if (code) out.add(code.toUpperCase())
+    }
+  return out
+}
+
 export function pocketGamerCodes(doc: Document): PromoCode[] {
   const text = (el: Element | null | undefined) => el?.textContent?.replace(/[\s ]+/g, ' ').trim() ?? ''
   // "Active Stella Sora codes" (h2) o, en otras páginas, h2 "Epic Seven codes" + h3 "Active codes".

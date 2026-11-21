@@ -132,6 +132,17 @@ export async function syncKuro(gameId: string): Promise<GameSync> {
   // sale de su "Update Maintenance Notice" si ya existe; si no, del día del "Version Preview … Scheduled for Release on November 12th (UTC+8)"
   // a las 04:00 (UTC+8), la hora habitual, marcado "≈".
   const next = menu.find(a => at(a.startTime, ASIA) > at(notes.startTime, ASIA) && /Version Preview .*Scheduled for Release on ([A-Z][a-z]+) (\d{1,2})/i.test(a.articleTitle))
+  // Sin "Version Preview" de la siguiente todavía (21 nov 2026, la 3.8): el pase dura la versión, así que se toma el fin más tardío de sus
+  // eventos (≈), en vez de no listarlo.
+  const lastEnd = Math.max(...out.filter(e => e.kind === 'event').map(e => +new Date(e.end)))
+  if (!next && !isNaN(versionStart) && lastEnd > versionStart && lastEnd > from) {
+    out.push({
+      id: `${gameId}:event:kuro:Pioneer Podcast:${new Date(versionStart).toISOString().slice(0, 10)}`, gameId, kind: 'event', title: 'Pioneer Podcast',
+      description: 'Battle pass', image: cover,
+      start: new Date(versionStart).toISOString(), end: new Date(lastEnd).toISOString(),
+      items: [], featured: [], pulls: 0, official: true, source: 'api', precision: 'approx',
+    })
+  }
   if (next && !isNaN(versionStart)) {
     const nm = /Version ([\d.]+)/.exec(next.articleTitle)?.[1]
     const notice = nm ? menu.find(a => a.articleTitle.includes(`Version ${nm} Update Maintenance Notice`)) : undefined

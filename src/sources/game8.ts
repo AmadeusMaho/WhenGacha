@@ -1,5 +1,6 @@
 import { viaProxy } from '../net'
-import type { GameEvent } from '../types'
+import type { GameEvent, RewardItem } from '../types'
+import { pullsIn, type PullGame } from './pulls'
 import type { GameSync } from './ennead'
 
 /**
@@ -41,7 +42,14 @@ function range(s: string): [{ y: number; m: number; d: number }, { y: number; m:
 }
 
 export async function syncGame8(gameId: string, key: keyof typeof GAME8): Promise<GameSync> {
+  const { events } = await game8List(gameId, key)
+  return { events, patches: [], codes: [] }
+}
+
+/** Filas de la lista de eventos de Game8, con el enlace a la guía de cada evento (id del evento → URL). */
+async function game8List(gameId: string, key: keyof typeof GAME8): Promise<{ events: GameEvent[]; links: Map<string, string> }> {
   const cfg = GAME8[key]
+  const links = new Map<string, string>()
   const res = await fetch(viaProxy(`${SITE}/${cfg.path}`))
   if (!res.ok) throw new Error(`game8 ${cfg.path} → HTTP ${res.status}`)
   const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
@@ -62,17 +70,82 @@ export async function syncGame8(gameId: string, key: keyof typeof GAME8): Promis
     const id = `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`
     if (seen.has(id)) return
     seen.add(id)
+    const href = tr.querySelector('a[href*="/archives/"]')?.getAttribute('href')
+    if (href) links.set(id, new URL(href, 'https://game8.co').toString())
     // Arte del evento: Game8 carga sus imágenes en diferido (`data-src`); `src` es un GIF vacío.
     const img = tr.querySelector('img')
     const image = img?.getAttribute('data-src') || (img?.getAttribute('src')?.startsWith('http') ? img.getAttribute('src')! : undefined)
+    // Columna "Rewards" de NTE: "・Glider Skin - Joy Buoy ・Annulith ・Fons", sin cantidades (21 nov 2026: 7 eventos salían sin recompensas).
+    // Van sin cifra (amount 0), como en R:1999; los aumentos de botín ("Double Event Rewards", "x2 Fons") no son objetos.
+    const items = (cells.slice(2).reverse().find(c => c.includes('・')) ?? '').split('・').map(s => s.trim())
+      .filter(s => s && s.length < 60 && !/double|^x\d|\bx\d+\s*$/i.test(s)).map(name => ({ name, amount: 0 }))
     out.push({
       id, gameId, kind: 'event', title: name, image,
-      start: new Date(start).toISOString(), end: new Date(end).toISOString(), items: [], featured: [], pulls: 0, source: 'api',
+      start: new Date(start).toISOString(), end: new Date(end).toISOString(), items, featured: [], pulls: 0, source: 'api',
       precision: 'approx',
     })
   })
   if (!out.length) throw new Error(`game8 ${cfg.path}: no se encontraron eventos`)
-  return { events: out, patches: [], codes: [] }
+  return { events: out, links }
+}
+
+/** Recompensas de la guía de un evento: la primera tabla tras el título "… Rewards" ("Astrite", "Premium Tuner"; "x60" si la da), con su icono. */
+export async function game8PageRewards(url: string): Promise<RewardItem[]> {
+  const res = await fetch(viaProxy(url))
+  if (!res.ok) throw new Error(`game8 ${url} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const head = [...doc.querySelectorAll('h2')].find(h => /\bRewards?\b/i.test(text(h)))
+  let table: Element | null = null
+  for (let n = head?.nextElementSibling; n && n.tagName !== 'H2' && !table; n = n.nextElementSibling) table = n.tagName === 'TABLE' ? n : n.querySelector('table')
+  if (!table) return []
+  const out: RewardItem[] = []
+  for (const td of table.querySelectorAll('td')) {
+    const t = text(td)
+    const img = td.querySelector('img')
+    const icon = img?.getAttribute('data-src') || (img?.getAttribute('src')?.startsWith('http') ? img.getAttribute('src')! : undefined)
+    // Una celda por objeto ("Astrite x400") o una por tramo con varios ("Astrite x20 Advanced Resonance Potion x2", Ascendant Aces): se suman.
+    const many = [...t.matchAll(/([A-Za-z][^×]*?)\s*[x×]\s?([\d,]+)(?=\s|$)/g)]
+    const parts = many.length ? many.map(m => [m[1].trim(), Number(m[2].replace(/,/g, ''))] as const) : [[t.trim(), 0] as const]
+    for (const [name, amount] of parts) {
+      // Números de día sueltos (las tablas de inicio de sesión: "1", "2"…) no son objetos.
+      if (!name || name.length > 50 || !/[A-Za-z]/.test(name)) continue
+      const had = out.find(i => i.name === name)
+      if (had) { had.amount += amount; continue }
+      out.push({ name, amount, ...(icon && parts.length === 1 ? { icon } : {}) })
+    }
+  }
+  return out
+}
+
+/**
+ * WuWa (21 nov 2026): los avisos de Kuro no traen las recompensas de los eventos sin "Event Preview" (Lahai-Roi Blocks, Dreamfield Odyssey,
+ * Whither the Wind…), pero la guía de Game8 de cada uno sí las nombra. También añade lo que solo está en Game8 (Ascendant Aces).
+ * 1 lista + hasta 8 guías por ciclo (caché del proxy). Game8 rechaza las IP de servidores: solo llega desde la tarea del PC (carryOver lo conserva).
+ */
+export async function withGame8Extras(s: GameSync, gameId: string, key: keyof typeof GAME8, game: PullGame): Promise<GameSync> {
+  const list = await game8List(gameId, key).catch(err => { console.warn('[game8]', (err as Error)?.message ?? err); return null })
+  if (!list) return s
+  const norm = (t: string) => t.toLowerCase().replace(/\[[^\]]*\]|[^a-z0-9]/g, '')
+  const now = Date.now()
+  const events = s.events.map(e => ({ ...e }))
+  const want: [GameEvent, string][] = []
+  for (const g of list.events) {
+    if (+new Date(g.end) < now) continue
+    const k = norm(g.title)
+    const twin = events.find(e => e.kind !== 'banner' && Math.abs(+new Date(e.start) - +new Date(g.start)) <= 2 * DAY
+      && (norm(e.title).includes(k) || k.includes(norm(e.title)) || norm(e.title.replace(/^\[([^\]]+)\].*$/, '$1')) === k))
+    const url = list.links.get(g.id)
+    if (!twin) { events.push(g); if (url && !g.items.length) want.push([g, url]); continue }
+    // Los de aumento de botín ("Limited-Time Material Double Drop Event") no reparten nada: no se pide su guía.
+    if (!twin.items.length && url && !/double drop/i.test(twin.title)) want.push([twin, url])
+  }
+  for (const [e, url] of want.slice(0, 8)) {
+    const items = await game8PageRewards(url).catch(() => [] as RewardItem[])
+    if (!items.length) continue
+    e.items = items
+    e.pulls = pullsIn(game, items.filter(i => i.amount > 0).map(i => `${i.name} x${i.amount}`)).pulls
+  }
+  return { ...s, events }
 }
 
 /**

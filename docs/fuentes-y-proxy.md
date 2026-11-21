@@ -1198,3 +1198,36 @@ siguiente calculada), versiones (`VersionUpdates`) y lo que la wiki ya tiene car
   reales y se corrigió: fases de un mismo aviso ("Phase 2 Event Period" → "1st Anniversary – Phase 2", buscando el título en el trozo anterior si el
   aviso llega partido), "… Event Preview" fuera del título, los "error code …" no son códigos de canje, los avisos de "Old Coupons Expire" no dan
   códigos y no se ofrecen códigos cuyo "Until" ya pasó. Comparado con el lector anterior en los 15 canales que ya funcionaban.
+
+## Auditoría manual contra fuentes externas (21 nov 2026)
+
+Comparado lo publicado (rama `data`) con las wikis, Game8, PocketGamer y BannerHistory abiertos en un navegador (el lector web automático recibe
+402 de Fandom y Game8). Arreglos:
+- **ZZZ** (`ennead.ts`): los W-Engines aún sin nombre llegaban con `name: ""` y el banner salía " / ": ahora "TBD" (sin buscar retrato; `check-icons` lo ignora).
+- **Genshin / ZZZ** (`hoyowiki.ts`): la Event List daba por indefinido lo que tiene fin "TBA" (`2050-01-01` o `unknown`) y no lo listaba. Ahora, si
+  empezó hace menos de 30 días o está por empezar, sale con barra abierta (`open`): "Across the Frozen Wilds, Honing One's Edge" (selección del 5★ de
+  aniversario) y "Zenless Zone Zero x Honkai: Star Rail" (2 dic). Lo antiguo con fin abierto ("Battle Trial", "The Hunt Begins!") sigue fuera.
+- **Genshin** (`syncWishList`): la fase 2 de la 7.2 (24 nov) faltaba porque ennead aún no la tenía; la wiki sí (`{{Wish List|no_past=1|no_current=1}}`
+  + `{{Wish}}` de cada página: horas UTC+8 y el primer `{{Wish Item}}`). Se añade solo lo que ennead no trae (`unseenBanners`). 3 consultas.
+- **NTE** (`game8.ts`): la columna "Rewards" de la lista de Game8 ("・Annulith ・Fons…") se lee como recompensas sin cifra (7 eventos estaban vacíos).
+- **WuWa** (`withGame8Extras`): las guías de Game8 de cada evento sí nombran sus recompensas (Lahai-Roi Blocks: Astrite ×400; Whither the Wind:
+  Astrite ×300…), contra lo que decía la nota del 18 nov. Hasta 8 guías por ciclo (fuente `game8-guide` del proxy, 24 h); los de aumento de botín no se
+  piden. Añade lo que solo está en Game8 (Ascendant Aces). Pioneer Podcast se lista aunque aún no haya "Version Preview" de la siguiente (fin ≈ el
+  del último evento de la versión). Sin tabla de recompensas en Game8: Lollo Campaign y Gifts of Starpath.
+- **Endfield** (`wiki.ts`): los banners de arma están en otra tabla Cargo, `Issues` (RateUpWeapon; los permanentes fuera): Lunar Calling, Jade
+  Vessel, Umbra of Frigid Eventide. Las horas de fin de los eventos ya eran correctas (la wiki las escribe en hora local de cada servidor).
+- **Limbus** (`withAnnounced`): un banner anunciado que Eldritch Tools lista sin identidades se completa con "==Upcoming Banners==" de
+  Extraction/Banner_History (26 nov: Haute Couture Gregor y Yi Sang). Sin retrato hasta que Eldritch Tools publique sus ids.
+- **Arknights** (`akPageRewards`): los hitos de los modos limitados (`{{Milestone cell|item = LMD, 10000}}`, Positional Football Championship) y su traje.
+- **BLEACH**: códigos de game.guide menos los que PocketGamer da por caducados (`pocketGamerExpired`; quitaba THEEND, THEEND2, TEKKENTACHIKAZE…).
+  Ichigo (Full Hollowfication) del 25 nov y la repesca de SSR limitados del 20 nov como semillas con fecha (`SEEDS` en bleach.ts, se apagan solas);
+  `bleach` entra en `ANNOUNCED_GUESS` para que el estimado de Discord (sin fecha, desde el 18) se descarte y les pase su retrato.
+
+Revisado y **correcto** (no tocar): Blue Archive (el Escort Exercise acaba el 30 nov 18:59 UTC = 1 dic 03:59 JST; los "que faltaban" son
+permanentes, excluidos a propósito), CZN (eventos y 3 códigos activos), DNA (11 eventos), Epic Seven (BannerHistory solo tiene un banner vigente),
+Uma ("Valentine's Day Campaign" en noviembre es la proyección estimada desde JP).
+**Sin verificar** (fuente bloqueada o abandonada): la wiki de Azur Lane pide verificación antirrobots; las de HSR, NIKKE y FGO en Fandom tienen la
+portada vacía o vieja; BannerHistory registra NIKKE solo hasta septiembre. Pendiente de repasar: HI3, PGR, R:1999, AFK, Onmyoji, Trickcal, MHO, GFL2,
+BD2, Daphne, Aniimo, StarSavior, Suikoden, MONGIL, SoC, PtN, Horizon Walker y MAD.
+**Producción**: Game8 da 502 al servidor (sabido) y `mad.altterisk.cc` (MAD Viewer) responde 403 al UA del servidor (bloqueo de 24 h del proxy); GFL2
+lleva ciclos sin una de sus fuentes. Las copias de la tarea del PC (rama `data`) sí los traen y el servidor las adopta.

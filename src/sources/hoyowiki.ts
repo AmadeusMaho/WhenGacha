@@ -3,6 +3,7 @@ import type { GameEvent, Kind } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn, type PullGame } from './pulls'
 import { wikiSummary } from './summary'
+import { fileKey, fileUrls } from './wikifiles'
 
 /**
  * Eventos de Genshin, Star Rail y ZZZ desde sus wikis de Fandom: la plantilla `{{Event List|hidepast=1}}` (la que usa su página "Event") se renderiza con
@@ -97,9 +98,14 @@ export async function syncHoyoWiki(gameId: string, host: string, pullGame?: Pull
     const tds = [...tr.children].filter(c => c.tagName === 'TD')
     const sort = tds[1]?.getAttribute('data-sort-value') ?? ''
     const times = sort.match(/\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2}(?::\d{2})?/g) ?? []
-    if (tds.length < 2 || times.length < 2) continue // sin fin ("none", "unknown"): indefinido
-    const [t0 = '', t1 = ''] = times
-    const start = at(t0), end = at(t1)
+    if (tds.length < 2 || !times.length) continue
+    // Sin fin ("TBA"): solo si empezó hace poco o está por empezar (la selección de aniversario de Genshin, la colaboración ZZZ × HSR del 21 nov 2026).
+    // Lo de hace meses con fin abierto ("Battle Trial", modos fijos) es permanente y no se lista.
+    // "TBA" llega como "2050-01-01 00:00:00"; "none" (indefinido), sin segunda fecha.
+    const open = times.length < 2 || /^20[5-9]\d-/.test(times[1] ?? '')
+    const start = at(times[0] ?? '')
+    if (open && !(start > now - 30 * DAY)) continue
+    const end = open ? Math.max(start, now) + 42 * DAY : at(times[1] ?? '')
     if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY) continue
     const anchors = [...tds[0].querySelectorAll('a')]
     const links = anchors.map(a => a.textContent?.trim() ?? '').filter(Boolean)
@@ -122,6 +128,7 @@ export async function syncHoyoWiki(gameId: string, host: string, pullGame?: Pull
       start: new Date(start).toISOString(), end: new Date(end).toISOString(),
       items: [], featured: [], pulls: 0, source: 'api',
       minor: /\bWeb\b/.test(types) || /^Test Run/i.test(title) || undefined,
+      ...(open ? { open: true } : {}),
     })
     if (page) pageOf.set(id, page)
   }
@@ -153,4 +160,44 @@ export async function syncHoyoWiki(gameId: string, host: string, pullGame?: Pull
     }
   }
   return { events: out, patches: [], codes: [] }
+}
+
+/**
+ * Banners ya anunciados de Genshin que ennead aún no trae (21 nov 2026: la fase 2 de la 7.2, del 24 nov, faltaba en la app y la wiki ya la tenía).
+ * `{{Wish List|no_past=1|no_current=1}}` da los enlaces a la página de cada banner ("Harmonious Abundance/2026-11-24"); de cada página, su
+ * `{{Wish |type |time_start |time_end}}` (hora del servidor de Asia, UTC+8) y el primer `{{Wish Item|…}}` del resumen (el 5★, o los 5★ del banner
+ * de armas). 2 consultas (caché del proxy). El que ya tenga ennead (mismo inicio ±2 días y algún destacado en común) se descarta fuera (syncSourceRaw).
+ */
+export async function syncWishList(gameId: string, host: string): Promise<GameEvent[]> {
+  const qs = new URLSearchParams({ action: 'parse', contentmodel: 'wikitext', text: '{{Wish List|no_past=1|no_current=1|no_headers=1}}', prop: 'links', format: 'json', origin: '*' })
+  const res = await fetch(viaProxy(`https://${host}/api.php?${qs}`))
+  if (!res.ok) throw new Error(`${host} Wish List → HTTP ${res.status}`)
+  const links: string[] = ((await res.json())?.parse?.links ?? []).map((l: { '*'?: string }) => l['*'] ?? '').filter((t: string) => /\/\d{4}-\d{2}-\d{2}$/.test(t))
+  const pages = [...new Set(links)].slice(0, 12)
+  if (!pages.length) return []
+  const q = new URLSearchParams({ action: 'query', prop: 'revisions', rvprop: 'content', rvslots: 'main', titles: pages.join('|'), format: 'json', formatversion: '2', origin: '*' })
+  const r2 = await fetch(viaProxy(`https://${host}/api.php?${q}`))
+  if (!r2.ok) throw new Error(`${host} Wish pages → HTTP ${r2.status}`)
+  const out: GameEvent[] = []
+  for (const p of (await r2.json())?.query?.pages ?? []) {
+    const text: string = p?.revisions?.[0]?.slots?.main?.content ?? ''
+    const field = (k: string) => new RegExp(`\\|\\s*${k}\\s*=\\s*([^\\n|]*)`).exec(text)?.[1]?.trim() ?? ''
+    const start = at(field('time_start')), end = at(field('time_end'))
+    if (isNaN(start) || isNaN(end) || end <= start || end < Date.now()) continue
+    const type = field('type')
+    const weapon = /weapon/i.test(type)
+    const names = (/\{\{\s*Wish Item\s*\|([^}]+)\}\}/i.exec(text)?.[1] ?? '').split(';').map(s => s.trim()).filter(Boolean).slice(0, weapon ? 2 : 3)
+    const title = String(p.title).replace(/\/\d{4}-\d{2}-\d{2}$/, '')
+    const image = field('image')
+    out.push({
+      id: `${gameId}:banner:wish:${p.title}`, gameId, kind: 'banner',
+      title: names.length && !/chronicled/i.test(type) ? names.join(' / ') : title,
+      description: `${weapon ? '⟦d.weaponBanner⟧' : '⟦d.charBanner⟧'} · ${title}`,
+      image: image || undefined, // nombre de archivo: se cambia por su URL al final
+      start: new Date(start).toISOString(), end: new Date(end).toISOString(),
+      items: [], featured: names.map(name => ({ name, rarity: 5 })), pulls: 0, source: 'api',
+    })
+  }
+  const urls = await fileUrls(host, out.map(e => e.image ?? ''), 800).catch(() => new Map<string, string>())
+  return out.map(e => ({ ...e, image: e.image ? urls.get(fileKey(e.image)) : undefined }))
 }

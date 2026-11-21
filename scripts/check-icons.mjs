@@ -25,7 +25,7 @@ let bad = 0
 for (const [id, snap] of (await snapshots()).sort((a, b) => a[0].localeCompare(b[0]))) {
   const live = (snap?.events ?? []).filter(e => Date.parse(e.end) > now)
   const items = [...new Set(live.flatMap(e => e.items.filter(i => !i.icon).map(i => i.name)))]
-  const faces = [...new Set(live.filter(e => e.kind === 'banner').flatMap(e => e.featured.filter(f => !f.icon).map(f => f.name)))]
+  const faces = [...new Set(live.filter(e => e.kind === 'banner').flatMap(e => e.featured.filter(f => !f.icon && f.name !== 'TBD').map(f => f.name)))]
   if (!items.length && !faces.length) continue
   bad++
   console.log(`${id}`)

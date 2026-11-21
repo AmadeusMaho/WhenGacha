@@ -20305,12 +20305,16 @@ function mapEvent(gameId, kind, r, suffix = "") {
 	};
 }
 function mapBanner(gameId, r, idx) {
-	const chars = [...r.characters ?? [], ...r.agents ?? []];
+	const named = (c) => c.name?.trim() ? c : {
+		...c,
+		name: "TBD"
+	};
+	const chars = [...r.characters ?? [], ...r.agents ?? []].map(named);
 	const gear = [
 		...r.weapons ?? [],
 		...r.light_cones ?? [],
 		...r.w_engines ?? []
-	];
+	].map(named);
 	const top = chars.filter((c) => star(c) === 5);
 	const featured = (top.length ? top : chars.slice(0, 1)).map((c) => ({
 		name: c.name,
@@ -20452,6 +20456,24 @@ async function syncPocketGamerCodes(slug, page = "codes") {
 	const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/${page}/`));
 	if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`);
 	return pocketGamerCodes(new DOMParser().parseFromString(await res.text(), "text/html"));
+}
+/**
+* Códigos que PocketGamer da por caducados (lista bajo "Expired"/"Inactive", hasta el siguiente h2). Sirve para quitar los que otra fuente
+* sigue listando como activos (BLEACH, 21 nov 2026: game.guide mantenía THEEND, THEEND2, TEKKENTACHIKAZE… que PocketGamer ya da por caducados).
+*/
+async function pocketGamerExpired(slug) {
+	const res = await fetch(viaProxy(`https://www.pocketgamer.com/${slug}/codes/`));
+	if (!res.ok) throw new Error(`pocketgamer ${slug} → HTTP ${res.status}`);
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const text = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
+	const out = /* @__PURE__ */ new Set();
+	const head = [...doc.querySelectorAll("h2, h3, h4, strong, b, p")].find((h) => /^(?:expired|inactive)(?: [a-z ]*codes?)?:?$/i.test(text(h)));
+	const top = head?.tagName === "STRONG" || head?.tagName === "B" ? head.parentElement : head;
+	for (let n = top?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) for (const li of n.tagName === "LI" ? [n] : [...n.querySelectorAll("li")]) {
+		const code = /^([A-Za-z0-9_!]{4,30})(?=[\s:–-]|$)/.exec(text(li))?.[1];
+		if (code) out.add(code.toUpperCase());
+	}
+	return out;
 }
 function pocketGamerCodes(doc) {
 	const text = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
@@ -24710,11 +24732,52 @@ var BLEACH_ICONS = /* @__PURE__ */ new Map([
 	["sr character recruit letter", `${CDN$1}/reg_2.png`]
 ]);
 /** Sin eventos web (ver arriba): con canal de Discord, `syncSource` los añade y manda; aquí solo los códigos. */
+/**
+* Banners con fecha que el canal de Discord no trajo (21 nov 2026): el aviso del aniversario anunció a Ichigo (Full Hollowfication) sin fecha y salía
+* "estimado" desde el 18 nov; PocketGamer (resumen del aviso oficial, 20 nov) da su llegada el 25 nov y una repesca de todos los SSR limitados desde
+* el 20 nov. Horas: las del resto de avisos de BLEACH (11:00 UTC). Fin sin anunciar: barra abierta. Cada semilla se apaga sola a los `maxDays`.
+* El estimado de Discord sobra en cuanto hay uno con fecha (dropAnnounced, ANNOUNCED_GUESS en index.ts) y le pasa su retrato.
+*/
+var SEEDS = [{
+	title: "Ichigo Kurosaki - Full Hollowfication",
+	start: "2026-11-25T11:00:00.000Z",
+	featured: ["Ichigo Kurosaki - Full Hollowfication"],
+	description: "⟦d.charBanner⟧ · 1st Anniversary",
+	maxDays: 21
+}, {
+	title: "Limited SSR Rerun",
+	start: "2026-11-20T11:00:00.000Z",
+	featured: [],
+	description: "⟦d.charBanner⟧ · 1st Anniversary · all limited-time SSR characters",
+	maxDays: 21
+}];
+function seededBanners(now = Date.now()) {
+	const DAY = 864e5;
+	return SEEDS.filter((s) => now < +new Date(s.start) + s.maxDays * DAY).map((s) => ({
+		id: `bleach:banner:seed:${s.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}:${s.start.slice(0, 10)}`,
+		gameId: "bleach",
+		kind: "banner",
+		title: s.title,
+		description: s.description,
+		start: s.start,
+		end: new Date(Math.max(+new Date(s.start) + 14 * DAY, now + 7 * DAY)).toISOString(),
+		items: [],
+		featured: s.featured.map((name) => ({
+			name,
+			rarity: 5
+		})),
+		pulls: 0,
+		source: "api",
+		official: true,
+		open: true
+	}));
+}
 async function syncBleach() {
+	const [codes, expired] = await Promise.all([syncBleachCodes(), pocketGamerExpired("bleach-soul-resonance").catch(() => /* @__PURE__ */ new Set())]);
 	return {
-		events: [],
+		events: seededBanners(),
 		patches: [],
-		codes: await syncBleachCodes()
+		codes: codes.filter((c) => !expired.has(c.code.toUpperCase()))
 	};
 }
 // src/sources/wikifiles.ts
@@ -29909,6 +29972,23 @@ async function syncKuro(gameId) {
 		}
 	}
 	const next = menu.find((a) => at$3(a.startTime, ASIA) > at$3(notes.startTime, ASIA) && /Version Preview .*Scheduled for Release on ([A-Z][a-z]+) (\d{1,2})/i.test(a.articleTitle));
+	const lastEnd = Math.max(...out.filter((e) => e.kind === "event").map((e) => +new Date(e.end)));
+	if (!next && !isNaN(versionStart) && lastEnd > versionStart && lastEnd > from) out.push({
+		id: `${gameId}:event:kuro:Pioneer Podcast:${new Date(versionStart).toISOString().slice(0, 10)}`,
+		gameId,
+		kind: "event",
+		title: "Pioneer Podcast",
+		description: "Battle pass",
+		image: cover,
+		start: new Date(versionStart).toISOString(),
+		end: new Date(lastEnd).toISOString(),
+		items: [],
+		featured: [],
+		pulls: 0,
+		official: true,
+		source: "api",
+		precision: "approx"
+	});
 	if (next && !isNaN(versionStart)) {
 		const nm = /Version ([\d.]+)/.exec(next.articleTitle)?.[1];
 		const notice = nm ? menu.find((a) => a.articleTitle.includes(`Version ${nm} Update Maintenance Notice`)) : void 0;
@@ -30634,9 +30714,11 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 	for (const tr of doc.querySelectorAll("tr")) {
 		const tds = [...tr.children].filter((c) => c.tagName === "TD");
 		const times = (tds[1]?.getAttribute("data-sort-value") ?? "").match(/\d{4}-\d{2}-\d{2}\s+\d{1,2}:\d{2}(?::\d{2})?/g) ?? [];
-		if (tds.length < 2 || times.length < 2) continue;
-		const [t0 = "", t1 = ""] = times;
-		const start = at$1(t0), end = at$1(t1);
+		if (tds.length < 2 || !times.length) continue;
+		const open = times.length < 2 || /^20[5-9]\d-/.test(times[1] ?? "");
+		const start = at$1(times[0] ?? "");
+		if (open && !(start > now - 30 * DAY$14)) continue;
+		const end = open ? Math.max(start, now) + 42 * DAY$14 : at$1(times[1] ?? "");
 		if (isNaN(start) || isNaN(end) || !(end > start) || end < from || start > to || end - start > 150 * DAY$14) continue;
 		const anchors = [...tds[0].querySelectorAll("a")];
 		const links = anchors.map((a) => a.textContent?.trim() ?? "").filter(Boolean);
@@ -30663,7 +30745,8 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 			featured: [],
 			pulls: 0,
 			source: "api",
-			minor: /\bWeb\b/.test(types) || /^Test Run/i.test(title) || void 0
+			minor: /\bWeb\b/.test(types) || /^Test Run/i.test(title) || void 0,
+			...open ? { open: true } : {}
 		});
 		if (page) pageOf.set(id, page);
 	}
@@ -30696,6 +30779,73 @@ async function syncHoyoWiki(gameId, host, pullGame) {
 		patches: [],
 		codes: []
 	};
+}
+/**
+* Banners ya anunciados de Genshin que ennead aún no trae (21 nov 2026: la fase 2 de la 7.2, del 24 nov, faltaba en la app y la wiki ya la tenía).
+* `{{Wish List|no_past=1|no_current=1}}` da los enlaces a la página de cada banner ("Harmonious Abundance/2026-11-24"); de cada página, su
+* `{{Wish |type |time_start |time_end}}` (hora del servidor de Asia, UTC+8) y el primer `{{Wish Item|…}}` del resumen (el 5★, o los 5★ del banner
+* de armas). 2 consultas (caché del proxy). El que ya tenga ennead (mismo inicio ±2 días y algún destacado en común) se descarta fuera (syncSourceRaw).
+*/
+async function syncWishList(gameId, host) {
+	const qs = new URLSearchParams({
+		action: "parse",
+		contentmodel: "wikitext",
+		text: "{{Wish List|no_past=1|no_current=1|no_headers=1}}",
+		prop: "links",
+		format: "json",
+		origin: "*"
+	});
+	const res = await fetch(viaProxy(`https://${host}/api.php?${qs}`));
+	if (!res.ok) throw new Error(`${host} Wish List → HTTP ${res.status}`);
+	const links = ((await res.json())?.parse?.links ?? []).map((l) => l["*"] ?? "").filter((t) => /\/\d{4}-\d{2}-\d{2}$/.test(t));
+	const pages = [...new Set(links)].slice(0, 12);
+	if (!pages.length) return [];
+	const q = new URLSearchParams({
+		action: "query",
+		prop: "revisions",
+		rvprop: "content",
+		rvslots: "main",
+		titles: pages.join("|"),
+		format: "json",
+		formatversion: "2",
+		origin: "*"
+	});
+	const r2 = await fetch(viaProxy(`https://${host}/api.php?${q}`));
+	if (!r2.ok) throw new Error(`${host} Wish pages → HTTP ${r2.status}`);
+	const out = [];
+	for (const p of (await r2.json())?.query?.pages ?? []) {
+		const text = p?.revisions?.[0]?.slots?.main?.content ?? "";
+		const field = (k) => new RegExp(`\\|\\s*${k}\\s*=\\s*([^\\n|]*)`).exec(text)?.[1]?.trim() ?? "";
+		const start = at$1(field("time_start")), end = at$1(field("time_end"));
+		if (isNaN(start) || isNaN(end) || end <= start || end < Date.now()) continue;
+		const type = field("type");
+		const weapon = /weapon/i.test(type);
+		const names = (/\{\{\s*Wish Item\s*\|([^}]+)\}\}/i.exec(text)?.[1] ?? "").split(";").map((s) => s.trim()).filter(Boolean).slice(0, weapon ? 2 : 3);
+		const title = String(p.title).replace(/\/\d{4}-\d{2}-\d{2}$/, "");
+		const image = field("image");
+		out.push({
+			id: `${gameId}:banner:wish:${p.title}`,
+			gameId,
+			kind: "banner",
+			title: names.length && !/chronicled/i.test(type) ? names.join(" / ") : title,
+			description: `${weapon ? "⟦d.weaponBanner⟧" : "⟦d.charBanner⟧"} · ${title}`,
+			image: image || void 0,
+			start: new Date(start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: names.map((name) => ({
+				name,
+				rarity: 5
+			})),
+			pulls: 0,
+			source: "api"
+		});
+	}
+	const urls = await fileUrls(host, out.map((e) => e.image ?? ""), 800).catch(() => /* @__PURE__ */ new Map());
+	return out.map((e) => ({
+		...e,
+		image: e.image ? urls.get(fileKey(e.image)) : void 0
+	}));
 }
 // src/sources/limbus.ts
 /**
@@ -30872,10 +31022,58 @@ async function syncLimbus(gameId) {
 	add(timers.banners?.main, "banner");
 	timers.banners?.others?.forEach((t) => add(t, "banner"));
 	return {
-		events,
+		events: await withAnnounced(events),
 		patches: [],
 		codes: []
 	};
+}
+/**
+* Banners anunciados que Eldritch Tools aún lista sin identidades (21 nov 2026: "B2F Skein Nest & B3F Drying Room", del 26 nov): la wiki los
+* nombra en "==Upcoming Banners==" de Extraction/Banner_History ("* November 26th:" y debajo "**{{Icons|IDNumber3}} 3-Star Haute Couture::Le Rouge
+* B2F Skein Nest Gregor Identity"). Una consulta, solo si hace falta. Sin retrato hasta que Eldritch Tools publique sus ids.
+*/
+async function withAnnounced(events) {
+	const need = events.filter((e) => e.kind === "banner" && !e.featured.length && +new Date(e.start) > Date.now() - DAY$13);
+	if (!need.length) return events;
+	const qs = new URLSearchParams({
+		action: "parse",
+		page: "Extraction/Banner_History",
+		prop: "wikitext",
+		format: "json",
+		origin: "*"
+	});
+	const text = await fetch(viaProxy(`${WIKI$2}?${qs}`)).then((r) => r.ok ? r.json() : null).then((j) => j?.parse?.wikitext?.["*"] ?? "").catch(() => "");
+	const at = text.search(/==\s*Upcoming Banners\s*==/i);
+	if (at < 0) return events;
+	const block = text.slice(at, at + 4e3).split(/\n==[^=]/)[0];
+	const byDay = /* @__PURE__ */ new Map();
+	let cur = "";
+	for (const line of block.split("\n")) {
+		const d = /^\*\s*([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?\s*:/.exec(line);
+		if (d) {
+			const mi = MONTHS$6.indexOf(d[1].toLowerCase());
+			cur = mi >= 0 ? `${String(mi + 1).padStart(2, "0")}-${d[2].padStart(2, "0")}` : "";
+			continue;
+		}
+		if (/^\*[^*]/.test(line)) {
+			cur = "";
+			continue;
+		}
+		const m = /^\*\*.*?(\d)-Star (.+?) (Yi Sang|Faust|Don Quixote|Ry[oō]sh[uū]|Meursault|Hong Lu|Heathcliff|Ishmael|Rodion|Sinclair|Outis|Gregor) (Identity|E\.G\.O)/i.exec(line);
+		if (!cur || !m) continue;
+		const f = m[4].toLowerCase() === "identity" ? {
+			name: `${m[2].trim()} ${m[3]}`,
+			rarity: +m[1]
+		} : {
+			name: `E.G.O ${m[3]}`,
+			tag: "E.G.O"
+		};
+		byDay.set(cur, [...byDay.get(cur) ?? [], f]);
+	}
+	return events.map((e) => need.includes(e) && byDay.has(e.start.slice(5, 10)) ? {
+		...e,
+		featured: byDay.get(e.start.slice(5, 10)).slice(0, 6)
+	} : e);
 }
 // src/sources/nikke.ts
 /**
@@ -31445,7 +31643,17 @@ function range(s) {
 	}];
 }
 async function syncGame8(gameId, key) {
+	const { events } = await game8List(gameId, key);
+	return {
+		events,
+		patches: [],
+		codes: []
+	};
+}
+/** Filas de la lista de eventos de Game8, con el enlace a la guía de cada evento (id del evento → URL). */
+async function game8List(gameId, key) {
 	const cfg = GAME8[key];
+	const links = /* @__PURE__ */ new Map();
 	const res = await fetch(viaProxy(`${SITE}/${cfg.path}`));
 	if (!res.ok) throw new Error(`game8 ${cfg.path} → HTTP ${res.status}`);
 	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
@@ -31468,8 +31676,14 @@ async function syncGame8(gameId, key) {
 		const id = `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 		if (seen.has(id)) return;
 		seen.add(id);
+		const href = tr.querySelector("a[href*=\"/archives/\"]")?.getAttribute("href");
+		if (href) links.set(id, new URL(href, "https://game8.co").toString());
 		const img = tr.querySelector("img");
 		const image = img?.getAttribute("data-src") || (img?.getAttribute("src")?.startsWith("http") ? img.getAttribute("src") : void 0);
+		const items = (cells.slice(2).reverse().find((c) => c.includes("・")) ?? "").split("・").map((s) => s.trim()).filter((s) => s && s.length < 60 && !/double|^x\d|\bx\d+\s*$/i.test(s)).map((name) => ({
+			name,
+			amount: 0
+		}));
 		out.push({
 			id,
 			gameId,
@@ -31478,7 +31692,7 @@ async function syncGame8(gameId, key) {
 			image,
 			start: new Date(start).toISOString(),
 			end: new Date(end).toISOString(),
-			items: [],
+			items,
 			featured: [],
 			pulls: 0,
 			source: "api",
@@ -31488,8 +31702,76 @@ async function syncGame8(gameId, key) {
 	if (!out.length) throw new Error(`game8 ${cfg.path}: no se encontraron eventos`);
 	return {
 		events: out,
-		patches: [],
-		codes: []
+		links
+	};
+}
+/** Recompensas de la guía de un evento: la primera tabla tras el título "… Rewards" ("Astrite", "Premium Tuner"; "x60" si la da), con su icono. */
+async function game8PageRewards(url) {
+	const res = await fetch(viaProxy(url));
+	if (!res.ok) throw new Error(`game8 ${url} → HTTP ${res.status}`);
+	const head = [...new DOMParser().parseFromString(await res.text(), "text/html").querySelectorAll("h2")].find((h) => /\bRewards?\b/i.test(text$1(h)));
+	let table = null;
+	for (let n = head?.nextElementSibling; n && n.tagName !== "H2" && !table; n = n.nextElementSibling) table = n.tagName === "TABLE" ? n : n.querySelector("table");
+	if (!table) return [];
+	const out = [];
+	for (const td of table.querySelectorAll("td")) {
+		const t = text$1(td);
+		const img = td.querySelector("img");
+		const icon = img?.getAttribute("data-src") || (img?.getAttribute("src")?.startsWith("http") ? img.getAttribute("src") : void 0);
+		const many = [...t.matchAll(/([A-Za-z][^×]*?)\s*[x×]\s?([\d,]+)(?=\s|$)/g)];
+		const parts = many.length ? many.map((m) => [m[1].trim(), Number(m[2].replace(/,/g, ""))]) : [[t.trim(), 0]];
+		for (const [name, amount] of parts) {
+			if (!name || name.length > 50 || !/[A-Za-z]/.test(name)) continue;
+			const had = out.find((i) => i.name === name);
+			if (had) {
+				had.amount += amount;
+				continue;
+			}
+			out.push({
+				name,
+				amount,
+				...icon && parts.length === 1 ? { icon } : {}
+			});
+		}
+	}
+	return out;
+}
+/**
+* WuWa (21 nov 2026): los avisos de Kuro no traen las recompensas de los eventos sin "Event Preview" (Lahai-Roi Blocks, Dreamfield Odyssey,
+* Whither the Wind…), pero la guía de Game8 de cada uno sí las nombra. También añade lo que solo está en Game8 (Ascendant Aces).
+* 1 lista + hasta 8 guías por ciclo (caché del proxy). Game8 rechaza las IP de servidores: solo llega desde la tarea del PC (carryOver lo conserva).
+*/
+async function withGame8Extras(s, gameId, key, game) {
+	const list = await game8List(gameId, key).catch((err) => {
+		console.warn("[game8]", err?.message ?? err);
+		return null;
+	});
+	if (!list) return s;
+	const norm = (t) => t.toLowerCase().replace(/\[[^\]]*\]|[^a-z0-9]/g, "");
+	const now = Date.now();
+	const events = s.events.map((e) => ({ ...e }));
+	const want = [];
+	for (const g of list.events) {
+		if (+new Date(g.end) < now) continue;
+		const k = norm(g.title);
+		const twin = events.find((e) => e.kind !== "banner" && Math.abs(+new Date(e.start) - +new Date(g.start)) <= 2 * DAY$9 && (norm(e.title).includes(k) || k.includes(norm(e.title)) || norm(e.title.replace(/^\[([^\]]+)\].*$/, "$1")) === k));
+		const url = list.links.get(g.id);
+		if (!twin) {
+			events.push(g);
+			if (url && !g.items.length) want.push([g, url]);
+			continue;
+		}
+		if (!twin.items.length && url && !/double drop/i.test(twin.title)) want.push([twin, url]);
+	}
+	for (const [e, url] of want.slice(0, 8)) {
+		const items = await game8PageRewards(url).catch(() => []);
+		if (!items.length) continue;
+		e.items = items;
+		e.pulls = pullsIn(game, items.filter((i) => i.amount > 0).map((i) => `${i.name} x${i.amount}`)).pulls;
+	}
+	return {
+		...s,
+		events
 	};
 }
 /**
@@ -32829,6 +33111,11 @@ async function akPageRewards(pages) {
 		const login = tally(), main = tally();
 		for (const cell of text.matchAll(/\{\{\s*Login reward cell([^}]*)\}\}/gi)) for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) login.add(m[1].trim(), Number(m[2].replace(/,/g, "")));
 		for (const m of text.matchAll(/operations are worth \{\{\s*Cur\s*\|\s*Originite Prime\s*\|\s*(\d+)/gi)) main.add("Originite Prime", Number(m[1]));
+		for (const cell of text.matchAll(/\{\{\s*Milestone cell([^}]*)\}\}/gi)) {
+			for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) main.add(m[1].trim(), Number(m[2].replace(/,/g, "")));
+			const outfit = /\|\s*outfit\s*=\s*([^|}\n]+)/i.exec(cell[1])?.[1]?.trim();
+			if (outfit) main.add(outfit, 1);
+		}
 		const loginName = /==\s*([^=\n]+?)\s+Login Event\s*==/i.exec(text)?.[1];
 		const li = login.list();
 		out.set(p.title, {
@@ -32959,7 +33246,16 @@ async function endfieldDetails(titles) {
 }
 async function syncEndfield(gameId) {
 	const since = sinceDate();
-	const [events, banners, versions] = await Promise.all([
+	const issues = cargo(EF, {
+		tables: "Issues",
+		fields: "Issue,Image,RateUpWeapon,IsPermanent,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime",
+		where: `AmeuEndTime>'${since}'`,
+		order_by: "AmeuStartTime"
+	}).then((rows) => rows.filter((r) => r.IsPermanent !== "1" && r.RateUpWeapon)).catch((err) => {
+		console.warn("[endfield] Issues:", err?.message ?? err);
+		return [];
+	});
+	const [events, banners, versions, weapons] = await Promise.all([
 		cargo(EF, {
 			tables: "Events",
 			fields: "Event,Type,Image,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime",
@@ -32976,9 +33272,14 @@ async function syncEndfield(gameId) {
 			tables: "Versions",
 			fields: "Version,VersionNumber,StartTime,EndTime",
 			order_by: "StartTime"
-		})
+		}),
+		issues
 	]);
-	const [files, details] = await Promise.all([fileMap(EF, [...events.map((r) => r.Image), ...banners.map((r) => r.Image)]), endfieldDetails(events.flatMap((r) => /^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event])).then((d) => {
+	const [files, details] = await Promise.all([fileMap(EF, [
+		...events.map((r) => r.Image),
+		...banners.map((r) => r.Image),
+		...weapons.map((r) => r.Image)
+	]), endfieldDetails(events.flatMap((r) => /^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event])).then((d) => {
 		for (const r of events) if (!d.get(r.Event)?.items.length && d.has(`Echoes of War: ${r.Event}`)) d.set(r.Event, d.get(`Echoes of War: ${r.Event}`));
 		return d;
 	}).catch((err) => {
@@ -33005,6 +33306,15 @@ async function syncEndfield(gameId) {
 			servers: asiaOf(r)
 		});
 	}));
+	const wps = compact(weapons.map((r) => make(gameId, "banner", `issue:${r.Issue}${r.AmeuStartTime}`, r.RateUpWeapon, toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), {
+		image: r.Image ? files.get(norm(r.Image)) : void 0,
+		featured: [{
+			name: r.RateUpWeapon,
+			rarity: 6
+		}],
+		description: `⟦d.weaponBanner⟧ · ${r.Issue}`,
+		servers: asiaOf(r)
+	})));
 	const patches = versions.map((v) => ({
 		v,
 		date: toIso(v.StartTime, AMEU)
@@ -33033,7 +33343,11 @@ async function syncEndfield(gameId) {
 		});
 	}
 	return {
-		events: [...evs, ...bns],
+		events: [
+			...evs,
+			...bns,
+			...wps
+		],
 		patches,
 		codes: []
 	};
@@ -33345,7 +33659,11 @@ function dedupeEvents(events) {
 * salían a la vez "Golden Gleam, Ironblood Code" (aviso oficial con Arman) y "Arman" (estimado). Mismo destacado y a menos de 3 semanas; el que se queda
 * hereda el retrato del estimado si no tenía.
 */
-var ANNOUNCED_GUESS = /* @__PURE__ */ new Set(["soc", "mongil"]);
+var ANNOUNCED_GUESS = /* @__PURE__ */ new Set([
+	"soc",
+	"mongil",
+	"bleach"
+]);
 function dropAnnounced(events) {
 	const W = 18144e5;
 	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -33363,6 +33681,12 @@ function dropAnnounced(events) {
 		});
 	}
 	return drop.size ? events.filter((e) => !drop.has(e)) : events;
+}
+/** Banners de `extra` que no estén ya en `events` (mismo inicio ±2 días y algún destacado o el título en común). */
+function unseenBanners(events, extra) {
+	const key = (n) => n.toLowerCase().replace(/[^a-z0-9]/g, "");
+	const have = events.filter((e) => e.kind === "banner");
+	return extra.filter((x) => !have.some((e) => Math.abs(Date.parse(e.start) - Date.parse(x.start)) <= 1728e5 && (key(e.title) === key(x.title) || e.featured.some((f) => x.featured.some((g) => key(g.name) === key(f.name))) || (e.description ?? "").includes(x.title))));
 }
 async function syncSource(game) {
 	const raw = () => STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game);
@@ -33448,7 +33772,7 @@ async function syncSourceRaw(game) {
 		case "limbus": return syncLimbus(id);
 		case "wuwa": {
 			const rewards = wuwaChallengeRewards().catch(() => ({}));
-			const events = officialFirst(syncKuro(id), syncReverie(id, "wuwa"), true);
+			const events = officialFirst(syncKuro(id), syncReverie(id, "wuwa"), true).then((s) => withGame8Extras(s, id, "wuwa", "wuwa"));
 			const [s, history, r] = await Promise.all([
 				withGachafocus(id, "wuwa", both(syncPrydwen(id, "wuwa"), events)),
 				fetchHistory("wuwa").catch(() => []),
@@ -33469,7 +33793,11 @@ async function syncSourceRaw(game) {
 		case "starrail":
 		case "zenless": {
 			const [s0, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])]);
-			const s = await withWikiEventRewards(CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]) : s0, game.wiki.host, game.api);
+			const s2 = await withWikiEventRewards(CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]) : s0, game.wiki.host, game.api);
+			const s = game.api === "genshin" ? {
+				...s2,
+				events: [...s2.events, ...unseenBanners(s2.events, await syncWishList(id, game.wiki.host).catch(() => []))]
+			} : s2;
 			return {
 				...s,
 				patches: buildPatches(id, s.patches, history, game.patchCycleDays)
@@ -33663,7 +33991,7 @@ async function withFeaturedIcons(game, events) {
 	const host = game.wiki?.host;
 	if (!host) return events;
 	const now = Date.now();
-	const names = [...new Set(events.filter((e) => e.kind === "banner" && +new Date(e.end) > now).flatMap((e) => e.featured.filter((f) => !f.icon).map((f) => f.full ?? f.name)))].filter((n) => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n)).slice(0, MAX_FACES);
+	const names = [...new Set(events.filter((e) => e.kind === "banner" && +new Date(e.end) > now).flatMap((e) => e.featured.filter((f) => !f.icon).map((f) => f.full ?? f.name)))].filter((n) => (n.length > 1 || /^[A-Z]$/.test(n)) && !/[{}[\]|#<>]/.test(n) && n !== "TBD").slice(0, MAX_FACES);
 	if (!names.length) return events;
 	const own = ICON_FILES[game.id];
 	const candidates = (full) => [.../* @__PURE__ */ new Set([full, full.replace(/\s*\((?:GFL2|character)\)$/i, "")])].flatMap((n) => [

@@ -1,5 +1,6 @@
 import { viaProxy } from '../net'
-import type { PromoCode } from '../types'
+import { pocketGamerExpired } from './codes'
+import type { GameEvent, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 
 /**
@@ -50,6 +51,28 @@ export const BLEACH_ICONS = new Map<string, string>([
 ])
 
 /** Sin eventos web (ver arriba): con canal de Discord, `syncSource` los añade y manda; aquí solo los códigos. */
+/**
+ * Banners con fecha que el canal de Discord no trajo (21 nov 2026): el aviso del aniversario anunció a Ichigo (Full Hollowfication) sin fecha y salía
+ * "estimado" desde el 18 nov; PocketGamer (resumen del aviso oficial, 20 nov) da su llegada el 25 nov y una repesca de todos los SSR limitados desde
+ * el 20 nov. Horas: las del resto de avisos de BLEACH (11:00 UTC). Fin sin anunciar: barra abierta. Cada semilla se apaga sola a los `maxDays`.
+ * El estimado de Discord sobra en cuanto hay uno con fecha (dropAnnounced, ANNOUNCED_GUESS en index.ts) y le pasa su retrato.
+ */
+const SEEDS: { title: string; start: string; featured: string[]; description: string; maxDays: number }[] = [
+  { title: 'Ichigo Kurosaki - Full Hollowfication', start: '2026-11-25T11:00:00.000Z', featured: ['Ichigo Kurosaki - Full Hollowfication'], description: '⟦d.charBanner⟧ · 1st Anniversary', maxDays: 21 },
+  { title: 'Limited SSR Rerun', start: '2026-11-20T11:00:00.000Z', featured: [], description: '⟦d.charBanner⟧ · 1st Anniversary · all limited-time SSR characters', maxDays: 21 },
+]
+
+function seededBanners(now = Date.now()): GameEvent[] {
+  const DAY = 86_400_000
+  return SEEDS.filter(s => now < +new Date(s.start) + s.maxDays * DAY).map(s => ({
+    id: `bleach:banner:seed:${s.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}:${s.start.slice(0, 10)}`, gameId: 'bleach', kind: 'banner' as const,
+    title: s.title, description: s.description, start: s.start, end: new Date(Math.max(+new Date(s.start) + 14 * DAY, now + 7 * DAY)).toISOString(),
+    items: [], featured: s.featured.map(name => ({ name, rarity: 5 })), pulls: 0, source: 'api' as const, official: true, open: true,
+  }))
+}
+
 export async function syncBleach(): Promise<GameSync> {
-  return { events: [], patches: [], codes: await syncBleachCodes() }
+  // game.guide tarda en mover los caducados: se quitan los que PocketGamer ya da por caducados (si responde).
+  const [codes, expired] = await Promise.all([syncBleachCodes(), pocketGamerExpired('bleach-soul-resonance').catch(() => new Set<string>())])
+  return { events: seededBanners(), patches: [], codes: codes.filter(c => !expired.has(c.code.toUpperCase())) }
 }

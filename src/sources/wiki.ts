@@ -171,6 +171,13 @@ async function akPageRewards(pages: string[]): Promise<Map<string, AkPage>> {
     for (const cell of text.matchAll(/\{\{\s*Login reward cell([^}]*)\}\}/gi))
       for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) login.add(m[1].trim(), Number(m[2].replace(/,/g, '')))
     for (const m of text.matchAll(/operations are worth \{\{\s*Cur\s*\|\s*Originite Prime\s*\|\s*(\d+)/gi)) main.add('Originite Prime', Number(m[1]))
+    // Hitos de los modos limitados ("Championship Trophies" de Positional Football Championship, 21 nov 2026): `{{Milestone cell|item = LMD, 10000}}`
+    // sumados, y el traje de regalo (`|outfit = Bouncing Rhythms`) como 1.
+    for (const cell of text.matchAll(/\{\{\s*Milestone cell([^}]*)\}\}/gi)) {
+      for (const m of cell[1].matchAll(/\|\s*item\d?\s*=\s*([^,|}]+?)\s*,\s*([\d,]+)/gi)) main.add(m[1].trim(), Number(m[2].replace(/,/g, '')))
+      const outfit = /\|\s*outfit\s*=\s*([^|}\n]+)/i.exec(cell[1])?.[1]?.trim()
+      if (outfit) main.add(outfit, 1)
+    }
     const loginName = /==\s*([^=\n]+?)\s+Login Event\s*==/i.exec(text)?.[1]
     const li = login.list()
     out.set(p.title, { items: main.list(), login: li.length ? { name: loginName ?? '', items: li } : undefined })
@@ -280,13 +287,19 @@ async function endfieldDetails(titles: string[]): Promise<Map<string, { descript
 
 export async function syncEndfield(gameId: string): Promise<GameSync> {
   const since = sinceDate()
-  const [events, banners, versions] = await Promise.all([
+  // Banners de arma ("Issues" del Arsenal Exchange): otra tabla Cargo (21 nov 2026: Lunar Calling, Jade Vessel y Umbra of Frigid Eventide no salían).
+  // Los permanentes (IsPermanent) no se listan. Si la consulta falla, salen solo los de operadores, como antes.
+  const issues = cargo(EF, { tables: 'Issues', fields: 'Issue,Image,RateUpWeapon,IsPermanent,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' })
+    .then(rows => rows.filter(r => r.IsPermanent !== '1' && r.RateUpWeapon))
+    .catch(err => { console.warn('[endfield] Issues:', (err as Error)?.message ?? err); return [] as Row[] })
+  const [events, banners, versions, weapons] = await Promise.all([
     cargo(EF, { tables: 'Events', fields: 'Event,Type,Image,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
     cargo(EF, { tables: 'Banners', fields: 'Banner,Image,RateUpOperator,LimitedOperators,AmeuStartTime,AmeuEndTime,AsiaStartTime,AsiaEndTime', where: `AmeuEndTime>'${since}'`, order_by: 'AmeuStartTime' }),
     cargo(EF, { tables: 'Versions', fields: 'Version,VersionNumber,StartTime,EndTime', order_by: 'StartTime' }),
+    issues,
   ])
 
-  const [files, details] = await Promise.all([fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image)]),
+  const [files, details] = await Promise.all([fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image), ...weapons.map(r => r.Image)]),
     // "Season of Fervor" (la temporada de Echoes of War) tiene su página como "Echoes of War: Season of Fervor".
     endfieldDetails(events.flatMap(r => (/^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event]))).then(d => {
       for (const r of events) if (!d.get(r.Event)?.items.length && d.has(`Echoes of War: ${r.Event}`)) d.set(r.Event, d.get(`Echoes of War: ${r.Event}`)!)
@@ -305,6 +318,12 @@ export async function syncEndfield(gameId: string): Promise<GameSync> {
       })
   }))
 
+  const wps = compact(weapons.map(r => make(gameId, 'banner', `issue:${r.Issue}${r.AmeuStartTime}`, r.RateUpWeapon,
+    toIso(r.AmeuStartTime, AMEU), toIso(r.AmeuEndTime, AMEU), {
+      image: r.Image ? files.get(norm(r.Image)) : undefined, featured: [{ name: r.RateUpWeapon, rarity: 6 }],
+      description: `⟦d.weaponBanner⟧ · ${r.Issue}`, servers: asiaOf(r),
+    })))
+
   const patches: Patch[] = versions
     .map(v => ({ v, date: toIso(v.StartTime, AMEU) }))
     .filter(x => x.date)
@@ -317,5 +336,5 @@ export async function syncEndfield(gameId: string): Promise<GameSync> {
     if (!patches.some(p => p.version === next))
       patches.push({ id: `${gameId}:patch:${next}`, gameId, version: next, date: new Date(+new Date(lastEnd) + 1000).toISOString(), notes: 'Estimado: según el fin de la versión actual.', source: 'api', estimated: true })
   }
-  return { events: [...evs, ...bns], patches, codes: [] }
+  return { events: [...evs, ...bns, ...wps], patches, codes: [] }
 }

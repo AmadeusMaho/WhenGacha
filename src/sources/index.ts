@@ -33,7 +33,7 @@ import { syncFgo } from './fgo'
 import { syncBlueArchive } from './mediawiki'
 import { syncKuro, syncPgr, wuwaChallengeRewards, wuwaChallenges, wuwaMatrix, type WuwaRewards } from './kuro'
 import { syncHi3Official, syncHonkai3 } from './honkai3'
-import { eventPages, syncHoyoWiki } from './hoyowiki'
+import { eventPages, syncHoyoWiki, syncWishList } from './hoyowiki'
 import { pullsIn, type PullGame } from './pulls'
 import { shortDescription } from './summary'
 import { STEAM_APPS, syncSteamNews } from './steam'
@@ -41,7 +41,7 @@ import { syncLimbus } from './limbus'
 import { syncNikke } from './nikke'
 import { syncNikkeGg } from './nikkegg'
 import { syncNevernessGg } from './nevernessgg'
-import { game8Recurring, syncGame8 } from './game8'
+import { game8Recurring, syncGame8, withGame8Extras } from './game8'
 import { syncPrydwen } from './prydwen'
 import { syncReverie } from './reverie'
 import { syncReverse1999 } from './reverse1999'
@@ -289,7 +289,7 @@ function dedupeEvents(events: GameEvent[]): GameEvent[] {
  */
 // Solo los juegos con ese banner "anunciado sin fecha". No en FGO ni Uma: sus estimados son banners futuros de JP o predicciones que pueden repetir
 // personaje con uno en curso sin ser el mismo. Un juego nuevo con el patrón de Arman/Lou se añade aquí.
-const ANNOUNCED_GUESS = new Set(['soc', 'mongil'])
+const ANNOUNCED_GUESS = new Set(['soc', 'mongil', 'bleach'])
 export function dropAnnounced(events: GameEvent[]): GameEvent[] {
   const W = 21 * 86_400_000
   const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -304,6 +304,14 @@ export function dropAnnounced(events: GameEvent[]): GameEvent[] {
     twin.featured = twin.featured.map(f => (f.icon ? f : { ...f, icon: est.featured.find(x => key(x.name) === key(f.name))?.icon }))
   }
   return drop.size ? events.filter(e => !drop.has(e)) : events
+}
+
+/** Banners de `extra` que no estén ya en `events` (mismo inicio ±2 días y algún destacado o el título en común). */
+function unseenBanners(events: GameEvent[], extra: GameEvent[]): GameEvent[] {
+  const key = (n: string) => n.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const have = events.filter(e => e.kind === 'banner')
+  return extra.filter(x => !have.some(e => Math.abs(Date.parse(e.start) - Date.parse(x.start)) <= 2 * 86_400_000
+    && (key(e.title) === key(x.title) || e.featured.some(f => x.featured.some(g => key(g.name) === key(f.name))) || (e.description ?? '').includes(x.title))))
 }
 
 export async function syncSource(game: Game): Promise<GameSync> {
@@ -412,7 +420,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
       // Banners de Prydwen + eventos de las notas de parche oficiales de Kuro (horas exactas), con las imágenes y los eventos extra de Reverie.
       // Desafíos rotatorios: Tower of Adversity y Whimpering Wastes (ciclo fijo) y Endstate Matrix (una fase por versión), con recompensas de la wiki.
       const rewards = wuwaChallengeRewards().catch((): WuwaRewards => ({}))
-      const events = officialFirst(syncKuro(id), syncReverie(id, 'wuwa'), true)
+      // + Game8: recompensas de las guías de los eventos que Kuro no detalla, y los que solo están ahí (Ascendant Aces, 21 nov 2026).
+      const events = officialFirst(syncKuro(id), syncReverie(id, 'wuwa'), true).then(s => withGame8Extras(s, id, 'wuwa', 'wuwa'))
       const [s, history, r] = await Promise.all([withGachafocus(id, 'wuwa', both(syncPrydwen(id, 'wuwa'), events)), fetchHistory('wuwa').catch(() => []), rewards])
       const patches = buildPatches(id, [], history, game.patchCycleDays)
       return { ...s, events: [...s.events, ...wuwaChallenges(id, Date.now(), r), ...wuwaMatrix(id, patches, r.matrix)], patches }
@@ -425,7 +434,9 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
       const [s0, history] = await Promise.all([officialFirst(syncHoyoWiki(id, game.wiki.host, game.api), syncGame(id, game.api)), fetchHistory(game.api).catch(() => [])])
       // ennead no trae recompensas para los desafíos de ZZZ: el total por ciclo sale de la wiki.
       const s1 = CHALLENGE_PAGES[game.api] ? await withChallengeRewards(s0, game.wiki.host, game.api, CHALLENGE_PAGES[game.api]!) : s0
-      const s = await withWikiEventRewards(s1, game.wiki.host, game.api)
+      const s2 = await withWikiEventRewards(s1, game.wiki.host, game.api)
+      // Genshin: banners ya anunciados en su wiki que ennead aún no trae (la fase 2 sale días antes en la wiki).
+      const s = game.api === 'genshin' ? { ...s2, events: [...s2.events, ...unseenBanners(s2.events, await syncWishList(id, game.wiki.host).catch(() => []))] } : s2
       return { ...s, patches: buildPatches(id, s.patches, history, game.patchCycleDays) }
     }
     // Punishing: Gray Raven: notas de versión oficiales de Kuro (mismo CDN que WuWa) + la Jaula del Dolor Fantasma semanal (cycles.ts).
