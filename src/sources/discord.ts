@@ -419,7 +419,12 @@ export function bracketRewards(section: string[]): { name: string; amount: numbe
   for (const l of section.slice(at + 1)) {
     if (!l) continue
     if (LABEL.test(l)) break
-    for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) if (!out.some(o => o.name === m[1].trim())) out.push({ name: m[1].trim(), amount: 0 })
+    for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) {
+      // Con cantidad pegada o tras ×/x/* ("[Collapse Pieces100]", "[Collapse Pieces ×100]", GFL2, 21 nov 2026): se separa, en singular como gfl2Notice.
+      const q = /^(.*?[A-Za-z)])\s*[×x*]?\s*(\d[\d,]*)$/.exec(m[1].trim())
+      const name = q ? q[1].trim().replace(/(?<!s)s$/, '') : m[1].trim()
+      if (!out.some(o => o.name === name)) out.push({ name, amount: q ? Number(q[2].replace(/,/g, '')) : 0 })
+    }
   }
   return out.slice(0, 10)
 }

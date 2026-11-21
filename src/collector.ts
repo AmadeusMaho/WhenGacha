@@ -156,7 +156,7 @@ const ICON_FILES: Partial<Record<string, (n: string) => string[]>> = {
   // Epic Seven ("Yufine s.png"). Los banners de trajes ("Bunny Girl Mafia Yufine", 18 nov 2026) no tienen archivo propio: el del héroe (la última palabra).
   epic7: n => [`${n} s.png`, `${n.split(/\s+/).pop()} s.png`],
   gfl2: n => [`${n} Covenant Avatar.png`],
-  wuwa: n => [`Resonator ${n}.png`],
+  wuwa: n => [`Resonator ${n}.png`, `Weapon ${n}.png`],
   // HI3: arma de 5★/4★ ("Key of Mirroring (5) (Icon).png") y pieza superior del set de estigmas ("Let Time Be Your Name (T).png"); las valquirias, por su página.
   honkai3: n => [`${n} (5) (Icon).png`, `${n} (4) (Icon).png`, `${n} (Icon).png`, `${n} (T).png`],
 }

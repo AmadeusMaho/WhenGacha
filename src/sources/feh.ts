@@ -210,8 +210,12 @@ export async function syncFeh(gameId: string, now = Date.now()): Promise<GameSyn
     while (s + len < now) s += 7 * DAY
     for (const k of [0, 1]) {
       const a = s + k * 7 * DAY
-      events.push({ id: `${gameId}:challenge:${id}:${iso(a).slice(0, 10)}`, gameId, kind: 'challenge', title: name, description: `⟦${desc}⟧`,
-        start: iso(a), end: iso(a + len), items: [], featured: [], pulls: 0, source: 'api', ...(a > last.s ? { precision: 'estimated' as const } : {}) })
+      // Tope de Arena (wiki "Arena", tabla de niveles: nivel 21, Great Summoner): 5 Orbes y 3.500 Hero Feathers por temporada.
+      // Aether Raids: la wiki no da una tabla de recompensas por nivel con Orbes; sin tope.
+      const top = id === 'arena' ? [{ name: 'Orb', amount: 5 }, { name: 'Hero Feather', amount: 3500 }] : []
+      events.push({ id: `${gameId}:challenge:${id}:${iso(a).slice(0, 10)}`, gameId, kind: 'challenge', title: name,
+        description: `⟦${desc}⟧${top.length ? ' ⟦d.upTo|5 Orbs⟧' : ''}`,
+        start: iso(a), end: iso(a + len), items: top, featured: [], pulls: 0, source: 'api', ...(a > last.s ? { precision: 'estimated' as const } : {}) })
     }
   }
 

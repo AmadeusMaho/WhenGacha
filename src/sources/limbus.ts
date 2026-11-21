@@ -162,17 +162,26 @@ export async function syncLimbus(gameId: string): Promise<GameSync> {
  */
 async function withAnnounced(events: GameEvent[]): Promise<GameEvent[]> {
   const need = events.filter(e => e.kind === 'banner' && !e.featured.length && +new Date(e.start) > Date.now() - DAY)
-  if (!need.length) return events
   const qs = new URLSearchParams({ action: 'parse', page: 'Extraction/Banner_History', prop: 'wikitext', format: 'json', origin: '*' })
   const text: string = await fetch(viaProxy(`${WIKI}?${qs}`)).then(r => (r.ok ? r.json() : null)).then(j => j?.parse?.wikitext?.['*'] ?? '').catch(() => '')
   const at = text.search(/==\s*Upcoming Banners\s*==/i)
   if (at < 0) return events
   const block = text.slice(at, at + 4000).split(/\n==[^=]/)[0]
   const byDay = new Map<string, Featured[]>() // "11-26" → destacados
+  const undated: { title: string; description: string }[] = []
   let cur = ''
   for (const line of block.split('\n')) {
     const d = /^\*\s*([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?\s*:/.exec(line)
     if (d) { const mi = MONTHS.indexOf(d[1].toLowerCase()); cur = mi >= 0 ? `${String(mi + 1).padStart(2, '0')}-${d[2].padStart(2, '0')}` : ''; continue }
+    // "* Unknown date - [[Spring Cultivation]] BokGak Extraction Banner featuring two {{Icons|IDNumber3}} 3-Star Identities, an E.G.O, and a Battle Announcer"
+    const u = /^\*\s*Unknown date\s*[-–]\s*(.+)$/i.exec(line)
+    if (u) {
+      const plain = u[1].replace(/\[\[(?:[^|\]]*\|)?([^\]]+)\]\]/g, '$1').replace(/\{\{[^}]*\}\}\s*/g, '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
+      const head = plain.split(/\s+featuring\s+/i)[0].replace(/^an?\s+/i, '').replace(/\s*Extraction Banner$/i, '').trim()
+      if (head) undated.push({ title: `${head.charAt(0).toUpperCase()}${head.slice(1)} Extraction`, description: plain })
+      cur = ''
+      continue
+    }
     if (/^\*[^*]/.test(line)) { cur = ''; continue }
     const m = /^\*\*.*?(\d)-Star (.+?) (Yi Sang|Faust|Don Quixote|Ry[oō]sh[uū]|Meursault|Hong Lu|Heathcliff|Ishmael|Rodion|Sinclair|Outis|Gregor) (Identity|E\.G\.O)/i.exec(line)
     if (!cur || !m) continue
@@ -180,5 +189,16 @@ async function withAnnounced(events: GameEvent[]): Promise<GameEvent[]> {
     byDay.set(cur, [...(byDay.get(cur) ?? []), f])
   }
   // El banner empieza a las 12:00 KST (03:00 UTC): su día en UTC es el del aviso.
-  return events.map(e => (need.includes(e) && byDay.has(e.start.slice(5, 10)) ? { ...e, featured: byDay.get(e.start.slice(5, 10))!.slice(0, 6) } : e))
+  const out = events.map(e => (need.includes(e) && byDay.has(e.start.slice(5, 10)) ? { ...e, featured: byDay.get(e.start.slice(5, 10))!.slice(0, 6) } : e))
+  // Anunciados sin fecha (directo del roadmap): banners estimados de 2 semanas, uno tras otro desde el último con fecha (norma del proyecto:
+  // lo anunciado sin fecha va como `estimated` a continuación de lo actual). Como mucho 4.
+  let next = Math.max(Date.now(), ...out.filter(e => e.kind === 'banner').map(e => +new Date(e.end) + 1000 - 60_000))
+  for (const u of undated.slice(0, 4)) {
+    const start = new Date(next - (next % DAY) + 3 * 3_600_000 + (next % DAY > 3 * 3_600_000 ? DAY : 0))
+    const end = new Date(+start + 14 * DAY - 2 * 3_600_000 - 1000)
+    out.push({ id: `limbus:banner:roadmap:${u.title}`, gameId: 'limbus', kind: 'banner', title: u.title, description: u.description,
+      start: start.toISOString(), end: end.toISOString(), items: [], featured: [], pulls: 0, source: 'api', precision: 'estimated' })
+    next = +end + 1000
+  }
+  return out
 }

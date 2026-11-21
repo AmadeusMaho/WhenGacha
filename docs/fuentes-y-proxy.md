@@ -1246,3 +1246,23 @@ Pasado el recolector por los 19 juegos restantes desde este PC: todas sus fuente
   Santa, Pumpkin). AFK Journey, cuya lista va de nueva a vieja, se corta en el primero viejo (`cut`): 84 → 9 códigos.
 - **Comentarios desfasados**: los de `index.ts` que decían "solo por Discord" para MONGIL (lee el foro oficial de Netmarble), Trickcal (lee los avisos
   de su web) y BLEACH (semillas y códigos) estaban viejos; corregidos. No fiarse de esos comentarios: mirar el `sync*` de cada juego.
+
+### Pendientes de la auditoría resueltos (21 nov 2026, noche)
+
+- **Banners de arma con destacado** (`prydwen.ts`): el arma (o la arcana de StarSavior) es el destacado, con la imagen de la tarjeta si la trae
+  (reediciones) o la de la wiki ("Weapon <nombre>.png" en WuWa, `ICON_FILES`). StarSavior distingue Savior/Arcana por la etiqueta del banner y
+  MONGIL elige el banner "actual" solo entre los de personaje (antes los dos miraban si había destacados). **Sin retrato**: los de CZN (Sig, Vivian,
+  Tiana, Edelyn: compañeros sin icono en Prydwen) y dos armas de NTE. Los "Event Banner" de R:1999 (Ripples/Boon of the Water) son de elección
+  ("Select 1 of the 6 characters"): sin destacado a propósito.
+- **Lector de Discord** (`bracketRewards`): "[Collapse Pieces100]" → Collapse Piece ×100. "FREE recruitments" de Blue Archive no era un error (cuenta 200
+  tiradas) ni "Dia" de BD2 (su moneda; **sin fuente de icono**). **Iconos de R:1999 y HI3**: nombres genéricos ("Polarization", "5-Star Psychube") o
+  edificios y cajas del evento que la wiki no tiene: sin fuente.
+- **Descripción de los rotatorios fijos** (`modeDescriptions` en index.ts, claves `d.mode*`): Abismo y Teatro (Genshin), Memoria del Caos, Ficción
+  Pura y Sombra Apocalíptica (HSR, por el id de ennead: 1xxx/2xxx/3xxx; los de id < 1000, como "Hidden Stage", sin describir), Asalto Mortal (ZZZ),
+  Torre, Páramos y Matriz (WuWa).
+- **Limbus, lo anunciado sin fecha** (`withAnnounced`): los "Unknown date - …" de "==Upcoming Banners==" salen como banners estimados de 2 semanas
+  tras el último con fecha (Spring Cultivation BokGak, Navidad, capítulo 10.5-1, Walpurgis de Lobotomy Corporation). Como mucho 4.
+- **Topes "(hasta X por ciclo)"** (clave `d.upTo`), solo con cifra de la wiki: HI3 Memorial Arena hasta 140 Crystals (Exalted: 100 por puntuación +
+  20 por cada jefe SSS) y FEH Arena hasta 5 Orbes y 3.500 Hero Feathers (nivel 21). **Sin tope publicado** (no se inventa): Aether Raids, raids de
+  Blue Archive, Limbo de R:1999, Exercise de Azur Lane y el resto. PGR Phantom Pain Cage: su wiki da 36 Phantom Pain Scar y 60.000 Cogs como máximo
+  y ningún Black Card, al revés que nuestra descripción ("da Black Cards"); no se cambia hasta confirmar cuál está al día.

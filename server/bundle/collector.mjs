@@ -21406,7 +21406,13 @@ function hi3MemorialArena(gameId, now = Date.now()) {
 	if (start > now) start -= 7 * DAY$42;
 	return [0, 1].map((k) => {
 		const s = start + k * 7 * DAY$42;
-		return ev(gameId, "Memorial Arena", s, s + 6 * DAY$42 - 2 * HOUR$12 - 1e3, "⟦d.hi3Arena⟧", true, now);
+		return {
+			...ev(gameId, "Memorial Arena", s, s + 6 * DAY$42 - 2 * HOUR$12 - 1e3, "⟦d.hi3Arena⟧ ⟦d.upTo|140 Crystals⟧", true, now),
+			items: [{
+				name: "Crystals",
+				amount: 140
+			}]
+		};
 	});
 }
 /**
@@ -22178,10 +22184,14 @@ function bracketRewards$1(section) {
 	for (const l of section.slice(at + 1)) {
 		if (!l) continue;
 		if (LABEL$3.test(l)) break;
-		for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) if (!out.some((o) => o.name === m[1].trim())) out.push({
-			name: m[1].trim(),
-			amount: 0
-		});
+		for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) {
+			const q = /^(.*?[A-Za-z)])\s*[×x*]?\s*(\d[\d,]*)$/.exec(m[1].trim());
+			const name = q ? q[1].trim().replace(/(?<!s)s$/, "") : m[1].trim();
+			if (!out.some((o) => o.name === name)) out.push({
+				name,
+				amount: q ? Number(q[2].replace(/,/g, "")) : 0
+			});
+		}
 	}
 	return out.slice(0, 10);
 }
@@ -25594,7 +25604,12 @@ async function syncPrydwen(gameId, key) {
 		const phase = text$7(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
 		const rank = stars(text$7(card.querySelector(".rarity")));
 		const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(card.querySelector("a.banner-card-link")?.getAttribute("href") ?? "")?.[1];
-		const featured = weapon ? [] : [{
+		const art = card.querySelector("img.lightcone-card-image")?.getAttribute("src");
+		const featured = weapon ? [{
+			name,
+			rarity: rank ?? 5,
+			...art ? { icon: art } : {}
+		}] : [{
 			name,
 			rarity: rank,
 			...slug && iconBase ? { icon: `${iconBase}${slug.replace(/-/g, "_")}_icon.webp` } : {}
@@ -25774,7 +25789,7 @@ async function teased(gameId, current) {
 async function syncMongil(gameId) {
 	const [b, c] = await Promise.allSettled([syncPrydwen(gameId, "mongil"), syncPocketGamerCodes("mongil-star-dive")]);
 	const dated = b.status === "fulfilled" ? b.value.events : [];
-	const current = dated.filter((e) => e.featured.length).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0];
+	const current = dated.filter((e) => e.featured.length && !(e.description ?? "").includes("⟦d.weaponBanner⟧")).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0];
 	const banners = [...dated, ...await teased(gameId, current).catch(() => [])];
 	const launch = banners.filter((e) => Date.parse(e.start) <= Date.now()).map((e) => Date.parse(e.start)).sort((x, y) => y - x)[0];
 	const n = await syncMongilNews(gameId, launch).then((v) => ({
@@ -27424,7 +27439,7 @@ async function syncStarSavior(gameId, now = Date.now()) {
 				official: true
 			} : {},
 			featured,
-			description: b.featured.length ? "⟦d.ssSavior⟧" : "⟦d.ssArcana⟧"
+			description: (b.description ?? "").includes("⟦d.weaponBanner⟧") ? "⟦d.ssArcana⟧" : "⟦d.ssSavior⟧"
 		};
 	});
 	const extra = steamBanners.filter((s) => !/featured/i.test(s.title) && !banners.some((b) => Math.abs(+new Date(s.end) - +new Date(b.end)) < 2 * HOUR$4 && s.start.slice(0, 10) === b.start.slice(0, 10) && /featured/i.test(s.title))).filter((s) => /select/i.test(s.title)).map((s) => ({
@@ -28658,15 +28673,22 @@ async function syncFeh(gameId, now = Date.now()) {
 		while (s + len < now) s += 7 * DAY$20;
 		for (const k of [0, 1]) {
 			const a = s + k * 7 * DAY$20;
+			const top = id === "arena" ? [{
+				name: "Orb",
+				amount: 5
+			}, {
+				name: "Hero Feather",
+				amount: 3500
+			}] : [];
 			events.push({
 				id: `${gameId}:challenge:${id}:${iso$2(a).slice(0, 10)}`,
 				gameId,
 				kind: "challenge",
 				title: name,
-				description: `⟦${desc}⟧`,
+				description: `⟦${desc}⟧${top.length ? " ⟦d.upTo|5 Orbs⟧" : ""}`,
 				start: iso$2(a),
 				end: iso$2(a + len),
-				items: [],
+				items: top,
 				featured: [],
 				pulls: 0,
 				source: "api",
@@ -31052,7 +31074,6 @@ async function syncLimbus(gameId) {
 */
 async function withAnnounced(events) {
 	const need = events.filter((e) => e.kind === "banner" && !e.featured.length && +new Date(e.start) > Date.now() - DAY$13);
-	if (!need.length) return events;
 	const qs = new URLSearchParams({
 		action: "parse",
 		page: "Extraction/Banner_History",
@@ -31065,12 +31086,24 @@ async function withAnnounced(events) {
 	if (at < 0) return events;
 	const block = text.slice(at, at + 4e3).split(/\n==[^=]/)[0];
 	const byDay = /* @__PURE__ */ new Map();
+	const undated = [];
 	let cur = "";
 	for (const line of block.split("\n")) {
 		const d = /^\*\s*([A-Za-z]+) (\d{1,2})(?:st|nd|rd|th)?\s*:/.exec(line);
 		if (d) {
 			const mi = MONTHS$6.indexOf(d[1].toLowerCase());
 			cur = mi >= 0 ? `${String(mi + 1).padStart(2, "0")}-${d[2].padStart(2, "0")}` : "";
+			continue;
+		}
+		const u = /^\*\s*Unknown date\s*[-–]\s*(.+)$/i.exec(line);
+		if (u) {
+			const plain = u[1].replace(/\[\[(?:[^|\]]*\|)?([^\]]+)\]\]/g, "$1").replace(/\{\{[^}]*\}\}\s*/g, "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+			const head = plain.split(/\s+featuring\s+/i)[0].replace(/^an?\s+/i, "").replace(/\s*Extraction Banner$/i, "").trim();
+			if (head) undated.push({
+				title: `${head.charAt(0).toUpperCase()}${head.slice(1)} Extraction`,
+				description: plain
+			});
+			cur = "";
 			continue;
 		}
 		if (/^\*[^*]/.test(line)) {
@@ -31088,10 +31121,31 @@ async function withAnnounced(events) {
 		};
 		byDay.set(cur, [...byDay.get(cur) ?? [], f]);
 	}
-	return events.map((e) => need.includes(e) && byDay.has(e.start.slice(5, 10)) ? {
+	const out = events.map((e) => need.includes(e) && byDay.has(e.start.slice(5, 10)) ? {
 		...e,
 		featured: byDay.get(e.start.slice(5, 10)).slice(0, 6)
 	} : e);
+	let next = Math.max(Date.now(), ...out.filter((e) => e.kind === "banner").map((e) => +new Date(e.end) + 1e3 - 6e4));
+	for (const u of undated.slice(0, 4)) {
+		const start = /* @__PURE__ */ new Date(next - next % DAY$13 + 108e5 + (next % DAY$13 > 108e5 ? DAY$13 : 0));
+		const end = /* @__PURE__ */ new Date(+start + 14 * DAY$13 - 72e5 - 1e3);
+		out.push({
+			id: `limbus:banner:roadmap:${u.title}`,
+			gameId: "limbus",
+			kind: "banner",
+			title: u.title,
+			description: u.description,
+			start: start.toISOString(),
+			end: end.toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "estimated"
+		});
+		next = +end + 1e3;
+	}
+	return out;
 }
 // src/sources/nikke.ts
 /**
@@ -33706,6 +33760,35 @@ function unseenBanners(events, extra) {
 	const have = events.filter((e) => e.kind === "banner");
 	return extra.filter((x) => !have.some((e) => Math.abs(Date.parse(e.start) - Date.parse(x.start)) <= 1728e5 && (key(e.title) === key(x.title) || e.featured.some((f) => x.featured.some((g) => key(g.name) === key(f.name))) || (e.description ?? "").includes(x.title))));
 }
+/**
+* Descripción de los rotatorios fijos que llegan sin ella (21 nov 2026: Abyss y Teatro de Genshin, los de HSR, Asalto Mortal de ZZZ y los de WuWa).
+* HSR: ennead numera cada ciclo por modo (1xxx Memoria del Caos, 2xxx Ficción Pura, 3xxx Sombra Apocalíptica); los de id < 1000 no se describen
+* (no consta de qué modo son).
+*/
+function modeDescriptions(events) {
+	const by = (e) => {
+		if (/Spiral Abyss|Abyssal Moon Spire/i.test(e.title)) return "d.modeAbyss";
+		if (/Imaginarium Theater/i.test(e.title)) return "d.modeTheater";
+		if (/^Deadly Assault/i.test(e.title)) return "d.modeDa";
+		if (/^Tower of Adversity/i.test(e.title)) return "d.modeToa";
+		if (/^Whimpering Wastes/i.test(e.title)) return "d.modeWastes";
+		if (/^Endstate Matrix/i.test(e.title)) return "d.modeMatrix";
+		const hsr = /^hsr:challenge:(\d+):/.exec(e.id)?.[1];
+		if (hsr && +hsr >= 1e3) return [
+			"d.modeMoc",
+			"d.modePf",
+			"d.modeAs"
+		][Math.floor(+hsr / 1e3) - 1];
+	};
+	return events.map((e) => {
+		if (e.kind !== "challenge" || e.description) return e;
+		const k = by(e);
+		return k ? {
+			...e,
+			description: `⟦${k}⟧`
+		} : e;
+	});
+}
 async function syncSource(game) {
 	const raw = () => STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game);
 	const s0 = !discordChannel(game.id) ? await raw() : game.id === "azurlane" ? await officialFirst(raw(), syncDiscord(game.id)) : await officialFirst(syncDiscord(game.id), raw());
@@ -33714,10 +33797,10 @@ async function syncSource(game) {
 	const s1 = await withItemIcons$1(game.id, game.id === "azurlane" ? azurPolish(s0) : game.id === "stellasora" ? ssPolish(s0) : s0);
 	const s = {
 		...s1,
-		events: dedupeEvents(s1.events.map((e) => e.description ? {
+		events: modeDescriptions(dedupeEvents(s1.events.map((e) => e.description ? {
 			...e,
 			description: shortDescription(e.description)
-		} : e))
+		} : e)))
 	};
 	const aligned = s.patches.length ? {
 		...s,
@@ -33996,7 +34079,7 @@ var ICON_FILES = {
 	mongil: (n) => [`${n.replace(/\s+/g, "")}Portrait.png`],
 	epic7: (n) => [`${n} s.png`, `${n.split(/\s+/).pop()} s.png`],
 	gfl2: (n) => [`${n} Covenant Avatar.png`],
-	wuwa: (n) => [`Resonator ${n}.png`],
+	wuwa: (n) => [`Resonator ${n}.png`, `Weapon ${n}.png`],
 	honkai3: (n) => [
 		`${n} (5) (Icon).png`,
 		`${n} (4) (Icon).png`,

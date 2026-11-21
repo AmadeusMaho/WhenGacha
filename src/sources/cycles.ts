@@ -26,7 +26,8 @@ export function hi3MemorialArena(gameId: string, now = Date.now()): GameEvent[] 
   if (start > now) start -= 7 * DAY
   return [0, 1].map(k => {
     const s = start + k * 7 * DAY
-    return ev(gameId, 'Memorial Arena', s, s + 6 * DAY - 2 * HOUR - 1000, '⟦d.hi3Arena⟧', true, now)
+    // Tope semanal en Exalted (wiki "Memorial Arena", versión 8.4): 100 Crystals por puntuación + 20 por cada uno de los 2 jefes SSS.
+    return { ...ev(gameId, 'Memorial Arena', s, s + 6 * DAY - 2 * HOUR - 1000, '⟦d.hi3Arena⟧ ⟦d.upTo|140 Crystals⟧', true, now), items: [{ name: 'Crystals', amount: 140 }] }
   })
 }
 

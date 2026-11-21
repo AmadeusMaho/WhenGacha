@@ -132,7 +132,8 @@ export async function syncMongil(gameId: string): Promise<GameSync> {
   const [b, c] = await Promise.allSettled([syncPrydwen(gameId, 'mongil'), syncPocketGamerCodes('mongil-star-dive')])
   // Inicio de la versión en curso: el del banner de personaje más reciente que ya empezó.
   const dated = b.status === 'fulfilled' ? b.value.events : []
-  const current = dated.filter(e => e.featured.length).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0]
+  // De personaje: los de arma también llevan destacado (el arma) desde el 21 nov 2026.
+  const current = dated.filter(e => e.featured.length && !(e.description ?? '').includes('⟦d.weaponBanner⟧')).sort((x, y) => Date.parse(y.end) - Date.parse(x.end))[0]
   const banners = [...dated, ...await teased(gameId, current).catch(() => [] as GameEvent[])]
   const launch = banners.filter(e => Date.parse(e.start) <= Date.now()).map(e => Date.parse(e.start)).sort((x, y) => y - x)[0]
   const n = await syncMongilNews(gameId, launch).then(v => ({ ok: true as const, v }), (err: Error) => ({ ok: false as const, err }))

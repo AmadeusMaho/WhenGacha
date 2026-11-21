@@ -314,6 +314,30 @@ function unseenBanners(events: GameEvent[], extra: GameEvent[]): GameEvent[] {
     && (key(e.title) === key(x.title) || e.featured.some(f => x.featured.some(g => key(g.name) === key(f.name))) || (e.description ?? '').includes(x.title))))
 }
 
+/**
+ * Descripción de los rotatorios fijos que llegan sin ella (21 nov 2026: Abyss y Teatro de Genshin, los de HSR, Asalto Mortal de ZZZ y los de WuWa).
+ * HSR: ennead numera cada ciclo por modo (1xxx Memoria del Caos, 2xxx Ficción Pura, 3xxx Sombra Apocalíptica); los de id < 1000 no se describen
+ * (no consta de qué modo son).
+ */
+function modeDescriptions(events: GameEvent[]): GameEvent[] {
+  const by = (e: GameEvent): string | undefined => {
+    if (/Spiral Abyss|Abyssal Moon Spire/i.test(e.title)) return 'd.modeAbyss'
+    if (/Imaginarium Theater/i.test(e.title)) return 'd.modeTheater'
+    if (/^Deadly Assault/i.test(e.title)) return 'd.modeDa'
+    if (/^Tower of Adversity/i.test(e.title)) return 'd.modeToa'
+    if (/^Whimpering Wastes/i.test(e.title)) return 'd.modeWastes'
+    if (/^Endstate Matrix/i.test(e.title)) return 'd.modeMatrix'
+    const hsr = /^hsr:challenge:(\d+):/.exec(e.id)?.[1]
+    if (hsr && +hsr >= 1000) return ['d.modeMoc', 'd.modePf', 'd.modeAs'][Math.floor(+hsr / 1000) - 1]
+    return undefined
+  }
+  return events.map(e => {
+    if (e.kind !== 'challenge' || e.description) return e
+    const k = by(e)
+    return k ? { ...e, description: `⟦${k}⟧` } : e
+  })
+}
+
 export async function syncSource(game: Game): Promise<GameSync> {
   // Cualquier juego con canal en DISCORD_CHANNELS (solo en el servidor): sus anuncios oficiales mandan y sus fuentes de siempre completan. docs/discord-bot.md
   // Avisos oficiales publicados en Steam (steam.ts): mandan sobre las fuentes de siempre, como los de Discord.
@@ -328,7 +352,7 @@ export async function syncSource(game: Game): Promise<GameSync> {
   if (game.id === 'trickcal' && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []))
   const s1 = await withItemIcons(game.id, game.id === 'azurlane' ? azurPolish(s0) : game.id === 'stellasora' ? ssPolish(s0) : s0)
   // Descripciones sin HTML y breves (resúmenes al estilo de Endfield; summary.ts).
-  const s = { ...s1, events: dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e))) }
+  const s = { ...s1, events: modeDescriptions(dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e)))) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
   if (aligned.codes.length || !game.api) return aligned

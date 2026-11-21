@@ -377,7 +377,8 @@ export async function syncStarSavior(gameId: string, now = Date.now()): Promise<
     const twin = steamBanners.find(s => Math.abs(+new Date(s.end) - +new Date(b.end)) < 2 * HOUR && s.start.slice(0, 10) === b.start.slice(0, 10))
     const featured = b.featured.map(f => ({ ...f, icon: f.icon ?? portrait(images, f.name) }))
     return { ...b, ...(twin ? { start: twin.start, official: true } : {}), featured,
-      description: b.featured.length ? '⟦d.ssSavior⟧' : '⟦d.ssArcana⟧' }
+      // Arcana = banner de arma de Prydwen (desde el 21 nov 2026 también lleva su arcana como destacado: no vale mirar si tiene destacados).
+      description: (b.description ?? '').includes('⟦d.weaponBanner⟧') ? '⟦d.ssArcana⟧' : '⟦d.ssSavior⟧' }
   })
   // De Steam solo quedan los banners que Prydwen no tiene (la "Select Observation").
   const extra = steamBanners.filter(s => !/featured/i.test(s.title) && !banners.some(b => Math.abs(+new Date(s.end) - +new Date(b.end)) < 2 * HOUR && s.start.slice(0, 10) === b.start.slice(0, 10) && /featured/i.test(s.title)))

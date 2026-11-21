@@ -72,7 +72,11 @@ export async function syncPrydwen(gameId: string, key: keyof typeof PRYDWEN): Pr
     // `rossweisse_icon.webp`, comprobado con los cuatro de CZN que su wiki no tiene). Solo en los juegos con `icons` y si la página usa esa ruta
     // (con guiones no siempre casa: "yangyang-xuanling" no tiene icono).
     const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(card.querySelector('a.banner-card-link')?.getAttribute('href') ?? '')?.[1]
-    const featured: Featured[] = weapon ? [] : [{ name, rarity: rank, ...(slug && iconBase ? { icon: `${iconBase}${slug.replace(/-/g, '_')}_icon.webp` } : {}) }]
+    // Banners de arma (21 nov 2026: salían sin destacado en WuWa, NTE, CZN y StarSavior): el arma es el destacado, con la imagen que la propia
+    // tarjeta trae ("lightcone-card-image", en las reediciones) o, si no, la que busque el recolector en la wiki (withFeaturedIcons).
+    const art = card.querySelector('img.lightcone-card-image')?.getAttribute('src')
+    const featured: Featured[] = weapon ? [{ name, rarity: rank ?? 5, ...(art ? { icon: art } : {}) }]
+      : [{ name, rarity: rank, ...(slug && iconBase ? { icon: `${iconBase}${slug.replace(/-/g, '_')}_icon.webp` } : {}) }]
     const id = `${gameId}:banner:${key}:${name}:${start}`
     if (seen.has(id)) return
     seen.add(id)
