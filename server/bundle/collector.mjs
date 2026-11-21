@@ -21464,16 +21464,27 @@ function pgrPainCage(gameId, now = Date.now()) {
 	if (start > now) start -= 7 * DAY$42;
 	return [0, 1].map((k) => {
 		const s = start + k * 7 * DAY$42;
+		const W = "https://static.wikitide.net/pgrwiki/thumb";
 		return {
-			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$42 - 1e3, "⟦d.pgrCage⟧ ⟦d.upTo|36 Phantom Pain Scar⟧", true, now),
+			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$42 - 1e3, "⟦d.pgrCage⟧ ⟦d.upTo|450 Black Cards⟧", true, now),
 			image: "/icons/pgr-pain-cage.webp",
-			items: [{
-				name: "Phantom Pain Scar",
-				amount: 36
-			}, {
-				name: "Cogs",
-				amount: 6e4
-			}]
+			items: [
+				{
+					name: "Black Card",
+					amount: 450,
+					icon: `${W}/2/2e/Item-BlackCard.png/46px-Item-BlackCard.png`
+				},
+				{
+					name: "Phantom Pain Scar",
+					amount: 72,
+					icon: `${W}/6/60/Item-PhantomPainScar.png/46px-Item-PhantomPainScar.png`
+				},
+				{
+					name: "Cogs",
+					amount: 104e3,
+					icon: `${W}/a/a3/Item-Cogs.png/46px-Item-Cogs.png`
+				}
+			]
 		};
 	});
 }

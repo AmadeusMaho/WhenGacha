@@ -1264,4 +1264,4 @@ Pasado el recolector por los 19 juegos restantes desde este PC: todas sus fuente
   tras el último con fecha (Spring Cultivation BokGak, Navidad, capítulo 10.5-1, Walpurgis de Lobotomy Corporation). Como mucho 4.
 - **Topes "(hasta X por ciclo)"** (clave `d.upTo`), solo con cifra de la wiki: HI3 Memorial Arena hasta 140 Crystals (Exalted: 100 por puntuación +
   20 por cada jefe SSS) y FEH Arena hasta 5 Orbes y 3.500 Hero Feathers (nivel 21). **Sin tope publicado** (no se inventa): Aether Raids, raids de
-  Blue Archive, Limbo de R:1999, Exercise de Azur Lane y el resto. PGR Phantom Pain Cage: hasta 36 Phantom Pain Scar y 60.000 Cogs (wiki; el dueño eligió la wiki y se quitó "da Black Cards" de la descripción).
+  Blue Archive, Limbo de R:1999, Exercise de Azur Lane y el resto. PGR Phantom Pain Cage: hasta 450 Black Cards, 72 Phantom Pain Scar y 104.000 Cogs por semana (zona Ultimate, base ×1; Gray Ravens wiki, la que indicó el dueño: la de Fandom está desfasada y no tiene las misiones semanales con Black Cards).

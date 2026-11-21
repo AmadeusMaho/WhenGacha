@@ -80,9 +80,16 @@ export function pgrPainCage(gameId: string, now = Date.now()): GameEvent[] {
     const s = start + k * 7 * DAY
     // Arte: tres tarjetas de jefe de la Jaula (bosssingletab53/54/34 del cliente: Melinoe y compañía), una por jefe de la semana;
     // public/icons/pgr-pain-cage.webp, del explorador de assets.huaxu.app (no son los jefes de esa semana, que no se conocen).
-    // Tope semanal (wiki "Phantom Pain Cage": ranking del 1 % = 36 Phantom Pain Scar + 20.000 Cogs; hitos de puntuación = 40.000 Cogs). Decidido
-    // por el dueño el 21 nov 2026: mandan las cifras de la wiki (antes la descripción decía que daba Black Cards).
-    return { ...ev(gameId, 'Phantom Pain Cage', s, s + 7 * DAY - 1000, '⟦d.pgrCage⟧ ⟦d.upTo|36 Phantom Pain Scar⟧', true, now), image: '/icons/pgr-pain-cage.webp',
-      items: [{ name: 'Phantom Pain Scar', amount: 36 }, { name: 'Cogs', amount: 60000 }] }
+    // Tope semanal, zona Ultimate (Gray Ravens wiki, grayravens.com/wiki/Phantom_Pain_Cage, recompensas base ×1; con la sincronización con CN el
+    // Global las da dobles o triples): Black Cards = 400 de las 8 misiones semanales + 50 de la puntuación acumulada; Phantom Pain Scar = 60 de la
+    // puntuación + 12 del ranking del 1 % de Intensive Battle; Cogs = 36.000 + 68.000. Indicado por el dueño el 21 nov 2026 (la página de Fandom
+    // que se usó antes está desfasada: no tenía las misiones ni los Black Cards).
+    const W = 'https://static.wikitide.net/pgrwiki/thumb'
+    return { ...ev(gameId, 'Phantom Pain Cage', s, s + 7 * DAY - 1000, '⟦d.pgrCage⟧ ⟦d.upTo|450 Black Cards⟧', true, now), image: '/icons/pgr-pain-cage.webp',
+      items: [
+        { name: 'Black Card', amount: 450, icon: `${W}/2/2e/Item-BlackCard.png/46px-Item-BlackCard.png` },
+        { name: 'Phantom Pain Scar', amount: 72, icon: `${W}/6/60/Item-PhantomPainScar.png/46px-Item-PhantomPainScar.png` },
+        { name: 'Cogs', amount: 104000, icon: `${W}/a/a3/Item-Cogs.png/46px-Item-Cogs.png` },
+      ] }
   })
 }
