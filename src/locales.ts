@@ -318,6 +318,7 @@ export const es = {
   'notif.pulls': ' (~{n} tiradas)',
 
   // textos que escriben las fuentes de datos (se resuelven al mostrarlos)
+  'd.afkTeased': 'Héroe anunciado en la wiki con fecha de salida, aún sin banner: se estima desde ese día',
   'd.charBanner': 'Banner de personaje',
   'd.gfl2Custom': 'Custom Procurement: eliges la muñeca limitada que sale con probabilidad aumentada',
   'd.mhoRotating': 'Banner rotatorio (con Standard Contracts)',
@@ -426,6 +427,7 @@ export const es = {
   'd.akAnnihilationFirst': 'Semana de Annihilation: hasta 1800 Orundum (se reinicia cada lunes) + {arg} de la primera vez en este mapa.',
   'd.nkUnion': 'Union Chips y recompensas según el progreso del Union. Requiere Union nivel 3.',
   'd.nkSolo': 'Materiales de Harmony Cube y de mantenimiento; Gemas y marcos según el ranking de daño.',
+  'd.nkTeased': 'Evento anunciado en la Developer’s Note sin fecha: se estima en la siguiente actualización',
   'd.nkCoop': 'Broken Cores (se canjean por Gemas) y Rusted Bones según el ranking.',
   'd.matrixPhase': 'Fase {arg} · se reinicia con cada versión. Recompensas del ciclo completo.',
   'd.weaponBanner': 'Banner de arma',
@@ -752,6 +754,7 @@ export const en: Record<Key, string> = {
   'notif.event': 'The event ends soon',
   'notif.pulls': ' (~{n} pulls)',
 
+  'd.afkTeased': 'Hero announced on the wiki with a release date, no banner yet: estimated from that day',
   'd.charBanner': 'Character banner',
   'd.gfl2Custom': 'Custom Procurement: you pick the limited Doll that gets the rate-up',
   'd.mhoRotating': 'Rotating banner (uses Standard Contracts)',
@@ -860,6 +863,7 @@ export const en: Record<Key, string> = {
   'd.akAnnihilationFirst': 'Annihilation week: up to 1800 Orundum (resets every Monday) + {arg} for the first clear of this map.',
   'd.nkUnion': 'Union Chips and rewards based on your Union\'s progress. Requires Union Lv. 3.',
   'd.nkSolo': 'Harmony Cube and maintenance materials; Gems and frames based on damage ranking.',
+  'd.nkTeased': 'Event announced in the Developer’s Note without a date: estimated for the next update',
   'd.nkCoop': 'Broken Cores (exchange for Gems) and Rusted Bones based on ranking.',
   'd.matrixPhase': 'Phase {arg} · resets each version. Rewards for the whole cycle.',
   'd.weaponBanner': 'Weapon banner',
@@ -1184,6 +1188,7 @@ export const zh: Record<Key, string> = {
   'notif.event': '活动即将结束',
   'notif.pulls': '（约 {n} 抽）',
 
+  'd.afkTeased': '维基已公布上线日期但尚无卡池的英雄：按该日估计',
   'd.charBanner': '角色卡池',
   'd.gfl2Custom': '自选定向采购：自选概率提升的限定人形',
   'd.mhoRotating': '轮换卡池（使用普通契约）',
@@ -1292,6 +1297,7 @@ export const zh: Record<Key, string> = {
   'd.akAnnihilationFirst': '剿灭作战周期：每周最多1800合成玉（每周一重置），本地图首次通关另得{arg}。',
   'd.nkUnion': '联盟芯片及按联盟进度发放的奖励。需联盟 3 级。',
   'd.nkSolo': '协调魔方与维护材料；按伤害排名发放钻石和头像框。',
+  'd.nkTeased': '开发者笔记中公布但未定日期的活动：估计在下次更新时开放',
   'd.nkCoop': '破损核心（可兑换钻石）及按排名发放的锈蚀骨骼。',
   'd.matrixPhase': '第 {arg} 阶段 · 每个版本重置。奖励为整个周期。',
   'd.weaponBanner': '武器卡池',

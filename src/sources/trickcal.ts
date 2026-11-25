@@ -104,7 +104,16 @@ export async function syncTrickcalNews(gameId: string): Promise<GameSync> {
   const list = ((await res.json())?.data?.list ?? []) as { news_id: string; title: string; publish_time: string }[]
   // Hora de publicación en UTC+8 (la de Bilibili): solo sirve de referencia para el año y la antigüedad.
   const at = (s: string) => Date.parse(`${s.replace(' ', 'T')}+08:00`)
-  const wanted = list.filter(n => /event notice|update|maintenance/i.test(n.title) && Date.now() - at(n.publish_time) < 40 * DAY).slice(0, 3)
+  // Orden por la fecha del título ("2026/11/19 Event Notice", "09/10 Event Notice"), no por la de publicación: el 17 nov 2026 se volvieron a publicar
+  // los cinco últimos avisos de golpe y en orden inverso, y se leían los de septiembre y octubre en vez del vigente (Trickcal se quedó con 1 evento).
+  const titled = (n: { title: string; publish_time: string }) => {
+    const m = /(?:(\d{4})\/)?(\d{1,2})\/(\d{1,2})/.exec(n.title)
+    if (!m) return at(n.publish_time)
+    const y = m[1] ? +m[1] : new Date(at(n.publish_time)).getUTCFullYear()
+    return Date.UTC(y, +m[2] - 1, +m[3])
+  }
+  const wanted = list.filter(n => /event notice|update|maintenance/i.test(n.title) && Date.now() - titled(n) < 40 * DAY)
+    .sort((a, b) => titled(b) - titled(a)).slice(0, 3)
   const messages: Message[] = []
   for (const n of wanted) {
     const d = await fetch(viaProxy(`${BILI}/detail?${BILI_Q}&news_id=${n.news_id}`)).then(r => (r.ok ? r.json() : null)).catch(() => null)

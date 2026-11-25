@@ -1277,3 +1277,34 @@ El dueño indicó grayravens.com (Miraheze, apoyada por Kuro) como fuente de PGR
   training materials"): sin recompensas.
 - **Sin fuente**: códigos (Gray Ravens no tiene página; su buscador pide verificación antirrobots) y el destacado de "Expedition Supply" (es un
   pozo de suministro con un selector de Omniframe S, no un banner de personaje).
+
+### Juegos con pocos eventos: NIKKE, Trickcal y AFK Journey (24 nov 2026)
+
+Revisado con las copias publicadas (whengacha.site, `/data/<juego>.json`), no con las locales, que tenían días. Los más flojos eran Sword Master (0),
+BLEACH (3), Trickcal (4), Horizon Walker (6), AFK Journey (7) y NIKKE (9, sin nada futuro). Endfield estaba bien (15 futuros).
+- **NIKKE** 9 → 13, 4 futuros.
+  - **Orden de las fuentes**: las notas de parche (nikke.gg) mandan sobre Discord, como en Azur Lane (`webFirst` en `syncSource`). Los tuits daban
+    "Pick Up Recruitment" y "[Sky] Pick Up recruitment begins simultaneously!" con hora "≈" y tapaban el "Sky" exacto de las notas. Discord sigue
+    aportando lo de entre parches (raids del mes, trajes, avisos previos).
+  - **Lector de Discord** (vale para todos los juegos): "SSR Nikke [X]" es destacado (`featuredIn`); un banner con título genérico ("Pick Up
+    Recruitment") o con el nombre entre corchetes toma el nombre del destacado (`bannerTitle`); dos avisos del mismo banner (mismo título y fin) se
+    quedan en uno. Pasados los 17 canales antes y después: solo cambia NIKKE.
+  - **Unión de fuentes** (`officialFirst`, todos los juegos): si la principal da hora "≈" y la otra exacta, ya emparejadas, gana la exacta.
+  - **Co-Op Battle** (tuit, evento) = **Coordinated Operation** (notas, desafío): se queda el desafío (`dropNikkeCoop`).
+  - **Notas** (`nikkegg.ts`): se leen el gacha de trajes ("Limited Costume Rerun: X", menor) y el **Mission Pass** del mes ("Sale duration",
+    menor; suele ser lo único fechado del mes siguiente). "New Story Event: X" → "X".
+  - **Developer's Note** mensual (1 post más por ciclo, caché 3 h): los apartados con periodo ("Raid Rush … from December 31, 2026, to January 27,
+    2027 (UTC+9)" → desafío "≈") y los títulos en negrita de "Upcoming Event News" ("A.C.P.U. HO HO HOLD IT!") como evento estimado de 14 días
+    desde la siguiente actualización (fin del Special Recruit vigente, 15:00 UTC+9). Clave `d.nkTeased`. Solo la parte oficial (desde "Hello, Commanders").
+  - Sigue **sin códigos** (ninguna fuente los lista).
+- **Trickcal** 4 → 15, 4 futuros. El 17 nov la web de Bilibili volvió a publicar los cinco últimos "Event Notice" de golpe y en orden inverso, y el
+  lector cogía los tres primeros (septiembre y octubre). Ahora ordena por la fecha del título ("2026/11/19 Event Notice"). **Sin icono**:
+  "Vacuuming Phantom Figure" y "Petite Maid Speaki" (cosméticos de la tienda del evento; ni lootandwaifus ni la web los ilustran).
+- **AFK Journey** 7 → 11 (2 consultas más a su wiki por ciclo):
+  - **Modos con subpágina fechada** que no están en "Category:Events" ("Heroic Gauntlet/2026-11-23": `{{Battle Mode Infobox |title = Block
+    |time_start |time_end}}` → desafío "Heroic Gauntlet: Block"). Salen de los cambios recientes de la wiki (`datedModes`).
+  - **Héroes anunciados**: la ficha nueva lleva `|type = Upcoming |release_date = …` (Sherlock Holmes y Aneva el 26 nov, Tephesia el 10 dic) →
+    banner estimado de 3 semanas desde ese día con el retrato de la ficha, hasta que exista su "Rate Up Recruitment/<fecha>" (`upcomingHeroes`, `d.afkTeased`).
+- **Sin cambios, y por qué**: Horizon Walker ya lee todo lo que traen sus notas de Steam (la del 19 nov tiene esos 6 elementos). Sword Master: el
+  canal `swordmaster` no ha recibido ningún aviso desde que se siguió (20 nov) y no hay web con fechas. BLEACH: falta reenviar al canal `bleach` los
+  tuits de @BleachSRgame (tarea del dueño, ver arriba).

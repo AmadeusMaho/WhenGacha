@@ -388,7 +388,21 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
   if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b(UR|SSR|SR|[5-6]★|★[5-6])\s+(Character|Weapon Stamp|Core Stamp|Stamp|Weapon|Doll|Adventurer)\s+["“]([^"”]{2,40})["”]/g)) {
     if (!out.some(f => f.name === m[3])) out.push({ name: m[3], rarity: /^SR$/.test(m[1]) ? 4 : 5, ...(/character|doll|adventurer/i.test(m[2]) ? {} : { tag: m[2] }) })
   }
+  // "SSR Nikke [Sky] Pick Up recruitment begins!" (NIKKE en X, 19 nov 2026): rareza, "Nikke" y el nombre entre corchetes.
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b(SSR|SR)\s+Nikkes?\s+\[([^\]]{2,40})\]/g)) {
+    if (!out.some(f => f.name === m[2].trim())) out.push({ name: m[2].trim(), rarity: m[1] === 'SSR' ? 5 : 4 })
+  }
   return out.sort((a, b) => b.rarity - a.rarity)
+}
+
+/**
+ * Título de banner que no dice a quién destaca ("Pick Up Recruitment", del rótulo "【Pick Up Recruitment Notice】") o que es la frase del aviso con el
+ * nombre entre corchetes ("[Sky] Pick Up recruitment begins simultaneously!"): se sustituye por los destacados, para que se una con el de la otra fuente.
+ */
+const GENERIC_BANNER = /^(?:\[[^\]]+\]\s*)?(?:(?:limited|special|new)\s+)*(?:pick[- ]?up|rate[- ]?up)(?:\s+(?:recruit\w*|summon\w*|banner|gacha))?(?:\s+notice)?\b/i
+export function bannerTitle(name: string, featured: { name: string }[]): string {
+  if (!featured.length || featured.length > 3) return name
+  return GENERIC_BANNER.test(name) || featured.every(f => name.includes(`[${f.name}]`)) ? featured.map(f => f.name).join(' / ') : name
 }
 
 /**
@@ -640,9 +654,6 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       // También la cabecera de la que salió el nombre al limpiarlo ("Upcoming Limited-Time Summon Event: Get Together" → "Get Together", SoC).
       const ctx = [name, bannerName ? 'banner' : '', label, name === heading && !fromHead ? clean(raw[headAt]).slice(0, 120) : '', heading !== name && tidyName(heading) === name ? heading : ''].join(' | ')
       const kind: Kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)|\b(?:exclusive|event|limited|rerun) arrests?\b|\bsummon(?:ing)? event\b|probability of summoning/i.test(ctx) ? 'banner' : 'event'
-      const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
-      if (seen.has(id)) continue
-      seen.add(id)
       // Recompensas: los "Nombre xN" / "600 Pyroxenes" del apartado del evento (desde su título hasta el siguiente); tiradas según pulls.ts.
       let nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean(l).length <= 90 && !LABEL.test(clean(l)))
       // Sin cabeceras marcadas (BLEACH): el apartado acaba en el título del siguiente periodo (la línea con texto anterior a él).
@@ -658,7 +669,14 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
       const found = kind === 'event' ? pullsIn(gameId, section) : { pulls: 0, items: [] }
       const pulls = found.pulls
       const items = found.items.length ? found.items : kind === 'event' ? bracketRewards(section) : []
-      const featured = kind === 'banner' ? featuredIn(section) : []
+      let featured = kind === 'banner' ? featuredIn(section) : []
+      // "[Sky] Pick Up recruitment begins simultaneously!": el apartado empieza en esa frase y "SSR Nikke [Sky]" va en la línea anterior del mensaje.
+      // Solo los del mensaje que el propio nombre cita entre corchetes.
+      if (kind === 'banner' && !featured.length && /\[[^\]]+\]/.test(name)) featured = featuredIn(raw.map(clean)).filter(f => name.includes(`[${f.name}]`))
+      if (kind === 'banner') name = bannerTitle(name, featured)
+      const id = `${gameId}:${kind}:dc:${name}:${new Date(start).toISOString().slice(0, 10)}`
+      if (seen.has(id)) continue
+      seen.add(id)
       const base: GameEvent = {
         id, gameId, kind, title: name, image,
         start: new Date(start).toISOString(), end: new Date(r.end).toISOString(),
@@ -690,8 +708,14 @@ export function parseNotices(gameId: string, messages: Message[]): GameSync {
     if (patch && !patches.some(p => p.version === patch.version)) patches.push(patch)
     for (const b of banners) if (!seen.has(b.id) && +new Date(b.end) > from) { seen.add(b.id); out.push(b) }
   }
-  out.push(...announcedBanners(gameId, messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp), image: imageOf(m) })), out, now))
-  return { events: out, patches, codes: codesFrom(messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp) }))) }
+  // El mismo banner anunciado en dos avisos ("Sky is coming soon … 19 Nov (After Maintenance) – 3 Dec" y "Sky Pick Up recruitment begins! Until 3 Dec",
+  // NIKKE): mismo título y mismo fin → uno solo, el de hora exacta o, si no, el del aviso más reciente (los mensajes llegan del más nuevo al más viejo).
+  const exactOver = (a: GameEvent, b: GameEvent) => !a.precision && b.precision === 'approx'
+  const twins = out.filter((e, i) => e.kind === 'banner' && out.some((o, j) => j !== i && o.kind === 'banner' && o.title === e.title
+    && Math.abs(Date.parse(o.end) - Date.parse(e.end)) <= DAY && (exactOver(o, e) || (!exactOver(e, o) && j < i))))
+  const events = twins.length ? out.filter(e => !twins.includes(e)) : out
+  events.push(...announcedBanners(gameId, messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp), image: imageOf(m) })), events, now))
+  return { events, patches, codes: codesFrom(messages.map(m => ({ text: textOf(m), at: +new Date(m.timestamp) }))) }
 }
 
 /** Palabras en mayúsculas que no son códigos aunque vayan solas en una línea. */

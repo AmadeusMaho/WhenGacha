@@ -13,7 +13,8 @@ import { pullsIn } from './pulls'
  *  - Banners: subpáginas "Rate Up Recruitment/<fecha>" y "…/Rate Up Return/<fecha>" con `{{Rate Up Info |hero = Kazim;Evie |time_start |time_end}}`.
  *  - Hora: UTC. Lo dice la documentación de `Template:Rate Up Info` ("banner start (UTC)") y `Template:Event Infobox` calcula con "GMT+0".
  *  - **Códigos: no hay fuente fiable.** La página "Redemption Code" de la wiki está marcada para rehacer y su lista de "activos" es de 2024.
- * 3–4 consultas por ciclo (caché de 12 h en el proxy).
+ *  - Modos con subpágina fechada (cambios recientes) y héroes anunciados (`type = Upcoming`): ver `datedModes` y `upcomingHeroes`.
+ * 5–6 consultas por ciclo (caché de 12 h en el proxy).
  */
 const API = 'https://afk-journey.fandom.com/api.php'
 const DAY = 86_400_000
@@ -80,6 +81,66 @@ async function events(gameId: string): Promise<GameEvent[]> {
   return out
 }
 
+/**
+ * Modos periódicos con subpágina fechada que no entran en "Category:Events" (24 nov 2026): "Heroic Gauntlet/2026-11-23" (`{{Battle Mode Infobox |title = Block
+ * |time_start |time_end}}`), "Relentless Rumble/…", "Treasure Rush/…". Se encuentran en los cambios recientes de la wiki (la subpágina se crea y edita al
+ * empezar cada ronda): 1 consulta para la lista y 1 para leerlas. Los que ya salieron de la categoría se descartan después por id.
+ */
+async function datedModes(gameId: string, known: Set<string>): Promise<GameEvent[]> {
+  const rc = await query({ action: 'query', list: 'recentchanges', rcnamespace: '0', rclimit: '500', rcprop: 'title', rctoponly: '1' }) as { query?: { recentchanges?: { title: string }[] } }
+  const now = Date.now()
+  const titles = [...new Set((rc.query?.recentchanges ?? []).map(r => r.title))]
+    .filter(t => { const m = /^(.+)\/(\d{4}-\d\d-\d\d)$/.exec(t); return !!m && !/^Rate Up/i.test(m[1]) && !known.has(t) && Date.parse(m[2]) > now - 40 * DAY })
+    .slice(0, 50)
+  if (!titles.length) return []
+  const j = await query({ action: 'query', titles: titles.join('|'), prop: 'revisions|pageimages', rvprop: 'content', rvslots: 'main', piprop: 'thumbnail', pithumbsize: '480' })
+  const out: GameEvent[] = []
+  for (const p of j.query?.pages ?? []) {
+    const text = content(p)
+    const mode = /\{\{\s*Battle Mode Infobox/i.test(text)
+    if (!mode && !/\{\{\s*Event Infobox/i.test(text)) continue
+    const s = at(field(text, 'time_start')), e = at(field(text, 'time_end'))
+    if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY || s > now + 120 * DAY || e - s > 150 * DAY) continue
+    const base = p.title.replace(/\/\d{4}-\d\d-\d\d$/, '')
+    // "Heroic Gauntlet: Block" (el título de la ronda); en los eventos, su nombre.
+    const own = field(text, mode ? 'title' : 'name')
+    const name = own && own !== base ? `${base}: ${own}` : base
+    const r = rewards(text)
+    out.push({
+      id: `${gameId}:challenge:${p.title}`, gameId, kind: 'challenge', title: name, image: p.thumbnail?.source,
+      start: new Date(s).toISOString(), end: new Date(e).toISOString(), items: r.items, featured: [], pulls: r.pulls, source: 'api', precision: dayOnly(s, e),
+    })
+  }
+  return out
+}
+
+/**
+ * Héroes anunciados (24 nov 2026): la ficha de un héroe nuevo se crea antes de su banner con `|type = Upcoming |release_date = 2026-11-26 00:00:00`
+ * (Sherlock Holmes). Mientras no exista su "Rate Up Recruitment/<fecha>", sale como banner estimado desde ese día, 3 semanas (lo que duran los de rate up).
+ * 1 consulta: las últimas fichas añadidas a "Category:Heroes".
+ */
+async function upcomingHeroes(gameId: string): Promise<GameEvent[]> {
+  const j = await query({
+    action: 'query', generator: 'categorymembers', gcmtitle: 'Category:Heroes', gcmsort: 'timestamp', gcmdir: 'desc', gcmlimit: '8',
+    prop: 'revisions|pageimages', rvprop: 'content', rvslots: 'main', piprop: 'thumbnail', pithumbsize: '160',
+  })
+  const now = Date.now()
+  const out: GameEvent[] = []
+  for (const p of j.query?.pages ?? []) {
+    const text = content(p)
+    if (!/\{\{\s*Character Infobox/i.test(text) || !/^upcoming$/i.test(field(text, 'type'))) continue
+    const s = at(field(text, 'release_date'))
+    if (isNaN(s) || s < now - 3 * DAY || s > now + 60 * DAY) continue
+    const name = field(text, 'name') || p.title
+    out.push({
+      id: `${gameId}:banner:upcoming:${name}`, gameId, kind: 'banner', title: name, description: '⟦d.afkTeased⟧',
+      start: new Date(s).toISOString(), end: new Date(s + 21 * DAY - 60_000).toISOString(), items: [], pulls: 0, source: 'api', precision: 'estimated',
+      featured: [{ name, rarity: 5, icon: p.thumbnail?.source }],
+    })
+  }
+  return out
+}
+
 async function banners(gameId: string): Promise<GameEvent[]> {
   const list = await query({ action: 'query', list: 'allpages', apprefix: 'Rate Up Recruitment/', aplimit: '500' })
   const dated = (list.query?.allpages ?? []).map(p => p.title).filter(t => /\/\d{4}-\d\d-\d\d$/.test(t))
@@ -136,7 +197,13 @@ async function bannerArt(rows: { p: Page; heroes: string[]; file: string }[]) {
 export async function syncAfkJourney(gameId: string): Promise<GameSync> {
   // Códigos (19 nov 2026): la lista de PocketGamer (la wiki no los lista). Su lista "activa" arrastra años de códigos con los nuevos arriba (84 el
   // 21 nov 2026: AFKJGIFT2024, PUMPKIN2025…): se corta en el primero que delata ser viejo (staleCode en codes.ts).
-  const [ev, bn, cd] = await Promise.allSettled([events(gameId), banners(gameId), syncPocketGamerCodes('afk-journey', 'codes', true)])
+  const [ev, bn, cd, up] = await Promise.allSettled([events(gameId), banners(gameId), syncPocketGamerCodes('afk-journey', 'codes', true), upcomingHeroes(gameId)])
   if (ev.status === 'rejected' && bn.status === 'rejected') throw ev.reason
-  return { events: [...(ev.status === 'fulfilled' ? ev.value : []), ...(bn.status === 'fulfilled' ? bn.value : [])], patches: [], codes: cd.status === 'fulfilled' ? cd.value : [] }
+  const evs = ev.status === 'fulfilled' ? ev.value : []
+  const modes = await datedModes(gameId, new Set(evs.map(e => e.id.split(':').slice(2).join(':')))).catch(() => [] as GameEvent[])
+  const dated = bn.status === 'fulfilled' ? bn.value : []
+  // El anunciado se va en cuanto hay banner con fecha que lo destaque.
+  const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const teased = (up.status === 'fulfilled' ? up.value : []).filter(u => !dated.some(d => d.featured.some(f => key(f.name) === key(u.title))))
+  return { events: [...evs, ...modes, ...dated, ...teased], patches: [], codes: cd.status === 'fulfilled' ? cd.value : [] }
 }

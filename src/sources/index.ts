@@ -179,6 +179,9 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
       && Math.abs(+new Date(e.end) - +new Date(r.end)) <= DAY && similar(e.title, r.title))
     if (i < 0) { extra.push(r); continue }
     used.add(i)
+    // Hora exacta antes que aproximada (24 nov 2026): el tuit de NIKKE "Until 3 Dec, 04:59" empieza "≈" a la hora del tuit; las notas de nikke.gg dan el
+    // fin del mantenimiento. Solo cuando ya se emparejaron (mismo evento, fechas cercanas).
+    if (events[i].precision === 'approx' && !r.precision) events[i] = { ...events[i], start: r.start, end: r.end, precision: undefined }
     events[i] = { ...events[i], image: communityArt ? r.image ?? events[i].image : events[i].image ?? r.image, description: events[i].description ?? r.description,
       // Destacados de la oficial, salvo que la comunidad traiga los mismos con retrato (Trickcal: el tuit dice "★3 Vivi"; lootandwaifus da su icono y rol).
       featured: events[i].featured.length && !(r.featured.some(f => f.icon) && events[i].featured.every(f => r.featured.some(x => x.name.toLowerCase() === f.name.toLowerCase())))
@@ -306,6 +309,22 @@ export function dropAnnounced(events: GameEvent[]): GameEvent[] {
   return drop.size ? events.filter(e => !drop.has(e)) : events
 }
 
+/**
+ * NIKKE: el tuit llama "Co-Op Battle" (evento) a lo que las notas llaman "Coordinated Operation" (desafío), con el mismo periodo. Como no son del mismo
+ * tipo, la unión de fuentes no los junta y salía dos veces (24 nov 2026). Se queda el desafío, con la imagen del tuit si no tenía.
+ */
+export function dropNikkeCoop(events: GameEvent[]): GameEvent[] {
+  const drop = new Set<GameEvent>()
+  for (const e of events) {
+    if (e.kind !== 'event' || !/^co-?op(?:erative)?\s+battle/i.test(e.title)) continue
+    const twin = events.find(c => c.kind === 'challenge' && /coordinated operation/i.test(c.title) && Math.abs(Date.parse(c.end) - Date.parse(e.end)) <= DAY)
+    if (!twin) continue
+    twin.image ??= e.image
+    drop.add(e)
+  }
+  return drop.size ? events.filter(e => !drop.has(e)) : events
+}
+
 /** Banners de `extra` que no estén ya en `events` (mismo inicio ±2 días y algún destacado o el título en común). */
 function unseenBanners(events: GameEvent[], extra: GameEvent[]): GameEvent[] {
   const key = (n: string) => n.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -344,10 +363,14 @@ export async function syncSource(game: Game): Promise<GameSync> {
   const raw = () => (STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game))
   // Azur Lane: al revés. Los avisos de mantenimiento de su web dan cada bloque con su periodo y su tipo; los tuits, frases sueltas que por nombre se
   // tragaban los de la web ("Limited collab gear skins" se quedaba con "Skins"). La web manda y Discord añade lo que ella no tiene (adelantos, avisos sueltos).
+  // NIKKE (24 nov 2026), igual: las notas de parche (nikke.gg copia el aviso oficial) dan el nombre limpio y la hora exacta del fin del mantenimiento;
+  // los tuits, rótulos genéricos ("Pick Up Recruitment") y horas "≈". Discord sigue aportando lo de entre parches (raids del mes, trajes, avisos previos).
+  const webFirst = game.id === 'azurlane' || game.id === 'nikke'
   const s0 = !discordChannel(game.id) ? await raw()
-    : game.id === 'azurlane' ? await officialFirst(raw(), syncDiscord(game.id))
+    : webFirst ? await officialFirst(raw(), syncDiscord(game.id))
     : await officialFirst(syncDiscord(game.id), raw())
   if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events)
+  if (game.id === 'nikke') s0.events = dropNikkeCoop(s0.events)
   // Trickcal: imágenes de sus tuits oficiales (sus avisos web no traen ninguna).
   if (game.id === 'trickcal' && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []))
   const s1 = await withItemIcons(game.id, game.id === 'azurlane' ? azurPolish(s0) : game.id === 'stellasora' ? ssPolish(s0) : s0)
