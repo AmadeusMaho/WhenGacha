@@ -26,6 +26,7 @@ import { syncAniimo, ANIIMO_ICONS } from './aniimo'
 import { syncStarSavior, STARSAVIOR_ICONS } from './starsavior'
 import { syncHorizonWalker, HORIZONWALKER_ICONS } from './horizonwalker'
 import { syncPersona5x } from './persona5x'
+import { syncBaForum } from './nexonba'
 import { syncMakeDrama } from './makedrama'
 import { syncFeh } from './feh'
 import { syncResu, syncSwordMaster } from './mobilegames'
@@ -500,7 +501,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'resu': return syncResu(id)
     case 'swordmaster': return syncSwordMaster(id)
     case 'fgo': return syncFgo(id)
-    case 'bluearchive': return withGachafocus(id, 'bluearchive', syncBlueArchive(id))
+    // Blue Archive: la wiki (eventos, raids, banners) manda; el foro oficial de Nexon (solo desde el PC, nexonba.ts) añade campañas x2/x3, logins y eventos web.
+    case 'bluearchive': return officialFirst(withGachafocus(id, 'bluearchive', syncBlueArchive(id)), syncBaForum(id))
     case 'limbus': return syncLimbus(id)
     case 'wuwa': {
       // Banners de Prydwen + eventos de las notas de parche oficiales de Kuro (horas exactas), con las imágenes y los eventos extra de Reverie.

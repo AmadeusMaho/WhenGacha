@@ -84,6 +84,17 @@ export async function syncStellaSoraNews(gameId: string): Promise<GameSync> {
     if (out.some(o => o.kind === e.kind && o.title.toLowerCase() === e.title.toLowerCase() && o.start === e.start)) continue
     out.push(e)
   }
+  // Cada reclutamiento anunciado es un banner con su periodo (25 nov 2026: "Silver Shattering the Dark" salía como evento y "Springlight
+  // Intoxication", el segundo del mismo aviso, no salía).
+  const nk = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, '')
+  for (const [name, pool] of pools) {
+    if (pool.start === undefined || pool.end === undefined || pool.end < Date.now() - 3 * DAY) continue
+    const i = out.findIndex(e => nk(e.title) === nk(name) && Math.abs(Date.parse(e.start) - pool.start!) <= DAY)
+    const title = out[i]?.title ?? pool.name ?? name
+    const b: GameEvent = { ...(out[i] ?? { id: `${gameId}:banner:ssweb:${nk(name)}:${new Date(pool.start).toISOString().slice(0, 10)}`, gameId, items: [], pulls: 0, source: 'api' as const, official: true }),
+      kind: 'banner', title, start: new Date(pool.start).toISOString(), end: new Date(pool.end).toISOString(), featured: pool.featured, image: out[i]?.image ?? pool.image, precision: undefined, description: undefined, minor: undefined }
+    if (i >= 0) out[i] = b; else out.push(b)
+  }
   last = { sections, pools }
   return { ...s, events: withSections(out, sections, pools) }
 }
@@ -108,7 +119,7 @@ export const SS_ICONS = new Map<string, string>(Object.entries({
 }).map(([k, v]) => [k, `${WIKI_IMG}/${v}`]))
 
 interface Section { title: string; image?: string; text: string }
-interface Pool { featured: Featured[]; disc: boolean }
+interface Pool { featured: Featured[]; disc: boolean; name?: string; start?: number; end?: number; image?: string }
 
 /** Apartados "■ Título" de un aviso, con la imagen que va debajo de su periodo y su texto. */
 function ssSections(html: string): Section[] {
@@ -131,6 +142,9 @@ function ssSections(html: string): Section[] {
 function recruitPools(html: string): Map<string, Pool> {
   const t = html.replace(/<[^>]+>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ')
   const out = new Map<string, Pool>()
+  // Arte de cada reclutamiento: la última imagen antes de su "Limited recruitment event:".
+  const imgs = html.split(/Limited recruitment event:/i).slice(0, -1).map(chunk => [...chunk.matchAll(/<img\b[^>]*?\bsrc="([^"]+)"/gi)].pop()?.[1])
+  let k = 0
   for (const m of t.matchAll(/Limited recruitment event:\s*(.+?)\s+will begin soon!(.+?)(?=Limited recruitment event:|$)/gi)) {
     const body = m[2]
     const disc = /★5 Disc/i.test(body)
@@ -138,7 +152,10 @@ function recruitPools(html: string): Map<string, Pool> {
     const five = (disc ? /★5 Disc,?\s*\[([^\]]+)\]/i : /★5 Trekker ([A-Z][\w' ]+?) is boosted/i).exec(body)?.[1]?.trim()
     const fours = /★4 (?:Trekkers|Discs),\s*(.+?),?\s+(?:is|are) also boosted/i.exec(body)?.[1]?.split(/,\s*|\s+and\s+/).map(x => x.replace(/[[\]]/g, '').trim()).filter(Boolean) ?? []
     if (!five) continue
-    out.set(m[1].trim().toLowerCase(), { disc, featured: [{ name: five, rarity: 5, icon: ssPortrait(five, disc) }, ...fours.map(n => ({ name: n, rarity: 4, icon: ssPortrait(n, disc) }))] })
+    // "Start: Nov. 16, 2026 21:00 (UTC-7)" / "End: Nov. 30, 2026 19:59 (UTC-7)": el periodo del reclutamiento (25 nov 2026: el segundo de un aviso se perdía).
+    const at = (k: 'Start' | 'End') => { const d = (k === 'Start' ? /Start:\s*([A-Z][a-z]{2})\.?\s+(\d{1,2}),\s*(\d{4})\s+(\d{1,2}):(\d{2})\s*\(UTC([+-]\d{1,2})\)/i : /End:\s*([A-Z][a-z]{2})\.?\s+(\d{1,2}),\s*(\d{4})\s+(\d{1,2}):(\d{2})\s*\(UTC([+-]\d{1,2})\)/i).exec(body); const mo = d ? ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].indexOf(d[1].toLowerCase()) : -1; return d && mo >= 0 ? Date.UTC(+d[3], mo, +d[2], +d[4] - +d[6], +d[5], +d[5] === 59 ? 59 : 0) + (+d[5] === 59 ? 999 : 0) : undefined }
+    const image = imgs[k++]
+    out.set(m[1].trim().toLowerCase(), { name: m[1].trim(), disc, image, start: at('Start'), end: at('End'), featured: [{ name: five, rarity: 5, icon: ssPortrait(five, disc) }, ...fours.map(n => ({ name: n, rarity: 4, icon: ssPortrait(n, disc) }))] })
   }
   return out
 }

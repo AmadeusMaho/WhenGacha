@@ -1373,3 +1373,37 @@ BLEACH (3), Trickcal (4), Horizon Walker (6), AFK Journey (7) y NIKKE (9, sin na
   - **Iconos de recompensas** (Platinum Tickets, Repression Skip Ticket): sin wiki ni guía con iconos de objetos (Game8 y Prydwen solo tienen
     capturas). Como CZN.
 - Por ciclo: 1 consulta a Steam (caché 3 h) y 1 página de Prydwen (caché 2 h, cola de 10 s).
+
+## Blue Archive (foro de Nexon), Stella Sora y Azur Lane (25 nov 2026)
+
+**Blue Archive: foro oficial de Nexon, solo desde el PC** (`src/sources/nexonba.ts`; `OFFICIAL_SITES`, ver "Webs oficiales con cláusula contra robots").
+- La API pública que usa la propia web del foro: `forum.nexon.com/api/v1/board/3218/threads` (Events), `/board/3217/threads` (Updates) y
+  `/api/v1/thread/<id>?alias=bluearchive-en`. Fuentes `nexon` (listas, 3 h) y `nexon-thread` (avisos, 24 h) del proxy, cola de 4 s.
+- **Campañas x2/x3** («November Update Triple Rewards Campaigns»): una tabla con cada campaña y su horario exacto en UTC, a veces varios por
+  campaña → un evento por horario (`d.baCampaign`). **Logins** con sus Pyroxenes («Pyroxene x200» por día = 1.200 → 10 tiradas), eventos web y
+  regalos (los de reserva, tienda o Google Play, menores). Los avisos de reclutamiento no: los banners ya vienen de la wiki con hora exacta.
+- **"After Maintenance"**: fin real del mantenimiento, del aviso de Updates («1. Date: 11/10 (Tue) 2:00 AM – 7:00 AM 9:00 AM (UTC)»: al
+  alargarlo tachan la hora vieja y añaden la nueva, así que vale la última antes de "(UTC)"). El 10 nov: 09:00, no las 07:00 previstas.
+- La wiki manda (`officialFirst(wiki, foro)`); el foro añade lo que ella no tiene. Medido: 12 → 25 elementos. Sin la web (Botkeep, Actions):
+  los 12 de siempre.
+- **Sin icono** (ni Fandom ni bluearchive.wiki tienen archivo o página de esos objetos): Equipment Blueprint Choice Box, Credit Points, Special
+  General Blueprint Set Box, Advanced Enhancement Stone, Advanced/Superior Activity Report, Fest Student Choice Ticket.
+
+**Stella Sora** (ya leía su web oficial, `syncStellaSoraNews`; la nota "SIN fuente automática" de más arriba es anterior). Corregido: el aviso
+«Wraith limited recruitment events will begin soon!» trae **dos** reclutamientos («Silver Shattering the Dark», Wraith; «Springlight
+Intoxication», el disco Chronicles of Spring) y el lector genérico daba el primero como evento y perdía el segundo. `recruitPools` guarda ahora el
+periodo («Start: Nov. 16, 2026 21:00 (UTC-7)» / «End: …») y la imagen de cada uno, y todo reclutamiento anunciado es un banner con sus
+destacados. 12 → 13 elementos.
+
+**Azur Lane** (avisos de mantenimiento de azurlane.yo-star.com; no tiene cláusula, se consulta también desde el servidor):
+- **El lector dejó de leer los avisos**: desde noviembre el rótulo lleva el salto dentro («<strong>New Events<br></strong>») y los eventos
+  siguientes van en párrafos sueltos, a veces con otro periodo. Ahora se recorren los párrafos en orden (`blocksOf`) recordando el último rótulo y
+  periodo. El aviso del 24 nov no daba nada; ahora: evento de Veritas (con Imperatritsa Mariya de recompensa), Port Fashion Collection,
+  Commemorative Album, Rental Outfits, Rapid Training Campaign, **Cruise Missions (1 dic – 31 ene)** y el **banner de construcción Molotov/Sinop**.
+  Fechas con año («between 12/1/2026 – 1/31/2027»).
+- **Inicio exacto**: el tuit «Maintenance has ended & all servers are now up and running» del canal de Discord `azurlane` (`azurMaintEnds`):
+  12 nov 14:03 UTC (el aviso decía "approximately 6 hours" → se calculaba 13:00), 19 y 24 nov 15:57. Sin ese tuit (avisos de hace más de ~2
+  semanas), la estimación de siempre, "≈".
+- Las notas «[Operation Mode] …» / «[Story Mode] …» van a la descripción del evento; las campañas menores se titulan con su contenido («Skins:
+  Molotov – … +3» en vez de "Skins" repetido).
+- Medido: 17 → 32 elementos.

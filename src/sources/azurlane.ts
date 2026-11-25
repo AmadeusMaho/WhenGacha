@@ -3,6 +3,7 @@ import type { Featured, GameEvent } from '../types'
 import type { GameSync } from './ennead'
 import { md5 } from './md5'
 import { syncMobileMattersCodes } from './codes'
+import { discordChannel, discordMessages } from './discord'
 
 /**
  * Azur Lane (Yostar; servidor global/EN, horas UTC-7). Fuentes revisadas el 13 nov 2026:
@@ -31,15 +32,17 @@ const text = (s: string) => s.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, 
 
 /** "between 11/12 – 11/26, 11:59 P.M. (UTC-7)" → [inicio, fin]; el inicio, a la hora en que acaba el mantenimiento del aviso. */
 export function azurPeriod(s: string, year: number, maintEnd: number | undefined): [number, number] | null {
-  const m = /(\d{1,2})\/(\d{1,2})\s*[–-]\s*(\d{1,2})\/(\d{1,2})(?:,\s*(\d{1,2}):(\d{2})\s*([AP])\.?M\.?)?/i.exec(s)
+  // "between 11/24 – 12/9, 11:59 P.M." y, con año, "between 12/1/2026 – 1/31/2027, 11:59 P.M." (25 nov 2026).
+  const m = /(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?\s*[–-]\s*(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?(?:,\s*(\d{1,2}):(\d{2})\s*([AP])\.?M\.?)?/i.exec(s)
   if (!m) return null
-  const h = m[5] ? +m[5] % 12 + (/p/i.test(m[7]) ? 12 : 0) : 23
-  const mi = m[6] ? +m[6] : 59
-  const day = Date.UTC(year, +m[1] - 1, +m[2]) - TZ * HOUR
+  const h = m[7] ? +m[7] % 12 + (/p/i.test(m[9]) ? 12 : 0) : 23
+  const mi = m[8] ? +m[8] : 59
+  const sy = m[3] ? +m[3] : year
+  const day = Date.UTC(sy, +m[1] - 1, +m[2]) - TZ * HOUR
   const start = maintEnd && maintEnd >= day && maintEnd < day + DAY ? maintEnd : day
-  let ey = year
-  if (+m[3] < +m[1]) ey++
-  const end = Date.UTC(ey, +m[3] - 1, +m[4], h - TZ, mi, 59)
+  let ey = m[6] ? +m[6] : sy
+  if (!m[6] && +m[4] < +m[1]) ey++
+  const end = Date.UTC(ey, +m[4] - 1, +m[5], h - TZ, mi, 59)
   return end > start ? [start, end] : null
 }
 
@@ -53,32 +56,80 @@ export function alIcon(name: string): string {
 }
 
 /** Eventos de un aviso de mantenimiento. */
-export function azurNotice(gameId: string, html: string, posted: Date): GameEvent[] {
+/**
+ * Bloques de un aviso: rótulo ("New Events"), periodo ("Available … between …") y sus líneas. Desde nov 2026 el rótulo lleva el salto dentro
+ * ("<strong>New Events<br></strong>") y los eventos siguientes van en párrafos sueltos, a veces con otro periodo ("<p><em>Available … between 12/1/2026 –
+ * 1/31/2027 …</em><br>Cruise Missions …</p>"): se recorren los párrafos en orden recordando el último rótulo y el último periodo (antes, el aviso del
+ * 24 nov no daba nada: ni el evento de Veritas ni el banner de Molotov y Sinop).
+ */
+function blocksOf(body: string): { label: string; when: string; lines: string[] }[] {
+  const out: { label: string; when: string; lines: string[] }[] = []
+  let label = '', when = ''
+  for (const p of body.split(/<\/p>/i)) {
+    const inner = p.replace(/^[\s\S]*?<p[^>]*>/i, '')
+    const head = /^\s*<strong>([\s\S]*?)<\/strong>/i.exec(inner)
+    let rest = inner
+    if (head) { label = text(head[1]).trim(); when = ''; rest = inner.slice(head[0].length) }
+    for (const l of text(rest).split('\n').map(x => x.trim()).filter(Boolean)) {
+      if (/between\s+\d{1,2}\/\d{1,2}/i.test(l)) { when = l; continue }
+      if (!label || !when) continue
+      const last = out[out.length - 1]
+      if (last && last.label === label && last.when === when) last.lines.push(l)
+      else out.push({ label, when, lines: [l] })
+    }
+  }
+  return out
+}
+
+/**
+ * Fin real de cada mantenimiento: el tuit "Maintenance has ended & all servers are now up and running" (canal de Discord "azurlane"), por día
+ * en UTC-7. Medido el 25 nov 2026: 12 nov 14:03 UTC (el aviso decía "approximately 6 hours" → se calculaba 13:00), 19 y 24 nov 15:57.
+ */
+export function azurMaintEnds(messages: { content?: string; timestamp: string; embeds?: { description?: string }[] }[]): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const m of messages) {
+    const t = [m.content ?? '', ...(m.embeds ?? []).map(e => e.description ?? '')].join('\n')
+    if (!/maintenance has (?:ended|been completed)|servers are now up/i.test(t)) continue
+    const at = Date.parse(m.timestamp)
+    const day = new Date(at + TZ * HOUR).toISOString().slice(0, 10)
+    if (!out.has(day) || at < out.get(day)!) out.set(day, at)
+  }
+  return out
+}
+
+export function azurNotice(gameId: string, html: string, posted: Date, ends?: Map<string, number>): GameEvent[] {
   const year = posted.getUTCFullYear()
   const body = /<div class="entry-content"[^>]*>([\s\S]*?)<\/div>\s*(?:<footer|<div class="(?:sharedaddy|comments))/.exec(html)?.[1] ?? html
   const image = /<img[^>]+src="(https:\/\/azurlane\.yo-star\.com\/news\/wp-content\/uploads\/20\d\d\/[^"]+)"/.exec(body)?.[1]
   // "Headquarters will carry out maintenance on 11/12, 12:00 A.M. (UTC-7) for approximately 6 hours".
   const mt = /maintenance on (\d{1,2})\/(\d{1,2}),\s*(\d{1,2}):(\d{2})\s*([AP])\.?M\.?\s*\(UTC-7\)(?:[^.]*?approximately (\d+) hours?)?/i.exec(text(body))
-  const maintEnd = mt ? Date.UTC(year, +mt[1] - 1, +mt[2], (+mt[3] % 12) + (/p/i.test(mt[5]) ? 12 : 0) - TZ + (mt[6] ? +mt[6] : 0), +mt[4]) : undefined
+  // Con el tuit de fin de mantenimiento, la hora real (exacta); si no, la del aviso + la duración aproximada ("≈").
+  const real = mt ? ends?.get(new Date(Date.UTC(year, +mt[1] - 1, +mt[2])).toISOString().slice(0, 10)) : undefined
+  const maintEnd = real ?? (mt ? Date.UTC(year, +mt[1] - 1, +mt[2], (+mt[3] % 12) + (/p/i.test(mt[5]) ? 12 : 0) - TZ + (mt[6] ? +mt[6] : 0), +mt[4]) : undefined)
   const out: GameEvent[] = []
   const add = (e: Omit<GameEvent, 'id' | 'gameId' | 'source' | 'official' | 'precision' | 'items' | 'featured' | 'pulls'> & Partial<GameEvent>) => {
     const id = `${gameId}:${e.kind}:yostar:${e.title}:${e.start.slice(0, 10)}`
-    if (!out.some(o => o.id === id)) out.push({ items: [], featured: [], pulls: 0, ...e, id, gameId, source: 'api', official: true, precision: 'approx' })
+    // Exacto si empieza con el mantenimiento y se sabe su fin real, o si empieza otro día a una hora dada (campañas que empiezan el 1 de diciembre).
+    const exact = real !== undefined || Date.parse(e.start) !== maintEnd
+    if (!out.some(o => o.id === id)) out.push({ items: [], featured: [], pulls: 0, ...e, id, gameId, source: 'api', official: true, ...(exact ? {} : { precision: 'approx' as const }) })
   }
-  for (const p of body.matchAll(/<p>\s*<strong>([^<]+)<\/strong>\s*<br\s*\/?>([\s\S]*?)<\/p>/gi)) {
-    const label = text(p[1]).trim()
-    const lines = text(p[2]).split('\n').map(l => l.trim()).filter(Boolean)
-    const when = lines.find(l => /between\s+\d{1,2}\/\d{1,2}/i.test(l))
-    const r = when ? azurPeriod(when, year, maintEnd) : null
+  for (const blk of blocksOf(body)) {
+    const label = blk.label
+    const when = blk.when
+    const r = azurPeriod(when, year, maintEnd)
     if (!r || r[1] < Date.now() - 3 * DAY) continue
-    const content = lines.filter(l => l !== when)
+    const content = blk.lines
     const start = new Date(r[0]).toISOString(), end = new Date(r[1]).toISOString()
     if (/^new events?$|^rerun events?$/i.test(label)) {
       // "Collab Event – It's Showtime! Angels' Azur Stage (Participate to earn …)" + notas "※…" debajo.
+      // Las notas son "※…" y también "[Operation Mode] …" / "[Story Mode] …" (aviso del 24 nov 2026): van a la descripción del evento de arriba.
+      const isNote = (x: string) => x.startsWith('※') || /^\[[^\]]{2,30}\]/.test(x)
       for (const [i, l] of content.entries()) {
-        if (l.startsWith('※')) continue
+        if (isNote(l)) continue
         const name = l.replace(/\s*\(.*\)\s*$/, '').replace(/^(?:[\w ]{0,25}?(?:event|rerun))\s*[–-]\s*/i, '').trim()
-        const notes = [/\((.*)\)\s*$/.exec(l)?.[1], ...content.slice(i + 1).filter(x => x.startsWith('※')).map(x => x.slice(1))].filter(Boolean).join(' ')
+        const after = content.slice(i + 1)
+        const own = after.slice(0, after.findIndex(x => !isNote(x)) < 0 ? after.length : after.findIndex(x => !isNote(x)))
+        const notes = [/\((.*)\)\s*$/.exec(l)?.[1], ...own.map(x => x.replace(/^※/, ''))].filter(Boolean).join(' ')
         if (name.length > 2) add({ kind: 'event', title: name, image, start, end, description: notes || undefined })
       }
     } else if (/^new characters?$/i.test(label)) {
@@ -88,13 +139,16 @@ export function azurNotice(gameId: string, html: string, posted: Date): GameEven
         description: '⟦d.azurConstruction⟧', featured })
       // Personajes que se ganan en el evento: recompensas del evento de ese periodo (si lo hay).
       const rewards = content.filter(l => !/construction/i.test(l) && !/^available/i.test(l)).map(l => l.replace(/\s*\(.*\)\s*$/, '').trim())
-      if (/reward for participating/i.test(when ?? '') && rewards.length) {
-        const ev = out.find(o => o.kind === 'event' && o.start === start && o.end === end)
+      // "reward for participating" y "a reward of accumulated PT" (24 nov 2026: Imperatritsa Mariya, con el plazo de canje una semana más largo que el
+      // evento): el evento principal que empieza a la vez.
+      if (/\breward\b/i.test(when ?? '') && rewards.length) {
+        const ev = out.find(o => o.kind === 'event' && o.start === start && o.end === end) ?? out.find(o => o.kind === 'event' && !o.minor && o.start === start)
         if (ev) ev.items = [...ev.items, ...rewards.map(name => ({ name, icon: alIcon(name), amount: 1 }))]
       }
     } else if (MINOR.test(label)) {
       const what = content.filter(l => !l.startsWith('※')).slice(0, 4).map(l => l.replace(/\s*\(\d+ purchases? limited\)/i, ''))
-      add({ kind: 'event', title: `${label.replace(/^new\s+/i, '')}${what.length === 1 ? `: ${what[0]}` : ''}`, image, start, end,
+      // "Skins: Liliel Angel Paratroopers/Ririsa – Both in Heart and Mind (Dynamic) +1" (antes "Skins" a secas, repetido en cada aviso).
+      add({ kind: 'event', title: `${label.replace(/^new\s+/i, '')}: ${what[0]}${what.length > 1 ? ` +${what.length - 1}` : ''}`, image, start, end,
         description: what.length > 1 ? what.join(' · ') : undefined, minor: true })
     }
   }
@@ -111,9 +165,11 @@ export async function syncAzurLane(gameId: string): Promise<GameSync> {
     .filter(x => Date.now() - x.at < 40 * DAY).sort((a, b) => b.at - a.at).slice(0, 4)
   if (!urls.length) throw new Error('yostar Azur Lane: sin avisos de mantenimiento recientes')
   const events: GameEvent[] = []
+  // Fin real de cada mantenimiento por los tuits del canal (la misma lectura que hace syncDiscord: va a la caché del proxy, no es otra petición).
+  const ends = discordChannel(gameId) ? azurMaintEnds(await discordMessages(gameId).catch(() => [])) : undefined
   for (const { u, at } of urls) {
     const html = await fetch(viaProxy(u)).then(r => (r.ok ? r.text() : '')).catch(() => '')
-    if (html) events.push(...azurNotice(gameId, html, new Date(at)))
+    if (html) events.push(...azurNotice(gameId, html, new Date(at), ends))
   }
   const codes = await syncMobileMattersCodes('azur-lane-code').catch(() => [])
   return { events, patches: [], codes }
