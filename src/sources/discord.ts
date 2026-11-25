@@ -96,6 +96,37 @@ export function discordStamps(s: string): string {
 }
 
 /**
+ * Aviso de cierre (Infinity Nikki "Game Events Ending", 19 nov 2026): "EVENTS ENDING: <t:…>" y la sección "**Limited Time Events**" con un
+ * "- Nombre" por línea. Muchos de esos eventos no salen en ninguna otra fuente (las notas de Steam solo traen los nuevos de cada fase), así que se
+ * añaden con ese fin exacto; el inicio es el de la temporada en curso ("Season starts" del último resumen de versión anterior al cierre), "≈".
+ * Las Resonance y la tienda de la misma lista no: los banners ya llegan con su nombre y la tienda no es un evento.
+ */
+export function endingEvents(gameId: string, messages: Message[]): GameEvent[] {
+  const textOf = (m: Message) => [m.content, ...(m.embeds ?? []).map(e => e.description ?? ''), componentsOf(m).text].join('\n')
+  const now = Date.now()
+  const starts = messages.map(m => /Season starts\**:?\**\s*<t:(\d{9,11})/i.exec(textOf(m))?.[1]).filter(Boolean).map(s => +s! * 1000)
+  const out: GameEvent[] = []
+  for (const m of messages) {
+    const text = textOf(m)
+    const endAt = /EVENTS ENDING\**:?\**\s*<t:(\d{9,11})/i.exec(text)?.[1]
+    if (!endAt) continue
+    const end = +endAt * 1000
+    if (end < now - 3 * DAY) continue
+    const start = starts.filter(s => s < end).sort((a, b) => b - a)[0] ?? +new Date(m.timestamp)
+    const sec = /\*\*Limited[- ]Time Events\*\*([\s\S]*?)(?:⸻|$)/i.exec(text)?.[1] ?? ''
+    for (const line of sec.split('\n')) {
+      const name = /^\s*-\s+(.{3,80}?)\s*$/.exec(line)?.[1]?.replace(/^New Story:\s*/i, '').trim()
+      if (!name) continue
+      const id = `${gameId}:event:dc-end:${name}`
+      if (out.some(e => e.id === id)) continue
+      out.push({ id, gameId, kind: 'event', title: name, start: new Date(start).toISOString(), end: new Date(end).toISOString(),
+        items: [], featured: [], pulls: 0, official: true, source: 'api', precision: 'approx' })
+    }
+  }
+  return out
+}
+
+/**
  * Aviso de temporada (Infinity Nikki "Game Events Overview"): "VERSION 2.11" + "Season starts: <fecha>" + "Season ends: <fecha>" en líneas separadas,
  * y la sección "Limited-Time Resonances" con los banners vigentes ("5-star [Snowbloom Wishsong]"; los de "Upcoming" no traen fecha y se omiten).
  * Devuelve la versión (como parche) y esos banners, que duran como mucho hasta el fin de la temporada (`open`: fin no anunciado).
@@ -387,6 +418,11 @@ function featuredIn(lines: string[]): { name: string; rarity: number; tag?: stri
   // 'Limited SSR Character "Candice"', 'Limited SSR Weapon Stamp "Execution Verdict"' (BLEACH): solo si lo anterior no encontró nada.
   if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b(UR|SSR|SR|[5-6]★|★[5-6])\s+(Character|Weapon Stamp|Core Stamp|Stamp|Weapon|Doll|Adventurer)\s+["“]([^"”]{2,40})["”]/g)) {
     if (!out.some(f => f.name === m[3])) out.push({ name: m[3], rarity: /^SR$/.test(m[1]) ? 4 : 5, ...(/character|doll|adventurer/i.test(m[2]) ? {} : { tag: m[2] }) })
+  }
+  // 'resonate in "Eclipsing Prayers" and obtain the 5-star outfit "Behind Prayers" and the 4-star outfit "Silent Ode."' (Infinity Nikki en Steam,
+  // 12 nov 2026): los trajes del banner, para unirlo con los que el resumen de la versión nombra por traje.
+  if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b([3-5])-star outfit\s+["“]([^"”]{2,40}?)[.,]?["”]/gi)) {
+    if (!out.some(f => f.name === m[2].trim())) out.push({ name: m[2].trim(), rarity: +m[1] })
   }
   // "SSR Nikke [Sky] Pick Up recruitment begins!" (NIKKE en X, 19 nov 2026): rareza, "Nikke" y el nombre entre corchetes.
   if (!out.length) for (const l of lines) for (const m of l.matchAll(/\b(SSR|SR)\s+Nikkes?\s+\[([^\]]{2,40})\]/g)) {

@@ -6,7 +6,7 @@ import { syncBluepoch } from './bluepoch'
 import { withChallengeRewards, type ChallengePage } from './challenges'
 import { alExercise, hi3MemorialArena, pgrPainCage, r99Limbo, pgrWarZone } from './cycles'
 import { syncCznEvents } from './czn'
-import { discordChannel, discordMessages, syncDiscord, tweetImages } from './discord'
+import { discordChannel, discordMessages, endingEvents, syncDiscord, tweetImages } from './discord'
 import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
@@ -325,6 +325,36 @@ export function dropNikkeCoop(events: GameEvent[]): GameEvent[] {
   return drop.size ? events.filter(e => !drop.has(e)) : events
 }
 
+/**
+ * Infinity Nikki: un banner (Resonance) trae 1–2 trajes. Las notas de Steam lo nombran por la Resonance ("Eclipsing Prayers", con sus trajes como
+ * destacados) y el resumen de la versión de Discord, por traje ("5-star [Behind Prayers]", "4-star [Silent Ode]"), uno por banner: salían 9 banners
+ * donde había 5 (25 nov 2026). El de traje se une al de la Resonance que lo destaca con el mismo fin (±1 día): le pasa su retrato y, si es exacto y la
+ * Resonance era "≈", sus horas.
+ */
+export function mergeOutfitBanners(events: GameEvent[]): GameEvent[] {
+  const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const drop = new Set<GameEvent>()
+  const out = events.map(e => ({ ...e }))
+  for (const b of out) {
+    if (b.kind !== 'banner' || b.featured.length !== 1 || key(b.featured[0].name) !== key(b.title)) continue
+    const host = out.find(r => r !== b && !drop.has(r) && r.kind === 'banner' && key(r.title) !== key(b.title)
+      && r.featured.some(f => key(f.name) === key(b.title)) && Math.abs(Date.parse(r.end) - Date.parse(b.end)) <= DAY)
+    if (!host) continue
+    drop.add(b)
+    host.featured = host.featured.map(f => (key(f.name) === key(b.title) ? { ...f, icon: f.icon ?? b.featured[0].icon, rarity: f.rarity ?? b.featured[0].rarity } : f))
+    host.image ??= b.image
+    if (host.precision === 'approx' && !b.precision) Object.assign(host, { start: b.start, end: b.end, precision: undefined })
+  }
+  return drop.size ? out.filter(e => !drop.has(e)) : out
+}
+
+/** Eventos de la lista de cierre que no estén ya (mismo nombre, o uno contenido en el otro: "Tales of Itzaland" / "Tales of Itzaland III"). */
+function withEndingEvents(events: GameEvent[], ending: GameEvent[]): GameEvent[] {
+  const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
+  const have = events.map(e => key(e.title))
+  return [...events, ...ending.filter(x => { const k = key(x.title); return k.length >= 4 && !have.some(h => h === k || h.includes(k) || k.includes(h)) })]
+}
+
 /** Banners de `extra` que no estén ya en `events` (mismo inicio ±2 días y algún destacado o el título en común). */
 function unseenBanners(events: GameEvent[], extra: GameEvent[]): GameEvent[] {
   const key = (n: string) => n.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -365,12 +395,18 @@ export async function syncSource(game: Game): Promise<GameSync> {
   // tragaban los de la web ("Limited collab gear skins" se quedaba con "Skins"). La web manda y Discord añade lo que ella no tiene (adelantos, avisos sueltos).
   // NIKKE (24 nov 2026), igual: las notas de parche (nikke.gg copia el aviso oficial) dan el nombre limpio y la hora exacta del fin del mantenimiento;
   // los tuits, rótulos genéricos ("Pick Up Recruitment") y horas "≈". Discord sigue aportando lo de entre parches (raids del mes, trajes, avisos previos).
-  const webFirst = game.id === 'azurlane' || game.id === 'nikke'
+  // Infinity Nikki (25 nov 2026), también: las notas de Steam nombran el banner por su Resonance con sus trajes; el resumen de Discord, por traje.
+  const webFirst = game.id === 'azurlane' || game.id === 'nikke' || game.id === 'infinitynikki'
   const s0 = !discordChannel(game.id) ? await raw()
     : webFirst ? await officialFirst(raw(), syncDiscord(game.id))
     : await officialFirst(syncDiscord(game.id), raw())
   if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events)
   if (game.id === 'nikke') s0.events = dropNikkeCoop(s0.events)
+  if (game.id === 'infinitynikki') {
+    s0.events = mergeOutfitBanners(s0.events)
+    // Los mensajes ya están en la caché del proxy (los acaba de leer syncDiscord): no es otra petición a Discord.
+    if (discordChannel(game.id)) s0.events = withEndingEvents(s0.events, endingEvents(game.id, await discordMessages(game.id).catch(() => [])))
+  }
   // Trickcal: imágenes de sus tuits oficiales (sus avisos web no traen ninguna).
   if (game.id === 'trickcal' && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []))
   const s1 = await withItemIcons(game.id, game.id === 'azurlane' ? azurPolish(s0) : game.id === 'stellasora' ? ssPolish(s0) : s0)

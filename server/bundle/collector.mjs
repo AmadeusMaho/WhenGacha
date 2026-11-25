@@ -21903,6 +21903,52 @@ function discordStamps(s) {
 	});
 }
 /**
+* Aviso de cierre (Infinity Nikki "Game Events Ending", 19 nov 2026): "EVENTS ENDING: <t:…>" y la sección "**Limited Time Events**" con un
+* "- Nombre" por línea. Muchos de esos eventos no salen en ninguna otra fuente (las notas de Steam solo traen los nuevos de cada fase), así que se
+* añaden con ese fin exacto; el inicio es el de la temporada en curso ("Season starts" del último resumen de versión anterior al cierre), "≈".
+* Las Resonance y la tienda de la misma lista no: los banners ya llegan con su nombre y la tienda no es un evento.
+*/
+function endingEvents(gameId, messages) {
+	const textOf = (m) => [
+		m.content,
+		...(m.embeds ?? []).map((e) => e.description ?? ""),
+		componentsOf(m).text
+	].join("\n");
+	const now = Date.now();
+	const starts = messages.map((m) => /Season starts\**:?\**\s*<t:(\d{9,11})/i.exec(textOf(m))?.[1]).filter(Boolean).map((s) => +s * 1e3);
+	const out = [];
+	for (const m of messages) {
+		const text = textOf(m);
+		const endAt = /EVENTS ENDING\**:?\**\s*<t:(\d{9,11})/i.exec(text)?.[1];
+		if (!endAt) continue;
+		const end = +endAt * 1e3;
+		if (end < now - 3 * DAY$40) continue;
+		const start = starts.filter((s) => s < end).sort((a, b) => b - a)[0] ?? +new Date(m.timestamp);
+		const sec = /\*\*Limited[- ]Time Events\*\*([\s\S]*?)(?:⸻|$)/i.exec(text)?.[1] ?? "";
+		for (const line of sec.split("\n")) {
+			const name = /^\s*-\s+(.{3,80}?)\s*$/.exec(line)?.[1]?.replace(/^New Story:\s*/i, "").trim();
+			if (!name) continue;
+			const id = `${gameId}:event:dc-end:${name}`;
+			if (out.some((e) => e.id === id)) continue;
+			out.push({
+				id,
+				gameId,
+				kind: "event",
+				title: name,
+				start: new Date(start).toISOString(),
+				end: new Date(end).toISOString(),
+				items: [],
+				featured: [],
+				pulls: 0,
+				official: true,
+				source: "api",
+				precision: "approx"
+			});
+		}
+	}
+	return out;
+}
+/**
 * Aviso de temporada (Infinity Nikki "Game Events Overview"): "VERSION 2.11" + "Season starts: <fecha>" + "Season ends: <fecha>" en líneas separadas,
 * y la sección "Limited-Time Resonances" con los banners vigentes ("5-star [Snowbloom Wishsong]"; los de "Upcoming" no traen fecha y se omiten).
 * Devuelve la versión (como parche) y esos banners, que duran como mucho hasta el fin de la temporada (`open`: fin no anunciado).
@@ -22196,6 +22242,12 @@ function featuredIn(lines) {
 			name: m[3],
 			rarity: /^SR$/.test(m[1]) ? 4 : 5,
 			.../character|doll|adventurer/i.test(m[2]) ? {} : { tag: m[2] }
+		});
+	}
+	if (!out.length) {
+		for (const l of lines) for (const m of l.matchAll(/\b([3-5])-star outfit\s+["“]([^"”]{2,40}?)[.,]?["”]/gi)) if (!out.some((f) => f.name === m[2].trim())) out.push({
+			name: m[2].trim(),
+			rarity: +m[1]
 		});
 	}
 	if (!out.length) {
@@ -34077,6 +34129,44 @@ function dropNikkeCoop(events) {
 	}
 	return drop.size ? events.filter((e) => !drop.has(e)) : events;
 }
+/**
+* Infinity Nikki: un banner (Resonance) trae 1–2 trajes. Las notas de Steam lo nombran por la Resonance ("Eclipsing Prayers", con sus trajes como
+* destacados) y el resumen de la versión de Discord, por traje ("5-star [Behind Prayers]", "4-star [Silent Ode]"), uno por banner: salían 9 banners
+* donde había 5 (25 nov 2026). El de traje se une al de la Resonance que lo destaca con el mismo fin (±1 día): le pasa su retrato y, si es exacto y la
+* Resonance era "≈", sus horas.
+*/
+function mergeOutfitBanners(events) {
+	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+	const drop = /* @__PURE__ */ new Set();
+	const out = events.map((e) => ({ ...e }));
+	for (const b of out) {
+		if (b.kind !== "banner" || b.featured.length !== 1 || key(b.featured[0].name) !== key(b.title)) continue;
+		const host = out.find((r) => r !== b && !drop.has(r) && r.kind === "banner" && key(r.title) !== key(b.title) && r.featured.some((f) => key(f.name) === key(b.title)) && Math.abs(Date.parse(r.end) - Date.parse(b.end)) <= DAY$1);
+		if (!host) continue;
+		drop.add(b);
+		host.featured = host.featured.map((f) => key(f.name) === key(b.title) ? {
+			...f,
+			icon: f.icon ?? b.featured[0].icon,
+			rarity: f.rarity ?? b.featured[0].rarity
+		} : f);
+		host.image ??= b.image;
+		if (host.precision === "approx" && !b.precision) Object.assign(host, {
+			start: b.start,
+			end: b.end,
+			precision: void 0
+		});
+	}
+	return drop.size ? out.filter((e) => !drop.has(e)) : out;
+}
+/** Eventos de la lista de cierre que no estén ya (mismo nombre, o uno contenido en el otro: "Tales of Itzaland" / "Tales of Itzaland III"). */
+function withEndingEvents(events, ending) {
+	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+	const have = events.map((e) => key(e.title));
+	return [...events, ...ending.filter((x) => {
+		const k = key(x.title);
+		return k.length >= 4 && !have.some((h) => h === k || h.includes(k) || k.includes(h));
+	})];
+}
 /** Banners de `extra` que no estén ya en `events` (mismo inicio ±2 días y algún destacado o el título en común). */
 function unseenBanners(events, extra) {
 	const key = (n) => n.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -34114,10 +34204,14 @@ function modeDescriptions(events) {
 }
 async function syncSource(game) {
 	const raw = () => STEAM_APPS[game.id] ? officialFirst(syncSteamNews(game.id), syncSourceRaw(game)) : syncSourceRaw(game);
-	const webFirst = game.id === "azurlane" || game.id === "nikke";
+	const webFirst = game.id === "azurlane" || game.id === "nikke" || game.id === "infinitynikki";
 	const s0 = !discordChannel(game.id) ? await raw() : webFirst ? await officialFirst(raw(), syncDiscord(game.id)) : await officialFirst(syncDiscord(game.id), raw());
 	if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events);
 	if (game.id === "nikke") s0.events = dropNikkeCoop(s0.events);
+	if (game.id === "infinitynikki") {
+		s0.events = mergeOutfitBanners(s0.events);
+		if (discordChannel(game.id)) s0.events = withEndingEvents(s0.events, endingEvents(game.id, await discordMessages(game.id).catch(() => [])));
+	}
 	if (game.id === "trickcal" && discordChannel(game.id)) s0.events = tweetImages(s0.events, await discordMessages(game.id).catch(() => []));
 	const s1 = await withItemIcons$1(game.id, game.id === "azurlane" ? azurPolish(s0) : game.id === "stellasora" ? ssPolish(s0) : s0);
 	const s = {

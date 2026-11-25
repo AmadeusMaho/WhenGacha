@@ -1308,3 +1308,17 @@ BLEACH (3), Trickcal (4), Horizon Walker (6), AFK Journey (7) y NIKKE (9, sin na
 - **Sin cambios, y por qué**: Horizon Walker ya lee todo lo que traen sus notas de Steam (la del 19 nov tiene esos 6 elementos). Sword Master: el
   canal `swordmaster` no ha recibido ningún aviso desde que se siguió (20 nov) y no hay web con fechas. BLEACH: falta reenviar al canal `bleach` los
   tuits de @BleachSRgame (tarea del dueño, ver arriba).
+
+### Infinity Nikki: banners por Resonance y eventos de la lista de cierre (25 nov 2026)
+
+- **Banners duplicados**: las notas de Steam nombran cada banner por su Resonance ("Rerun Resonance: Eclipsing Prayers … obtain the 5-star outfit
+  "Behind Prayers" and the 4-star outfit "Silent Ode."") y el resumen de versión de Discord, por traje ("5-star [Behind Prayers]"), uno por banner:
+  salían 9 donde había 5. Ahora el lector toma "N-star outfit "X"" como destacado (`featuredIn`), Infinity Nikki pasa a `webFirst` (Steam y la wiki
+  mandan, Discord completa) y `mergeOutfitBanners` une los de traje con su Resonance (retrato y hora exacta). Resultado: "Eclipsing Prayers" (Behind
+  Prayers, Silent Ode), "To the Timeworn Land" y "For the First Snow" a las 03:00 UTC del 13 nov (fin del mantenimiento), no "≈ 07:00 del 12".
+  Los de la 1.ª fase (Snowbloom Wishsong, Cheese and Sword) solo llegan por traje: se quedan con ese nombre.
+- **"Game Events Ending"** de Discord (`endingEvents`): "EVENTS ENDING: <t:…>" con la lista "Limited Time Events"; se añaden los que no tenga
+  ninguna otra fuente (9 en la 2.11: The Snow Remembers, Snowborne Sprigs, Touring Sleigh, Mira Building Open Day…), con el fin exacto y el inicio
+  de la temporada en curso ("≈"). Sin otra petición: los mensajes ya están en la caché del proxy.
+- Pasados los 17 canales antes y después: solo cambia Infinity Nikki.
+- **Onmyoji** revisado de nuevo: sigue sin fuente de recompensas (ver su apartado).
