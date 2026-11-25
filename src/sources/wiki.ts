@@ -299,6 +299,21 @@ export async function syncEndfield(gameId: string): Promise<GameSync> {
     issues,
   ])
 
+  // Día de versión nueva: todos los servidores abren a la vez (nota oficial de la 1.7: Asia 25 nov 06:00–12:00 UTC+8 y América/Europa 24 nov
+  // 17:00–23:00 UTC-5, las dos terminan a las 04:00 UTC). La wiki a veces da a América/Europa las 17:00 UTC de ese día, la hora de las fases de
+  // mitad de versión (25 nov 2026: Kay, los banners de arma y la propia 1.7 salían 13 h tarde). Lo de ese día que en Asia empieza a las 04:00 y en
+  // AMEU a las 17:00 toma las 04:00. Las fases de mitad de versión (5 nov, 16 dic) no son días de versión y se quedan como están.
+  const versionDays = new Set(versions.map(v => (v.StartTime ?? '').slice(0, 10)).filter(Boolean))
+  const launch = (r: Row) => {
+    const d = (r.AmeuStartTime ?? '').slice(0, 10)
+    if (versionDays.has(d) && r.AmeuStartTime === `${d} 17:00:00` && r.AsiaStartTime === `${d} 04:00:00`) r.AmeuStartTime = r.AsiaStartTime
+  }
+  for (const r of [...events, ...banners, ...weapons]) launch(r)
+  for (const v of versions) {
+    const d = (v.StartTime ?? '').slice(0, 10)
+    if (v.StartTime === `${d} 17:00:00` && [...events, ...banners, ...weapons].some(r => r.AsiaStartTime === `${d} 04:00:00`)) v.StartTime = `${d} 04:00:00`
+  }
+
   const [files, details] = await Promise.all([fileMap(EF, [...events.map(r => r.Image), ...banners.map(r => r.Image), ...weapons.map(r => r.Image)]),
     // "Season of Fervor" (la temporada de Echoes of War) tiene su página como "Echoes of War: Season of Fervor".
     endfieldDetails(events.flatMap(r => (/^Season of /i.test(r.Event) ? [r.Event, `Echoes of War: ${r.Event}`] : [r.Event]))).then(d => {

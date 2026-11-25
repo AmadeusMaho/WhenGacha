@@ -34785,6 +34785,24 @@ async function syncEndfield(gameId) {
 		}),
 		issues
 	]);
+	const versionDays = new Set(versions.map((v) => (v.StartTime ?? "").slice(0, 10)).filter(Boolean));
+	const launch = (r) => {
+		const d = (r.AmeuStartTime ?? "").slice(0, 10);
+		if (versionDays.has(d) && r.AmeuStartTime === `${d} 17:00:00` && r.AsiaStartTime === `${d} 04:00:00`) r.AmeuStartTime = r.AsiaStartTime;
+	};
+	for (const r of [
+		...events,
+		...banners,
+		...weapons
+	]) launch(r);
+	for (const v of versions) {
+		const d = (v.StartTime ?? "").slice(0, 10);
+		if (v.StartTime === `${d} 17:00:00` && [
+			...events,
+			...banners,
+			...weapons
+		].some((r) => r.AsiaStartTime === `${d} 04:00:00`)) v.StartTime = `${d} 04:00:00`;
+	}
 	const [files, details] = await Promise.all([fileMap(EF, [
 		...events.map((r) => r.Image),
 		...banners.map((r) => r.Image),

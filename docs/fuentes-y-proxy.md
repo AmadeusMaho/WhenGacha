@@ -1432,3 +1432,11 @@ ejemplo (9 de los 10 "≈" de la 9.1 pasan a exactos; el aviso del mantenimiento
 
 **Otros revisados el mismo día, sin cambios:** DNA (su web carga un captcha antes de mostrar nada: no se automatiza), Limbus (WordPress sin
 noticias: API de entradas y sitemap de noticias vacíos), RE Survival Unit, Sword Master Story y BLEACH (sus webs no publican noticias; ver arriba).
+
+### Endfield: el día de versión nueva abren todos los servidores a la vez (25 nov 2026)
+
+Kay (1.7) salía en América/Europa el 25 nov a las 17:00 UTC, 13 h tarde: la nota oficial (X de @AKEndfield) da Asia 25 nov 06:00–12:00 (UTC+8) y
+América/Europa 24 nov 17:00–23:00 (UTC-5), que terminan las dos a las 04:00 UTC. La wiki (columnas `Ameu*` de Cargo) ponía las 17:00 a lo del día
+de la versión (luego corrigió a Kay, pero no los banners de arma ni la tabla `Versions`). En `syncEndfield`: en un día que empieza una versión
+(tabla `Versions`), lo que en Asia empieza a las 04:00 y en AMEU a las 17:00 de ese mismo día toma las 04:00; también la fecha de la versión.
+Las fases de mitad de versión (5 nov, 16 dic: AMEU 17:00, Asia 04:00) no son días de versión y no cambian.
