@@ -53,6 +53,8 @@ const ART: Record<string, string> = {
   starsavior: 'https://starsavior.com/api/home/en/pc/background-019a75ae-573f-77d9-a224-9a6968fe0ce2.webp',
   // Horizon Walker (19 nov 2026): arte de la biblioteca de Steam (library_hero, sin rótulos; juego +18: se revisó que no es explícita).
   horizonwalker: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3279780/library_hero.jpg',
+  // Persona 5X: el arte de su ficha de Steam (sus capturas de la App Store son maquetas de móvil en vertical).
+  persona5x: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3061570/library_hero.jpg',
   // MAke Drama: MAD (19 nov 2026): fondo de la portada de su web oficial (hero-main-bg, 1920×1080). Juego +18: NUNCA las capturas de Steam
   // (explícitas); las de la App Store son de la interfaz.
   makedrama: 'https://mad.wemadeconnect.com/assets/img/hero/hero-main-bg.png',
@@ -151,6 +153,10 @@ export const CATALOG: Game[] = [
   // evento, retratos e iconos de gacha.gg + códigos de ucngame (src/sources/horizonwalker.ts). Un solo servidor (KST).
   def('horizonwalker', 'Horizon Walker', 'HZW', 'Gentlemaniac', '#f0b64a', '#2a1d3d', 14, '', 'Horizon Walker', 'horizonwalker',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/31/b5/83/31b583bf-10b9-f689-d624-fb1b363d6134/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Persona 5: The Phantom X: avisos oficiales de Steam (eventos, contratos, logins con sus tiradas, Phantom Pass) + retratos de Prydwen
+  // (src/sources/persona5x.ts). Un solo servidor global (horas en UTC); actualización cada 2 semanas (miércoles).
+  def('persona5x', 'Persona 5: The Phantom X', 'P5X', 'SEGA / Atlus', '#e53935', '#3a0c0c', 14, '', 'Persona 5: The Phantom X', 'persona5x',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/6b/5b/5c/6b5b5cea-e723-ec1f-0512-ed566378062e/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // MAke Drama: MAD: datos del juego de MAD Viewer (eventos con recompensas, banners Rate-Up, retratos e iconos; horas exactas en KST) + códigos de
   // lootandwaifus (src/sources/makedrama.ts). Un solo servicio para todas las regiones (KST).
   def('makedrama', 'MAke Drama: MAD', 'MAD', 'Wemade Connect', '#ff7eb6', '#3a1838', 14, '', 'MAke Drama: MAD', 'makedrama',

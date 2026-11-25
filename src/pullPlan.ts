@@ -287,6 +287,12 @@ const ECON: Record<string, Econ> = {
   // publica el precio en Rubíes de una tirada ni la medida del "Guarantee Gauge" (con la barra llena, un 5★ seguro): `per` es un valor de partida
   // (300) que cada jugador cambia en la ficha, y las diarias son un campo propio.
   swordmaster: { currency: 'Ruby', ticket: 'Ruby Summon Ticket', per: 300, pass: 0, pity: 0, sources: [], inputs: [{ id: 'daily', name: 'Daily quests', per: 'day' }] },
+  // Persona 5X (25 nov 2026; Prydwen "Gacha System" y Game8 "Daily Tasks"): 150 Meta Jewels por tirada; los contratos limitados se pagan con
+  // Platinum Tickets. Pity: 110 en el modo "Targeted" (el destacado garantizado; 80 en "Chance", con 50/50). Diarias: 4 metas de 20 = 80 al día.
+  // Gates of the Nightmare Catcher (hasta 400 por ciclo en sus 5 tramos de participación) y Trials from the Sea of Souls no publican su calendario
+  // en ninguna fuente permitida: campos propios que cada jugador rellena.
+  persona5x: { currency: 'Meta Jewel', ticket: 'Platinum Ticket', per: 150, pass: 0, pity: 110, sources: [daily(80)],
+    inputs: [{ id: 'gates', name: 'Gates of the Nightmare Catcher', per: 'patch' }, { id: 'sea', name: 'Trials from the Sea of Souls', per: 'patch' }] },
   horizonwalker: { currency: 'Extercium', ticket: 'FairyNet Special Search Ticket', per: 100, pass: 0, pity: 50, sources: [] },
   // MAke Drama: MAD (19 nov 2026): 120 Seeds por invocación, 1200 la de 10 (datos del juego en MAD Viewer y gacha.gg); 2% el destacado y sin pity,
   // pero cada tirada da 1 de kilometraje y con 200 se canjea el destacado (el kilometraje pasa al banner siguiente): pity 200.

@@ -1322,3 +1322,37 @@ BLEACH (3), Trickcal (4), Horizon Walker (6), AFK Journey (7) y NIKKE (9, sin na
   de la temporada en curso ("≈"). Sin otra petición: los mensajes ya están en la caché del proxy.
 - Pasados los 17 canales antes y después: solo cambia Infinity Nikki.
 - **Onmyoji** revisado de nuevo: sigue sin fuente de recompensas (ver su apartado).
+
+## Persona 5: The Phantom X (añadido el 25 nov 2026)
+
+`src/sources/persona5x.ts`. Un solo servidor global (horas en UTC); actualización cada dos semanas (miércoles).
+- **Web oficial (persona5x.com): NO.** Está al día y separa eventos, contratos y mantenimientos (lista en `/news/data/news2026.txt`), pero sus Términos
+  (SEGA Mobile Application Terms of Use; "Services" incluye sus webs) prohíben acceder con "spiders, robots, crawlers, data mining tools". Mismo caso
+  que Stella Sora. Solo con permiso de SEGA.
+- **Eventos y contratos: avisos oficiales de Steam** (app 3061570; ya permitida por la fuente `steam` del proxy). Apartados «[h3][img]• Título[/h3]»
+  con «Duration: Until Dec 10, 2026 at 1:59 AM (UTC)» (también «Season Duration», «Available Until», «Claim by») y subapartados «▽ Nombre» con su
+  periodo. Inicio = hora del aviso (sale al acabar el mantenimiento), "≈". Contratos: «5★ Fuuka Yamagishi comes to Most Wanted Phantom Idol
+  Contracts!», «… Contracts for 5★ Phantom Thieves Gunslinger Shun and Tenebre Shoki!» → un banner por personaje con la imagen de su contrato.
+  **Imágenes**: van en el título o sueltas al final del texto, y una suelta tras un apartado que ya trae la suya es la del siguiente (comprobado:
+  tras el de Shun y Shoki va el arte de «Unbridled Radiance»). Sin imagen, la del primer apartado del aviso.
+  Recompensas: «7 Platinum Tickets» (tiradas) y «Repression Skip Ticket x200». Menores: Phantom Pass, peluches de la grúa, campañas de pago y
+  regalos de más de 60 días (el del ASMR de Kira dura hasta junio de 2027).
+- **Lo próximo**: presentaciones en Steam («New Phantom Idol X», «X (VA: …) Teaser Trailer») de un personaje sin contrato → banner estimado de 4
+  semanas desde la siguiente actualización (`d.p5xTeased`). Versión siguiente estimada cada 14 días, como mínimo al acabar los contratos en curso
+  (si no, `alignPatches` la movía y la etiqueta no coincidía).
+- **Lo que Steam no publica**: las reposiciones de mitad de versión («5★ Phantom Thief: Wavecatcher Miyu Makes a Comeback…», 19 nov 2026) y los
+  contratos de arma. Llegarán si el dueño sigue el canal de anuncios del Discord oficial como `persona5x` en DISCORD_CHANNELS (`webFirst`: Steam
+  manda y Discord completa, como en NIKKE).
+- **Retratos**: lista de personajes de Prydwen (`/persona-5x/characters`, nueva ruta en la regla `prydwen` del proxy; cartas de cdn.prydwen.gg).
+  "Wavecatcher Miyu" se busca como "Miyu Sahara [Wavecatcher]"; si Prydwen aún no tiene la variante global (Gunslinger Shun, Tenebre Shoki), la carta
+  base del personaje.
+- **Tiradas** (`pulls.ts`, `pullPlan.ts`; Prydwen "Gacha System", Game8): 150 Meta Jewels = 1; Platinum Ticket (contrato) y Platinum Milicoin (arma)
+  = 1. Pity 110 (modo "Targeted", destacado garantizado; 80 en "Chance" con 50/50). Diarias: 4 metas de 20 = 80 Meta Jewels. Gates of the
+  Nightmare Catcher y Trials from the Sea of Souls como campos propios por versión.
+- **Sin fuente** (dicho también en el código):
+  - **Códigos**: el juego casi no publica (Game8 registra dos en 2026, sin el texto) y PocketGamer no tiene página.
+  - **Rotatorios** (Gates of the Nightmare Catcher, Trials from the Sea of Souls, Velvet Trials): sin calendario en ninguna fuente permitida (Game8
+    se quedó en marzo de 2026). Salen solo si un aviso los fecha.
+  - **Iconos de recompensas** (Platinum Tickets, Repression Skip Ticket): sin wiki ni guía con iconos de objetos (Game8 y Prydwen solo tienen
+    capturas). Como CZN.
+- Por ciclo: 1 consulta a Steam (caché 3 h) y 1 página de Prydwen (caché 2 h, cola de 10 s).

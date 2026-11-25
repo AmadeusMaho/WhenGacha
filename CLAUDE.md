@@ -66,7 +66,7 @@ Reglas que no se rompen:
 ## Discord (Stella Sora, Blue Archive Global y otros 12 juegos)
 
 Canales configurados (13 nov 2026): stellasora, bluearchive, limbus, arknights, honkai3, azurlane, infinitynikki, nikke, dna, trickcal, gfl2, mho, bleach, ptn y soc
-(este sigue #official-news y #social-media-news de SoC: sus parches pequeños no tienen aviso en la web). Onmyoji no: su Discord está abandonado y su web dejó de publicar en 2020.
+(este sigue #official-news y #social-media-news de SoC: sus parches pequeños no tienen aviso en la web). Persona 5X (`persona5x`) aún sin canal: si se añade, trae las reposiciones y contratos de arma que Steam no publica. Onmyoji no: su Discord está abandonado y su web dejó de publicar en 2020.
 Al conectar un canal nuevo, prueba el lector (`parseNotices`) con avisos reales del juego y vuelve a pasar los canales que ya funcionan para ver que no cambia nada.
 Discord complementa, no sustituye: cada juego con canal debe tener también una fuente web (Azur Lane: avisos de azurlane.yo-star.com; PtN: avisos de ptn.aisnogames.com).
 

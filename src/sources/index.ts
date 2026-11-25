@@ -25,6 +25,7 @@ import { syncDaphne, DAPHNE_ICONS } from './daphne'
 import { syncAniimo, ANIIMO_ICONS } from './aniimo'
 import { syncStarSavior, STARSAVIOR_ICONS } from './starsavior'
 import { syncHorizonWalker, HORIZONWALKER_ICONS } from './horizonwalker'
+import { syncPersona5x } from './persona5x'
 import { syncMakeDrama } from './makedrama'
 import { syncFeh } from './feh'
 import { syncResu, syncSwordMaster } from './mobilegames'
@@ -396,7 +397,7 @@ export async function syncSource(game: Game): Promise<GameSync> {
   // NIKKE (24 nov 2026), igual: las notas de parche (nikke.gg copia el aviso oficial) dan el nombre limpio y la hora exacta del fin del mantenimiento;
   // los tuits, rótulos genéricos ("Pick Up Recruitment") y horas "≈". Discord sigue aportando lo de entre parches (raids del mes, trajes, avisos previos).
   // Infinity Nikki (25 nov 2026), también: las notas de Steam nombran el banner por su Resonance con sus trajes; el resumen de Discord, por traje.
-  const webFirst = game.id === 'azurlane' || game.id === 'nikke' || game.id === 'infinitynikki'
+  const webFirst = game.id === 'azurlane' || game.id === 'nikke' || game.id === 'infinitynikki' || game.id === 'persona5x'
   const s0 = !discordChannel(game.id) ? await raw()
     : webFirst ? await officialFirst(raw(), syncDiscord(game.id))
     : await officialFirst(syncDiscord(game.id), raw())
@@ -489,6 +490,8 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'starsavior': return syncStarSavior(id)
     // Horizon Walker: notas de parche de Steam (horas exactas en KST) + tiendas de evento, retratos e iconos de gacha.gg + códigos de ucngame.
     case 'horizonwalker': return syncHorizonWalker(id)
+    // Persona 5X: avisos de Steam + retratos de Prydwen (persona5x.ts); la versión siguiente, estimada cada 14 días.
+    case 'persona5x': return syncPersona5x(id).then(s => ({ ...s, patches: finalize(s.patches, game.patchCycleDays) }))
     // MAke Drama: MAD: eventos, recompensas y banners de MAD Viewer (datos del juego, KST) + códigos de lootandwaifus.
     case 'makedrama': return syncMakeDrama(id)
     // Fire Emblem Heroes: tablas Cargo de su wiki en una sola petición (feh.ts; la API corta tras 2–3 consultas seguidas).

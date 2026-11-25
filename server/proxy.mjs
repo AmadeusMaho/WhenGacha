@@ -74,7 +74,8 @@ const SOURCES = [
   { name: 'gametora', ttl: 24 * HOUR, test: u => u.hostname === 'gametora.com' && /^\/umamusume\/events\/(story-events|story-event-\d{1,3})$/.test(u.pathname) && !u.search },
   { name: 'umapyoi', ttl: 24 * HOUR, test: u => u.hostname === 'umapyoi.net' && /^\/api\/v1\/(character\/list|outfit|support)$/.test(u.pathname) && !u.search },
   { name: 'gachafocus', ttl: HOUR, test: u => GACHAFOCUS_ENABLED && u.hostname === 'gachafocus.com.br' && /^\/en\/[a-z0-9-]+\/(events|banners)$/.test(u.pathname) },
-  { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && /^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive|other-games\/starsavior)\/banners$/.test(u.pathname) },
+  // Persona 5X (25 nov 2026): la lista de personajes, solo para los retratos de los destacados (cartas de cdn.prydwen.gg); Prydwen no tiene página de banners de P5X.
+  { name: 'prydwen', ttl: 2 * HOUR, test: u => u.hostname === 'www.prydwen.gg' && (/^\/(wuthering-waves|neverness-to-everness|chaos-zero-nightmare|nikke|other-games\/mongil-star-dive|other-games\/starsavior)\/banners$/.test(u.pathname) || u.pathname === '/persona-5x/characters') },
   { name: 'game8', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/(Wuthering-Waves\/archives\/453473|Neverness-to-Everness\/archives\/592073|Chaos-Zero-Nightmare\/archives\/(559899|557967)|Arknights-Endfield\/archives\/571509|Duet-Night-Abyss\/archives\/(559948|554952|557781)|Monster-Hunter-Outlanders\/archives\/634765|Aniimo\/archives\/(622475|619365))$/.test(u.pathname) },
   // Guías de eventos de WuWa en Game8 (sus recompensas; withGame8Extras en src/sources/game8.ts): como mucho 8 por ciclo, caché de 24 h.
   { name: 'game8-guide', ttl: 24 * HOUR, test: u => u.hostname === 'game8.co' && /^\/games\/Wuthering-Waves\/archives\/\d{5,7}$/.test(u.pathname) && !u.search },
