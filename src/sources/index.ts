@@ -6,7 +6,7 @@ import { syncBluepoch } from './bluepoch'
 import { withChallengeRewards, type ChallengePage } from './challenges'
 import { alExercise, hi3MemorialArena, pgrPainCage, r99Limbo, pgrWarZone } from './cycles'
 import { syncCznEvents } from './czn'
-import { discordChannel, discordMessages, endingEvents, syncDiscord, tweetImages } from './discord'
+import { discordChannel, discordMessages, endingEvents, maintenanceEnds, syncDiscord, tweetImages } from './discord'
 import { syncAfkJourney } from './afkjourney'
 import { syncBd2 } from './bd2'
 import { syncInfinityNikki } from './infinitynikki'
@@ -27,6 +27,7 @@ import { syncStarSavior, STARSAVIOR_ICONS } from './starsavior'
 import { syncHorizonWalker, HORIZONWALKER_ICONS } from './horizonwalker'
 import { syncPersona5x } from './persona5x'
 import { syncBaForum } from './nexonba'
+import { syncArknightsNews, withArknightsNews } from './yostarak'
 import { syncMakeDrama } from './makedrama'
 import { syncFeh } from './feh'
 import { syncResu, syncSwordMaster } from './mobilegames'
@@ -350,6 +351,20 @@ export function mergeOutfitBanners(events: GameEvent[]): GameEvent[] {
   return drop.size ? out.filter(e => !drop.has(e)) : out
 }
 
+/**
+ * Los elementos "≈" que empiezan el día de un mantenimiento cuyo fin real se conoce (a 12 h como mucho de esa hora) pasan a empezar a esa hora,
+ * exacta. `tz`: zona del servidor en horas (el día del mantenimiento se cuenta en ella).
+ */
+export function withMaintenanceEnds(events: GameEvent[], ends: Map<string, number>, tz: number): GameEvent[] {
+  if (!ends.size) return events
+  return events.map(e => {
+    if (e.precision !== 'approx') return e
+    const t = Date.parse(e.start)
+    const end = ends.get(new Date(t + tz * HOUR).toISOString().slice(0, 10))
+    return end !== undefined && Math.abs(end - t) <= 12 * HOUR ? { ...e, start: new Date(end).toISOString(), precision: undefined } : e
+  })
+}
+
 /** Eventos de la lista de cierre que no estén ya (mismo nombre, o uno contenido en el otro: "Tales of Itzaland" / "Tales of Itzaland III"). */
 function withEndingEvents(events: GameEvent[], ending: GameEvent[]): GameEvent[] {
   const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -404,6 +419,9 @@ export async function syncSource(game: Game): Promise<GameSync> {
     : await officialFirst(syncDiscord(game.id), raw())
   if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events)
   if (game.id === 'nikke') s0.events = dropNikkeCoop(s0.events)
+  // Honkai 3rd: lo que empieza "tras la actualización" (05:00 UTC-5, la hora prevista, "≈") toma la hora real del tuit de fin de mantenimiento si
+  // llega por Discord (canal honkai3; 25 nov 2026 aún sin ninguno: la 9.2 sale hacia el 24 dic). Mismo criterio que Azur Lane.
+  if (game.id === 'honkai3' && discordChannel(game.id)) s0.events = withMaintenanceEnds(s0.events, maintenanceEnds(await discordMessages(game.id).catch(() => []), -5), -5)
   if (game.id === 'infinitynikki') {
     s0.events = mergeOutfitBanners(s0.events)
     // Los mensajes ya están en la caché del proxy (los acaba de leer syncDiscord): no es otra petición a Discord.
@@ -426,7 +444,9 @@ export async function syncSource(game: Game): Promise<GameSync> {
 async function syncSourceRaw(game: Game): Promise<GameSync> {
   const id = game.id
   switch (game.api) {
-    case 'arknights': return withGachafocus(id, 'arknights', syncArknights(id))
+    // Arknights: la wiki (hora exacta, nombres) + los avisos oficiales de arknights.global (recompensas con cifra, logins, imágenes; yostarak.ts).
+    case 'arknights': return withGachafocus(id, 'arknights', syncArknights(id).then(async w => withArknightsNews(w, await syncArknightsNews(id).then(s => s.events)
+      .catch(err => { console.warn('[arknights] avisos oficiales:', (err as Error)?.message); return [] as GameEvent[] }))))
     case 'endfield': {
       const s = await withGachafocus(id, 'endfield', syncEndfield(id))
       return { ...s, patches: finalize(s.patches, game.patchCycleDays) }

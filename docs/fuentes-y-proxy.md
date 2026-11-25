@@ -1407,3 +1407,28 @@ destacados. 12 → 13 elementos.
 - Las notas «[Operation Mode] …» / «[Story Mode] …» van a la descripción del evento; las campañas menores se titulan con su contenido («Skins:
   Molotov – … +3» en vez de "Skins" repetido).
 - Medido: 17 → 32 elementos.
+
+## Arknights (avisos oficiales) y Honkai 3rd (hora real de la actualización) (25 nov 2026)
+
+**Arknights: avisos de arknights.global** (`src/sources/yostarak.ts`; fuente `arknightsweb` del proxy, la misma API de Yostar que Stella Sora:
+`/api/resource/news/list?index=1&size=10&type=latest` y `/detail?id=…`; caché 3 h, cola de 3 s). Se consulta también desde el servidor, como la
+de Stella Sora (decisión del dueño sobre las webs oficiales). Cada aviso trae apartados «01 TÍTULO» con «DURATION: November 23, 2026, 08:00 –
+December 7, 2026, 03:59 (UTC-7)» (a veces sin año: el del aviso).
+- La wiki sigue mandando (hora exacta y mejores nombres); los avisos la completan (`withArknightsNews`): recompensas con cifra de cada día del
+  login («Orundum * 200», «Headhunting Permit * 2» → tiradas), imagen oficial de cada apartado, descripción y destacados con sus estrellas
+  («★★★★★★: Violet Mizutsune Orchid»). Se emparejan por tipo y periodo, y por una palabra del nombre, ser los dos logins, compartir destacado o
+  tener 3 recompensas en común (el login de la colaboración es "Hunting Time" en la wiki y "Limited Login Event" en el aviso).
+- Añade lo que la wiki no tiene: tienda de trajes, muebles, packs y tarjeta mensual, como **menores y sin contar tiradas** (se compran).
+- Medido: 11 → 15 elementos; todos con imagen. **Sin icono**: Bouncing Rhythms (traje), dos Dynamic Icon (cosméticos) y "Song of the Bow, Leap to
+  the Sky Headhunting Permit" (permiso del banner limitado; la wiki no lo tiene con ese nombre).
+- Códigos: la página "Gift Code" es un formulario de canje, no una lista: sigue sin fuente.
+
+**Honkai 3rd: hora real de la actualización.** La web oficial (honkaiimpact3.hoyoverse.com, `content_v2_user/…/getContentList`) solo publica el
+anuncio de cada versión, sin la hora de fin del mantenimiento, y HoYoLAB tampoco. Lo que empieza "tras la actualización" (05:00 UTC-5, la hora
+prevista) toma la hora del tuit de fin de mantenimiento cuando llegue por el canal de Discord `honkai3` (`maintenanceEnds` en discord.ts,
+`withMaintenanceEnds` en index.ts; mismo criterio que Azur Lane, cuyos tuits lee igual: 12 nov 14:03, 19 y 24 nov 15:57). Probado con un tuit de
+ejemplo (9 de los 10 "≈" de la 9.1 pasan a exactos; el aviso del mantenimiento programado se ignora). El 25 nov el canal aún no tiene ninguno: la
+9.2 sale hacia el 24 dic.
+
+**Otros revisados el mismo día, sin cambios:** DNA (su web carga un captcha antes de mostrar nada: no se automatiza), Limbus (WordPress sin
+noticias: API de entradas y sitemap de noticias vacíos), RE Survival Unit, Sword Master Story y BLEACH (sus webs no publican noticias; ver arriba).

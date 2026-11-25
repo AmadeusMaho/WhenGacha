@@ -96,6 +96,23 @@ export function discordStamps(s: string): string {
 }
 
 /**
+ * Fin real de cada mantenimiento por los tuits "the update maintenance has been completed" / "Maintenance has ended & all servers are now up"
+ * (Honkai 3rd, Azur Lane): la hora del mensaje, por día en la zona del servidor (`tz`, horas). Si hay varios el mismo día, el primero.
+ */
+export function maintenanceEnds(messages: Message[], tz: number): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const m of messages) {
+    const t = [m.content ?? '', ...(m.embeds ?? []).map(e => e.description ?? ''), componentsOf(m).text].join('\n').replace(/\\([^\w\s])/g, '$1')
+    if (!/maintenance (?:has|is) (?:ended|over|complete|completed|been completed|finished)|update (?:maintenance )?(?:has been|is) (?:complete|completed)|servers? (?:are|is) now (?:up|open|online)/i.test(t)) continue
+    if (/will|scheduled|upcoming|advance notification/i.test(t.split('\n').find(l => /maintenance/i.test(l)) ?? '')) continue
+    const at = Date.parse(m.timestamp)
+    const day = new Date(at + tz * 3_600_000).toISOString().slice(0, 10)
+    if (!out.has(day) || at < out.get(day)!) out.set(day, at)
+  }
+  return out
+}
+
+/**
  * Aviso de cierre (Infinity Nikki "Game Events Ending", 19 nov 2026): "EVENTS ENDING: <t:…>" y la sección "**Limited Time Events**" con un
  * "- Nombre" por línea. Muchos de esos eventos no salen en ninguna otra fuente (las notas de Steam solo traen los nuevos de cada fase), así que se
  * añaden con ese fin exacto; el inicio es el de la temporada en curso ("Season starts" del último resumen de versión anterior al cierre), "≈".
