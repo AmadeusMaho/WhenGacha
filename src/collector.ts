@@ -18,6 +18,11 @@ export interface Snapshot {
   codes: PromoCode[]
   /** Si los códigos vienen de una copia anterior (su fuente no respondió): cuándo los dio una fuente por última vez (ms). */
   codesSeen?: number
+  /**
+   * La hizo la tarea del PC con una fuente que solo se consulta desde allí (OFFICIAL_SITES=1: webs oficiales, 25 nov 2026). Durante 24 h el servidor
+   * no la rehace con sus fuentes (que no la tienen: saldría peor) ni GitHub Actions la sustituye en la rama `data`. Pasado ese día, todo vuelve solo.
+   */
+  pcOnly?: boolean
 }
 
 const DAY = 86_400_000
@@ -83,7 +88,7 @@ export async function collect(id: string): Promise<Snapshot> {
   const withArt = await withWikiImages(game, s.events).catch(() => s.events)
   const withFaces = await withFeaturedIcons(game, withArt).catch(() => withArt)
   const events = await withItemIcons(game, withFaces).catch(() => withFaces)
-  return { id, updated: Date.now(), events, patches: s.patches, codes: s.codes }
+  return { id, updated: Date.now(), events, patches: s.patches, codes: s.codes, ...(s.pcOnly ? { pcOnly: true } : {}) }
 }
 
 /**

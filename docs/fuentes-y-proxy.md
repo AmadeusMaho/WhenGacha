@@ -107,9 +107,15 @@ juego no tiene arte distinto por evento, vale compartir la imagen del aviso). El
 (p. ej. el script de prueba: importar `server/proxy.mjs` y `server/bundle/collector.mjs`, `mod.setup(proxy.sourceFetch)`, `mod.collect('<juego>')`, tras `npm run build:server`) y se compara elemento a elemento
 (título, inicio, fin, imagen). Lo que no se pueda fechar con seguridad se descarta en vez de inventarlo (o se marca `precision: 'approx'`, "≈").
 
-**Antes de usar cualquier fuente nueva (obligatorio, es lo que nos bloqueó antes):** leer su `robots.txt` **y sus Términos de Uso** (en un navegador si se dibujan con JS; `page.evaluate`/`innerText`), no usar rutas internas
-si los términos lo prohíben, poca frecuencia (caché del proxy 2–6 h, pausa entre peticiones en `GAP`), identificarse con el User-Agent propio, y añadir la fuente a `SOURCES` en `server/proxy.mjs` con la ruta exacta
-(el proxy no es un relé abierto). Anotar aquí el resultado (permitido / prohibido / sin revisar).
+**Antes de usar cualquier fuente nueva (obligatorio, es lo que nos bloqueó antes):** leer su `robots.txt` y sus Términos de Uso, poca frecuencia (caché del proxy 2–6 h, pausa entre
+peticiones en `GAP`), identificarse con el User-Agent propio, y añadir la fuente a `SOURCES` en `server/proxy.mjs` con la ruta exacta (el proxy no es un relé abierto). Anotar aquí lo que digan.
+
+**Webs oficiales con cláusula contra robots (decisión del dueño, 25 nov 2026):** ya **no** se descartan por eso. Antes se excluían todas las que la tenían
+(Stella Sora, NTE, Arknights Global, el foro de Nexon de Blue Archive, Persona 5X); el dueño no puso esa regla y la retiró: son consultas pequeñas a avisos
+públicos. Se pueden usar si mejoran un juego, con estas condiciones: consulta mínima (lista + avisos nuevos, caché larga), User-Agent propio, parar ante
+un 403/429 (ya lo hace el proxy) y, preferiblemente, **solo desde la tarea del PC** (`OFFICIAL_SITES=1`, que pone `scripts/snapshot.mjs` fuera de GitHub
+Actions; sus copias llevan `pcOnly` y ni Botkeep ni Actions las sustituyen en 24 h). Primera: persona5x.com. Lo que dicen más abajo esos apartados sobre
+"no es opción" describe la situación anterior a esta decisión. Gachafocus es otro caso (agregador que nos bloqueó y venderá una API): sigue apagado.
 
 **Estado del trabajo (no commiteado):** cambios hechos en el equipo del dueño, sin commit ni push: `src/sources/{epic7,czn,stove}.ts` (nuevos), `src/sources/index.ts` (interruptor `GF_ON`, `withBannerArt`),
 `server/proxy.mjs` (fuentes `bannerhistory` y `stove`), `server/bundle/collector.mjs` y `dist/` recompilados (`npm run build:prod`), docs. **Falta**: revisar el diff, `git add -A` (incluye `dist/` y el bundle), commit y push; Botkeep
@@ -1326,9 +1332,20 @@ BLEACH (3), Trickcal (4), Horizon Walker (6), AFK Journey (7) y NIKKE (9, sin na
 ## Persona 5: The Phantom X (añadido el 25 nov 2026)
 
 `src/sources/persona5x.ts`. Un solo servidor global (horas en UTC); actualización cada dos semanas (miércoles).
-- **Web oficial (persona5x.com): NO.** Está al día y separa eventos, contratos y mantenimientos (lista en `/news/data/news2026.txt`), pero sus Términos
-  (SEGA Mobile Application Terms of Use; "Services" incluye sus webs) prohíben acceder con "spiders, robots, crawlers, data mining tools". Mismo caso
-  que Stella Sora. Solo con permiso de SEGA.
+- **Web oficial (persona5x.com): SÍ, desde el PC** (25 nov 2026, decisión del dueño; ver "Webs oficiales con cláusula contra robots"). Sus Términos
+  (SEGA) prohíben los robots; el dueño lo asume: consulta pequeña. Lista `/news/data/news2026.txt` (casi JSON: comas finales, se lee objeto a objeto,
+  caché 6 h) y los avisos de las últimas 5 semanas de las categorías "events" y "update" (como mucho 18, caché 24 h: solo se piden los nuevos; cola de 5 s).
+  - **Mantenimiento**: "Implementation period: From Nov 26, 2026 2:00 AM until 11:00 AM (UTC)" y sus actualizaciones ("service resumed at 10:00 AM",
+    "ended as of 3:15 PM"): el fin real. Todo lo que empieza "tras el mantenimiento" (en la web o en Steam) toma esa hora, exacta. La versión que
+    trae ("・Ver. 4.14 update") sale como versión con fecha real (antes, estimada cada 14 días).
+  - **Avisos de eventos**: "Duration: From 2:30 AM on Nov 19, 2026 until 1:59 AM on Dec 3, 2026 (UTC)", "From the end of maintenance on Nov 12…",
+    "After the Oct 29, 2026 maintenance ends until…", "Until …" (con el mantenimiento del día del aviso). Aportan lo que Steam no publica: las
+    **reposiciones** de mitad de versión y los **contratos de arma** ("5★ Weapon: Mermaid Dreamer (Wavecatcher Miyu-exclusive)"; sin icono de armas
+    en ninguna fuente, llevan el arte del contrato). Recompensas "Stardust Gem (x70)".
+  - Unión con Steam: la web manda en fechas y nombres; el arte, el de Steam si lo hay (las imágenes de persona5x.com se cargarían en cada visita).
+  - Medido el 25 nov: 12 → 18 elementos, todos con hora exacta (antes "≈" a la hora del aviso de Steam: 10:08 frente al fin real, 10:00).
+  - Sin la web (Botkeep, Actions, o el PC más de 24 h apagado): todo sale de Steam como antes.
+  - Códigos: la web los anuncia, pero el código va en su X ("revealed on the official X account"): solo por Discord.
 - **Eventos y contratos: avisos oficiales de Steam** (app 3061570; ya permitida por la fuente `steam` del proxy). Apartados «[h3][img]• Título[/h3]»
   con «Duration: Until Dec 10, 2026 at 1:59 AM (UTC)» (también «Season Duration», «Available Until», «Claim by») y subapartados «▽ Nombre» con su
   periodo. Inicio = hora del aviso (sale al acabar el mantenimiento), "≈". Contratos: «5★ Fuuka Yamagishi comes to Most Wanted Phantom Idol

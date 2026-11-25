@@ -15,9 +15,9 @@ import { summarize } from './summary'
  *    - Versión: «Ver. 4.7 Update Information» o, sin número, la fecha del aviso.
  *    - Lo próximo: los avisos de presentación («New Phantom Idol Kumi Katayama», «… Teaser Trailer») de un personaje que aún no tiene banner
  *      → banner estimado desde la siguiente actualización (14 días tras la última), 4 semanas.
- *  - **La web oficial (persona5x.com) NO se usa**: sus Términos (SEGA Mobile Application Terms of Use, "Services" incluye sus webs) prohíben
- *    acceder con "spiders, robots, crawlers, data mining tools". Allí salen además las reposiciones de mitad de versión («… Makes a Comeback»,
- *    19 nov 2026), que Steam no publica: solo llegarán si se sigue el Discord oficial (canal "persona5x" de DISCORD_CHANNELS).
+ *  - **Web oficial (persona5x.com), solo desde la tarea del PC** (OFFICIAL_SITES=1; decisión del dueño, 25 nov 2026, aunque sus Términos prohíben los
+ *    robots: consulta pequeña). Da el fin real de cada mantenimiento (inicio exacto de todo, también de lo de Steam), las reposiciones de mitad de
+ *    versión, los contratos de arma y el número de versión. Ver `syncOfficial` y "Persona 5: The Phantom X" en docs/fuentes-y-proxy.md.
  *  - Retratos: la lista de personajes de Prydwen (`/persona-5x/characters`, cartas `cdn.prydwen.gg/…/<slug>_card.webp`). Los nombres globales de
  *    las variantes («Wavecatcher Miyu») se buscan como «Miyu Sahara [Wavecatcher]»; si Prydwen la llama de otra forma, el retrato base del personaje.
  *  - Códigos: SIN fuente. El juego casi no publica (Game8 registra dos en 2026, sin el texto del código) y PocketGamer no tiene página.
@@ -196,7 +196,215 @@ function teased(posts: Post[]): { name: string; at: number }[] {
   return out
 }
 
+/* ---------- Web oficial (persona5x.com): solo desde la tarea del PC (OFFICIAL_SITES=1 en el proxy) ---------- */
+const SITE = 'https://persona5x.com'
+interface News { day: string; category: string; text: string; link: string }
+interface Notice { news: News; title: string; image?: string; lines: string[] }
+
+/** La lista es casi JSON (comas finales): se lee objeto a objeto. */
+export function p5xNewsList(txt: string): News[] {
+  return [...txt.matchAll(/\{[^{}]*\}/g)].map(m => {
+    const f = (k: string) => new RegExp(`"${k}"\\s*:\\s*"([^"]*)"`).exec(m[0])?.[1]?.trim() ?? ''
+    return { day: `${f('year')}-${f('month').padStart(2, '0')}-${f('day').padStart(2, '0')}`, category: f('category'), text: f('text').replace(/\s+/g, ' '), link: f('link') }
+  }).filter(n => n.link && /^\d{4}-\d\d-\d\d$/.test(n.day))
+}
+
+/** Página de un aviso → título, primera imagen subida y líneas de texto. */
+export function p5xNotice(news: News, html: string): Notice {
+  const main = html.slice(Math.max(0, html.search(/class="newsDetail/i)))
+  const img = /<img[^>]*src="(\/persona5x\.com\/upload_images\/[^"]+)"/i.exec(main)?.[1]
+  const lines = main.replace(/<script[\s\S]*?<\/script>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/<\/(p|div|h\d|li|tr|dt|dd)>/gi, '\n')
+    .replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&#039;|&rsquo;/g, "'")
+    .split('\n').map(l => l.replace(/[ \t　]+/g, ' ').trim()).filter(Boolean)
+  return { news, title: news.text.replace(/\s*\(Updated[^)]*\)+\s*$/i, '').trim(), image: img ? `${SITE}${img}` : undefined, lines }
+}
+
+/** "1:59 AM on Dec 10, 2026" / "2:30 AM on Nov 19" / "Nov 26, 2026 2:00 AM" / "Nov 12, 2026" (UTC) → ms; sin año, el de `year`. */
+export function p5xWhen(s: string, year: number): { t: number; hour: boolean } | null {
+  // El primer "Mes día" con un mes de verdad: "From 2:30 AM on Nov 19" también encaja en "From 2" (24 nov 2026: las reposiciones salían a las 00:00).
+  const md = [...s.matchAll(/([A-Z][a-z]{2,8})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?/g)].find(m => MONTHS.includes(m[1].slice(0, 3).toLowerCase()))
+  const mo = md ? MONTHS.indexOf(md[1].slice(0, 3).toLowerCase()) : -1
+  if (!md || mo < 0) return null
+  const hm = /(\d{1,2}):(\d{2})\s*(AM|PM)/i.exec(s)
+  let h = hm ? +hm[1] % 12 : 0
+  if (hm && /PM/i.test(hm[3])) h += 12
+  const min = hm ? +hm[2] : 0
+  return { t: Date.UTC(md[3] ? +md[3] : year, mo, +md[2], h, min, min === 59 ? 59 : 0) + (min === 59 ? 999 : 0), hour: !!hm }
+}
+
+/**
+ * Fin real de cada mantenimiento, por día (UTC) de inicio: "Implementation period: From Nov 26, 2026 2:00 AM until 11:00 AM (UTC)", corregido por
+ * las actualizaciones del mismo aviso ("Maintenance has ended ahead of schedule, and service resumed at 10:00 AM", "has been extended … until").
+ * Los de emergencia no: no abren contenido. Y la versión que trae cada uno ("・Ver. 4.14 update").
+ */
+export function p5xMaintenance(notices: Notice[]): Map<string, { end: number; version?: string; planned: boolean }> {
+  const out = new Map<string, { end: number; version?: string; planned: boolean }>()
+  for (const n of notices) {
+    if (!/maintenance/i.test(n.title) || /emergency/i.test(n.title)) continue
+    const text = n.lines.join('\n')
+    const period = /From\s+([A-Z][a-z]{2,8}\.? \d{1,2},? \d{4},?\s+\d{1,2}:\d{2}\s*[AP]M)\s+until\s+((?:[A-Z][a-z]{2,8}\.? \d{1,2},? \d{4},?\s+)?\d{1,2}:\d{2}\s*[AP]M)\s*\(UTC\)/i.exec(text)
+    if (!period) continue
+    const a = p5xWhen(period[1], +n.news.day.slice(0, 4))
+    if (!a) continue
+    const day = iso(a.t).slice(0, 10)
+    let end = p5xWhen(/[A-Z][a-z]{2,8}\.? \d/.test(period[2]) ? period[2] : `${period[1].replace(/,?\s+\d{1,2}:\d{2}\s*[AP]M$/i, '')} ${period[2]}`, +day.slice(0, 4))?.t ?? NaN
+    if (end <= a.t) end += DAY
+    let planned = true
+    // "service resumed at 10:00 AM" / "maintenance has ended as of 3:15 PM" / "extended … until 12:00 PM": la hora real, el mismo día del mantenimiento.
+    const real = /(?:resumed|ended|completed)\s+(?:at|as of)\s+(\d{1,2}:\d{2}\s*[AP]M)/i.exec(text) ?? /extended[^.\n]{0,80}?until\s+(\d{1,2}:\d{2}\s*[AP]M)/i.exec(text)
+    if (real) {
+      let t = p5xWhen(`${period[1].replace(/,?\s+\d{1,2}:\d{2}\s*[AP]M$/i, '')} ${real[1]}`, +day.slice(0, 4))?.t ?? NaN
+      if (t <= a.t) t += DAY
+      if (!isNaN(t)) { end = t; planned = false }
+    }
+    const version = /Ver\.?\s*(\d+\.\d+)\s+update/i.exec(text)?.[1]
+    if (!isNaN(end) && !out.has(day)) out.set(day, { end, version, planned })
+  }
+  return out
+}
+
+/** Inicio del contenido de un aviso publicado el día `day`: el fin de su mantenimiento (ese día o el anterior, por la diferencia horaria). */
+function maintOn(maint: Map<string, { end: number }>, t: number): number | undefined {
+  for (const d of [0, -1, 1]) {
+    const m = maint.get(iso(t + d * DAY).slice(0, 10))
+    if (m) return m.end
+  }
+  return undefined
+}
+
+/**
+ * Periodo de una línea "Duration: …" de la web oficial:
+ *  "From 2:30 AM on Nov 19, 2026 until 1:59 AM on Dec 3, 2026 (UTC)" · "From the end of maintenance on Nov 12, 2026 until 1:59 AM on Dec 10 (UTC)" ·
+ *  "After the Oct 29, 2026 maintenance ends until …" · "Until 1:59 AM on Dec 10, 2026 (UTC)" (empieza con el mantenimiento del día del aviso) ·
+ *  "Every day from Oct 29, 2026 to Nov 2, at 1:00 AM (UTC)".
+ */
+export function p5xRange(line: string, noticeAt: number, maint: Map<string, { end: number }>): { start: number; end: number; exact: boolean } | null {
+  const m = /^(?:[■・•]\s*)?(?:event\s+)?(?:duration|period|claim before|available until)\s*:\s*(.+)$/i.exec(line)
+  if (!m) return null
+  const body = m[1]
+  const year = new Date(noticeAt).getUTCFullYear()
+  const parts = /^(.*?)\s+(?:until|to)\s+(.+)$/i.exec(body.replace(/^until\s+/i, 'X until '))
+  if (!parts) return null
+  const endW = p5xWhen(parts[2], year)
+  if (!endW) return null
+  let start: number | undefined, exact = true
+  const head = parts[1]
+  if (/maintenance/i.test(head)) {
+    const d = p5xWhen(head, year)
+    start = d ? maintOn(maint, d.t) : undefined
+    if (start === undefined) { start = d?.t ?? noticeAt; exact = false }
+  } else {
+    const d = head === 'X' ? null : p5xWhen(head.replace(/^every day from\s+/i, ''), year)
+    if (d?.hour) start = d.t
+    else {
+      // Solo el día ("Every day from Oct 29", o nada): el fin del mantenimiento de ese día si lo hubo; si no, el día, "≈".
+      const base = d?.t ?? noticeAt
+      start = maintOn(maint, base)
+      if (start === undefined) { start = base; exact = false }
+    }
+  }
+  let end = endW.t
+  if (end <= start && !/\d{4}/.test(parts[2])) end = Date.UTC(new Date(end).getUTCFullYear() + 1, new Date(end).getUTCMonth(), new Date(end).getUTCDate(), new Date(end).getUTCHours(), new Date(end).getUTCMinutes(), new Date(end).getUTCSeconds()) + (end % 1000)
+  return end > start ? { start, end, exact } : null
+}
+
+/** Eventos, contratos y contratos de arma de un aviso de la categoría "events". */
+export function p5xOfficialEvents(gameId: string, n: Notice, maint: Map<string, { end: number }>): GameEvent[] {
+  const noticeAt = Date.parse(`${n.news.day}T00:00:00Z`)
+  const out: GameEvent[] = []
+  // Apartados "■Nombre" con su periodo; sin apartados, el título del aviso.
+  let name = n.title.replace(/[!！]+$/, '').trim()
+  const done = new Set<string>()
+  for (const [i, raw] of n.lines.entries()) {
+    const head = /^■\s*(.+)$/.exec(raw)
+    // "■Phantom Pass Season Update" → "Phantom Pass" (como en Steam).
+    if (head && !/^\d|details|notes|rewards?$/i.test(head[1])) { name = head[1].replace(/[!！]+$/, '').replace(/\s+(?:season\s+)?update$/i, '').trim(); continue }
+    const r = p5xRange(raw, noticeAt, maint)
+    if (!r || done.has(name)) continue
+    done.add(name)
+    const next = n.lines.findIndex((l, j) => j > i && /^■/.test(l))
+    const sec = n.lines.slice(i, next > 0 ? next : n.lines.length)
+    const base = { gameId, start: iso(r.start), end: iso(r.end), source: 'api' as const, official: true, ...(r.exact ? {} : { precision: 'approx' as const }) }
+    if (/Most Wanted Phantom Idol Contracts?/i.test(n.title) && name === n.title.replace(/[!！]+$/, '').trim()) {
+      const who = contractNames(n.title)
+      const rerun = /comeback|rerun|return/i.test(n.title)
+      for (const w of who) out.push({ ...base, id: `${gameId}:banner:p5x:${key(w)}:${iso(r.start).slice(0, 10)}`, kind: 'banner', title: w,
+        description: rerun ? '⟦d.p5xRerun⟧' : '⟦d.p5xContract⟧', image: n.image, items: [], featured: [{ name: w, rarity: 5 }], pulls: 0 })
+      // Contrato de arma (Arms Deal) con el arma exclusiva de 5★: "5★ Weapon: Mermaid Dreamer (Wavecatcher Miyu-exclusive)" / "5★ Spada della Vita (Tenebre Shoki-exclusive)".
+      for (const l of n.lines) {
+        const wm = /^5★\s*(?:Weapon:\s*)?(.+?)\s*\(([^)]+?)-exclusive\)/i.exec(l)
+        if (!wm || !who.some(w => key(w) === key(wm[2]))) continue
+        const id = `${gameId}:banner:p5x:arms:${key(wm[1])}:${iso(r.start).slice(0, 10)}`
+        // Sin icono de armas en ninguna fuente: el arte del contrato (como los banners anunciados de BLEACH).
+        if (!out.some(e => e.id === id)) out.push({ ...base, id, kind: 'banner', title: wm[1].trim(), description: `⟦d.weaponBanner⟧ · ${wm[2].trim()}`,
+          image: n.image, items: [], featured: [{ name: wm[1].trim(), rarity: 5, tag: 'Arms Deal', icon: n.image }], pulls: 0 })
+      }
+      continue
+    }
+    const kind: Kind = CHALLENGE.test(name) ? 'challenge' : 'event'
+    // Recompensas "Stardust Gem (x70)" / "Meta Jewels x 300" del apartado.
+    const items = sec.flatMap(l => [...l.matchAll(/([A-Z][\w'’ -]{2,40}?)\s*\(?x\s?(\d[\d,]*)\)?/g)].map(m => ({ name: m[1].replace(/^[A-Z][a-z]{2} \d{1,2}:\s*/, '').trim(), amount: +m[2].replace(/,/g, '') })))
+      // Nombres de objeto, no frases ("Cognitite for the obtained Phantom Thief"): hasta 4 palabras y sin "for/the/of the…" en medio.
+      .filter((x, k, all) => x.amount > 0 && x.name.split(/\s+/).length <= 4 && !/\b(?:for|the|obtained|from|each|per)\b/i.test(x.name) && all.findIndex(y => y.name === x.name) === k).slice(0, 10)
+    const pulls = pullsIn('persona5x', items.map(x => `${x.name} x${x.amount}`)).pulls
+    const title = name.replace(/^Main Story Chapter \d+:\s*/i, '')
+    out.push({ ...base, id: `${gameId}:${kind}:p5x:${key(title)}:${iso(r.start).slice(0, 10)}`, kind, title, image: n.image, items, pulls, featured: [],
+      description: summarize(sec.slice(1), { title }), ...(MINOR.test(name) || r.end - r.start > 60 * DAY ? { minor: true } : {}) })
+  }
+  return out
+}
+
+/** Lo de la web oficial: avisos de eventos y de mantenimiento de las últimas 5 semanas (como mucho 18 páginas, caché de 24 h). */
+async function syncOfficial(now: number): Promise<{ notices: Notice[]; maint: Map<string, { end: number; version?: string; planned: boolean }> }> {
+  const year = new Date(now).getUTCFullYear()
+  const res = await fetch(viaProxy(`${SITE}/news/data/news${year}.txt`))
+  if (!res.ok) throw new Error(`persona5x.com → HTTP ${res.status}`)
+  const list = p5xNewsList(await res.text())
+  const want = list.filter(n => now - Date.parse(`${n.day}T00:00:00Z`) < 35 * DAY
+    && (n.category === 'events' || (n.category === 'update' && /maintenance announcement|update information/i.test(n.text)))).slice(0, 18)
+  const notices: Notice[] = []
+  for (const n of want) {
+    const r = await fetch(viaProxy(`${SITE}/news/details/${n.link}`)).catch(() => null)
+    if (r?.ok) notices.push(p5xNotice(n, await r.text()))
+  }
+  return { notices, maint: p5xMaintenance(notices) }
+}
+
 export async function syncPersona5x(gameId: string, now = Date.now()): Promise<GameSync> {
+  // La web oficial, si el proxy la permite (solo en el PC); si no, todo sale de Steam como antes.
+  const off = await syncOfficial(now).catch(err => { console.warn('[persona5x] web oficial:', (err as Error)?.message); return null })
+  const synced = await syncSteam(gameId, now, off?.maint)
+  if (!off) return { events: synced.events, patches: synced.patches, codes: [] }
+  const official = off.notices.filter(n => n.news.category === 'events').flatMap(n => p5xOfficialEvents(gameId, n, off.maint))
+    .filter(e => Date.parse(e.end) > now - 3 * DAY)
+  // Unión: lo oficial manda en fechas y nombres; de Steam se queda su arte si lo tiene (no carga imágenes de persona5x.com en cada visita) y lo que
+  // la web no trae (Shadow Hunt, New Bonds…). Se emparejan por destacado (banners) o por nombre contenido en el otro.
+  const events: GameEvent[] = []
+  const used = new Set<GameEvent>()
+  for (const o of official) {
+    const twin = synced.events.find(s => !used.has(s) && s.kind === o.kind && (o.featured.length
+      ? s.featured.some(f => o.featured.some(g => key(g.name) === key(f.name)))
+      : key(s.title).includes(key(o.title)) || key(o.title).includes(key(s.title))) && Math.abs(Date.parse(s.end) - Date.parse(o.end)) <= DAY)
+    if (twin) used.add(twin)
+    events.push({ ...o, image: twin?.image ?? o.image, featured: o.featured.map(f => ({ ...f, icon: f.icon ?? twin?.featured.find(g => key(g.name) === key(f.name))?.icon })),
+      items: o.items.length ? o.items : twin?.items ?? [], pulls: o.pulls || twin?.pulls || 0, description: o.description ?? twin?.description, minor: o.minor ?? twin?.minor })
+  }
+  events.push(...synced.events.filter(e => !used.has(e)))
+  // Retratos para los que solo da la web (reposiciones).
+  const portrait = synced.portrait
+  for (const e of events) e.featured = e.featured.map(f => ({ ...f, icon: f.icon ?? portrait(f.name) }))
+  // Versiones con su número ("Ver. 4.13 Update Information", "・Ver. 4.14 update" del aviso de mantenimiento) a la hora real del fin del mantenimiento.
+  const patches: Patch[] = []
+  for (const [day, m] of [...off.maint].sort((a, b) => a[1].end - b[1].end)) {
+    const ver = m.version ?? off.notices.map(n => new RegExp(`^${new Date(`${day}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })}:\\s*Ver\\.?\\s*(\\d+\\.\\d+)`, 'i').exec(n.title)?.[1]).find(Boolean)
+    if (ver) patches.push({ id: `${gameId}:patch:${day}`, gameId, version: ver, date: iso(m.end), notes: '', source: 'api' })
+  }
+  const known = patches.map(p => Date.parse(p.date))
+  const merged = [...patches, ...synced.patches.filter(p => !known.some(t => Math.abs(t - Date.parse(p.date)) < 2 * DAY) && !(p.estimated && known.some(t => t > now)))]
+  return { events, patches: merged, codes: [], pcOnly: true }
+}
+
+async function syncSteam(gameId: string, now: number, maint?: Map<string, { end: number }>): Promise<GameSync & { portrait: (name: string) => string | undefined }> {
   const [st, pr] = await Promise.allSettled([
     fetch(viaProxy(STEAM)).then(r => (r.ok ? r.json() : Promise.reject(new Error(`steam P5X → HTTP ${r.status}`)))),
     fetch(viaProxy(PRYDWEN)).then(r => (r.ok ? r.text() : Promise.reject(new Error(`prydwen P5X → HTTP ${r.status}`)))),
@@ -212,7 +420,15 @@ export async function syncPersona5x(gameId: string, now = Date.now()): Promise<G
   const patches: Patch[] = []
   for (const p of posts) {
     const r = p5xPost(gameId, p)
-    for (const e of r.events) if (!events.some(x => x.id === e.id) && Date.parse(e.end) > now - 3 * DAY) events.push(e)
+    // Con la web oficial (solo en el PC): lo que empezaba "≈ a la hora del aviso" empieza al acabar el mantenimiento de ese día, exacto.
+    const posted = p.date * 1000
+    const mEnd = maint ? maintOn(maint, posted) : undefined
+    const at = mEnd !== undefined && mEnd <= posted + HOUR && posted - mEnd < DAY ? mEnd : undefined
+    for (const e of r.events) {
+      if (at !== undefined && Date.parse(e.start) === posted) { e.start = iso(at); delete e.precision }
+      if (!events.some(x => x.id === e.id) && Date.parse(e.end) > now - 3 * DAY) events.push(e)
+    }
+    if (r.patch && at !== undefined) r.patch.date = iso(at)
     if (r.patch && !patches.some(x => x.date.slice(0, 10) === r.patch!.date.slice(0, 10))) patches.push(r.patch)
   }
   // Lo próximo: personaje presentado sin banner todavía → estimado desde la siguiente actualización (14 días después de la última), 4 semanas.
@@ -240,5 +456,5 @@ export async function syncPersona5x(gameId: string, now = Date.now()): Promise<G
   }
   for (const e of events) e.featured = e.featured.map((f): Featured => ({ ...f, icon: f.icon ?? portrait(f.name) }))
   if (!events.length) throw new Error('P5X: sin eventos vigentes en los avisos de Steam')
-  return { events, patches, codes: [] }
+  return { events, patches, codes: [], portrait }
 }

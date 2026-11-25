@@ -194,7 +194,7 @@ async function officialFirst(official: Promise<GameSync>, community: Promise<Gam
   }
   // Códigos: los de la fuente oficial primero; sin repetir el mismo código (p. ej. el de Discord y el de la wiki).
   const codes = [...o.value.codes, ...c.value.codes].filter((x, i, all) => all.findIndex(y => y.code.toUpperCase() === x.code.toUpperCase()) === i)
-  return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes }
+  return { events: [...events, ...extra], patches: [...o.value.patches, ...c.value.patches], codes, ...(o.value.pcOnly || c.value.pcOnly ? { pcOnly: true } : {}) }
 }
 
 /**

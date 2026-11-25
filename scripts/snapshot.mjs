@@ -19,6 +19,13 @@ process.env.DATA_DIR ??= path.join(ROOT, '.cache', 'snapshot-proxy')
 // Lo caducado se pide de nuevo en vez de servirse viejo: este proceso dura un par de minutos y no llegaba a usar lo renovado en segundo plano
 // (publicaba avisos de Discord de hasta 7 días). Mismas peticiones que antes, solo que esperando la respuesta. Ver getCached en server/proxy.mjs.
 process.env.PROXY_NO_STALE ??= '1'
+// Webs oficiales que solo se consultan desde el PC del dueño (25 nov 2026: persona5x.com, horas exactas de P5X). En GitHub Actions no: corre en
+// IPs de servidores y lo pidió el dueño así. Se define antes de importar el proxy, que la lee al arrancar.
+const ON_CI = !!process.env.GITHUB_ACTIONS
+if (!ON_CI) process.env.OFFICIAL_SITES ??= '1'
+/** Una copia hecha en el PC con esas webs no se sustituye en 24 h por otra sin ellas (Actions, o el PC con OFFICIAL_SITES=0). */
+const PC_ONLY_KEEP = 24 * 3_600_000
+const officialOn = process.env.OFFICIAL_SITES === '1'
 
 // Token y canales de Discord del equipo del dueño (`.env.local`, que nunca se sube): sin ellos, las copias que publica este script saldrían sin los
 // anuncios de Discord y, al ser más recientes, el servidor podría adoptarlas en lugar de las suyas (que sí los tienen). Las variables ya definidas
@@ -52,6 +59,12 @@ const summary = {}
 for (const g of mod.games()) {
   try {
     const old = await previous(g.id)
+    if (old?.pcOnly && !officialOn && Date.now() - old.updated < PC_ONLY_KEEP) {
+      await writeFile(path.join(dir, `${g.id}.json`), JSON.stringify(old))
+      summary[g.id] = { updated: old.updated, count: old.events.length }
+      log(`${g.id}: se conserva la copia del PC (web oficial, ${Math.round((Date.now() - old.updated) / 3_600_000)} h)`)
+      continue
+    }
     // Si una fuente falló en este ciclo, sus eventos vigentes de la copia anterior se conservan (carryOver, src/collector.ts).
     const snap = mod.carryOver(old, await mod.collect(g.id))
     // Sin datos y sin copia anterior (p. ej. Azur Lane, que solo tiene Discord y a veces ningún anuncio con fechas): se publica igualmente la copia

@@ -118,6 +118,8 @@ export interface GameSync {
   events: GameEvent[]
   patches: Patch[]
   codes: PromoCode[]
+  /** Sale de una fuente que solo se consulta desde el PC del dueño (OFFICIAL_SITES=1, p. ej. la web oficial de P5X): ver `pcOnly` en collector.ts. */
+  pcOnly?: boolean
 }
 
 async function getJson<T>(url: string): Promise<T> {

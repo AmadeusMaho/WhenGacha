@@ -119,7 +119,8 @@ async function tick() {
     for (const g of games) {
       const snap = snapshots.get(g.id)
       const last = failures.get(g.id)
-      const due = !snap || Date.now() - snap.updated >= g.every
+      // Copia del PC con una web oficial que este servidor no consulta (`pcOnly`, OFFICIAL_SITES): no se rehace en 24 h, saldría peor.
+      const due = (!snap || Date.now() - snap.updated >= g.every) && !(snap?.pcOnly && Date.now() - snap.updated < 24 * 3_600_000)
       const cooled = !last || Date.now() - last.at >= 15 * MIN
       if (due && cooled) await collectOne(g)
     }
@@ -149,7 +150,9 @@ async function pullRemote() {
       // "Más completa" solo cuenta si no es mucho más vieja: una copia de hace un día (p. ej. de cuando se usaba gachafocus) no debe pisar una recién hecha.
       // Las dos comparaciones con vigentes y futuros (`alive`), como en collectOne.
       const richer = !!cur && alive(snap) > alive(cur) && snap.updated > cur.updated - 6 * 3_600_000
-      if (!(newer && (!cur || alive(snap) >= alive(cur) * 0.7)) && !richer) continue
+      // La del PC con web oficial (`pcOnly`, horas exactas) gana a una propia sin ella aunque esta sea algo más reciente, durante 24 h.
+      const official = !!snap.pcOnly && !cur?.pcOnly && Date.now() - snap.updated < 24 * 3_600_000
+      if (!(newer && (!cur || alive(snap) >= alive(cur) * 0.7)) && !richer && !official) continue
       snapshots.set(g.id, snap)
       await save(snap)
       adopted.push(g.id)
