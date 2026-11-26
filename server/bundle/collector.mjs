@@ -20110,7 +20110,7 @@ var viaProxy = (url) => `/proxy?u=${encodeURIComponent(url)}`;
 * Las imágenes se cargan directo desde su sitio en el navegador (como al visitarlo); si fallan, se busca otra.
 */
 var SITE$5 = "https://gachafocus.com.br";
-var DAY$47 = 864e5;
+var DAY$48 = 864e5;
 var GACHAFOCUS = {
 	arknights: {
 		slug: "arknights",
@@ -20183,7 +20183,7 @@ function parseUnits(tile) {
 }
 function parseTiles(gameId, cfg, doc, section) {
 	const out = [];
-	const from = Date.now() - 3 * DAY$47;
+	const from = Date.now() - 3 * DAY$48;
 	doc.querySelectorAll("main article.tile").forEach((tile) => {
 		const dates = pickDates(tile);
 		const title = text$14(tile.querySelector(".tile-title"));
@@ -20243,7 +20243,7 @@ async function syncGachafocus(gameId, key, eventsOnly = false) {
 	};
 }
 // src/sources/ennead.ts
-var BASE$7 = "https://api.ennead.cc/mihoyo";
+var BASE$8 = "https://api.ennead.cc/mihoyo";
 /** Moneda premium -> tiradas (160 por tirada en los tres juegos). */
 var PER_PULL = 160;
 var PULL_ITEM = /intertwined fate|acquaint fate|tracks of destiny|special pass|master tape|encrypted/i;
@@ -20260,7 +20260,7 @@ function rewardsOf$2(r) {
 }
 var iso$13 = (s) => (/* @__PURE__ */ new Date(s * 1e3)).toISOString();
 var valid = (r) => !!r.start_time && !!r.end_time && r.start_time > 86400 && r.end_time > r.start_time;
-function pullsOf(r) {
+function pullsOf$1(r) {
 	let pulls = 0;
 	const all = rewardsOf$2(r);
 	for (const x of all) if (PREMIUM.test(x.name)) pulls += x.amount / PER_PULL;
@@ -20302,7 +20302,7 @@ function mapEvent(gameId, kind, r, suffix = "") {
 		end: iso$13(r.end_time),
 		items: itemsOf$1(r),
 		featured: [],
-		pulls: pullsOf(r),
+		pulls: pullsOf$1(r),
 		source: "api"
 	};
 }
@@ -20392,7 +20392,7 @@ function patchesFrom(gameId, banners) {
 }
 async function syncGame(gameId, api) {
 	if (api !== "genshin" && api !== "starrail" && api !== "zenless") throw new Error("Fuente no soportada por ennead");
-	const [cal, codes] = await Promise.all([getJson$2(`${BASE$7}/${api}/calendar`), getJson$2(`${BASE$7}/${api}/codes`).catch(() => ({ active: [] }))]);
+	const [cal, codes] = await Promise.all([getJson$2(`${BASE$8}/${api}/calendar`), getJson$2(`${BASE$8}/${api}/codes`).catch(() => ({ active: [] }))]);
 	const events = (cal.events ?? []).filter(valid).map((r) => mapEvent(gameId, "event", r));
 	const challenges = (cal.challenges ?? []).filter(valid).map((r) => mapEvent(gameId, "challenge", r, `:${r.name}`));
 	const banners = (cal.banners ?? []).filter(valid).map((r, i) => mapBanner(gameId, r, i));
@@ -20408,7 +20408,7 @@ async function syncGame(gameId, api) {
 }
 /** Códigos activos de otros juegos de HoYoverse que ennead cubre sin calendario (Honkai Impact 3rd: `/mihoyo/honkai/codes`). */
 async function syncHoyoCodes(key) {
-	return (await getJson$2(`${BASE$7}/${key}/codes`)).active ?? [];
+	return (await getJson$2(`${BASE$8}/${key}/codes`)).active ?? [];
 }
 // src/sources/codes.ts
 /**
@@ -21182,7 +21182,7 @@ function shortDescription(d) {
 * Los banners ("Time-Limited … Banner") traen los personajes con RATE UP. Los paquetes y trajes de pago se omiten.
 */
 var API$12 = "https://re1999.bluepoch.com/activity/official/websites/information/query";
-var DAY$46 = 864e5;
+var DAY$47 = 864e5;
 var DATE$1 = "(\\d{4}-\\d{2}-\\d{2})";
 var RANGE$3 = new RegExp(`(?:After the version update on ${DATE$1}|${DATE$1} (\\d{1,2}):(\\d{2}))\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`, "i");
 var MAINT = new RegExp(`${DATE$1} (\\d{1,2}):(\\d{2})\\s*-\\s*${DATE$1} (\\d{1,2}):(\\d{2})\\s*\\(UTC([+-]\\d+)\\)`);
@@ -21229,7 +21229,7 @@ async function syncBluepoch(gameId) {
 		const m = MAINT.exec(lines$5(n.content).join("\n"));
 		if (m) maintEnd.set(m[1], at$8(m[4], +m[5], +m[6], +m[7]));
 	}
-	const now = Date.now(), from = now - 3 * DAY$46, to = now + 120 * DAY$46;
+	const now = Date.now(), from = now - 3 * DAY$47, to = now + 120 * DAY$47;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const n of notices) {
@@ -21268,7 +21268,7 @@ async function syncBluepoch(gameId) {
 			const end = at$8(m[5], +m[6], +m[7], off) + 59e3;
 			const near = ls.slice(i + 1, i + 6).join(" ");
 			if (/Garment|Pack$/i.test(subtitle ?? "") || /^New Packs$/i.test(name) || /Price:/.test(near)) continue;
-			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$46) continue;
+			if (!(end > start) || end < from || start > to || end - start > 150 * DAY$47) continue;
 			const banner = /Banner/i.test(subtitle ?? "");
 			const id = `${gameId}:${banner ? "banner" : "event"}:bp:${name}:${new Date(start).toISOString().slice(0, 10)}`;
 			if (seen.has(id)) continue;
@@ -21401,7 +21401,7 @@ async function withChallengeRewards(s, host, game, pages) {
 * Cada regla cita su origen; si el juego cambia el calendario, hay que actualizarla aquí.
 */
 var HOUR$15 = 36e5;
-var DAY$45 = 24 * HOUR$15;
+var DAY$46 = 24 * HOUR$15;
 var ev = (gameId, title, start, end, description, approx, now) => ({
 	id: `${gameId}:challenge:cycle:${title}:${new Date(start).toISOString().slice(0, 10)}`,
 	gameId,
@@ -21425,11 +21425,11 @@ function hi3MemorialArena(gameId, now = Date.now()) {
 	const local = new Date(now + off);
 	const back = (local.getUTCDay() - 2 + 7) % 7;
 	let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 4) - off;
-	if (start > now) start -= 7 * DAY$45;
+	if (start > now) start -= 7 * DAY$46;
 	return [0, 1].map((k) => {
-		const s = start + k * 7 * DAY$45;
+		const s = start + k * 7 * DAY$46;
 		return {
-			...ev(gameId, "Memorial Arena", s, s + 6 * DAY$45 - 2 * HOUR$15 - 1e3, "⟦d.hi3Arena⟧ ⟦d.upTo|140 Crystals⟧", true, now),
+			...ev(gameId, "Memorial Arena", s, s + 6 * DAY$46 - 2 * HOUR$15 - 1e3, "⟦d.hi3Arena⟧ ⟦d.upTo|140 Crystals⟧", true, now),
 			items: [{
 				name: "Crystals",
 				amount: 140
@@ -21481,7 +21481,7 @@ function r99Limbo(gameId, now = Date.now()) {
 */
 function alExercise(gameId, now = Date.now()) {
 	const ref = Date.UTC(2024, 11, 16, 7);
-	const len = 14 * DAY$45;
+	const len = 14 * DAY$46;
 	const start = ref + Math.floor((now - ref) / len) * len;
 	return [0, 1].map((k) => {
 		const s = start + k * len;
@@ -21507,12 +21507,12 @@ function pgrPainCage(gameId, now = Date.now()) {
 	const local = new Date(now + off);
 	const back = (local.getUTCDay() - 1 + 7) % 7;
 	let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 5) - off;
-	if (start > now) start -= 7 * DAY$45;
+	if (start > now) start -= 7 * DAY$46;
 	return [0, 1].map((k) => {
-		const s = start + k * 7 * DAY$45;
+		const s = start + k * 7 * DAY$46;
 		const W = "https://static.wikitide.net/pgrwiki/thumb";
 		return {
-			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$45 - 1e3, "⟦d.pgrCage⟧ ⟦d.upTo|450 Black Cards⟧", true, now),
+			...ev(gameId, "Phantom Pain Cage", s, s + 7 * DAY$46 - 1e3, "⟦d.pgrCage⟧ ⟦d.upTo|450 Black Cards⟧", true, now),
 			image: "/icons/pgr-pain-cage.webp",
 			items: [
 				{
@@ -21543,12 +21543,12 @@ function pgrWarZone(gameId, now = Date.now()) {
 	const d = new Date(now);
 	const back = (d.getUTCDay() - 1 + 7) % 7;
 	let start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() - back, 7);
-	if (start > now) start -= 7 * DAY$45;
+	if (start > now) start -= 7 * DAY$46;
 	const W = "https://static.wikitide.net/pgrwiki/thumb";
 	return [0, 1].map((k) => {
-		const s = start + k * 7 * DAY$45;
+		const s = start + k * 7 * DAY$46;
 		return {
-			...ev(gameId, "War Zone", s, s + 6 * DAY$45 + 13 * HOUR$15 - 1e3, "⟦d.pgrWarZone⟧ ⟦d.upTo|600 Black Cards⟧", false, now),
+			...ev(gameId, "War Zone", s, s + 6 * DAY$46 + 13 * HOUR$15 - 1e3, "⟦d.pgrWarZone⟧ ⟦d.upTo|600 Black Cards⟧", false, now),
 			items: [{
 				name: "Black Card",
 				amount: 600,
@@ -21599,7 +21599,7 @@ var thumb$1 = (a) => sized(a.media_thumbnail_url ? a.media_thumbnail_url.startsW
 *  mantenimiento" = 00:00 UTC (el mantenimiento semanal empieza a las 00:00 UTC desde el 29/07, según su aviso oficial).
 *  Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$44 = 864e5;
+var DAY$45 = 864e5;
 var BOARDS = {
 	announcements: 139238,
 	events: 139240,
@@ -21752,7 +21752,7 @@ function fromEventPost(gameId, a) {
 		const sm = MONTHS$23.indexOf(w[1].slice(0, 3).toLowerCase()) + 1, em = MONTHS$23.indexOf(w[3].slice(0, 3).toLowerCase()) + 1;
 		if (!sm || !em) return null;
 		start = utc$2(yearOf(sm, +w[2]), sm, +w[2], "00:00");
-		if (+start < posted && posted - +start < DAY$44) start = new Date(posted);
+		if (+start < posted && posted - +start < DAY$45) start = new Date(posted);
 		end = utc$2(yearOf(em, +w[4]) + (em < sm ? 1 : 0), em, +w[4], w[5]);
 		approx = true;
 		minor = true;
@@ -21787,7 +21787,7 @@ async function syncCznEvents(gameId) {
 	]);
 	if (upd.status === "rejected" && evs.status === "rejected") throw upd.reason;
 	const ends = ann.status === "fulfilled" ? maintenanceEnds$2(ann.value) : /* @__PURE__ */ new Map();
-	const from = Date.now() - 3 * DAY$44;
+	const from = Date.now() - 3 * DAY$45;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const add = (e) => {
@@ -21796,7 +21796,7 @@ async function syncCznEvents(gameId) {
 		seen.add(key);
 		out.push(e);
 	};
-	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$44).slice(0, RECENT_UPDATES)) try {
+	if (upd.status === "fulfilled") for (const a of upd.value.filter((x) => Date.now() - x.create_datetime < 75 * DAY$45).slice(0, RECENT_UPDATES)) try {
 		for (const e of fromUpdate(gameId, await bodyLines(a.article_id), ends, thumb$1(a))) add(e);
 	} catch {}
 	if (evs.status === "fulfilled") for (const a of evs.value) {
@@ -21830,7 +21830,7 @@ async function syncCznEvents(gameId) {
 * (UTC-7)", "11/9 (Mon) 19:00 ~ 11/16 (Mon) 18:59 (UTC)", "2026/11/03 04:00 - 2026/11/10 02:59 (UTC-7)") y les pone el nombre más cercano.
 */
 var API$11 = "https://discord.com/api/v10/channels";
-var DAY$43 = 864e5;
+var DAY$44 = 864e5;
 var MONTHS$22 = [
 	"jan",
 	"feb",
@@ -21988,7 +21988,7 @@ function endingEvents(gameId, messages) {
 		const endAt = /EVENTS ENDING\**:?\**\s*<t:(\d{9,11})/i.exec(text)?.[1];
 		if (!endAt) continue;
 		const end = +endAt * 1e3;
-		if (end < now - 3 * DAY$43) continue;
+		if (end < now - 3 * DAY$44) continue;
 		const start = starts.filter((s) => s < end).sort((a, b) => b - a)[0] ?? +new Date(m.timestamp);
 		const sec = /\*\*Limited[- ]Time Events\*\*([\s\S]*?)(?:⸻|$)/i.exec(text)?.[1] ?? "";
 		for (const line of sec.split("\n")) {
@@ -22114,7 +22114,7 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 		const start = def(a, 0, 0, hours?.start);
 		return {
 			start,
-			end: start + +lasts[2] * DAY$43 - 1e3,
+			end: start + +lasts[2] * DAY$44 - 1e3,
 			afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null,
 			approx: !after && a.h === void 0
 		};
@@ -22127,7 +22127,7 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 		const b = dateIn(only[1], new Date(postedAt).getUTCFullYear());
 		if (!b) return null;
 		let end = Date.UTC(b.y, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59) + (b.h === void 0 ? 59e3 : 0);
-		if (end < postedAt - 30 * DAY$43 && !/\d{4}/.test(only[1])) end = Date.UTC(b.y + 1, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59);
+		if (end < postedAt - 30 * DAY$44 && !/\d{4}/.test(only[1])) end = Date.UTC(b.y + 1, b.mo, b.d, (b.h ?? 23) - zone, b.mi ?? 59);
 		return end > postedAt ? {
 			start: postedAt,
 			end,
@@ -22143,7 +22143,7 @@ function rangeIn(line, year, fallbackZone, postedAt, hours) {
 		const start = def(a, 0, 0, hours?.start);
 		return {
 			start,
-			end: start + 42 * DAY$43,
+			end: start + 42 * DAY$44,
 			afterMaint: after ? `${a.y}-${a.mo}-${a.d}` : null,
 			approx: !after && a.h === void 0,
 			open: true
@@ -22440,18 +22440,18 @@ function announcedBanners(gameId, msgs, dated, now) {
 	const out = [];
 	const low = (s) => s.toLowerCase();
 	for (const { text, at, image } of msgs) {
-		if (now - at > 21 * DAY$43) continue;
+		if (now - at > 21 * DAY$44) continue;
 		for (const x of text.replace(/[*_`]/g, "").matchAll(ANNOUNCED)) {
 			const name = x[1].trim().replace(/\bIchgo\b/, "Ichigo");
 			if ([...dated, ...out].some((e) => e.kind === "banner" && (low(e.title).includes(low(name)) || e.featured.some((f) => low(f.name) === low(name))))) continue;
 			const wd = BANNER_WEEKDAY[gameId], [h, mi] = DAY_HOURS[gameId]?.start ?? [0, 0];
-			let start = at + 7 * DAY$43;
+			let start = at + 7 * DAY$44;
 			if (wd !== void 0) {
 				const d = new Date(at);
 				start = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), h, mi);
-				while (start <= at || new Date(start).getUTCDay() !== wd) start += DAY$43;
+				while (start <= at || new Date(start).getUTCDay() !== wd) start += DAY$44;
 			}
-			const end = start + 14 * DAY$43 - 1e3;
+			const end = start + 14 * DAY$44 - 1e3;
 			if (end < now) continue;
 			out.push({
 				id: `${gameId}:banner:dc:upcoming:${name}`,
@@ -22516,7 +22516,7 @@ function parseNotices(gameId, messages) {
 			break;
 		}
 	}
-	const now = Date.now(), from = now - 3 * DAY$43, to = now + 120 * DAY$43;
+	const now = Date.now(), from = now - 3 * DAY$44, to = now + 120 * DAY$44;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	for (const m of messages) {
@@ -22590,7 +22590,7 @@ function parseNotices(gameId, messages) {
 					start = maintAt.get(r.afterMaint) ?? start;
 				}
 			}
-			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$43) continue;
+			if (!(r.end > start) || r.end < from || start > to || r.end - start > 150 * DAY$44) continue;
 			const ctx = [
 				name,
 				bannerName ? "banner" : "",
@@ -22666,7 +22666,7 @@ function parseNotices(gameId, messages) {
 		}
 	}
 	const exactOver = (a, b) => !a.precision && b.precision === "approx";
-	const twins = out.filter((e, i) => e.kind === "banner" && out.some((o, j) => j !== i && o.kind === "banner" && o.title === e.title && Math.abs(Date.parse(o.end) - Date.parse(e.end)) <= DAY$43 && (exactOver(o, e) || !exactOver(e, o) && j < i)));
+	const twins = out.filter((e, i) => e.kind === "banner" && out.some((o, j) => j !== i && o.kind === "banner" && o.title === e.title && Math.abs(Date.parse(o.end) - Date.parse(e.end)) <= DAY$44 && (exactOver(o, e) || !exactOver(e, o) && j < i)));
 	const events = twins.length ? out.filter((e) => !twins.includes(e)) : out;
 	events.push(...announcedBanners(gameId, messages.map((m) => ({
 		text: textOf(m),
@@ -22696,7 +22696,7 @@ function codesFrom(msgs) {
 		if (/\b(?:old\s+)?(?:coupons?|codes?)\s+(?:will\s+)?expire\b/i.test(full)) continue;
 		const gifts = [...text.matchAll(/\bgift\s*[:：]\s*`?([A-Z0-9]{8,16})`?/gi)].map((m) => m[1]).filter((c) => /\d/.test(c) && /[A-Z]/.test(c));
 		const named = /\bcodes?\b/i.test(text);
-		if (Date.now() - at > 45 * DAY$43 || !named && !gifts.length || /\b(expired|no longer valid)\b/i.test(text)) continue;
+		if (Date.now() - at > 45 * DAY$44 || !named && !gifts.length || /\b(expired|no longer valid)\b/i.test(text)) continue;
 		const found = new Set(gifts);
 		if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
 		for (const line of named ? text.split("\n") : []) {
@@ -22707,7 +22707,7 @@ function codesFrom(msgs) {
 		const rewards = [...text.matchAll(/([A-Z][A-Za-z' ]{2,40}?)\s*[x×]\s?(\d(?:[\d,.]*\d)?\s*[kK]?)/g)].map((m) => `${clean$8(m[1]).replace(/^.*\b(?:for|get|obtain|receive|claim|rewards?:?)\s+/i, "")} ×${m[2].trim()}`);
 		const until = /(?:valid until|until|expires?(?: on)?|expiration(?: date)?)\s*:?\s*([A-Za-z]{3,9}\.? \d{1,2}(?:,? \d{4})?|\d{4}[/-]\d{1,2}[/-]\d{1,2})/i.exec(text)?.[1] ?? /validity\s*:[^\n]*?[~～]\s*(?:\d{1,2}:\d{2},?\s*)?([A-Za-z]{3,9}\.? \d{1,2})/i.exec(text)?.[1];
 		const untilAt = until ? Date.parse(/\d{4}/.test(until) ? until.replace(/\//g, "-") : `${until.replace(".", "")} ${new Date(at).getUTCFullYear()}`) : NaN;
-		if (untilAt && untilAt + DAY$43 < Date.now()) continue;
+		if (untilAt && untilAt + DAY$44 < Date.now()) continue;
 		for (const code of found) {
 			if (out.some((c) => c.code.toUpperCase() === code.toUpperCase()) || /^(?:code|codes)$/i.test(code)) continue;
 			out.push({
@@ -22731,7 +22731,7 @@ function codesFrom(msgs) {
 * 5–6 consultas por ciclo (caché de 12 h en el proxy).
 */
 var API$10 = "https://afk-journey.fandom.com/api.php";
-var DAY$42 = 864e5;
+var DAY$43 = 864e5;
 async function query$1(params) {
 	const res = await fetch(viaProxy(`${API$10}?${new URLSearchParams({
 		...params,
@@ -22783,13 +22783,13 @@ async function events$4(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$42, to = now + 120 * DAY$42;
+	const now = Date.now(), from = now - 3 * DAY$43, to = now + 120 * DAY$43;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content$1(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$7(field$1(text, "time_start")), e = at$7(field$1(text, "time_end"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$42) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$43) continue;
 		const name = field$1(text, "name") || p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const groups = [field$1(text, "group"), field$1(text, "group2")].filter(Boolean);
 		const kind = /\/\d{4}-\d\d-\d\d$/.test(p.title) && groups.some((g) => /Guild|Strategy/i.test(g)) ? "challenge" : "event";
@@ -22829,7 +22829,7 @@ async function datedModes(gameId, known) {
 	const now = Date.now();
 	const titles = [...new Set((rc.query?.recentchanges ?? []).map((r) => r.title))].filter((t) => {
 		const m = /^(.+)\/(\d{4}-\d\d-\d\d)$/.exec(t);
-		return !!m && !/^Rate Up/i.test(m[1]) && !known.has(t) && Date.parse(m[2]) > now - 40 * DAY$42;
+		return !!m && !/^Rate Up/i.test(m[1]) && !known.has(t) && Date.parse(m[2]) > now - 40 * DAY$43;
 	}).slice(0, 50);
 	if (!titles.length) return [];
 	const j = await query$1({
@@ -22847,7 +22847,7 @@ async function datedModes(gameId, known) {
 		const mode = /\{\{\s*Battle Mode Infobox/i.test(text);
 		if (!mode && !/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$7(field$1(text, "time_start")), e = at$7(field$1(text, "time_end"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$42 || s > now + 120 * DAY$42 || e - s > 150 * DAY$42) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$43 || s > now + 120 * DAY$43 || e - s > 150 * DAY$43) continue;
 		const base = p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const own = field$1(text, mode ? "title" : "name");
 		const name = own && own !== base ? `${base}: ${own}` : base;
@@ -22894,7 +22894,7 @@ async function upcomingHeroes(gameId) {
 		const text = content$1(p);
 		if (!/\{\{\s*Character Infobox/i.test(text) || !/^upcoming$/i.test(field$1(text, "type"))) continue;
 		const s = at$7(field$1(text, "release_date"));
-		if (isNaN(s) || s < now - 3 * DAY$42 || s > now + 60 * DAY$42) continue;
+		if (isNaN(s) || s < now - 3 * DAY$43 || s > now + 60 * DAY$43) continue;
 		const name = field$1(text, "name") || p.title;
 		out.push({
 			id: `${gameId}:banner:upcoming:${name}`,
@@ -22903,7 +22903,7 @@ async function upcomingHeroes(gameId) {
 			title: name,
 			description: "⟦d.afkTeased⟧",
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 21 * DAY$42 - 6e4)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 21 * DAY$43 - 6e4)).toISOString(),
 			items: [],
 			pulls: 0,
 			source: "api",
@@ -22940,7 +22940,7 @@ async function banners$5(gameId) {
 		const text = content$1(p);
 		const s = at$7(field$1(text, "time_start")), e = at$7(field$1(text, "time_end"));
 		const heroes = field$1(text, "hero").split(";").map((h) => h.trim()).filter(Boolean);
-		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$42) continue;
+		if (!heroes.length || isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$43) continue;
 		const ret = /return/i.test(field$1(text, "type")) || /Rate Up Return/.test(p.title);
 		rows.push({
 			p,
@@ -23044,7 +23044,7 @@ async function syncAfkJourney(gameId) {
 */
 var API$9 = "https://webapi.browndust2.com/api/notices";
 var LOCALE = "en-us";
-var DAY$41 = 864e5;
+var DAY$42 = 864e5;
 var MONTHS$21 = [
 	"january",
 	"february",
@@ -23126,7 +23126,7 @@ function point(s, ref, m, side) {
 		const known = (after ? m.end : m.start).get(day);
 		if (known !== void 0) return [known, false];
 		const d = +new Date(day);
-		return [after ? d + DAY$41 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
+		return [after ? d + DAY$42 + (MAINT_END_NEXT_DAY[0] * 60 + MAINT_END_NEXT_DAY[1]) * 6e4 : d + (MAINT_START[0] * 60 + MAINT_START[1]) * 6e4, after || side === "start"];
 	}
 	return [explicit(s, ref), false];
 }
@@ -23142,7 +23142,7 @@ var CHALLENGE$4 = /Colosseum|Tower of Salvation|Mirror War|Guild Raid|Arena|Taro
 function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	const ref = new Date(n.publishedAt);
 	const ls = lines$4(n);
-	const now = Date.now(), from = now - 3 * DAY$41, to = now + 120 * DAY$41;
+	const now = Date.now(), from = now - 3 * DAY$42, to = now + 120 * DAY$42;
 	let section = "", img, pickup = "", usedSection = false;
 	/** Evento de la sección actual: su imagen suele venir después del periodo. */
 	let current;
@@ -23150,7 +23150,7 @@ function parseNotice(gameId, n, m, out, seen, pickups, art) {
 	let costume = "";
 	const push = (kind, title, a, b, extra = {}) => {
 		const [start, s1] = point(a, ref, m, "start"), [end, e1] = point(b, ref, m, "end");
-		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$41) return;
+		if (isNaN(start) || isNaN(end) || end <= start || end < from || start > to || end - start > 150 * DAY$42) return;
 		const id = `${gameId}:${kind}:${title.toLowerCase()}:${new Date(start).toISOString().slice(0, 10)}`;
 		if (seen.has(id)) return;
 		seen.add(id);
@@ -23314,7 +23314,7 @@ function readCoupon(n) {
 	if (!code) return null;
 	const endTxt = /(?:Redemption Period|Expiry Date|Valid Until|Period)\s*:[^\n]*?(?:[-–]|Until)\s*([A-Z][a-z]+\.? \d{1,2},?\s*(?:\d{4},?\s*)?\d{1,2}:\d{2}(?:\s*[AP]M)?)/i.exec(text)?.[1];
 	const end = endTxt ? explicit(endTxt, ref) : NaN;
-	if ((isNaN(end) ? +ref + 31 * DAY$41 : end) < Date.now()) return null;
+	if ((isNaN(end) ? +ref + 31 * DAY$42 : end) < Date.now()) return null;
 	return {
 		code,
 		rewards: [/Rewards?\s*:\s*([^\n]+)/i.exec(text)?.[1]?.trim(), isNaN(end) ? void 0 : `Until ${new Date(end).toUTCString().slice(5, 16)} (UTC)`].filter((x) => !!x)
@@ -23328,7 +23328,7 @@ function readCoupon(n) {
 *  - El resto de secciones → los eventos y rotatorios cuyo nombre empieza igual ("Golden Colosseum · Trial Season 50", "Guild Raid · Boss Defense").
 */
 async function withDevNotesArt(items, out) {
-	const devs = items.filter((i) => /Developer Notes/i.test(i.subject) && Date.now() - Date.parse(i.publishedAt) < 70 * DAY$41).slice(0, 2);
+	const devs = items.filter((i) => /Developer Notes/i.test(i.subject) && Date.now() - Date.parse(i.publishedAt) < 70 * DAY$42).slice(0, 2);
 	if (!devs.length || out.every((e) => e.image)) return;
 	const sections = /* @__PURE__ */ new Map();
 	let season;
@@ -23454,7 +23454,7 @@ async function syncBd2(gameId) {
 * La web oficial (chaos.infoldgames.com) firma sus peticiones con una clave: no se usa. 4 consultas por ciclo (caché de 12 h).
 */
 var API$8 = "https://infinity-nikki.fandom.com/api.php";
-var DAY$40 = 864e5;
+var DAY$41 = 864e5;
 async function query(params) {
 	const res = await fetch(viaProxy(`${API$8}?${new URLSearchParams({
 		...params,
@@ -23500,13 +23500,13 @@ async function events$3(gameId) {
 		piprop: "thumbnail",
 		pithumbsize: "480"
 	});
-	const now = Date.now(), from = now - 3 * DAY$40, to = now + 120 * DAY$40;
+	const now = Date.now(), from = now - 3 * DAY$41, to = now + 120 * DAY$41;
 	const out = [];
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		if (!/\{\{\s*Event Infobox/i.test(text)) continue;
 		const s = at$6(field(text, "time_start"), field(text, "time_start_offset")), e = at$6(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$40) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < from || s > to || e - s > 150 * DAY$41) continue;
 		const name = field(text, "title") || p.title.replace(/\s*\((Event)\)$/, "").replace(/\/\d{4}-\d\d-\d\d$/, "");
 		const type = field(text, "type");
 		const r = rewards(text);
@@ -23547,7 +23547,7 @@ async function banners$4(gameId) {
 	for (const p of j.query?.pages ?? []) {
 		const text = content(p);
 		const s = at$6(field(text, "time_start"), field(text, "time_start_offset")), e = at$6(field(text, "time_end"), field(text, "time_end_offset"));
-		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$40 || /^perm/i.test(field(text, "duration"))) continue;
+		if (isNaN(s) || isNaN(e) || e <= s || e < now - 3 * DAY$41 || /^perm/i.test(field(text, "duration"))) continue;
 		const name = p.title.replace(/\/\d{4}-\d\d-\d\d$/, "");
 		out.push({
 			id: `${gameId}:banner:${p.title}`,
@@ -23618,7 +23618,7 @@ async function syncInfinityNikki(gameId) {
 *    el aviso "Maintenance Notice (Completed)" del tablón de mantenimientos (hora exacta de fin); si aún no existe, se estima y se marca "≈".
 *    Lo que no se puede fechar con seguridad se descarta en vez de inventarlo.
 */
-var DAY$39 = 864e5;
+var DAY$40 = 864e5;
 var BANNERS$1 = "https://bannerhistory.app/en/e7-pickup-history";
 /** Hora (UTC) a la que se supone terminado un mantenimiento cuyo aviso de cierre aún no existe. */
 var FALLBACK_MAINTENANCE_END = "09:00";
@@ -23659,7 +23659,7 @@ async function syncBanners(gameId) {
 	if (!res.ok) throw new Error(`bannerhistory → HTTP ${res.status}`);
 	const list = arrayAfter(flightData(await res.text()), "\"banners\":");
 	if (!list?.length) throw new Error("bannerhistory: no se encontraron banners");
-	const from = Date.now() - 3 * DAY$39;
+	const from = Date.now() - 3 * DAY$40;
 	const out = [];
 	for (const b of list) {
 		const s = +new Date(b.startUtc), e = +new Date(b.endUtc);
@@ -23756,7 +23756,7 @@ function tableRewards(lines) {
 	return [...sum].map(([n, q]) => `${n} x${q}`);
 }
 async function syncEvents(gameId, list, ends) {
-	const from = Date.now() - 3 * DAY$39;
+	const from = Date.now() - 3 * DAY$40;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	let details = 0;
@@ -23764,7 +23764,7 @@ async function syncEvents(gameId, list, ends) {
 		if (NOT_AN_EVENT.test(a.title)) continue;
 		let text = a.summary ?? "";
 		let p = period(text, a.create_datetime, ends);
-		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$39) {
+		if (!p && details < MAX_DETAILS && Date.now() - a.create_datetime < 100 * DAY$40) {
 			details++;
 			try {
 				text = await bodyText(a.article_id);
@@ -23816,7 +23816,7 @@ async function syncEvents(gameId, list, ends) {
 * "New 5★ Hero, <nombre>" seguido del periodo de su invocación.
 */
 async function syncNewHeroes(gameId, list, ends, known) {
-	const from = Date.now() - 3 * DAY$39;
+	const from = Date.now() - 3 * DAY$40;
 	const out = [];
 	for (const a of list.filter((x) => /Update Content/i.test(x.title)).slice(0, 2)) {
 		let lines;
@@ -23833,7 +23833,7 @@ async function syncNewHeroes(gameId, list, ends, known) {
 			const p = period(after.filter((l) => !l.startsWith("@@IMG ")).join("\n"), a.create_datetime, ends);
 			if (!p || +p.end < from) return;
 			const nk = name.toLowerCase();
-			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$39 && b.featured.some((f) => {
+			if ([...known, ...out].some((b) => b.kind === "banner" && Math.abs(+new Date(b.start) - +p.start) <= 3 * DAY$40 && b.featured.some((f) => {
 				const fk = f.name.toLowerCase();
 				return fk.includes(nk) || nk.includes(fk);
 			}))) return;
@@ -23922,7 +23922,7 @@ async function syncEpic7(gameId) {
 */
 var SITE$4 = "https://game8.co/games/Duet-Night-Abyss/archives";
 var HOUR$14 = 36e5;
-var DAY$38 = 24 * HOUR$14;
+var DAY$39 = 24 * HOUR$14;
 var MONTHS$20 = [
 	"january",
 	"february",
@@ -23964,7 +23964,7 @@ var imgOf$2 = (el) => {
 /** Eventos vigentes y próximos (tablas "Event | Schedule & Summary"); la tabla de pasados y la de permanentes no traen dos fechas útiles. */
 async function events$2(gameId) {
 	const doc = await page$6("559948");
-	const from = Date.now() - 3 * DAY$38, to = Date.now() + 120 * DAY$38;
+	const from = Date.now() - 3 * DAY$39, to = Date.now() + 120 * DAY$39;
 	const out = [];
 	for (const tr of doc.querySelectorAll("table tr")) {
 		const cells = [...tr.children].filter((c) => /^T[DH]$/i.test(c.tagName));
@@ -23977,7 +23977,7 @@ async function events$2(gameId) {
 		const r = ranges.find((x) => x[1] > from) ?? ranges[0];
 		if (!r) continue;
 		const [start, end] = r;
-		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$38) continue;
+		if (!(end > start) || end < from || start > to || end - start > 150 * DAY$39) continue;
 		const summary = info.replace(/^.*?\d{4}\s*/, "").trim();
 		out.push({
 			id: `${gameId}:event:g8:${name}:${new Date(start).toISOString().slice(0, 10)}`,
@@ -24035,8 +24035,8 @@ async function banners$3(gameId) {
 	for (const b of parsed) {
 		if (b.s === void 0) continue;
 		const e = b.e ?? parsed.find((o) => o.e && o.s === b.s)?.e;
-		const end = e ?? b.s + 41 * DAY$38 - 5 * HOUR$14;
-		if (end < now - 3 * DAY$38) continue;
+		const end = e ?? b.s + 41 * DAY$39 - 5 * HOUR$14;
+		if (end < now - 3 * DAY$39) continue;
 		const skin = /\bskin for [^,.]+? called ([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /'s skin,\s+([A-Z][^.]+?)\./.exec(b.info)?.[1]?.trim() ?? /Skin Drops\s+(.+?)(?=\s+\S+(?:\s+\S+)*\s+Banner and\b|$)/.exec(b.info)?.[1]?.trim();
 		const owner = /skin for ([A-Z][\w:' ]+?) called/.exec(b.info)?.[1] ?? /features ([A-Z][\w:' ]+?)'s skin/.exec(b.info)?.[1];
 		out.push({
@@ -24081,9 +24081,9 @@ async function banners$3(gameId) {
 */
 function dnaTheatre(gameId, now = Date.now()) {
 	const anchor = at$5(2026, 9, 20, 10);
-	const k = Math.floor((now - anchor) / (28 * DAY$38));
+	const k = Math.floor((now - anchor) / (28 * DAY$39));
 	return [k, k + 1].map((i) => {
-		const s = anchor + i * 28 * DAY$38;
+		const s = anchor + i * 28 * DAY$39;
 		return {
 			id: `${gameId}:challenge:cycle:Immersive Theatre:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
@@ -24091,7 +24091,7 @@ function dnaTheatre(gameId, now = Date.now()) {
 			title: "Immersive Theatre",
 			description: "⟦d.dnaTheatre⟧",
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 28 * DAY$38 - 5 * HOUR$14 - 1e3)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 28 * DAY$39 - 5 * HOUR$14 - 1e3)).toISOString(),
 			items: [{
 				name: "Secret Letter Clue",
 				amount: 280
@@ -24135,7 +24135,7 @@ async function syncDna(gameId) {
 * 2 páginas de lootandwaifus por ciclo (caché de 1 h en el proxy, 3 s entre peticiones).
 */
 var LOOT$1 = "https://lootandwaifus.com";
-var DAY$37 = 864e5;
+var DAY$38 = 864e5;
 var MONTHS$19 = [
 	"jan",
 	"feb",
@@ -24165,7 +24165,7 @@ function trickcalRange(s) {
 }
 async function banners$2(gameId) {
 	const doc = await page$5("/trickcal-chibi-go-banner-history/");
-	const from = Date.now() - 3 * DAY$37, to = Date.now() + 120 * DAY$37;
+	const from = Date.now() - 3 * DAY$38, to = Date.now() + 120 * DAY$38;
 	const out = [];
 	doc.querySelectorAll(".bh-list[data-server=\"GLOBAL\"] .bh-row").forEach((row) => {
 		const name = text$12(row.querySelector("h3"));
@@ -24244,7 +24244,7 @@ async function syncTrickcalNews(gameId) {
 		const y = m[1] ? +m[1] : new Date(at(n.publish_time)).getUTCFullYear();
 		return Date.UTC(y, +m[2] - 1, +m[3]);
 	};
-	const wanted = list.filter((n) => /event notice|update|maintenance/i.test(n.title) && Date.now() - titled(n) < 40 * DAY$37).sort((a, b) => titled(b) - titled(a)).slice(0, 3);
+	const wanted = list.filter((n) => /event notice|update|maintenance/i.test(n.title) && Date.now() - titled(n) < 40 * DAY$38).sort((a, b) => titled(b) - titled(a)).slice(0, 3);
 	const messages = [];
 	for (const n of wanted) {
 		const html = (await fetch(viaProxy(`${BILI}/detail?${BILI_Q}&news_id=${n.news_id}`)).then((r) => r.ok ? r.json() : null).catch(() => null))?.data?.content ?? "";
@@ -24319,7 +24319,7 @@ function trickcalNotice(gameId, text, posted) {
 		const r = rangeIn(line, year, 9);
 		if (r) cur.r = r;
 	}
-	const now = Date.now(), from = now - 3 * DAY$37, to = now + 120 * DAY$37;
+	const now = Date.now(), from = now - 3 * DAY$38, to = now + 120 * DAY$38;
 	const out = [];
 	for (const p of parts) {
 		const apostle = /apostle|recruit/i.test(p.raw) && !/card|selection/i.test(p.raw);
@@ -24389,7 +24389,7 @@ async function syncTrickcal(gameId) {
 * 3 consultas a la wiki por ciclo (caché de 12 h en el proxy).
 */
 var WIKI$3 = "https://iopwiki.com";
-var DAY$36 = 864e5;
+var DAY$37 = 864e5;
 var MONTHS$18 = [
 	"jan",
 	"feb",
@@ -24490,7 +24490,7 @@ function gfl2Events(text) {
 	return out;
 }
 async function events$1(gameId) {
-	const now = Date.now(), from = now - 3 * DAY$36, to = now + 120 * DAY$36;
+	const now = Date.now(), from = now - 3 * DAY$37, to = now + 120 * DAY$37;
 	const found = gfl2Events(await wikitext$2("GFL2 Events")).filter((e) => e.end >= from && e.start <= to);
 	if (!found.length) throw new Error("iopwiki GFL2: no se encontraron eventos");
 	const shops = /* @__PURE__ */ new Map();
@@ -24564,7 +24564,7 @@ async function banners$1(gameId) {
 	const text = await wikitext$2("GFL2 Banners");
 	const en = text.slice(text.search(/^==\s*EN\s*==/m));
 	if (en.length === text.length) throw new Error("iopwiki GFL2: falta la sección EN de los banners");
-	const now = Date.now(), from = now - 3 * DAY$36, to = now + 120 * DAY$36;
+	const now = Date.now(), from = now - 3 * DAY$37, to = now + 120 * DAY$37;
 	const out = [];
 	const pages = /* @__PURE__ */ new Map();
 	for (const m of en.matchAll(/\[\[([^|\]]+)(?:\|([^\]]+))?\]\]|\{\{GFL2\|([^}|]+)/gi)) {
@@ -24662,10 +24662,10 @@ async function syncGfl2Official(gameId) {
 	const list = (await Promise.all(pages.map((r) => r.ok ? r.json().catch(() => null) : null))).flatMap((j) => j?.data?.list ?? []).filter((n, i, all) => all.findIndex((x) => x.Id === n.Id) === i);
 	const at = (s) => Date.parse(`${s.replace(" ", "T")}-04:00`);
 	const out = [];
-	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$36)) {
+	for (const n of list.filter((x) => Date.now() - at(x.Date) < 45 * DAY$37)) {
 		const d = await fetch(viaProxy(`${SUNBORN}/news/${n.Id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
 		const e = d?.data?.Content ? gfl2Notice(gameId, n.Title, d.data.Content, new Date(at(n.Date)).getUTCFullYear()) : null;
-		if (e && +new Date(e.end) > Date.now() - 3 * DAY$36 && !out.some((o) => o.id === e.id)) out.push(e);
+		if (e && +new Date(e.end) > Date.now() - 3 * DAY$37 && !out.some((o) => o.id === e.id)) out.push(e);
 	}
 	if (!out.length && !list.length) throw new Error("sunborn GFL2: sin avisos");
 	return {
@@ -24701,7 +24701,7 @@ async function syncGfl2(gameId) {
 * 4 páginas de GameWith (caché de 6 h) y 1 de Game8 por ciclo.
 */
 var GW$1 = "https://gamewith.ai/monster-hunter-outlanders/en/articles";
-var DAY$35 = 864e5;
+var DAY$36 = 864e5;
 var MONTHS$17 = [
 	"jan",
 	"feb",
@@ -24768,7 +24768,7 @@ function mhoRewards(rows) {
 }
 async function events(gameId) {
 	const doc = await page$4("event-list");
-	const now = Date.now(), from = now - 3 * DAY$35, to = now + 120 * DAY$35;
+	const now = Date.now(), from = now - 3 * DAY$36, to = now + 120 * DAY$36;
 	const heads = [...doc.querySelectorAll("h2")];
 	const key = (s) => s.toLowerCase().replace(/\(.*?\)|[^a-z0-9]/g, "");
 	const out = [];
@@ -24811,7 +24811,7 @@ async function events(gameId) {
 /** Banners con fecha (destacado y rotatorio); el de principiante y el permanente no caducan y no salen. */
 async function banners(gameId) {
 	const doc = await page$4("current-banners");
-	const now = Date.now(), from = now - 3 * DAY$35;
+	const now = Date.now(), from = now - 3 * DAY$36;
 	const out = [];
 	const table = [...doc.querySelectorAll("table")].find((t) => /banner/i.test(text$11(t.querySelector("th"))));
 	const faces = /* @__PURE__ */ new Map();
@@ -24874,7 +24874,7 @@ async function challenges(gameId) {
 			if (src) return src;
 		}
 	};
-	if (season && sr && sr[1] > now - 3 * DAY$35) {
+	if (season && sr && sr[1] > now - 3 * DAY$36) {
 		out.push({
 			id: `${gameId}:challenge:gw:${season[1]}:${new Date(sr[0]).toISOString().slice(0, 10)}`,
 			gameId,
@@ -24913,9 +24913,9 @@ async function challenges(gameId) {
 	}
 	const mcImage = imgAfter(/^monster challenge$/i);
 	const anchor = dayStart(2026, 10, 3);
-	const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY$35)));
+	const k = Math.max(0, Math.floor((now - anchor) / (14 * DAY$36)));
 	for (const i of [k, k + 1]) {
-		const s = anchor + i * 14 * DAY$35;
+		const s = anchor + i * 14 * DAY$36;
 		out.push({
 			id: `${gameId}:challenge:cycle:Monster Challenge:${new Date(s).toISOString().slice(0, 10)}`,
 			gameId,
@@ -24924,7 +24924,7 @@ async function challenges(gameId) {
 			description: "⟦d.mhoChallenge⟧ ⟦d.upTo|100 Rutacoin⟧",
 			image: mcImage,
 			start: new Date(s).toISOString(),
-			end: (/* @__PURE__ */ new Date(s + 14 * DAY$35 - 1e3)).toISOString(),
+			end: (/* @__PURE__ */ new Date(s + 14 * DAY$36 - 1e3)).toISOString(),
 			items: [{
 				name: "Rutacoin",
 				amount: 100
@@ -24982,7 +24982,7 @@ async function syncMhoNews(gameId) {
 	const res = await fetch(viaProxy(`${PI}/GetContentByLabel?get_num=6`));
 	if (!res.ok) throw new Error(`playerinfinite MHO → HTTP ${res.status}`);
 	const list = (await res.json())?.data?.info_content ?? [];
-	const recent = list.filter((n) => Date.now() - +n.pub_timestamp * 1e3 < 40 * DAY$35).slice(0, 4);
+	const recent = list.filter((n) => Date.now() - +n.pub_timestamp * 1e3 < 40 * DAY$36).slice(0, 4);
 	const messages = [];
 	for (const n of recent) {
 		const d = await fetch(viaProxy(`${PI}/GetContentInfoById?content_id=${n.content_id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
@@ -25182,7 +25182,7 @@ async function wikitext$1(host, page) {
 * (servers.ts). No se sabe a qué hora acaba el mantenimiento: el día entero, 00:00 → 23:59 (EST), marcado "≈". 2 consultas por ciclo (la página y las imágenes, caché de 12 h en el proxy).
 */
 var HOST$1 = "onmyoji.fandom.com";
-var DAY$34 = 864e5;
+var DAY$35 = 864e5;
 var MONTHS$16 = [
 	"jan",
 	"feb",
@@ -25237,7 +25237,7 @@ function onmyojiFeatured(title) {
 }
 async function syncOnmyoji(gameId) {
 	const text = await wikitext$1(HOST$1, "Events/Global");
-	const now = Date.now(), from = now - 3 * DAY$34, to = now + 120 * DAY$34;
+	const now = Date.now(), from = now - 3 * DAY$35, to = now + 120 * DAY$35;
 	const rows = [];
 	for (const sec of text.split(/^==\s*(?=\d{4}\s*==)/m).slice(1)) {
 		const year = +sec.slice(0, 4);
@@ -25298,7 +25298,7 @@ async function syncOnmyoji(gameId) {
 * 2 consultas a la wiki por ciclo (plantilla e imágenes, caché de 12 h) y 1 página de PocketGamer.
 */
 var HOST = "pathtonowhere.wiki.gg";
-var DAY$33 = 864e5;
+var DAY$34 = 864e5;
 var TZ$4 = -7;
 var MONTHS$15 = [
 	"jan",
@@ -25373,7 +25373,7 @@ async function syncPtnWiki(gameId) {
 	const events = [];
 	for (const it of items) {
 		const r = ptnRange(it.date, now);
-		if (!r || r[1] < now - 3 * DAY$33 || r[1] <= r[0]) continue;
+		if (!r || r[1] < now - 3 * DAY$34 || r[1] <= r[0]) continue;
 		const kind = KIND[it.type] ?? "event";
 		events.push({
 			id: `${gameId}:${kind}:wiki:${it.name}:${new Date(r[0]).toISOString().slice(0, 10)}`,
@@ -25418,7 +25418,7 @@ function ptnNotice(gameId, html, now = Date.now()) {
 		const title = /\[([^\]]{2,60})\]/.exec(head)?.[1]?.trim() ?? head;
 		const when = block.slice(1).map((l) => /^■?\s*(?:Event Duration|Available From|Available Time|Duration)\s*:\s*(.+)$/i.exec(l)?.[1]).find((w) => w && /\d{1,2}:\d{2}/.test(w))?.replace(/After the maintenance on ([A-Za-z]+ \d{1,2}(?:st|nd|rd|th)?)/i, "$1, 14:00");
 		const r = when ? ptnRange(when, now) : null;
-		if (!r || r[1] < now - 3 * DAY$33 || r[1] <= r[0]) return;
+		if (!r || r[1] < now - 3 * DAY$34 || r[1] <= r[0]) return;
 		const desc = block.find((l) => /^■?\s*Event Description\s*:/i.test(l))?.replace(/^■?\s*Event Description\s*:\s*/i, "");
 		const rewards = pullsIn("ptn", block.slice(1));
 		out.push({
@@ -25443,7 +25443,7 @@ async function syncPtnNews(gameId) {
 	const res = await fetch(viaProxy(`${WEB$1}/api/news?offset=0&limit=6&locale=en-EN`));
 	if (!res.ok) throw new Error(`aisno PtN → HTTP ${res.status}`);
 	const list = (await res.json())?.data?.data ?? [];
-	const recent = list.filter((n) => Date.now() - n.publish_time < 45 * DAY$33).slice(0, 2);
+	const recent = list.filter((n) => Date.now() - n.publish_time < 45 * DAY$34).slice(0, 2);
 	const events = [];
 	for (const n of recent) {
 		const html = await fetch(viaProxy(`${WEB$1}/en-EN/news/${n.id}`)).then((r) => r.ok ? r.text() : "").catch(() => "");
@@ -25508,7 +25508,7 @@ async function syncPtn(gameId) {
 var GW = "https://gamewith.net/sword-of-convallaria";
 var NEWS = "https://poster-api.starforce.tw/api/v1.0/form/articles/list";
 var HOUR$13 = 36e5;
-var DAY$32 = 24 * HOUR$13;
+var DAY$33 = 24 * HOUR$13;
 var TZ$3 = -4;
 var MONTHS$14 = [
 	"jan",
@@ -25548,7 +25548,7 @@ function socUntil(s, now = Date.now()) {
 }
 /** Inicio estimado para lo que solo tiene fin: 14 días antes, sin pasar de hoy (a las 00:00 del servidor). */
 var guessStart = (end, now) => {
-	const t = Math.min(end - 14 * DAY$32, now);
+	const t = Math.min(end - 14 * DAY$33, now);
 	const d = new Date(t + TZ$3 * HOUR$13);
 	return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - TZ$3 * HOUR$13;
 };
@@ -25581,7 +25581,7 @@ async function gwBanners(gameId, now) {
 		const cells = [...tr.children].filter((c) => c.tagName === "TD");
 		if (cells.length < 2) continue;
 		const name = text$9(cells[0]), end = socUntil(text$9(cells[1]), now);
-		if (!name || !end || end < now - 3 * DAY$32) continue;
+		if (!name || !end || end < now - 3 * DAY$33) continue;
 		const gear = /gear|astral imprint|weapon/i.test(name);
 		const who = gear ? "" : name.replace(/\s*(?:Rate[- ]?Up|Rerun|Debut|Chance Up|Banner|Summon)\b.*$/i, "").trim();
 		const icon = icons.get(who.toLowerCase());
@@ -25635,7 +25635,7 @@ async function gwUpcoming(gameId, after) {
 		description: "⟦d.socUpcoming⟧",
 		image: icon,
 		start: new Date(start).toISOString(),
-		end: (/* @__PURE__ */ new Date(start + 14 * DAY$32 - 1e3)).toISOString(),
+		end: (/* @__PURE__ */ new Date(start + 14 * DAY$33 - 1e3)).toISOString(),
 		items: [],
 		featured: [{
 			name,
@@ -25661,7 +25661,7 @@ async function gwEvents(gameId, now) {
 			const src = (s.tagName === "IMG" ? s : s.querySelector("img"))?.getAttribute("data-original") || void 0;
 			if (!image && src && !/\/gacha\/c\d+\.png$/.test(src)) image = src;
 		}
-		if (!title || !end || end < now - 3 * DAY$32) continue;
+		if (!title || !end || end < now - 3 * DAY$33) continue;
 		out.push({
 			id: `${gameId}:event:gw:${title}:${new Date(end).toISOString().slice(0, 10)}`,
 			gameId,
@@ -25693,7 +25693,7 @@ async function syncSocOfficial(gameId) {
 	const res = await fetch(viaProxy(`${NEWS}?block_code=ssrpg-website-news&language=en&page=1&page_size=6`));
 	if (!res.ok) throw new Error(`starforce SoC → HTTP ${res.status}`);
 	const list = (await res.json())?.data?.list ?? [];
-	const recent = list.filter((a) => a.category === "update" && Date.now() - Date.parse(a.time) < 40 * DAY$32 && /^https:\/\/website\.xdcdn\.net\//.test(a.content_url)).slice(0, 2);
+	const recent = list.filter((a) => a.category === "update" && Date.now() - Date.parse(a.time) < 40 * DAY$33 && /^https:\/\/website\.xdcdn\.net\//.test(a.content_url)).slice(0, 2);
 	const events = [];
 	for (const a of recent) {
 		const lines = htmlText((await fetch(viaProxy(a.content_url)).then((r) => r.ok ? r.json() : null).catch(() => null))?.content ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
@@ -25701,7 +25701,7 @@ async function syncSocOfficial(gameId) {
 			const head = /^\d+\.\s*\[([^\]]+)\]\s*(.*)$/.exec(lines[i]);
 			if (!head) continue;
 			const r = socPeriod(lines.slice(i + 1, i + 4).find((l) => /\(UTC\s*-4\)/i.test(l)) ?? "");
-			if (!r || r[1] < Date.now() - 3 * DAY$32) continue;
+			if (!r || r[1] < Date.now() - 3 * DAY$33) continue;
 			const summon = /summon event/i.test(head[2]);
 			const title = head[1].trim();
 			events.push({
@@ -25767,7 +25767,7 @@ var socTweets = (gameId) => parseNotices(gameId, TWEETS.map((t, i) => ({
 	id: `tw${i}`,
 	timestamp: t.at,
 	content: t.text
-}))).events.filter((e) => Date.parse(e.end) > Date.now() - 3 * DAY$32);
+}))).events.filter((e) => Date.parse(e.end) > Date.now() - 3 * DAY$33);
 /** Mismo personaje en un aviso y en GameWith: "Agata - Polaris of Winter" (variante, en los tuits) = "SP Agata" (GameWith); "Agata" = "Agata". */
 var who = (n, tweet) => {
 	return `${(tweet ? /\s[-–]\s/.test(n) : /^sp\s/i.test(n)) ? "sp:" : ""}${n.replace(/^sp\s+/i, "").split(/\s[-–]\s/)[0].trim().toLowerCase()}`;
@@ -25841,7 +25841,7 @@ async function syncSoc(gameId) {
 * Los eventos (que no son banners) no están en esta fuente.
 */
 var SITE$3 = "https://www.prydwen.gg";
-var DAY$31 = 864e5;
+var DAY$32 = 864e5;
 var HOUR$12 = 36e5;
 /** NIKKE: los banners cierran a las 04:59:59 hora de Corea (UTC+9) del día de fin; Prydwen solo da un mediodía aproximado. */
 var nikkeEnd = (iso) => {
@@ -25896,7 +25896,7 @@ async function syncPrydwen(gameId, key) {
 	const res = await fetch(viaProxy(`${SITE$3}/${cfg.slug}/banners`));
 	if (!res.ok) throw new Error(`prydwen ${cfg.slug} → HTTP ${res.status}`);
 	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
-	const from = Date.now() - 3 * DAY$31;
+	const from = Date.now() - 3 * DAY$32;
 	const out = [];
 	const seen = /* @__PURE__ */ new Set();
 	const iconBase = cfg.icons && [...doc.querySelectorAll("img[src*=\"/characters/\"]")].map((i) => /^(https:\/\/cdn\.prydwen\.gg\/images\/[a-z0-9-]+\/characters\/)[a-z0-9_]+_icon\.webp$/.exec(i.getAttribute("src") ?? "")?.[1]).find(Boolean);
@@ -25967,7 +25967,7 @@ var cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 */
 var FORUM = "https://forum.netmarble.com/api/game/monster2/official/forum/stardive_gl";
 var HOUR$11 = 36e5;
-var DAY$30 = 24 * HOUR$11;
+var DAY$31 = 24 * HOUR$11;
 /** "11/10 (Tue) 23:59 (UTC)" → ms (año: el del aviso, o el siguiente si la fecha queda muy atrás). */
 function md(s, posted) {
 	const m = /(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?(?:\s*\([A-Za-z]{3}\))?(?:\s+(\d{1,2}):(\d{2}))?/.exec(s);
@@ -25975,7 +25975,7 @@ function md(s, posted) {
 	const y0 = m[3] ? +m[3] : new Date(posted).getUTCFullYear();
 	const at = (y) => Date.UTC(y, +m[1] - 1, +m[2], m[4] ? +m[4] : 23, m[5] ? +m[5] : 59, m[4] ? 0 : 59);
 	return {
-		at: !m[3] && at(y0) < posted - 60 * DAY$30 ? at(y0 + 1) : at(y0),
+		at: !m[3] && at(y0) < posted - 60 * DAY$31 ? at(y0 + 1) : at(y0),
 		time: !!m[4]
 	};
 }
@@ -25990,9 +25990,9 @@ function mongilPeriod(line, posted, launch) {
 	if (!s) return null;
 	const day = Date.UTC(new Date(s.at).getUTCFullYear(), new Date(s.at).getUTCMonth(), new Date(s.at).getUTCDate());
 	return [
-		after ? launch && launch >= day && launch <= day + 2 * DAY$30 ? launch : day + DAY$30 + 3.5 * HOUR$11 : s.time ? s.at : day,
+		after ? launch && launch >= day && launch <= day + 2 * DAY$31 ? launch : day + DAY$31 + 3.5 * HOUR$11 : s.time ? s.at : day,
 		end.at + (end.time ? 59e3 : 0),
-		after && !(launch && launch >= day && launch <= day + 2 * DAY$30)
+		after && !(launch && launch >= day && launch <= day + 2 * DAY$31)
 	];
 }
 var isEnglish = (t) => !/[฀-๿぀-ヿ㐀-鿿가-힯]/.test(t);
@@ -26006,7 +26006,7 @@ function mongilNotice(gameId, a, launch) {
 		const title = block[0].replace(/^🌠?\s*Event\s+\d+\.\s*/u, "").trim();
 		const periodLine = block.find((l) => /\(UTC\)/i.test(l) && /\d{1,2}\/\d{1,2}/.test(l));
 		const r = periodLine && mongilPeriod(periodLine.replace(/^-\s*/, "").replace(/^[^:]*Available Period:\s*/i, ""), a.regDate, launch);
-		if (!title || !r || r[1] < Date.now() - 3 * DAY$30) return;
+		if (!title || !r || r[1] < Date.now() - 3 * DAY$31) return;
 		const image = block.map((l) => /^⟪img:(.+)⟫$/.exec(l)?.[1]).find(Boolean);
 		const how = block.findIndex((l) => /how to participate/i.test(l));
 		const description = how >= 0 ? block.slice(how + 1).filter((l) => /^-/.test(l)).slice(0, 2).map((l) => l.replace(/^-\s*/, "")).join(" ") || void 0 : void 0;
@@ -26049,7 +26049,7 @@ async function syncMongilNews(gameId, launch) {
 	const res = await fetch(viaProxy(`${FORUM}/article/list?menuSeq=6&start=1&rows=12`));
 	if (!res.ok) throw new Error(`netmarble MONGIL → HTTP ${res.status}`);
 	const list = (await res.json())?.articleList ?? [];
-	const recent = list.filter((a) => isEnglish(a.title) && Date.now() - a.regDate < 45 * DAY$30).slice(0, 3);
+	const recent = list.filter((a) => isEnglish(a.title) && Date.now() - a.regDate < 45 * DAY$31).slice(0, 3);
 	const events = [];
 	for (const a of recent) {
 		const d = await fetch(viaProxy(`${FORUM}/article/${a.id}?menuSeq=6`)).then((r) => r.ok ? r.json() : null).catch(() => null);
@@ -26137,9 +26137,9 @@ async function syncMongil(gameId) {
 *  - La web oficial (konami.com/games/suikoden/star_leap/jp/ja/) no tiene lista de noticias: los avisos salen solo en X (@GensoSuikodenSP).
 * Por ciclo (caché de 6 h): /gacha/, /events/, la página del evento en curso, /tower/, el blog y hasta 2 avisos de regalos (6–7 páginas).
 */
-var BASE$6 = "https://www.kaiden.gg";
+var BASE$7 = "https://www.kaiden.gg";
 var HOUR$10 = 36e5;
-var DAY$29 = 24 * HOUR$10;
+var DAY$30 = 24 * HOUR$10;
 var TZ$2 = 9;
 var MONTHS$13 = [
 	"jan",
@@ -26156,9 +26156,9 @@ var MONTHS$13 = [
 	"dec"
 ];
 var text$7 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
-var abs = (src) => src ? src.startsWith("/") ? BASE$6 + src : src : void 0;
+var abs = (src) => src ? src.startsWith("/") ? BASE$7 + src : src : void 0;
 async function page$2(path) {
-	const res = await fetch(viaProxy(`${BASE$6}${path}`));
+	const res = await fetch(viaProxy(`${BASE$7}${path}`));
 	if (!res.ok) throw new Error(`kaiden ${path} → HTTP ${res.status}`);
 	return new DOMParser().parseFromString(await res.text(), "text/html");
 }
@@ -26181,7 +26181,7 @@ var iso$11 = (t) => new Date(t).toISOString();
 /** Cara de un personaje por su página: "/suikoden-star-leap/characters/tsubaki-blooming-in-darkness/" → ".../face.webp". */
 var faceOf = (href) => {
 	const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(href ?? "")?.[1];
-	return slug && slug !== "tier-list" ? `${BASE$6}/img/suikoden-star-leap/characters/${slug}/face.webp` : void 0;
+	return slug && slug !== "tier-list" ? `${BASE$7}/img/suikoden-star-leap/characters/${slug}/face.webp` : void 0;
 };
 /** Destacados del panel de un banner ("Boosted": enlaces `character-card-trigger` con `data-name` y `data-grade`). */
 function boostedOf(li) {
@@ -26233,7 +26233,7 @@ function parseBanners(gameId, doc, now = Date.now()) {
 				continue;
 			}
 			const r = spans.map(jstRange).find(Boolean);
-			if (!r || r[1] < now - 30 * DAY$29) continue;
+			if (!r || r[1] < now - 30 * DAY$30) continue;
 			dated.push({
 				id: `${gameId}:banner:kaiden:${title}`,
 				gameId,
@@ -26315,7 +26315,7 @@ function parseTower(gameId, doc, now = Date.now()) {
 	for (const card of doc.querySelectorAll("div.ks-panel")) {
 		if (!card.querySelector("h3 a[href*=\"/tower/transient-chamber\"]")) continue;
 		const r = jstRange(([...card.querySelectorAll("dd")].map(text$7).find((t) => /^Open\s/i.test(t)) ?? "").replace(/^Open\s+/i, ""));
-		if (!r || r[1] < now - DAY$29 || out.some((e) => Date.parse(e.start) === r[0])) continue;
+		if (!r || r[1] < now - DAY$30 || out.some((e) => Date.parse(e.start) === r[0])) continue;
 		const items = [...card.querySelectorAll("[data-floating-tooltip-title]")].map((b) => ({
 			name: b.getAttribute("data-floating-tooltip-title") ?? "",
 			amount: Number((b.getAttribute("data-floating-tooltip-subtitle") ?? "").replace(/[^\d]/g, "")),
@@ -26350,8 +26350,8 @@ function parseGifts(gameId, doc, now = Date.now()) {
 			const td = [...tr.querySelectorAll("td")].map(text$7);
 			if (td.length < 3) continue;
 			const end = jst(td[ci]);
-			if (!end || end < now - DAY$29) continue;
-			const start = Number.isFinite(posted) ? Math.min(posted, end - HOUR$10) : end - 7 * DAY$29;
+			if (!end || end < now - DAY$30) continue;
+			const start = Number.isFinite(posted) ? Math.min(posted, end - HOUR$10) : end - 7 * DAY$30;
 			const lines = td[ri].split(/,\s+(?=[A-Za-z])/);
 			const r = pullsIn("suikoden", lines);
 			const items = lines.map((l) => /^(.+?)\s*[×x]\s*([\d,]+)$/.exec(l)).filter(Boolean).map((m) => ({
@@ -26403,7 +26403,7 @@ async function syncSuikoden(gameId) {
 		learnIcons(t.value);
 		events.push(...parseTower(gameId, t.value, now));
 	}
-	if (e.status === "fulfilled") for (const c of parseEventList(e.value).filter((c) => c.end > now - 30 * DAY$29)) {
+	if (e.status === "fulfilled") for (const c of parseEventList(e.value).filter((c) => c.end > now - 30 * DAY$30)) {
 		const d = c.start <= now && c.end > now ? await page$2(c.href).catch(() => null) : null;
 		if (d) learnIcons(d);
 		const info = d ? parseEventPage(d) : null;
@@ -26448,7 +26448,7 @@ async function syncSuikoden(gameId) {
 	for (const u of unscheduled) {
 		const series = u.title.replace(/\s+\d+$/, "");
 		const prev = banners.filter((b) => b.title.startsWith(series)).sort((x, y) => Date.parse(y.start) - Date.parse(x.start))[0];
-		const len = prev ? Date.parse(prev.end) - Date.parse(prev.start) : 14 * DAY$29;
+		const len = prev ? Date.parse(prev.end) - Date.parse(prev.start) : 14 * DAY$30;
 		const start = lastEnd + 6 * HOUR$10 + 1e3;
 		banners.push({
 			id: `${gameId}:banner:kaiden:tba:${u.title}`,
@@ -26501,9 +26501,9 @@ async function syncSuikoden(gameId) {
 *    solo en X (@Wiz_Daphne_en), sin fuente legible: no hay banners estimados.
 * Por ciclo: 2 páginas del feed (caché de 3 h), hasta 5 de aventureros (24 h) y 1 de PocketGamer.
 */
-var BASE$5 = "https://wizardry.info/en/daphne";
+var BASE$6 = "https://wizardry.info/en/daphne";
 var HOUR$9 = 36e5;
-var DAY$28 = 24 * HOUR$9;
+var DAY$29 = 24 * HOUR$9;
 var TZ$1 = 9;
 /** Iconos de la tienda oficial (webstore.wizardry.info, 14 nov 2026): "オルグの貴石100個" y "稀なる遺骸" (×1). */
 var DAPHNE_ICONS = /* @__PURE__ */ new Map([["gems of org", "https://wizardry-static.synapse-lm.com/items/DJlaeJ5YRzq4/2a7373e3eb9b4886cb79fe9acd4a19a5b65d736b405bdc245858c4fea511fb75.png"], ["unique remains", "https://wizardry-static.synapse-lm.com/items/57YzAd1Wxavd/22d08e555a8233a14a814851293fcdb57676c6221e64c0681d5504e9bbe5f9d7.png"]]);
@@ -26634,7 +26634,7 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 	if (kind === "banner") {
 		const i = blocks.findIndex((b) => "h" in b && /^featured period$/i.test(b.t));
 		const range = i >= 0 ? blocks.slice(i + 1, i + 4).map((b) => "p" in b ? daphneRange(b.p, year) : null).find(Boolean) : null;
-		if (!range || range[1] < now - 3 * DAY$28) return [];
+		if (!range || range[1] < now - 3 * DAY$29) return [];
 		const title = bannerTitle$1(post.title);
 		const only = blocks.findIndex((b) => "p" in b && /legendary adventurers listed below will appear/i.test(b.p));
 		const listed = [];
@@ -26667,7 +26667,7 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 		if (!("p" in b)) return;
 		const range = daphneRange(b.p, year);
 		if (!range) return;
-		if ((range[0] + TZ$1 * HOUR$9) % DAY$28 === 0 && post.posted > range[0] && post.posted - range[0] < DAY$28) range[0] = post.posted;
+		if ((range[0] + TZ$1 * HOUR$9) % DAY$29 === 0 && post.posted > range[0] && post.posted - range[0] < DAY$29) range[0] = post.posted;
 		const prev = heads.filter((h) => h < k);
 		const label = prev.length ? blocks[prev[prev.length - 1]] : void 0;
 		if (label && SKIP_LABEL.test(label.t)) return;
@@ -26687,7 +26687,7 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 		const title = (owner ? owner.t : kind === "event" ? postTitle(post.title) : "").replace(/^\[(?:urgent|daily|announcement)[^\]]*\]\s*/i, "").trim();
 		if (!title || SKIP_OWNER.test(title) || /\barrives?$|\bbegins$/i.test(title) || seen.has(title.toLowerCase())) return;
 		seen.add(title.toLowerCase());
-		if (range[1] < now - 3 * DAY$28) return;
+		if (range[1] < now - 3 * DAY$29) return;
 		const from = ownerAt >= 0 ? ownerAt + 1 : 0;
 		const lvl = owner?.h ?? 2;
 		const stop = blocks.findIndex((x, j) => j > from && "h" in x && x.h <= lvl && !LABEL$2.test(x.t));
@@ -26721,13 +26721,13 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 }
 async function get$5(url) {
 	const res = await fetch(viaProxy(url));
-	if (!res.ok) throw new Error(`wizardry.info ${url.replace(BASE$5, "")} → HTTP ${res.status}`);
+	if (!res.ok) throw new Error(`wizardry.info ${url.replace(BASE$6, "")} → HTTP ${res.status}`);
 	return res.text();
 }
 async function adventurersList() {
 	const out = [];
 	for (let n = 1; n <= 5; n++) {
-		const html = await get$5(`${BASE$5}/adventurers/${n > 1 ? `page/${n}/` : ""}`).catch(() => "");
+		const html = await get$5(`${BASE$6}/adventurers/${n > 1 ? `page/${n}/` : ""}`).catch(() => "");
 		const page = html ? daphneAdventurers(new DOMParser().parseFromString(html, "text/html")) : [];
 		if (!page.length) break;
 		out.push(...page);
@@ -26736,8 +26736,8 @@ async function adventurersList() {
 }
 async function syncDaphne(gameId) {
 	const [f1, f2, adv, codes] = await Promise.allSettled([
-		get$5(`${BASE$5}/news/feed/`),
-		get$5(`${BASE$5}/news/feed/?paged=2`),
+		get$5(`${BASE$6}/news/feed/`),
+		get$5(`${BASE$6}/news/feed/?paged=2`),
 		adventurersList(),
 		syncPocketGamerCodes("wizardry-variants-daphne")
 	]);
@@ -26773,7 +26773,7 @@ var STEAM_APPS = {
 */
 var SERVER_TIME = { dna: "UTC-5" };
 var API$7 = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/";
-var DAY$27 = 864e5;
+var DAY$28 = 864e5;
 /** Las imágenes de los avisos van como "{STEAM_CLAN_IMAGE}/123/abc.png". */
 var CLAN_IMG$4 = "https://clan.akamai.steamstatic.com/images";
 /** BBCode de Steam → texto por líneas; las cabeceras ([h1]–[h3], [b] en su propia línea) pasan a "**…**", que el lector toma como título. */
@@ -26790,7 +26790,7 @@ async function syncSteamNews(gameId) {
 	};
 	const res = await fetch(viaProxy(`${API$7}?appid=${app}&count=15&maxlength=0&format=json`));
 	if (!res.ok) throw new Error(`steam ${gameId} → HTTP ${res.status}`);
-	const s = parseNotices(gameId, ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$27).map((n) => {
+	const s = parseNotices(gameId, ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$28).map((n) => {
 		const img = /\{STEAM_CLAN_IMAGE\}(\S+?\.(?:png|jpe?g|gif|webp))/i.exec(n.contents)?.[1];
 		return {
 			id: n.gid,
@@ -26815,9 +26815,9 @@ var STEAM$3 = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=4
 var G8 = "https://game8.co/games/Aniimo/archives/622475";
 var CLAN_IMG$3 = "https://clan.akamai.steamstatic.com/images";
 var HOUR$8 = 36e5;
-var DAY$26 = 24 * HOUR$8;
+var DAY$27 = 24 * HOUR$8;
 /** Servidor en que van `start`/`end` (servers.ts, `base`). */
-var BASE$4 = "na";
+var BASE$5 = "na";
 var REGION = {
 	europe: "eu",
 	americas: "na",
@@ -26962,7 +26962,7 @@ var describe = (lines) => {
 	return text ? clean$6(text).slice(0, 320) : void 0;
 };
 function event(gameId, kind, title, regions, extra = {}) {
-	const main = regions[BASE$4] ?? Object.values(regions)[0];
+	const main = regions[BASE$5] ?? Object.values(regions)[0];
 	const servers = Object.fromEntries(Object.entries(regions).map(([k, r]) => [k, {
 		start: iso$9(r.start),
 		end: iso$9(r.end)
@@ -26998,7 +26998,7 @@ function aniimoPost(gameId, post) {
 	const patches = [];
 	for (const s of sectionsOf$1(lines)) {
 		if (s.lines.some((l) => /"lightweave"/i.test(l))) {
-			if (update < posted - DAY$26) continue;
+			if (update < posted - DAY$27) continue;
 			events.push({
 				id: `${gameId}:banner:lightweave:${nameKey$2(s.title)}`,
 				gameId,
@@ -27007,7 +27007,7 @@ function aniimoPost(gameId, post) {
 				description: describe(s.lines.filter((l) => !/lightweave/i.test(l))),
 				image,
 				start: iso$9(update),
-				end: iso$9(update + 28 * DAY$26),
+				end: iso$9(update + 28 * DAY$27),
 				items: [],
 				pulls: 0,
 				source: "api",
@@ -27019,7 +27019,7 @@ function aniimoPost(gameId, post) {
 				}],
 				servers: Object.fromEntries(Object.values(REGION).map((r) => [r, {
 					start: iso$9(update),
-					end: iso$9(update + 28 * DAY$26)
+					end: iso$9(update + 28 * DAY$27)
 				}]))
 			});
 			continue;
@@ -27029,7 +27029,7 @@ function aniimoPost(gameId, post) {
 		if (!blocks.length) continue;
 		const season = /^S(\d+)\s+(.+?)(?::\s*Part\s*(\d+))?$/i.exec(s.title);
 		if (season) {
-			const r = blocks[0].regions[BASE$4] ?? Object.values(blocks[0].regions)[0];
+			const r = blocks[0].regions[BASE$5] ?? Object.values(blocks[0].regions)[0];
 			patches.push({
 				id: `${gameId}:patch:S${season[1]}${season[3] ? `.${season[3]}` : ""}`,
 				gameId,
@@ -27098,11 +27098,11 @@ function holoInterlink(gameId, now = Date.now()) {
 			const local = new Date(now + off * HOUR$8);
 			const back = (local.getUTCDay() - 4 + 7) % 7;
 			let start = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() - back, 4) - off * HOUR$8;
-			if (now >= start + 4 * DAY$26) start += 7 * DAY$26;
-			start += k * 7 * DAY$26;
+			if (now >= start + 4 * DAY$27) start += 7 * DAY$27;
+			start += k * 7 * DAY$27;
 			regions[id] = {
 				start,
-				end: start + 4 * DAY$26 - 1e3
+				end: start + 4 * DAY$27 - 1e3
 			};
 		}
 		return event(gameId, "challenge", "Holo-Battle Interlink", regions, {
@@ -27221,7 +27221,7 @@ function mergeAniimo(gameId, official, rows, now = Date.now()) {
 			};
 			continue;
 		}
-		if (g.end < now - 3 * DAY$26) continue;
+		if (g.end < now - 3 * DAY$27) continue;
 		const kind = CHALLENGE$3.test(g.title) ? "challenge" : "event";
 		events.push({
 			id: `${gameId}:${kind}:g8:${k}:${iso$9(g.start).slice(0, 10)}`,
@@ -27259,7 +27259,7 @@ async function syncAniimo(gameId, now = Date.now()) {
 	if (st.status === "rejected" && g8.status === "rejected") throw st.reason;
 	if (st.status === "rejected") console.warn("[aniimo] steam:", st.reason?.message);
 	if (g8.status === "rejected") console.warn("[aniimo] game8:", g8.reason?.message);
-	const posts = st.status === "fulfilled" ? (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$26) : [];
+	const posts = st.status === "fulfilled" ? (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$27) : [];
 	posts.sort((a, b) => b.date - a.date);
 	const byKey = /* @__PURE__ */ new Map();
 	const patches = /* @__PURE__ */ new Map();
@@ -27272,7 +27272,7 @@ async function syncAniimo(gameId, now = Date.now()) {
 		}
 		for (const pt of r.patches) if (!patches.has(pt.id)) patches.set(pt.id, pt);
 	}
-	const official = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$26);
+	const official = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$27);
 	const lw = official.filter((e) => e.kind === "banner").sort((a, b) => +new Date(a.start) - +new Date(b.start));
 	lw.forEach((e, i) => {
 		if (!lw[i + 1] || +new Date(lw[i + 1].start) >= +new Date(e.end)) return;
@@ -27307,7 +27307,7 @@ async function syncAniimo(gameId, now = Date.now()) {
 var STEAM$2 = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=3609080&count=50&maxlength=0&format=json`;
 var CLAN_IMG$2 = "https://clan.akamai.steamstatic.com/images";
 var HOUR$7 = 36e5;
-var DAY$25 = 24 * HOUR$7;
+var DAY$26 = 24 * HOUR$7;
 /** Fin habitual del mantenimiento de los jueves (01:00–03:00 UTC) cuando el aviso no lo da. */
 var MAINT_END_UTC = 3;
 /** Cierre de eventos y banners: 19:00 UTC (04:00 KST). */
@@ -27354,7 +27354,7 @@ function dateAt(s, year, posted) {
 	let y = m[3] ? +m[3] : year;
 	const time = m[4] != null;
 	let t = Date.UTC(y, mo, +m[2], time ? +m[4] : 0, time ? +m[5] : 0);
-	if (!m[3] && t < posted - 120 * DAY$25) t = Date.UTC(++y, mo, +m[2], time ? +m[4] : 0, time ? +m[5] : 0);
+	if (!m[3] && t < posted - 120 * DAY$26) t = Date.UTC(++y, mo, +m[2], time ? +m[4] : 0, time ? +m[5] : 0);
 	return {
 		t,
 		time
@@ -27474,7 +27474,7 @@ function starPost(post, ends = /* @__PURE__ */ new Map()) {
 	const posted = post.date * 1e3;
 	const year = new Date(posted).getUTCFullYear();
 	const own = maintenanceOf(lines, year, posted);
-	const maint = (day) => own != null && Math.abs(own - day) < DAY$25 ? own : ends.get(day) ?? day + MAINT_END_UTC * HOUR$7;
+	const maint = (day) => own != null && Math.abs(own - day) < DAY$26 ? own : ends.get(day) ?? day + MAINT_END_UTC * HOUR$7;
 	const raws = [];
 	const images = /* @__PURE__ */ new Map();
 	const header = lines.map(imgUrl).find(Boolean);
@@ -27586,7 +27586,7 @@ function announced(gameId, post, images, now) {
 		const a = dateAt(m[2], year, posted), b = dateAt(m[3], year, posted);
 		if (!a || !b) continue;
 		const start = a.t + MAINT_END_UTC * HOUR$7;
-		const end = b.t - DAY$25 + CLOSE_UTC * HOUR$7;
+		const end = b.t - DAY$26 + CLOSE_UTC * HOUR$7;
 		if (end < now) continue;
 		out.push({
 			id: `${gameId}:event:announced:${nameKey$1(m[1])}`,
@@ -27604,7 +27604,7 @@ function announced(gameId, post, images, now) {
 			description: "⟦d.ssAnnounced⟧"
 		});
 		for (const w of text.matchAll(new RegExp(`【([^】]+)】 will be available through Observation starting in Week (\\d+) of 【${m[1].replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}】`, "g"))) {
-			const s = start + (+w[2] - 1) * 7 * DAY$25;
+			const s = start + (+w[2] - 1) * 7 * DAY$26;
 			const e = Date.UTC(new Date(s).getUTCFullYear(), new Date(s).getUTCMonth(), new Date(s).getUTCDate() + 21, CLOSE_UTC);
 			out.push({
 				id: `${gameId}:banner:announced:${nameKey$1(w[1])}`,
@@ -27644,9 +27644,9 @@ function nextSeasons(gameId, seasons, now) {
 		const n = last && /Season (\d+)/.exec(last.title);
 		if (!last || !n) continue;
 		let s = +new Date(last.start), e = +new Date(last.end), k = +n[1];
-		while (s < now + 21 * DAY$25) {
-			s += every * DAY$25;
-			e += every * DAY$25;
+		while (s < now + 21 * DAY$26) {
+			s += every * DAY$26;
+			e += every * DAY$26;
 			k++;
 			if (e < now) continue;
 			const start = Date.UTC(new Date(s).getUTCFullYear(), new Date(s).getUTCMonth(), new Date(s).getUTCDate() - (new Date(s).getUTCHours() < CLOSE_UTC ? 1 : 0), CLOSE_UTC);
@@ -27679,7 +27679,7 @@ async function syncStarSavior(gameId, now = Date.now()) {
 	if (st.status === "rejected") console.warn("[starsavior] steam:", st.reason?.message);
 	if (pr.status === "rejected") console.warn("[starsavior] prydwen:", pr.reason?.message);
 	if (pg.status === "rejected") console.warn("[starsavior] códigos:", pg.reason?.message);
-	const posts = st.status === "fulfilled" ? (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$25) : [];
+	const posts = st.status === "fulfilled" ? (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$26) : [];
 	posts.sort((a, b) => b.date - a.date);
 	const images = /* @__PURE__ */ new Map();
 	const byKey = /* @__PURE__ */ new Map();
@@ -27733,7 +27733,7 @@ async function syncStarSavior(gameId, now = Date.now()) {
 	}
 	for (const p of posts.filter((p) => /broadcast summary|developer talk|dev notes/i.test(p.title))) for (const [k, v] of portraitsOf(linesOf(p.contents))) if (!images.has(k)) images.set(k, v);
 	const seasons = [...byKey.values()].filter((e) => /prism season/i.test(e.title));
-	let official = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$25);
+	let official = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$26);
 	const steamBanners = official.filter((e) => e.kind === "banner");
 	const banners = (pr.status === "fulfilled" ? pr.value.events : []).map((b) => {
 		const twin = steamBanners.find((s) => Math.abs(+new Date(s.end) - +new Date(b.end)) < 2 * HOUR$7 && s.start.slice(0, 10) === b.start.slice(0, 10));
@@ -27801,7 +27801,7 @@ var GG = "https://www.gacha.gg";
 var CODES = "https://ucngame.com/codes/horizon-walker-codes/";
 var CLAN_IMG$1 = "https://clan.akamai.steamstatic.com/images";
 var HOUR$6 = 36e5;
-var DAY$24 = 24 * HOUR$6;
+var DAY$25 = 24 * HOUR$6;
 var KST$1 = 9;
 /** Fin del mantenimiento de los jueves (12:00 KST) y su inicio (09:00 KST). */
 var AFTER = 12;
@@ -28098,7 +28098,7 @@ async function syncHorizonWalker(gameId, now = Date.now()) {
 		["gacha.gg armas", wp],
 		["códigos", cd]
 	]) if (r.status === "rejected") console.warn(`[horizonwalker] ${k}:`, r.reason?.message);
-	const posts = (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$24).sort((a, b) => b.date - a.date);
+	const posts = (JSON.parse(st.value)?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && now - n.date * 1e3 < 75 * DAY$25).sort((a, b) => b.date - a.date);
 	const { shops, icons } = ev.status === "fulfilled" ? hwShops(dom(ev.value)) : {
 		shops: /* @__PURE__ */ new Map(),
 		icons: /* @__PURE__ */ new Map()
@@ -28235,12 +28235,12 @@ async function syncHorizonWalker(gameId, now = Date.now()) {
 			source: "api"
 		});
 	}
-	const events = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$24);
+	const events = [...byKey.values()].filter((e) => +new Date(e.end) > now - 3 * DAY$25);
 	const list = patches.sort((a, b) => +new Date(a.date) - +new Date(b.date));
 	const last = list[list.length - 1];
 	if (last) {
-		let t = +new Date(last.date) + 14 * DAY$24;
-		while (t < now) t += 14 * DAY$24;
+		let t = +new Date(last.date) + 14 * DAY$25;
+		while (t < now) t += 14 * DAY$25;
 		list.push({
 			id: `${gameId}:patch:${iso$7(t).slice(0, 10)}`,
 			gameId,
@@ -28270,8 +28270,8 @@ var STEAM = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=306
 var PRYDWEN = "https://www.prydwen.gg/persona-5x/characters";
 var CLAN_IMG = "https://clan.akamai.steamstatic.com/images";
 var HOUR$5 = 36e5;
-var DAY$23 = 24 * HOUR$5;
-var CYCLE = 14 * DAY$23;
+var DAY$24 = 24 * HOUR$5;
+var CYCLE = 14 * DAY$24;
 var MONTHS$9 = [
 	"jan",
 	"feb",
@@ -28434,7 +28434,7 @@ function p5xPost(gameId, post) {
 				source: "api",
 				official: true,
 				precision: it.range.start === posted ? "approx" : void 0,
-				...MINOR$3.test(it.name) || MINOR$3.test(s.title) || it.range.end - it.range.start > 60 * DAY$23 ? { minor: true } : {}
+				...MINOR$3.test(it.name) || MINOR$3.test(s.title) || it.range.end - it.range.start > 60 * DAY$24 ? { minor: true } : {}
 			});
 		}
 	}
@@ -28542,12 +28542,12 @@ function p5xMaintenance(notices) {
 		if (!a) continue;
 		const day = iso$6(a.t).slice(0, 10);
 		let end = p5xWhen(/[A-Z][a-z]{2,8}\.? \d/.test(period[2]) ? period[2] : `${period[1].replace(/,?\s+\d{1,2}:\d{2}\s*[AP]M$/i, "")} ${period[2]}`, +day.slice(0, 4))?.t ?? NaN;
-		if (end <= a.t) end += DAY$23;
+		if (end <= a.t) end += DAY$24;
 		let planned = true;
 		const real = /(?:resumed|ended|completed)\s+(?:at|as of)\s+(\d{1,2}:\d{2}\s*[AP]M)/i.exec(text) ?? /extended[^.\n]{0,80}?until\s+(\d{1,2}:\d{2}\s*[AP]M)/i.exec(text);
 		if (real) {
 			let t = p5xWhen(`${period[1].replace(/,?\s+\d{1,2}:\d{2}\s*[AP]M$/i, "")} ${real[1]}`, +day.slice(0, 4))?.t ?? NaN;
-			if (t <= a.t) t += DAY$23;
+			if (t <= a.t) t += DAY$24;
 			if (!isNaN(t)) {
 				end = t;
 				planned = false;
@@ -28569,7 +28569,7 @@ function maintOn(maint, t) {
 		-1,
 		1
 	]) {
-		const m = maint.get(iso$6(t + d * DAY$23).slice(0, 10));
+		const m = maint.get(iso$6(t + d * DAY$24).slice(0, 10));
 		if (m) return m.end;
 	}
 }
@@ -28699,7 +28699,7 @@ function p5xOfficialEvents(gameId, n, maint) {
 			pulls,
 			featured: [],
 			description: summarize(sec.slice(1), { title }),
-			...MINOR$3.test(name) || r.end - r.start > 60 * DAY$23 ? { minor: true } : {}
+			...MINOR$3.test(name) || r.end - r.start > 60 * DAY$24 ? { minor: true } : {}
 		});
 	}
 	return out;
@@ -28709,7 +28709,7 @@ async function syncOfficial(now) {
 	const year = new Date(now).getUTCFullYear();
 	const res = await fetch(viaProxy(`${SITE$2}/news/data/news${year}.txt`));
 	if (!res.ok) throw new Error(`persona5x.com → HTTP ${res.status}`);
-	const want = p5xNewsList(await res.text()).filter((n) => now - Date.parse(`${n.day}T00:00:00Z`) < 35 * DAY$23 && (n.category === "events" || n.category === "update" && /maintenance announcement|update information/i.test(n.text))).slice(0, 18);
+	const want = p5xNewsList(await res.text()).filter((n) => now - Date.parse(`${n.day}T00:00:00Z`) < 35 * DAY$24 && (n.category === "events" || n.category === "update" && /maintenance announcement|update information/i.test(n.text))).slice(0, 18);
 	const notices = [];
 	for (const n of want) {
 		const r = await fetch(viaProxy(`${SITE$2}/news/details/${n.link}`)).catch(() => null);
@@ -28731,11 +28731,11 @@ async function syncPersona5x(gameId, now = Date.now()) {
 		patches: synced.patches,
 		codes: []
 	};
-	const official = off.notices.filter((n) => n.news.category === "events").flatMap((n) => p5xOfficialEvents(gameId, n, off.maint)).filter((e) => Date.parse(e.end) > now - 3 * DAY$23);
+	const official = off.notices.filter((n) => n.news.category === "events").flatMap((n) => p5xOfficialEvents(gameId, n, off.maint)).filter((e) => Date.parse(e.end) > now - 3 * DAY$24);
 	const events = [];
 	const used = /* @__PURE__ */ new Set();
 	for (const o of official) {
-		const twin = synced.events.find((s) => !used.has(s) && s.kind === o.kind && (o.featured.length ? s.featured.some((f) => o.featured.some((g) => key$5(g.name) === key$5(f.name))) : key$5(s.title).includes(key$5(o.title)) || key$5(o.title).includes(key$5(s.title))) && Math.abs(Date.parse(s.end) - Date.parse(o.end)) <= DAY$23);
+		const twin = synced.events.find((s) => !used.has(s) && s.kind === o.kind && (o.featured.length ? s.featured.some((f) => o.featured.some((g) => key$5(g.name) === key$5(f.name))) : key$5(s.title).includes(key$5(o.title)) || key$5(o.title).includes(key$5(s.title))) && Math.abs(Date.parse(s.end) - Date.parse(o.end)) <= DAY$24);
 		if (twin) used.add(twin);
 		events.push({
 			...o,
@@ -28775,7 +28775,7 @@ async function syncPersona5x(gameId, now = Date.now()) {
 	const known = patches.map((p) => Date.parse(p.date));
 	return {
 		events,
-		patches: [...patches, ...synced.patches.filter((p) => !known.some((t) => Math.abs(t - Date.parse(p.date)) < 2 * DAY$23) && !(p.estimated && known.some((t) => t > now)))],
+		patches: [...patches, ...synced.patches.filter((p) => !known.some((t) => Math.abs(t - Date.parse(p.date)) < 2 * DAY$24) && !(p.estimated && known.some((t) => t > now)))],
 		codes: [],
 		pcOnly: true
 	};
@@ -28785,20 +28785,20 @@ async function syncSteam(gameId, now, maint) {
 	if (st.status === "rejected") throw st.reason;
 	if (pr.status === "rejected") console.warn("[persona5x] retratos:", pr.reason?.message);
 	const portrait = pr.status === "fulfilled" ? p5xPortraits(pr.value) : () => void 0;
-	const posts = (st.value?.appnews?.newsitems ?? []).filter((p) => p.feedname === "steam_community_announcements" && now - p.date * 1e3 < 90 * DAY$23).sort((a, b) => b.date - a.date);
+	const posts = (st.value?.appnews?.newsitems ?? []).filter((p) => p.feedname === "steam_community_announcements" && now - p.date * 1e3 < 90 * DAY$24).sort((a, b) => b.date - a.date);
 	const events = [];
 	const patches = [];
 	for (const p of posts) {
 		const r = p5xPost(gameId, p);
 		const posted = p.date * 1e3;
 		const mEnd = maint ? maintOn(maint, posted) : void 0;
-		const at = mEnd !== void 0 && mEnd <= posted + HOUR$5 && posted - mEnd < DAY$23 ? mEnd : void 0;
+		const at = mEnd !== void 0 && mEnd <= posted + HOUR$5 && posted - mEnd < DAY$24 ? mEnd : void 0;
 		for (const e of r.events) {
 			if (at !== void 0 && Date.parse(e.start) === posted) {
 				e.start = iso$6(at);
 				delete e.precision;
 			}
-			if (!events.some((x) => x.id === e.id) && Date.parse(e.end) > now - 3 * DAY$23) events.push(e);
+			if (!events.some((x) => x.id === e.id) && Date.parse(e.end) > now - 3 * DAY$24) events.push(e);
 		}
 		if (r.patch && at !== void 0) r.patch.date = iso$6(at);
 		if (r.patch && !patches.some((x) => x.date.slice(0, 10) === r.patch.date.slice(0, 10))) patches.push(r.patch);
@@ -28806,9 +28806,9 @@ async function syncSteam(gameId, now, maint) {
 	const last = patches.map((p) => Date.parse(p.date)).sort((a, b) => b - a)[0];
 	if (last) {
 		let next = last + CYCLE;
-		while (next < now - DAY$23) next += CYCLE;
+		while (next < now - DAY$24) next += CYCLE;
 		for (const t of teased(posts)) {
-			if (t.at < last - 7 * DAY$23 || events.some((e) => e.kind === "banner" && e.featured.some((f) => key$5(f.name) === key$5(t.name)))) continue;
+			if (t.at < last - 7 * DAY$24 || events.some((e) => e.kind === "banner" && e.featured.some((f) => key$5(f.name) === key$5(t.name)))) continue;
 			events.push({
 				id: `${gameId}:banner:steam:teased:${key$5(t.name)}`,
 				gameId,
@@ -28816,7 +28816,7 @@ async function syncSteam(gameId, now, maint) {
 				title: t.name,
 				description: "⟦d.p5xTeased⟧",
 				start: iso$6(next),
-				end: iso$6(next + 28 * DAY$23 - 6e4),
+				end: iso$6(next + 28 * DAY$24 - 6e4),
 				items: [],
 				featured: [{
 					name: t.name,
@@ -28831,7 +28831,7 @@ async function syncSteam(gameId, now, maint) {
 	if (last) {
 		const bannersEnd = Math.max(0, ...events.filter((e) => e.kind === "banner" && e.precision !== "estimated").map((e) => Date.parse(e.end)));
 		let t = last + CYCLE;
-		while (t < now || t < bannersEnd - DAY$23) t += CYCLE;
+		while (t < now || t < bannersEnd - DAY$24) t += CYCLE;
 		patches.push({
 			id: `${gameId}:patch:${iso$6(t).slice(0, 10)}`,
 			gameId,
@@ -28874,7 +28874,7 @@ async function syncSteam(gameId, now, maint) {
 var API$6 = "https://forum.nexon.com/api/v1";
 var ALIAS = "bluearchive-en";
 var HOUR$4 = 36e5;
-var DAY$22 = 24 * HOUR$4;
+var DAY$23 = 24 * HOUR$4;
 var iso$5 = (t) => new Date(t).toISOString();
 var key$4 = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 var lines$3 = (html) => html.replace(/<img[^>]*src="([^"]+)"[^>]*>/gi, "\n@@IMG $1\n").replace(/<br\s*\/?>/gi, "\n").replace(/<\/(p|div|li|tr|td|h\d)>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&#39;|&rsquo;/g, "'").split("\n").map((l) => l.replace(/[ \t]+/g, " ").trim()).filter(Boolean);
@@ -28892,7 +28892,7 @@ function dayOf(md, ref) {
 	const m = /(\d{1,2})\/(\d{1,2})/.exec(md);
 	const y = new Date(ref).getUTCFullYear();
 	const t = Date.UTC(y, +m[1] - 1, +m[2]);
-	return t < ref - 200 * DAY$22 ? Date.UTC(y + 1, +m[1] - 1, +m[2]) : t;
+	return t < ref - 200 * DAY$23 ? Date.UTC(y + 1, +m[1] - 1, +m[2]) : t;
 }
 /** Fin real de cada mantenimiento (día UTC → ms). */
 function baMaintenance(threads) {
@@ -28907,7 +28907,7 @@ function baMaintenance(threads) {
 			const last = times.length ? hm(times[times.length - 1][0]) : null;
 			if (!start || !last) continue;
 			let end = day + (last[0] * 60 + last[1]) * 6e4;
-			if (end <= day + (start[0] * 60 + start[1]) * 6e4) end += DAY$22;
+			if (end <= day + (start[0] * 60 + start[1]) * 6e4) end += DAY$23;
 			out.set(iso$5(day).slice(0, 10), end);
 			break;
 		}
@@ -29003,7 +29003,7 @@ async function thread(id) {
 /** Eventos del foro (solo con OFFICIAL_SITES=1 en el proxy; si no, falla y Blue Archive sigue con la wiki y Discord). */
 async function syncBaForum(gameId, now = Date.now()) {
 	const [events, updates] = await Promise.all([list(3218), list(3217)]);
-	const recent = (t) => now - t.createDate * 1e3 < 35 * DAY$22;
+	const recent = (t) => now - t.createDate * 1e3 < 35 * DAY$23;
 	const wantUpd = updates.filter((t) => recent(t) && /maintenance notice/i.test(t.title)).slice(0, 4);
 	const wantEv = events.filter((t) => recent(t) && !/recruitment notice|ending soon|community contest|coupon/i.test(t.title)).slice(0, 12);
 	const full = async (ts) => (await Promise.all(ts.map((t) => thread(t.threadId)))).filter((t) => !!t);
@@ -29011,7 +29011,7 @@ async function syncBaForum(gameId, now = Date.now()) {
 	const posts = await full(wantEv);
 	const firstImgs = posts.map((p) => /<img[^>]*src="([^"]+)"/i.exec(p.content ?? "")?.[1]).filter(Boolean);
 	const banner = firstImgs.find((u, i) => firstImgs.indexOf(u) !== i);
-	const out = posts.flatMap((p) => baForumEvents(gameId, p, maint, banner)).filter((e) => Date.parse(e.end) > now - 3 * DAY$22);
+	const out = posts.flatMap((p) => baForumEvents(gameId, p, maint, banner)).filter((e) => Date.parse(e.end) > now - 3 * DAY$23);
 	if (!out.length) throw new Error("foro de Nexon: sin eventos vigentes");
 	return {
 		events: out,
@@ -29031,7 +29031,7 @@ async function syncBaForum(gameId, now = Date.now()) {
 * descripción, destacados con estrellas) y añade lo que la wiki no tiene (logins, tienda de trajes). 1 lista + hasta 5 avisos (caché 3 h).
 */
 var API$5 = "https://www.arknights.global/api/resource/news";
-var DAY$21 = 864e5;
+var DAY$22 = 864e5;
 var MONTHS$8 = [
 	"january",
 	"february",
@@ -29152,12 +29152,12 @@ function akNotice(gameId, html, posted) {
 async function syncArknightsNews(gameId, now = Date.now()) {
 	const res = await fetch(viaProxy(`${API$5}/list?index=1&size=10&type=latest`));
 	if (!res.ok) throw new Error(`arknights.global → HTTP ${res.status}`);
-	const want = ((await res.json())?.data?.rows ?? []).filter((n) => n.type === "event" && now - n.publishTime < 40 * DAY$21 && !/FAQ|CONTEST|CREATION/i.test(n.title)).slice(0, 5);
+	const want = ((await res.json())?.data?.rows ?? []).filter((n) => n.type === "event" && now - n.publishTime < 40 * DAY$22 && !/FAQ|CONTEST|CREATION/i.test(n.title)).slice(0, 5);
 	const out = [];
 	for (const n of want) {
 		const d = await fetch(viaProxy(`${API$5}/detail?id=${n.id}`)).then((r) => r.ok ? r.json() : null).catch(() => null);
 		const html = d?.data?.content ?? d?.data?.news?.content ?? "";
-		for (const e of html ? akNotice(gameId, html, n.publishTime) : []) if (Date.parse(e.end) > now - 3 * DAY$21 && !out.some((o) => o.id === e.id)) out.push(e);
+		for (const e of html ? akNotice(gameId, html, n.publishTime) : []) if (Date.parse(e.end) > now - 3 * DAY$22 && !out.some((o) => o.id === e.id)) out.push(e);
 	}
 	if (!out.length) throw new Error("arknights.global: sin eventos vigentes");
 	return {
@@ -29189,7 +29189,7 @@ var words$1 = (s) => new Set(s.toLowerCase().split(/[^a-z0-9]+/).filter((w) => w
 function withArknightsNews(wiki, news) {
 	const events = wiki.events.map((e) => ({ ...e }));
 	for (const n of news) {
-		const near = (e) => e.kind === n.kind && Math.abs(Date.parse(e.start) - Date.parse(n.start)) <= DAY$21 && Math.abs(Date.parse(e.end) - Date.parse(n.end)) <= 8 * DAY$21;
+		const near = (e) => e.kind === n.kind && Math.abs(Date.parse(e.start) - Date.parse(n.start)) <= DAY$22 && Math.abs(Date.parse(e.end) - Date.parse(n.end)) <= 8 * DAY$22;
 		const login = (t) => /sign-?in|login|log-in/i.test(t);
 		const twin = events.find((e) => near(e) && (n.kind === "banner" ? e.featured.some((f) => n.featured.some((g) => key$3(g.name) === key$3(f.name))) || key$3(e.title) === key$3(n.title) : login(e.title) && login(n.title) || [...words$1(n.title)].some((w) => words$1(e.title).has(w)) || e.items.filter((i) => n.items.some((x) => key$3(x.name) === key$3(i.name))).length >= 3));
 		if (!twin) {
@@ -29210,6 +29210,173 @@ function withArknightsNews(wiki, news) {
 	return {
 		...wiki,
 		events
+	};
+}
+// src/sources/imivi.ts
+/**
+* Arknights · calendario de recursos de la "Arknights Pulls Calculator" de imivi (imivi.github.io/arknights-pulls-calculator; código MIT,
+* github.com/imivi/arknights-pulls-calculator). Sus datos salen de una hoja de Google que su autor mantiene y van incrustados en el JS de la web:
+*  - eventos (`{event_id:[…],title:[…],event_ops:[…],is_limited:[…],is_rerun:[…],first_day:[…],duration_days:[…],date_confirmed:[…]…}`),
+*    también los de Global aún sin fecha, proyectados desde CN ("Date TBD" en la web, `date_confirmed: 0`);
+*  - qué evento corre cada día (`{day:[…],event_id:[…],day_of_event:[…]}`);
+*  - lo que se gana cada día (`JSON.parse('{"amount":[…],"day":[…],"resource":[…],"source":[…]}')`): recurso 1 = Orundum, 2 = Headhunting Permit,
+*    3 = Originite Prime, 4 = Distinction Certificate; fuente = misiones, Annihilation, tienda, pase mensual… o lo propio del evento.
+* Se usan solo las fuentes de cada evento (`EVENT_SOURCES`): las diarias, semanales, Annihilation y la tienda ya las cuenta el planificador
+* (pullPlan.ts) y el pase mensual es de pago. Con ellas:
+*  1. un evento de nuestras fuentes sin recompensas que empieza el mismo día (±2) que uno de imivi toma las de imivi;
+*  2. los eventos de imivi que aún no tenemos y empiezan en el futuro se añaden "estimados", con su banner si trae operadores.
+* Los nombres de las variables cambian en cada compilación de su web: las tablas se buscan por su contenido. 2 peticiones (HTML y JS, caché 12 h).
+*/
+var BASE$4 = "https://imivi.github.io/arknights-pulls-calculator/";
+var DAY$21 = 864e5;
+/** Fuentes propias de un evento (las demás son ingresos fijos que pullPlan.ts ya suma). */
+var EVENT_SOURCES = /* @__PURE__ */ new Set([
+	"event_stages",
+	"event_shop",
+	"login",
+	"tokens",
+	"intel",
+	"fortune_strip",
+	"new_anni",
+	"free_monthly_card"
+]);
+var RESOURCE = {
+	1: "Orundum",
+	2: "Headhunting Permit",
+	3: "Originite Prime",
+	4: "Distinction Certificate"
+};
+/** Iconos de arknights.wiki.gg (`{{I|…}}` → "<Nombre>.png" en /images/). */
+var icon = (name) => `https://arknights.wiki.gg/images/${name.replace(/ /g, "_")}.png`;
+/** Objeto literal `{clave:[…],…}` (solo listas de números y cadenas) que empieza con `head` → tabla. */
+function literal(js, head) {
+	const at = js.indexOf(head);
+	if (at < 0) return void 0;
+	const end = js.indexOf("]}", at);
+	if (end < 0) return void 0;
+	const src = js.slice(at, end + 2).replace(/([{,])([a-z_]+):\[/g, "$1\"$2\":[").replace(/!0/g, "1").replace(/!1/g, "0");
+	try {
+		return JSON.parse(src);
+	} catch {
+		return;
+	}
+}
+/** `JSON.parse('{"amount":…}')` → tabla. */
+function parsed(js) {
+	const at = js.indexOf(`JSON.parse('{"amount":`);
+	if (at < 0) return void 0;
+	const from = at + `JSON.parse('`.length;
+	const end = js.indexOf(`')`, from);
+	try {
+		return JSON.parse(js.slice(from, end).replace(/\\'/g, "'"));
+	} catch {
+		return;
+	}
+}
+/** Eventos de la calculadora con lo que dan (sumado por recurso). */
+async function imiviEvents() {
+	const html = await fetch(viaProxy(BASE$4)).then((r) => r.ok ? r.text() : "");
+	const script = /src="([^"]*assets\/index-[\w-]+\.js)"/.exec(html)?.[1];
+	if (!script) throw new Error("imivi: sin script en la página");
+	const js = await fetch(viaProxy(new URL(script, BASE$4).href)).then((r) => r.ok ? r.text() : "");
+	const ev = literal(js, "{event_id:[");
+	let map;
+	for (let i = js.indexOf("{day:[\""); i >= 0 && !map?.event_id; i = js.indexOf("{day:[\"", i + 1)) map = literal(js.slice(i), "{day:[\"");
+	const res = parsed(js);
+	if (!ev?.event_id || !map || !res?.amount) throw new Error("imivi: no se encontraron las tablas");
+	const eventOf = /* @__PURE__ */ new Map();
+	map.day.forEach((d, i) => eventOf.set(String(d), String(map.event_id[i])));
+	const sums = /* @__PURE__ */ new Map();
+	res.amount.forEach((a, i) => {
+		if (!EVENT_SOURCES.has(String(res.source[i]))) return;
+		const id = eventOf.get(String(res.day[i]));
+		const name = RESOURCE[Number(res.resource[i])];
+		if (!id || !name) return;
+		const m = sums.get(id) ?? /* @__PURE__ */ new Map();
+		m.set(name, (m.get(name) ?? 0) + Number(a));
+		sums.set(id, m);
+	});
+	return ev.event_id.map((id, i) => ({
+		id: String(id),
+		title: String(ev.title[i]),
+		ops: String(ev.event_ops?.[i] ?? "").split(",").map((s) => s.trim().replace(/_/g, " ")).filter(Boolean),
+		limited: !!Number(ev.is_limited?.[i]),
+		rerun: !!Number(ev.is_rerun?.[i]),
+		confirmed: !!Number(ev.date_confirmed?.[i]),
+		start: Date.parse(`${ev.first_day[i]}T17:00:00Z`),
+		days: Number(ev.duration_days[i]) || 14,
+		items: [...(sums.get(String(id)) ?? /* @__PURE__ */ new Map()).entries()].map(([name, amount]) => ({
+			name,
+			amount,
+			icon: icon(name)
+		}))
+	})).filter((e) => !Number.isNaN(e.start));
+}
+/** Como en wiki.ts: el Originite Prime cuenta como 180 Orundum. Los Distinction Certificates no (se cambian por permisos a ritmo variable). */
+var pullsOf = (items) => {
+	const op = items.find((i) => i.name === "Originite Prime")?.amount ?? 0;
+	return pullsIn("arknights", [...items.filter((i) => i.name !== "Originite Prime").map((i) => `${i.name} x${i.amount}`), ...op ? [`Orundum x${op * 180}`] : []]).pulls;
+};
+/** Une los eventos de imivi a los de nuestras fuentes (ver arriba). Si imivi falla, devuelve `s` tal cual. */
+async function withImivi(s, gameId, now = Date.now()) {
+	const list = await imiviEvents().catch((err) => {
+		console.warn("[arknights] imivi:", err?.message ?? err);
+		return [];
+	});
+	if (!list.length) return s;
+	const ours = s.events.filter((e) => e.kind === "event" && !e.minor);
+	const sameStart = (x) => ours.find((e) => Math.abs(Date.parse(e.start) - x.start) <= 2 * DAY$21 && Date.parse(e.end) - Date.parse(e.start) >= 7 * DAY$21);
+	const filled = /* @__PURE__ */ new Map();
+	const extra = [];
+	for (const x of list) {
+		const end = x.start + x.days * DAY$21 - 216e5 - 1e3;
+		if (end < now) continue;
+		const match = sameStart(x);
+		if (match) {
+			if (!match.items.length && x.items.length) filled.set(match.id, x.items);
+			continue;
+		}
+		if (x.start <= now) continue;
+		const day = new Date(x.start).toISOString().slice(0, 10);
+		extra.push({
+			id: `${gameId}:event:imivi:${x.id}:${day}`,
+			gameId,
+			kind: "event",
+			title: x.rerun ? `${x.title.replace(/\s*Rerun$/i, "")} (Rerun)` : x.title,
+			description: x.rerun ? "⟦d.rerun⟧" : void 0,
+			start: new Date(x.start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: x.items,
+			featured: [],
+			pulls: pullsOf(x.items),
+			source: "api",
+			precision: x.confirmed ? "approx" : "estimated"
+		});
+		if (x.ops.length && !x.rerun) extra.push({
+			id: `${gameId}:banner:imivi:${x.id}:${day}`,
+			gameId,
+			kind: "banner",
+			title: x.ops.join(" / "),
+			start: new Date(x.start).toISOString(),
+			end: new Date(end).toISOString(),
+			items: [],
+			featured: x.ops.map((name) => ({ name })),
+			pulls: 0,
+			source: "api",
+			precision: x.confirmed ? "approx" : "estimated"
+		});
+	}
+	const events = s.events.map((e) => {
+		const items = filled.get(e.id);
+		return items ? {
+			...e,
+			items,
+			pulls: pullsOf(items)
+		} : e;
+	});
+	return {
+		...s,
+		events: [...events, ...extra]
 	};
 }
 // src/sources/makedrama.ts
@@ -35552,7 +35719,7 @@ async function syncSourceRaw(game) {
 		case "arknights": return withGachafocus(id, "arknights", syncArknights(id).then(async (w) => withArknightsNews(w, await syncArknightsNews(id).then((s) => s.events).catch((err) => {
 			console.warn("[arknights] avisos oficiales:", err?.message);
 			return [];
-		}))));
+		})))).then((s) => withImivi(s, id));
 		case "endfield": {
 			const s = await withGachafocus(id, "endfield", syncEndfield(id));
 			return {

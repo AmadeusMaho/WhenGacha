@@ -1507,3 +1507,19 @@ Aniimo y Uma: sus fuentes no las publican.
   temporada en arknights.wiki.gg), Persona 5X Shadow Hunt (el aviso oficial dice que es la lista de enemigos fuertes de los Palacios nuevos;
   los premios salen de vencerlos) y Uma Legend Race (150 Carats por la primera victoria contra cada leyenda, pero cada evento trae 2 o 3).
 - Siguen sin fuente: Daphne Battlefront of Heroes, CZN Virtual Tactical Simulation (Game8 lo nombra sin cifras), StarSavior y Aniimo.
+
+### Arknights: calendario de recursos de la calculadora de imivi (26 nov 2026)
+
+La "Arknights Pulls Calculator" de imivi (imivi.github.io/arknights-pulls-calculator, código MIT; la propuso el dueño) mantiene en una hoja de Google
+lo que da cada día y cada evento de Global, también los próximos proyectados desde CN. Su web lleva esos datos incrustados en el JS: `src/sources/imivi.ts`
+lee su página y su JS (2 peticiones, caché de 12 h; fuente `imivi` del proxy) y busca las tablas por su contenido, porque los nombres de las
+variables cambian en cada compilación.
+- Recursos por día y fuente (Orundum, Headhunting Permit, Originite Prime, Distinction Certificate). De cada evento se suman solo sus fuentes
+  propias (fases, tienda del evento, inicios de sesión, fichas, 2000 Orundum de la tienda de certificados en cada rerun, tiras de la fortuna,
+  mapas nuevos de Annihilation, meses gratis); lo diario, semanal, Annihilation y la tienda mensual ya los suma `pullPlan.ts`.
+- Un evento nuestro sin recompensas que empieza el mismo día (±2) toma las de imivi (A Flurry to the Flame Rerun: 2000 Orundum y 31 OP).
+- Los eventos que aún no tenemos y empiezan en el futuro se añaden "estimados" (o "≈" si imivi ya da la fecha por confirmada), con su banner
+  si trae operadores: hoy, de Bolívar Diagnosed (14 dic) a Vremya, v Put'! (6 abr 2027). Hora de inicio supuesta: 17:00 UTC.
+- El Originite Prime cuenta como 180 Orundum (igual que wiki.ts); los Distinction Certificates no suman tiradas.
+- Planificador: 4 Headhunting Permits al mes en la tienda de certificados (fuente "store" de imivi, 44 en 11 meses), que no contábamos.
+- No están en sus datos: el Contingency Contract (no lo cuenta) y los 24 tiros gratis de cada banner limitado (los muestra aparte).

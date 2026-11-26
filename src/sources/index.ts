@@ -28,6 +28,7 @@ import { syncHorizonWalker, HORIZONWALKER_ICONS } from './horizonwalker'
 import { syncPersona5x } from './persona5x'
 import { syncBaForum } from './nexonba'
 import { syncArknightsNews, withArknightsNews } from './yostarak'
+import { withImivi } from './imivi'
 import { syncMakeDrama } from './makedrama'
 import { syncFeh } from './feh'
 import { syncResu, syncSwordMaster } from './mobilegames'
@@ -502,8 +503,10 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
   const id = game.id
   switch (game.api) {
     // Arknights: la wiki (hora exacta, nombres) + los avisos oficiales de arknights.global (recompensas con cifra, logins, imágenes; yostarak.ts).
+    // + la calculadora de imivi (imivi.ts): recompensas de los eventos que llegan sin ellas y los próximos de Global, estimados desde CN.
     case 'arknights': return withGachafocus(id, 'arknights', syncArknights(id).then(async w => withArknightsNews(w, await syncArknightsNews(id).then(s => s.events)
       .catch(err => { console.warn('[arknights] avisos oficiales:', (err as Error)?.message); return [] as GameEvent[] }))))
+      .then(s => withImivi(s, id))
     case 'endfield': {
       const s = await withGachafocus(id, 'endfield', syncEndfield(id))
       return { ...s, patches: finalize(s.patches, game.patchCycleDays) }

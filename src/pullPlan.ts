@@ -136,7 +136,10 @@ const ECON: Record<string, Econ> = {
   arknights: { currency: 'Orundum', icon: 'Orundum', ticket: 'Headhunting Permit', per: 600, pass: 0, pity: 0, sources: [
     daily(100), weekly(500),
     { name: 'Annihilation', amount: 1800, per: 'week', endgame: true },
-    { key: 'shop', amount: 600, per: 'month', day: 1 }] },
+    { key: 'shop', amount: 600, per: 'month', day: 1 },
+    // + 4 Headhunting Permits al mes en la misma tienda de certificados (26 nov 2026: calendario de la calculadora de imivi, fuente "store",
+    // 44 permisos en 11 meses; imivi.ts). Los eventos de imivi traen lo demás (Originite Prime, permisos de sus tiendas, 2000 Orundum por rerun…).
+    { name: 'Certificate Store · Headhunting Permits', amount: 4, per: 'month', day: 1, tickets: true }] },
   reverse1999: { currency: 'Clear Drop', icon: 'Clear Drop', ticket: 'Unilog', per: 180, pass: 0, pity: 70, sources: [
     daily(90), weekly(100),
     // Limbo se reinicia los días 1 y 16 de cada mes (dotgg y las notas de la 2.4: 1 y 16 mar 2025), hasta 600 por reinicio.
