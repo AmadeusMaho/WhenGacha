@@ -35361,6 +35361,19 @@ var CHALLENGE_CAPS = {
 			amount: 1200
 		}],
 		upTo: "1200 Oroberyl"
+	}],
+	czn: [{
+		match: /^Full[- ]Scale Offensive/i,
+		items: [{
+			name: "Crystals",
+			amount: 720,
+			icon: "https://img.game8.co/4316399/a181e67d666755f38af594da273c7f75.png/show"
+		}, {
+			name: "Prism Lens",
+			amount: 9,
+			icon: "https://img.game8.co/4316403/9ee537db90128b13819f452493589506.png/show"
+		}],
+		upTo: "720 Crystals"
 	}]
 };
 function withChallengeCaps(gameId, events) {

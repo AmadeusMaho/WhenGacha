@@ -1499,3 +1499,11 @@ Aniimo y Uma: sus fuentes no las publican.
 - Buscado sin cifras: Uma Legend Race (las guías dan 150 Carats por la primera victoria contra cada leyenda, sin decir cuántas hay por evento),
   Persona 5X Shadow Hunt, StarSavior (Overload Cube, Onslaught Quest), Aniimo Holo-Battle Interlink (wikily.gg describe los premios sin cifras),
   CZN Full-Scale Offensive (solo una tienda de recargas da 120 Crystals por tramo) y BD2 Tower of Salvation.
+
+**Quinta pasada (mismo día):**
+- **CZN, Full-Scale Offensive**: 720 Crystals (estrellas 1–6, 120 cada una) y 9 Prism Lens (estrellas 7–9), de la tabla de Game8 ("Full-Scale
+  Offensive Guide"), con sus iconos. La temporada del 11 nov dura 54 días y el aviso dice que da más, sin cifras: se usa la tabla normal.
+- Comprobado que no tienen tope que sumar: Arknights Contingency Contract (solo Crystal Contract Bounty para su tienda, según la página de la
+  temporada en arknights.wiki.gg), Persona 5X Shadow Hunt (el aviso oficial dice que es la lista de enemigos fuertes de los Palacios nuevos;
+  los premios salen de vencerlos) y Uma Legend Race (150 Carats por la primera victoria contra cada leyenda, pero cada evento trae 2 o 3).
+- Siguen sin fuente: Daphne Battlefront of Heroes, CZN Virtual Tactical Simulation (Game8 lo nombra sin cifras), StarSavior y Aniimo.

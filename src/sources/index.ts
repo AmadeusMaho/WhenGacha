@@ -334,6 +334,12 @@ const asChallenges = (gameId: string, events: GameEvent[]): GameEvent[] => {
 const CHALLENGE_CAPS: Partial<Record<string, { match: RegExp; items: RewardItem[]; upTo: string }[]>> = {
   bd2: [{ match: /^Golden Colosseum/i, items: [{ name: 'Aurum Coin', amount: 2900, icon: 'https://static.wikitide.net/browndust2wiki/thumb/0/0e/Aurum_Coin_icon.png/64px-Aurum_Coin_icon.png' }], upTo: '2900 Aurum Coins' }],
   endfield: [{ match: /MEGA ARENA/i, items: [{ name: 'Oroberyl', amount: 1200 }], upTo: '1200 Oroberyl' }],
+  // CZN, Full-Scale Offensive (Game8, "Full-Scale Offensive Guide", tabla por estrellas): 120 Crystals por cada una de las estrellas 1–6 y 3 Prism
+  // Lens por las 7–9 → 720 Crystals (4,5 tiradas) y 9 Prism Lens. La temporada del 11 nov dura 54 días en vez de 42 y "Rewards will be increased
+  // for this Season only" (aviso del 11/11 en czn.gg), sin cifras: se da la tabla normal.
+  czn: [{ match: /^Full[- ]Scale Offensive/i, items: [
+    { name: 'Crystals', amount: 720, icon: 'https://img.game8.co/4316399/a181e67d666755f38af594da273c7f75.png/show' },
+    { name: 'Prism Lens', amount: 9, icon: 'https://img.game8.co/4316403/9ee537db90128b13819f452493589506.png/show' }], upTo: '720 Crystals' }],
 }
 function withChallengeCaps(gameId: string, events: GameEvent[]): GameEvent[] {
   const caps = CHALLENGE_CAPS[gameId]
