@@ -62,7 +62,8 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // Trickcal: Chibi Go: 100 Crystal Leaf por reclutamiento, 1000 el x10 (Prydwen, "1 summon costs 100 Crystal Leafs"; lootandwaifus, "500 gems (5 singles)").
   // Recruitment Ticket = 1. Los Card Ticket (gacha de cartas) no cuentan.
   trickcal: [{ item: /^crystal lea(f|ves|fs)$/i, per: 100 }, { item: /^(special |rate-up )?recruitment tickets?$/i, per: 1 }],
-  uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume) )?scout tickets?$/i, per: 1 }],
+  // "Trainee Scout Ticket" es el nombre de Global (GameTora) del ticket de personaje.
+  uma: [{ item: /^carats?$/i, per: 150 }, { item: /^((support card|character|uma musume|trainee) )?scout tickets?$/i, per: 1 }],
   // Girls' Frontline 2: Exilium (IOP Wiki, "Recruitment"): 150 Collapse Piece por tirada; Targeted Access Permission = 1 (banner limitado).
   // Access Permission es del banner permanente: se lista, pero no cuenta (como los billetes estándar de HoYoverse).
   gfl2: [{ item: /^collapse pieces?$/i, per: 150 }, { item: /^targeted access permissions?$/i, per: 1 }],

@@ -177,8 +177,9 @@ async function challenges(gameId: string): Promise<GameEvent[]> {
     const s = anchor + i * 14 * DAY
     out.push({
       id: `${gameId}:challenge:cycle:Monster Challenge:${new Date(s).toISOString().slice(0, 10)}`, gameId, kind: 'challenge', title: 'Monster Challenge (Master)',
-      description: '⟦d.mhoChallenge⟧', image: mcImage, start: new Date(s).toISOString(), end: new Date(s + 14 * DAY - 1000).toISOString(),
-      items: [], featured: [], pulls: 0, source: 'api', precision: s > now ? 'estimated' : 'approx',
+      description: '⟦d.mhoChallenge⟧ ⟦d.upTo|100 Rutacoin⟧', image: mcImage, start: new Date(s).toISOString(), end: new Date(s + 14 * DAY - 1000).toISOString(),
+      // 100 Rutacoin por fase en rango C (GameWith, "How to Farm Rutacoin"; ver arriba) = 0,7 tiradas.
+      items: [{ name: 'Rutacoin', amount: 100 }], featured: [], pulls: pullsIn('mho', ['Rutacoin x100']).pulls, source: 'api', precision: s > now ? 'estimated' : 'approx',
     })
   }
   return out

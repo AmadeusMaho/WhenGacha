@@ -181,7 +181,8 @@ const ECON: Record<string, Econ> = {
     { name: 'Hunter Exchange', amount: 500, per: 'patch' },
     { key: 'maint', amount: 900, per: 'patch' }] },
   fgo: { currency: 'Saint Quartz', icon: 'Saint Quartz', ticket: 'Summon Ticket', per: 3, pass: 0, pity: 0, sources: [weekly(3), { key: 'login', amount: 4, per: 'week' }, tickets('login', 1, 'week'), tickets('ticketShop', 5, 'month', 1)] },
-  limbus: { currency: 'Lunacy', icon: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [], note: 'limbus' },
+  // Limbus (26 nov 2026, limbuscompany.wiki.gg, "Mirror Dungeon"): 3 cargas de bonificación semanal, hasta 750 Free Lunacy por semana.
+  limbus: { currency: 'Lunacy', icon: 'Lunacy', per: 130, pass: 0, pity: 0, sources: [{ name: 'Mirror Dungeon', amount: 750, per: 'week', endgame: true }], note: 'limbus' },
   epic7: { currency: 'Skystones', icon: 'Skystone', per: 100, pass: 0, pity: 0, inputs: [{ id: 'arena', name: 'Arena', per: 'week' }], sources: [daily(50)] },
   stellasora: { currency: 'Stellanite Dust', icon: 'Stellanite Dust', per: 300, pass: 0, pity: 0, sources: [daily(100), weekly(500),
     { key: 'monthly', amount: 100, per: 'month', day: 25 },

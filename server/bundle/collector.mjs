@@ -20845,7 +20845,7 @@ var RULES = {
 		item: /^carats?$/i,
 		per: 150
 	}, {
-		item: /^((support card|character|uma musume) )?scout tickets?$/i,
+		item: /^((support card|character|uma musume|trainee) )?scout tickets?$/i,
 		per: 1
 	}],
 	gfl2: [{
@@ -21357,11 +21357,24 @@ async function totalRewards(host, page, section = /=+\s*Total Rewards\s*=+/i) {
 	const m = /\{\{\s*Card List\s*\|([^}]*)\}\}/i.exec(text.slice(at));
 	return m ? cardList(m[1]) : [];
 }
+/** Suma por nombre todas las `{{Card List}}` de la última sección que empieza con `heading` (la temporada vigente). */
+async function lastSectionTotal(host, page, heading) {
+	const text = await wikitext$3(host, page);
+	const g = new RegExp(heading.source, heading.flags.includes("g") ? heading.flags : heading.flags + "g");
+	const starts = [...text.matchAll(g)].map((m) => m.index ?? 0);
+	if (!starts.length) return [];
+	const sum = /* @__PURE__ */ new Map();
+	for (const m of text.slice(starts[starts.length - 1]).matchAll(/\{\{\s*Card List\s*\|([^}]*)\}\}/gi)) for (const i of cardList(m[1])) sum.set(i.name, (sum.get(i.name) ?? 0) + i.amount);
+	return [...sum].map(([name, amount]) => ({
+		name,
+		amount
+	}));
+}
 /** Rellena las recompensas de los desafíos de `s` según `pages`. Si la wiki falla, devuelve `s` tal cual. */
 async function withChallengeRewards(s, host, game, pages) {
 	const need = pages.filter((p) => s.events.some((e) => e.kind === "challenge" && !e.items.length && p.match.test(e.title)));
 	if (!need.length) return s;
-	const found = await Promise.all(need.map((p) => totalRewards(host, p.page, p.section).catch((err) => {
+	const found = await Promise.all(need.map((p) => (p.sumLast ? lastSectionTotal(host, p.page, p.sumLast) : totalRewards(host, p.page, p.section)).catch((err) => {
 		console.warn(`[challenges] ${host} ${p.page}:`, err?.message ?? err);
 		return [];
 	})));
@@ -21441,7 +21454,24 @@ function r99Limbo(gameId, now = Date.now()) {
 		at(y, m + 1, 16)
 	];
 	const i = resets.findIndex((r, j) => r <= now && now < resets[j + 1]);
-	return [i, i + 1].filter((j) => j >= 0 && j + 1 < resets.length).map((j) => ev(gameId, "Limbo", resets[j], resets[j + 1] - 1e3, "⟦d.r99Limbo⟧", false, now));
+	return [i, i + 1].filter((j) => j >= 0 && j + 1 < resets.length).map((j) => ({
+		...ev(gameId, "Limbo", resets[j], resets[j + 1] - 1e3, "⟦d.r99Limbo⟧ ⟦d.upTo|600 Clear Drops⟧", false, now),
+		items: [
+			{
+				name: "Clear Drop",
+				amount: 600
+			},
+			{
+				name: "Oneiric Fluid",
+				amount: 2160
+			},
+			{
+				name: "Sharpodonty",
+				amount: 3e4
+			}
+		],
+		pulls: 3.3
+	}));
 }
 /**
 * Azur Lane · Ejercicios (PvP): temporadas de 14 días que acaban un lunes a las 00:00 del servidor global (UTC-7, sin horario de verano), un lunes sí y
@@ -21455,7 +21485,14 @@ function alExercise(gameId, now = Date.now()) {
 	const start = ref + Math.floor((now - ref) / len) * len;
 	return [0, 1].map((k) => {
 		const s = start + k * len;
-		return ev(gameId, "Exercise Season", s, s + len - 1e3, "⟦d.alExercise⟧", true, now);
+		return {
+			...ev(gameId, "Exercise Season", s, s + len - 1e3, "⟦d.alExercise⟧ ⟦d.upTo|~20,000 Merit⟧", true, now),
+			items: [{
+				name: "Merit",
+				amount: 2e4,
+				icon: "https://azurlane.netojuu.com/images/thumb/d/d6/Swordicon2.png/46px-Swordicon2.png"
+			}]
+		};
 	});
 }
 /**
@@ -24884,13 +24921,16 @@ async function challenges(gameId) {
 			gameId,
 			kind: "challenge",
 			title: "Monster Challenge (Master)",
-			description: "⟦d.mhoChallenge⟧",
+			description: "⟦d.mhoChallenge⟧ ⟦d.upTo|100 Rutacoin⟧",
 			image: mcImage,
 			start: new Date(s).toISOString(),
 			end: (/* @__PURE__ */ new Date(s + 14 * DAY$35 - 1e3)).toISOString(),
-			items: [],
+			items: [{
+				name: "Rutacoin",
+				amount: 100
+			}],
 			featured: [],
-			pulls: 0,
+			pulls: pullsIn("mho", ["Rutacoin x100"]).pulls,
 			source: "api",
 			precision: s > now ? "estimated" : "approx"
 		});
@@ -29894,13 +29934,19 @@ async function syncFeh(gameId, now = Date.now()) {
 			}, {
 				name: "Hero Feather",
 				amount: 3500
-			}] : [];
+			}] : [{
+				name: "Aether Stone",
+				amount: 340
+			}, {
+				name: "Heroic Grail",
+				amount: 115
+			}];
 			events.push({
 				id: `${gameId}:challenge:${id}:${iso$2(a).slice(0, 10)}`,
 				gameId,
 				kind: "challenge",
 				title: name,
-				description: `⟦${desc}⟧${top.length ? " ⟦d.upTo|5 Orbs⟧" : ""}`,
+				description: `⟦${desc}⟧ ⟦d.upTo|${id === "arena" ? "5 Orbs" : "115 Heroic Grails"}⟧`,
 				start: iso$2(a),
 				end: iso$2(a + len),
 				items: top,
@@ -30906,9 +30952,25 @@ var RAID_LABEL = {
 };
 /** Qué da cada raid: las recompensas dependen del rango y la dificultad, así que se describen sin cifras. */
 var RAID_DESC$1 = {
-	Raid: "⟦d.baRaid⟧",
-	Elimination: "⟦d.baGrand⟧",
+	Raid: "⟦d.baRaid⟧ ⟦d.upTo|1200 Pyroxene⟧",
+	Elimination: "⟦d.baGrand⟧ ⟦d.upTo|1 Ten Recruitment Ticket⟧",
 	"Limit Break": "⟦d.baFrr⟧"
+};
+/**
+* Tope por temporada del ranking (bluearchive.wiki, 26 nov 2026): Total Assault, "Ladder ranking rewards" 1~20000 → 1200 Pyroxene (600–1000 en los
+* tramos de abajo); Grand Assault, 1~20000 → 1 Ten Recruitment Ticket ("Pyroxene Equivalent" 1200, caduca a fin del mes siguiente). Los Raid Coin
+* se gastan en su tienda: no se suman. Final Restriction Release no da Pyroxene.
+*/
+var RAID_ITEMS = {
+	Raid: [{
+		name: "Pyroxene",
+		amount: 1200
+	}],
+	Elimination: [{
+		name: "Ten Recruitment Ticket",
+		amount: 1,
+		icon: "https://static.wikitide.net/bluearchivewiki/thumb/5/51/Item_Icon_RecruitTicket_Normal_10.png/64px-Item_Icon_RecruitTicket_Normal_10.png"
+	}]
 };
 /** "Decagrammaton: Hod (Grand Assault)" → "Hod". */
 var raidBoss = (name) => name.replace(/\s*\([^)]*\)\s*$/, "").split(": ").pop().trim();
@@ -30950,26 +31012,30 @@ async function blueArchiveBucket(gameId) {
 			s,
 			e,
 			file: r.image,
-			challenge: RAID_DESC$1[String(r.type)] ?? "⟦d.baRaid⟧"
+			challenge: RAID_DESC$1[String(r.type)] ?? "⟦d.baRaid⟧",
+			items: RAID_ITEMS[String(r.type)]?.map((i) => ({ ...i }))
 		});
 	}
 	const thumbs = await fileThumbs(rows.map((r) => r.file).filter((f) => !!f), 320).catch(() => /* @__PURE__ */ new Map());
 	const rewards = await baPageRewards(rows.filter((r) => r.page && !r.challenge).map((r) => r.page)).catch(() => /* @__PURE__ */ new Map());
-	return rows.map((r) => ({
-		id: r.id,
-		gameId,
-		kind: r.challenge ? "challenge" : "event",
-		title: r.title,
-		description: r.challenge ?? (r.rerun ? "⟦d.rerun⟧" : void 0),
-		image: r.file ? thumbs.get(r.file) : void 0,
-		start: new Date(r.s).toISOString(),
-		end: new Date(r.e).toISOString(),
-		items: rewards.get(r.page ?? "") ?? [],
-		featured: [],
-		pulls: pullsIn("bluearchive", (rewards.get(r.page ?? "") ?? []).map((i) => `${i.name} x${i.amount}`)).pulls,
-		minor: r.minor || void 0,
-		source: "api"
-	}));
+	return rows.map((r) => {
+		const items = r.items ?? rewards.get(r.page ?? "") ?? [];
+		return {
+			id: r.id,
+			gameId,
+			kind: r.challenge ? "challenge" : "event",
+			title: r.title,
+			description: r.challenge ?? (r.rerun ? "⟦d.rerun⟧" : void 0),
+			image: r.file ? thumbs.get(r.file) : void 0,
+			start: new Date(r.s).toISOString(),
+			end: new Date(r.e).toISOString(),
+			items,
+			featured: [],
+			pulls: pullsIn("bluearchive", items.map((i) => `${i.name} x${i.amount}`)).pulls,
+			minor: r.minor || void 0,
+			source: "api"
+		};
+	});
 }
 /**
 * Recompensas de la página de cada evento en bluearchive.wiki (18 nov 2026; `page_name` del Bucket): los Pyroxene de primera vez de sus fases
@@ -33942,10 +34008,49 @@ async function syncUma(gameId) {
 	}
 	await withStoryRewards(events, lk).catch((err) => console.warn("[uma] GameTora:", err?.message ?? err));
 	return {
-		events: withRaceNames(events),
+		events: withPvpCaps(withRaceNames(events)),
 		patches: [],
 		codes: []
 	};
+}
+/**
+* Tope de premios de los modos PvP (umacaratcalculator.com, tablas de rango de su calculadora; leídas a mano el 26 nov 2026: sus condiciones
+* prohíben la descarga automatizada, así que no es una fuente del recolector y las cifras se revisan a mano):
+*  - Champions Meeting, "Champion" (1.º de la final del Grupo A): 3300 Carats, 5 Trainee y 5 Support Card Scout Tickets; desde su CM 30, 3800 Carats.
+*    Su numeración va una por delante de la de uma.moe (Aquarius Cup: CM 22 allí, `champions-meeting-21` aquí).
+*  - League of Heroes, "Platinum 4+": 2550 Carats en la 1.ª edición, 3550 desde la 2.ª, 4000 desde la 6.ª y 4900 desde la 14.ª, con 2 + 2 Scout
+*    Tickets. En Global aún no se ha celebrado ninguna (la 1.ª, hacia el 25 ene 2027) y uma.moe no las numera: se da la de la 2.ª a la 5.ª (3550).
+*/
+function withPvpCaps(events) {
+	const caps = (carats, tickets) => [
+		{
+			name: "Carats",
+			amount: carats,
+			icon: gtIcon(43)
+		},
+		{
+			name: "Trainee Scout Ticket",
+			amount: tickets,
+			icon: gtIcon(41)
+		},
+		{
+			name: "Support Card Scout Ticket",
+			amount: tickets,
+			icon: gtIcon(111)
+		}
+	];
+	return events.map((e) => {
+		if (e.kind !== "challenge" || e.items.length) return e;
+		const cm = /:champions-meeting-(\d+)$/.exec(e.id);
+		const items = cm ? caps(+cm[1] + 1 >= 30 ? 3800 : 3300, 5) : /league-of-heroes/i.test(e.id) ? caps(3550, 2) : void 0;
+		if (!items) return e;
+		return {
+			...e,
+			items,
+			pulls: pullsIn("uma", items.map((i) => `${i.name} x${i.amount}`)).pulls,
+			description: [e.description, `⟦d.upTo|${items[0].amount} Carats⟧`].filter(Boolean).join("\n")
+		};
+	});
 }
 /** Carrera de una campaña: 'In conjunction with the G1 race "Osaka Cup"…' o 'To celebrate the Arima Kinen G1 race…'. */
 var raceOf = (d) => (d && (/race,?\s*["“]([^"”]+?)[,.]?["”]/i.exec(d)?.[1] ?? /celebrate the (.+?) (?:G[123]|Jpn ?(?:I|1)) race/i.exec(d)?.[1]))?.trim();
@@ -35091,13 +35196,21 @@ function withBannerArt(s) {
 	};
 }
 /** Página de la wiki con la tabla "Total Rewards" de cada desafío rotatorio (ver challenges.ts), por juego. */
-var CHALLENGE_PAGES = { zenless: [{
-	match: /^Shiyu Defense/i,
-	page: "Shiyu Defense/Critical Node"
-}, {
-	match: /^Deadly Assault/i,
-	page: "Deadly Assault"
-}] };
+var CHALLENGE_PAGES = { zenless: [
+	{
+		match: /^Shiyu Defense/i,
+		page: "Shiyu Defense/Critical Node"
+	},
+	{
+		match: /^Deadly Assault/i,
+		page: "Deadly Assault"
+	},
+	{
+		match: /^Annihilation Simulacrum/i,
+		page: "Annihilation Simulacrum/Rewards",
+		sumLast: /^==\s*Season\b[^=\n]*==\s*$/m
+	}
+] };
 /**
 * CZN: rotatorios. Virtual Tactical Simulation llega de los avisos oficiales como evento: es un modo recurrente. Los demás modos recurrentes que los avisos
 * no traen (Full-Scale Offensive, Spiral Tower of Screams) salen de la lista de Game8 (su sección "Permanent Events" los agrupa). 1 página de Game8 por ciclo.
@@ -35199,6 +35312,72 @@ var ANNOUNCED_GUESS = /* @__PURE__ */ new Set([
 	"mongil",
 	"bleach"
 ]);
+/**
+* Modos recurrentes que sus fuentes publican como evento (26 nov 2026, auditoría de rotatorios): pasan a "challenge", como Hunter's Crucible de NTE.
+* - Stella Sora: "Enemy Information" es la ficha semanal del jefe (dificultades Normal…Chaotic y elementos recomendados) y "Cataclysm Survivor",
+*   el modo de defensa por oleadas que vuelve cada pocas semanas (guía de modos de roonby.com).
+* - Trickcal: "… Frontier" (Elias Frontier: la incursión que se renueva cada semana) y "Brawl Pit" (temporada de PvP; lootandwaifus, "PvP 101").
+* - MONGIL: "Anomaly: <jefe>" (jefe mutado con una Emergency Conquest Request al día; vuelve con otro jefe).
+* - Path to Nowhere: "Suspect Pursuit" (pruebas de las Sinners nuevas con Hypercube; se repite en cada versión).
+* - Onmyoji: la temporada de duelos ("… Glory Duel …", PvP de Dragonhunt).
+* Los demás juegos sin rotatorio (Epic Seven, FGO, GFL2, Infinity Nikki, BLEACH, Horizon Walker) no tienen fuente con fechas: docs/fuentes-y-proxy.md.
+*/
+var RECURRING_MODES = {
+	stellasora: /^(Enemy Information|Cataclysm Survivor)$/i,
+	trickcal: /\bFrontier$|^Brawl Pit$/i,
+	mongil: /^Anomaly:/i,
+	ptn: /^Suspect Pursuit$/i,
+	onmyoji: /Glory Duel/i
+};
+var asChallenges = (gameId, events) => {
+	const re = RECURRING_MODES[gameId];
+	return withChallengeCaps(gameId, re ? events.map((e) => e.kind === "event" && re.test(e.title) ? {
+		...e,
+		kind: "challenge"
+	} : e) : events);
+};
+/**
+* Topes por ciclo de rotatorios cuya fuente no trae recompensas (26 nov 2026). Solo se ponen si el rotatorio llega sin ellas.
+* - BD2, Golden Colosseum (browndust2.miraheze.org, "The Golden Colosseum" → Ranking and rewards): 900 Aurum Coins por 40 victorias a la semana
+*   y 2000 por acabar la temporada en Champion (top 0,1 %). Moneda de su tienda: no suma tiradas.
+* - Endfield, MEGA ARENA: cada una de sus 8 fases da 150 Oroberyl la primera vez en modo Normal (endfield.wiki.gg, páginas de las fases de
+*   "HEAT RAGE! MEGA ARENA!", jul–ago 2026) = 1200. La edición de diciembre ("RISE! MEGA ARENA!", "Double Assault is back again!") aún no tiene sus
+*   fases en la wiki: se le da la cifra de la anterior, como "hasta".
+*/
+var CHALLENGE_CAPS = {
+	bd2: [{
+		match: /^Golden Colosseum/i,
+		items: [{
+			name: "Aurum Coin",
+			amount: 2900,
+			icon: "https://static.wikitide.net/browndust2wiki/thumb/0/0e/Aurum_Coin_icon.png/64px-Aurum_Coin_icon.png"
+		}],
+		upTo: "2900 Aurum Coins"
+	}],
+	endfield: [{
+		match: /MEGA ARENA/i,
+		items: [{
+			name: "Oroberyl",
+			amount: 1200
+		}],
+		upTo: "1200 Oroberyl"
+	}]
+};
+function withChallengeCaps(gameId, events) {
+	const caps = CHALLENGE_CAPS[gameId];
+	if (!caps) return events;
+	return events.map((e) => {
+		const c = e.kind === "challenge" && !e.items.length ? caps.find((x) => x.match.test(e.title)) : void 0;
+		if (!c) return e;
+		const items = c.items.map((i) => ({ ...i }));
+		return {
+			...e,
+			items,
+			pulls: pullsIn(gameId, items.map((i) => `${i.name} x${i.amount}`)).pulls,
+			description: [e.description, `⟦d.upTo|${c.upTo}⟧`].filter(Boolean).join("\n")
+		};
+	});
+}
 function dropAnnounced(events) {
 	const W = 18144e5;
 	const key = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -35327,6 +35506,7 @@ async function syncSource(game) {
 	const webFirst = game.id === "azurlane" || game.id === "nikke" || game.id === "infinitynikki" || game.id === "persona5x";
 	const s0 = !discordChannel(game.id) ? await raw() : webFirst ? await officialFirst(raw(), syncDiscord(game.id)) : await officialFirst(syncDiscord(game.id), raw());
 	if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events);
+	s0.events = asChallenges(game.id, s0.events);
 	if (game.id === "nikke") s0.events = dropNikkeCoop(s0.events);
 	if (game.id === "honkai3" && discordChannel(game.id)) s0.events = withMaintenanceEnds(s0.events, maintenanceEnds$1(await discordMessages(game.id).catch(() => []), -5), -5);
 	if (game.id === "infinitynikki") {

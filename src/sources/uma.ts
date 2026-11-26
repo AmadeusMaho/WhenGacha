@@ -179,7 +179,31 @@ export async function syncUma(gameId: string): Promise<GameSync> {
     })
   }
   await withStoryRewards(events, lk).catch(err => console.warn('[uma] GameTora:', (err as Error)?.message ?? err))
-  return { events: withRaceNames(events), patches: [], codes: [] }
+  return { events: withPvpCaps(withRaceNames(events)), patches: [], codes: [] }
+}
+
+/**
+ * Tope de premios de los modos PvP (umacaratcalculator.com, tablas de rango de su calculadora; leídas a mano el 26 nov 2026: sus condiciones
+ * prohíben la descarga automatizada, así que no es una fuente del recolector y las cifras se revisan a mano):
+ *  - Champions Meeting, "Champion" (1.º de la final del Grupo A): 3300 Carats, 5 Trainee y 5 Support Card Scout Tickets; desde su CM 30, 3800 Carats.
+ *    Su numeración va una por delante de la de uma.moe (Aquarius Cup: CM 22 allí, `champions-meeting-21` aquí).
+ *  - League of Heroes, "Platinum 4+": 2550 Carats en la 1.ª edición, 3550 desde la 2.ª, 4000 desde la 6.ª y 4900 desde la 14.ª, con 2 + 2 Scout
+ *    Tickets. En Global aún no se ha celebrado ninguna (la 1.ª, hacia el 25 ene 2027) y uma.moe no las numera: se da la de la 2.ª a la 5.ª (3550).
+ */
+function withPvpCaps(events: GameEvent[]): GameEvent[] {
+  const caps = (carats: number, tickets: number): RewardItem[] => [
+    { name: 'Carats', amount: carats, icon: gtIcon(43) },
+    { name: 'Trainee Scout Ticket', amount: tickets, icon: gtIcon(41) },
+    { name: 'Support Card Scout Ticket', amount: tickets, icon: gtIcon(111) },
+  ]
+  return events.map(e => {
+    if (e.kind !== 'challenge' || e.items.length) return e
+    const cm = /:champions-meeting-(\d+)$/.exec(e.id)
+    const items = cm ? caps(+cm[1] + 1 >= 30 ? 3800 : 3300, 5) : /league-of-heroes/i.test(e.id) ? caps(3550, 2) : undefined
+    if (!items) return e
+    return { ...e, items, pulls: pullsIn('uma', items.map(i => `${i.name} x${i.amount}`)).pulls,
+      description: [e.description, `⟦d.upTo|${items[0].amount} Carats⟧`].filter(Boolean).join('\n') }
+  })
 }
 
 /** Carrera de una campaña: 'In conjunction with the G1 race "Osaka Cup"…' o 'To celebrate the Arima Kinen G1 race…'. */

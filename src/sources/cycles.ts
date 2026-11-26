@@ -44,7 +44,10 @@ export function r99Limbo(gameId: string, now = Date.now()): GameEvent[] {
   const resets = [at(y, m - 1, 16), at(y, m, 1), at(y, m, 16), at(y, m + 1, 1), at(y, m + 1, 16)]
   const i = resets.findIndex((r, j) => r <= now && now < resets[j + 1])
   return [i, i + 1].filter(j => j >= 0 && j + 1 < resets.length)
-    .map(j => ev(gameId, 'Limbo', resets[j], resets[j + 1] - 1000, '⟦d.r99Limbo⟧', false, now))
+    // Tope por ciclo (dotgg.gg, "Artificial Somnambulism and Limbo Guide": "Limbo will net players with 600 clear drops 2160 oneiric fluid and
+    // 30k sharpodonty if they are able to complete all the stages"; la wiki de Fandom no da el total). 600 Clear Drops = 3,3 tiradas.
+    .map(j => ({ ...ev(gameId, 'Limbo', resets[j], resets[j + 1] - 1000, '⟦d.r99Limbo⟧ ⟦d.upTo|600 Clear Drops⟧', false, now),
+      items: [{ name: 'Clear Drop', amount: 600 }, { name: 'Oneiric Fluid', amount: 2160 }, { name: 'Sharpodonty', amount: 30000 }], pulls: 3.3 }))
 }
 
 /**
@@ -59,7 +62,9 @@ export function alExercise(gameId: string, now = Date.now()): GameEvent[] {
   const start = ref + Math.floor((now - ref) / len) * len
   return [0, 1].map(k => {
     const s = start + k * len
-    return ev(gameId, 'Exercise Season', s, s + len - 1000, '⟦d.alExercise⟧', true, now)
+    // Méritos por temporada (wiki azurlane.koumakan.jp, "Exercise" → "Total Merit per Season": "a player can expect to earn about 20000 Merit in a
+    // season if playing all the battles with an 80% or higher win rate"; los mejores, 25.000–30.000). No dan gemas ni cubos: no suman tiradas.
+    return { ...ev(gameId, 'Exercise Season', s, s + len - 1000, '⟦d.alExercise⟧ ⟦d.upTo|~20,000 Merit⟧', true, now), items: [{ name: 'Merit', amount: 20000, icon: 'https://azurlane.netojuu.com/images/thumb/d/d6/Swordicon2.png/46px-Swordicon2.png' }] }
   })
 }
 

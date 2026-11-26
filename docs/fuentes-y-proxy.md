@@ -1440,3 +1440,62 @@ América/Europa 24 nov 17:00–23:00 (UTC-5), que terminan las dos a las 04:00 U
 de la versión (luego corrigió a Kay, pero no los banners de arma ni la tabla `Versions`). En `syncEndfield`: en un día que empieza una versión
 (tabla `Versions`), lo que en Asia empieza a las 04:00 y en AMEU a las 17:00 de ese mismo día toma las 04:00; también la fecha de la versión.
 Las fases de mitad de versión (5 nov, 16 dic: AMEU 17:00, Asia 04:00) no son días de versión y no cambian.
+
+### Auditoría de rotatorios (26 nov 2026)
+
+Recuento de las copias publicadas (rama `data`, 26 nov 03:45 UTC): 11 juegos sin ningún rotatorio y otros 14 con rotatorios sin recompensas.
+Las wikis de Fandom, Prydwen y Game8 rechazan la lectura automática desde el PC (402/403); se consultaron desde el navegador del dueño.
+
+**Recompensas añadidas:**
+- **ZZZ, Annihilation Simulacrum**: la subpágina "Annihilation Simulacrum/Rewards" de su wiki no tiene tabla "Total Rewards": lista por temporada las
+  4 misiones de cada uno de los 3 jefes. `ChallengePage.sumLast` (challenges.ts) suma todas las `{{Card List}}` de la última temporada
+  (temporada 2: 480 Polychrome, 120.000 Denny, 18 Original Chip, 27 Hi-Fi Master Copy = 3 tiradas).
+- **Reverse: 1999, Limbo**: 600 Clear Drops, 2160 Oneiric Fluid y 30.000 Sharpodonty por ciclo (dotgg.gg, guía de Artificial Somnambulism; la wiki
+  de Fandom da el reinicio, 1 y 16 a las 05:00 UTC+8, pero no el total). 3,3 tiradas.
+- **Azur Lane, Ejercicios**: ~20.000 Méritos por temporada con un 80 % de victorias (wiki koumakan, "Total Merit per Season"). No suman tiradas.
+- **Blue Archive**: Total Assault, hasta 1200 Pyroxene (ranking 1–20.000); Grand Assault, 1 Ten Recruitment Ticket (ranking 1–20.000, equivale a
+  1200 Pyroxene). Ambos dependen del rango: se marcan "hasta". Joint Firing Drill solo da monedas de su tienda y Final Restriction Release ningún
+  Pyroxene: siguen sin recompensas.
+
+**Modos recurrentes que llegaban como evento** (`RECURRING_MODES` en index.ts, pasan a rotatorio): Stella Sora (Enemy Information, Cataclysm Survivor),
+Trickcal (… Frontier, Brawl Pit), MONGIL (Anomaly: <jefe>), Path to Nowhere (Suspect Pursuit) y Onmyoji (la temporada de duelos, "Glory Duel").
+
+**Sin rotatorio por falta de fuente con fechas:** Epic Seven (los avisos de STOVE no dan el reinicio de Arena), GFL2 (la IOP Wiki da la cadencia
+de Gunsmoke Frontline, 300 + 300 Collapse Pieces cada 3 semanas, pero no las fechas; puede llegar por Discord), Infinity Nikki, FGO, BLEACH y Horizon
+Walker (su Rift se reinicia cada semana según gacha.gg, sin día ni hora). Onmyoji no tiene páginas de eventos en su wiki: sigue sin recompensas.
+Quedan sin recompensas los rotatorios de Arknights (Contingency Contract), Endfield, NIKKE (Raid Rush), Limbus, Persona 5X, BD2, CZN, StarSavior,
+Aniimo y Uma: sus fuentes no las publican.
+
+**Segunda pasada (mismo día):**
+- **FEH, Aether Raids**: no da Orbes. Tope semanal de su wiki (Rewards): diarias 90 Aether Stones + 20 Heroic Grails, nivel 39 250 + 60, rango
+  1–1.000 35 Heroic Grails → 340 Aether Stones y 115 Heroic Grails (feh.ts).
+- **MHO, Monster Challenge (Master)**: 100 Rutacoin por fase (0,7 tiradas), la cifra de GameWith que ya citaba mho.ts.
+- Revisados sin cifra que añadir: Arknights Contingency Contract (solo Crystal Contract Bounty para su tienda, sin total por temporada en la wiki),
+  Uma Champions Meeting (ni GameTora ni umamusu.wiki publican la tabla de premios), Epic Seven (el aviso "Seasonal Battle Content Information"
+  describe los modos sin fechas) y GFL2 Gunsmoke Frontline (sin fechas de temporada en la IOP Wiki ni en los avisos).
+
+**Tercera pasada (mismo día):**
+- **Uma, Champions Meeting y League of Heroes**: topes de las tablas de rango de umacaratcalculator.com (las indicó el dueño). Sus condiciones
+  prohíben la descarga automatizada ("Use automated tools to scrape or bulk-download…"): las cifras se copiaron a mano en `withPvpCaps` (uma.ts) y
+  hay que revisarlas allí si cambian. CM, campeón del Grupo A: 3300 Carats + 5 + 5 Scout Tickets (3800 desde su CM 30; su número va uno por
+  delante del de uma.moe). LoH, Platinum 4+: 3550 Carats + 2 + 2 (2550 en la 1.ª edición, que en Global llega hacia el 25 ene 2027).
+  Las Legend Race siguen sin cifra (la calculadora solo lista sus umas).
+- **Uma, tiradas**: "Trainee Scout Ticket" (el nombre de Global en GameTora) no contaba como tirada en `RULES`; ahora sí (eventos de historia: 12 → 14).
+- **Limbus, planificador**: Mirror Dungeon, 3 bonificaciones semanales = 750 Free Lunacy por semana (limbuscompany.wiki.gg, "Mirror Dungeon").
+  Antes Limbus no tenía ningún ingreso automático.
+- Buscado sin resultado: NIKKE Solo Raid (de 100 a 6000 gemas según el puesto, tabla de 2023 de nikke.gg; ahora no hay ninguno en la línea de
+  tiempo), BD2 (ni las guías ni los avisos dan los Dia de Tower of Salvation ni de Golden Colosseum), Persona 5X Shadow Hunt, GFL2 (gfl2.help no
+  tiene calendario y la IOP Wiki no tiene página de Gunsmoke Frontline).
+
+**Cuarta pasada (mismo día):**
+- **BD2, Golden Colosseum**: 900 Aurum Coins por 40 victorias semanales + 2000 en Champion (browndust2.miraheze.org, "The Golden Colosseum").
+  Moneda de su tienda, no suma tiradas. `CHALLENGE_CAPS` en index.ts.
+- **Endfield, MEGA ARENA**: 8 fases × 150 Oroberyl (primera vez en Normal) = 1200, de las páginas de las fases de "HEAT RAGE! MEGA ARENA!"
+  (endfield.wiki.gg). La edición de diciembre (RISE!) aún no tiene sus fases en la wiki: se le da la cifra de la anterior.
+- **GFL2**: Gunsmoke Frontline está en pausa durante el 2.º aniversario (resumen de la actualización en thekonnetwork.com); Liminal Iteration
+  empieza temporada el 17 dic, sin duración publicada.
+- **umacaratcalculator.com**: sus condiciones de uso prohíben la descarga automatizada; se sigue copiando a mano (`withPvpCaps` en uma.ts).
+  Para automatizarlo hay que pedir permiso a su autor (Henryhandsomederby@gmail.com, en su página de términos).
+- Buscado sin cifras: Uma Legend Race (las guías dan 150 Carats por la primera victoria contra cada leyenda, sin decir cuántas hay por evento),
+  Persona 5X Shadow Hunt, StarSavior (Overload Cube, Onslaught Quest), Aniimo Holo-Battle Interlink (wikily.gg describe los premios sin cifras),
+  CZN Full-Scale Offensive (solo una tienda de recargas da 120 Crystals por tramo) y BD2 Tower of Salvation.

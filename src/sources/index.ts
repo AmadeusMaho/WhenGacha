@@ -1,4 +1,4 @@
-import type { Game, GameEvent } from '../types'
+import type { Game, GameEvent, RewardItem } from '../types'
 import { GACHAFOCUS, syncGachafocus } from './gachafocus'
 import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
 import { hasWikiCodes, syncPocketGamerCodes, syncWikiCodes } from './codes'
@@ -235,6 +235,9 @@ const CHALLENGE_PAGES: Partial<Record<string, ChallengePage[]>> = {
   zenless: [
     { match: /^Shiyu Defense/i, page: 'Shiyu Defense/Critical Node' },
     { match: /^Deadly Assault/i, page: 'Deadly Assault' },
+    // Sin "Total Rewards": la subpágina lista cada temporada con las misiones de sus 3 jefes (26 nov 2026, temporada 2: 480 Polychrome, 120.000 Denny,
+    // 18 Original Chip y 27 Hi-Fi Master Copy). Se suma la última temporada.
+    { match: /^Annihilation Simulacrum/i, page: 'Annihilation Simulacrum/Rewards', sumLast: /^==\s*Season\b[^=\n]*==\s*$/m },
   ],
 }
 
@@ -296,6 +299,53 @@ function dedupeEvents(events: GameEvent[]): GameEvent[] {
 // Solo los juegos con ese banner "anunciado sin fecha". No en FGO ni Uma: sus estimados son banners futuros de JP o predicciones que pueden repetir
 // personaje con uno en curso sin ser el mismo. Un juego nuevo con el patrón de Arman/Lou se añade aquí.
 const ANNOUNCED_GUESS = new Set(['soc', 'mongil', 'bleach'])
+
+/**
+ * Modos recurrentes que sus fuentes publican como evento (26 nov 2026, auditoría de rotatorios): pasan a "challenge", como Hunter's Crucible de NTE.
+ * - Stella Sora: "Enemy Information" es la ficha semanal del jefe (dificultades Normal…Chaotic y elementos recomendados) y "Cataclysm Survivor",
+ *   el modo de defensa por oleadas que vuelve cada pocas semanas (guía de modos de roonby.com).
+ * - Trickcal: "… Frontier" (Elias Frontier: la incursión que se renueva cada semana) y "Brawl Pit" (temporada de PvP; lootandwaifus, "PvP 101").
+ * - MONGIL: "Anomaly: <jefe>" (jefe mutado con una Emergency Conquest Request al día; vuelve con otro jefe).
+ * - Path to Nowhere: "Suspect Pursuit" (pruebas de las Sinners nuevas con Hypercube; se repite en cada versión).
+ * - Onmyoji: la temporada de duelos ("… Glory Duel …", PvP de Dragonhunt).
+ * Los demás juegos sin rotatorio (Epic Seven, FGO, GFL2, Infinity Nikki, BLEACH, Horizon Walker) no tienen fuente con fechas: docs/fuentes-y-proxy.md.
+ */
+const RECURRING_MODES: Partial<Record<string, RegExp>> = {
+  stellasora: /^(Enemy Information|Cataclysm Survivor)$/i,
+  trickcal: /\bFrontier$|^Brawl Pit$/i,
+  mongil: /^Anomaly:/i,
+  ptn: /^Suspect Pursuit$/i,
+  onmyoji: /Glory Duel/i,
+}
+const asChallenges = (gameId: string, events: GameEvent[]): GameEvent[] => {
+  const re = RECURRING_MODES[gameId]
+  const out = re ? events.map(e => (e.kind === 'event' && re.test(e.title) ? { ...e, kind: 'challenge' as const } : e)) : events
+  return withChallengeCaps(gameId, out)
+}
+
+/**
+ * Topes por ciclo de rotatorios cuya fuente no trae recompensas (26 nov 2026). Solo se ponen si el rotatorio llega sin ellas.
+ * - BD2, Golden Colosseum (browndust2.miraheze.org, "The Golden Colosseum" → Ranking and rewards): 900 Aurum Coins por 40 victorias a la semana
+ *   y 2000 por acabar la temporada en Champion (top 0,1 %). Moneda de su tienda: no suma tiradas.
+ * - Endfield, MEGA ARENA: cada una de sus 8 fases da 150 Oroberyl la primera vez en modo Normal (endfield.wiki.gg, páginas de las fases de
+ *   "HEAT RAGE! MEGA ARENA!", jul–ago 2026) = 1200. La edición de diciembre ("RISE! MEGA ARENA!", "Double Assault is back again!") aún no tiene sus
+ *   fases en la wiki: se le da la cifra de la anterior, como "hasta".
+ */
+const CHALLENGE_CAPS: Partial<Record<string, { match: RegExp; items: RewardItem[]; upTo: string }[]>> = {
+  bd2: [{ match: /^Golden Colosseum/i, items: [{ name: 'Aurum Coin', amount: 2900, icon: 'https://static.wikitide.net/browndust2wiki/thumb/0/0e/Aurum_Coin_icon.png/64px-Aurum_Coin_icon.png' }], upTo: '2900 Aurum Coins' }],
+  endfield: [{ match: /MEGA ARENA/i, items: [{ name: 'Oroberyl', amount: 1200 }], upTo: '1200 Oroberyl' }],
+}
+function withChallengeCaps(gameId: string, events: GameEvent[]): GameEvent[] {
+  const caps = CHALLENGE_CAPS[gameId]
+  if (!caps) return events
+  return events.map(e => {
+    const c = e.kind === 'challenge' && !e.items.length ? caps.find(x => x.match.test(e.title)) : undefined
+    if (!c) return e
+    const items = c.items.map(i => ({ ...i }))
+    return { ...e, items, pulls: pullsIn(gameId, items.map(i => `${i.name} x${i.amount}`)).pulls,
+      description: [e.description, `⟦d.upTo|${c.upTo}⟧`].filter(Boolean).join('\n') }
+  })
+}
 export function dropAnnounced(events: GameEvent[]): GameEvent[] {
   const W = 21 * 86_400_000
   const key = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '')
@@ -418,6 +468,7 @@ export async function syncSource(game: Game): Promise<GameSync> {
     : webFirst ? await officialFirst(raw(), syncDiscord(game.id))
     : await officialFirst(syncDiscord(game.id), raw())
   if (ANNOUNCED_GUESS.has(game.id)) s0.events = dropAnnounced(s0.events)
+  s0.events = asChallenges(game.id, s0.events)
   if (game.id === 'nikke') s0.events = dropNikkeCoop(s0.events)
   // Honkai 3rd: lo que empieza "tras la actualización" (05:00 UTC-5, la hora prevista, "≈") toma la hora real del tuit de fin de mantenimiento si
   // llega por Discord (canal honkai3; 25 nov 2026 aún sin ninguno: la 9.2 sale hacia el 24 dic). Mismo criterio que Azur Lane.

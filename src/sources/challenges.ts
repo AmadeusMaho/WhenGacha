@@ -16,6 +16,11 @@ export interface ChallengePage {
   page: string
   /** Sección que contiene el total (por defecto "Total Rewards"). */
   section?: RegExp
+  /**
+   * Páginas sin tabla de totales que listan por temporada cada misión con su `{{Card List}}` (ZZZ, "Annihilation Simulacrum/Rewards"):
+   * cabecera de temporada; se suman todas las listas de la última (la vigente).
+   */
+  sumLast?: RegExp
 }
 
 /** "350,000" → 350000; "20K" / "28.8K" → 20000 / 28800. */
@@ -45,11 +50,23 @@ export async function totalRewards(host: string, page: string, section = /=+\s*T
   return m ? cardList(m[1]) : []
 }
 
+/** Suma por nombre todas las `{{Card List}}` de la última sección que empieza con `heading` (la temporada vigente). */
+export async function lastSectionTotal(host: string, page: string, heading: RegExp): Promise<RewardItem[]> {
+  const text = await wikitext(host, page)
+  const g = new RegExp(heading.source, heading.flags.includes('g') ? heading.flags : heading.flags + 'g')
+  const starts = [...text.matchAll(g)].map(m => m.index ?? 0)
+  if (!starts.length) return []
+  const sum = new Map<string, number>()
+  for (const m of text.slice(starts[starts.length - 1]).matchAll(/\{\{\s*Card List\s*\|([^}]*)\}\}/gi))
+    for (const i of cardList(m[1])) sum.set(i.name, (sum.get(i.name) ?? 0) + i.amount)
+  return [...sum].map(([name, amount]) => ({ name, amount }))
+}
+
 /** Rellena las recompensas de los desafíos de `s` según `pages`. Si la wiki falla, devuelve `s` tal cual. */
 export async function withChallengeRewards(s: GameSync, host: string, game: PullGame, pages: ChallengePage[]): Promise<GameSync> {
   const need = pages.filter(p => s.events.some(e => e.kind === 'challenge' && !e.items.length && p.match.test(e.title)))
   if (!need.length) return s
-  const found = await Promise.all(need.map(p => totalRewards(host, p.page, p.section).catch(err => {
+  const found = await Promise.all(need.map(p => (p.sumLast ? lastSectionTotal(host, p.page, p.sumLast) : totalRewards(host, p.page, p.section)).catch(err => {
     console.warn(`[challenges] ${host} ${p.page}:`, (err as Error)?.message ?? err)
     return [] as RewardItem[]
   })))

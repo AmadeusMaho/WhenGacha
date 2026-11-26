@@ -99,7 +99,14 @@ async function fileThumbs(files: string[], width: number): Promise<Map<string, s
 
 const RAID_LABEL: Record<string, string> = { Raid: 'Total Assault', Elimination: 'Grand Assault', 'Limit Break': 'Final Restriction Release' }
 /** Qué da cada raid: las recompensas dependen del rango y la dificultad, así que se describen sin cifras. */
-const RAID_DESC: Record<string, string> = { Raid: '⟦d.baRaid⟧', Elimination: '⟦d.baGrand⟧', 'Limit Break': '⟦d.baFrr⟧' }
+const RAID_DESC: Record<string, string> = { Raid: '⟦d.baRaid⟧ ⟦d.upTo|1200 Pyroxene⟧', Elimination: '⟦d.baGrand⟧ ⟦d.upTo|1 Ten Recruitment Ticket⟧', 'Limit Break': '⟦d.baFrr⟧' }
+/**
+ * Tope por temporada del ranking (bluearchive.wiki, 26 nov 2026): Total Assault, "Ladder ranking rewards" 1~20000 → 1200 Pyroxene (600–1000 en los
+ * tramos de abajo); Grand Assault, 1~20000 → 1 Ten Recruitment Ticket ("Pyroxene Equivalent" 1200, caduca a fin del mes siguiente). Los Raid Coin
+ * se gastan en su tienda: no se suman. Final Restriction Release no da Pyroxene.
+ */
+const RAID_ITEMS: Record<string, RewardItem[]> = { Raid: [{ name: 'Pyroxene', amount: 1200 }], Elimination: [{ name: 'Ten Recruitment Ticket', amount: 1,
+  icon: 'https://static.wikitide.net/bluearchivewiki/thumb/5/51/Item_Icon_RecruitTicket_Normal_10.png/64px-Item_Icon_RecruitTicket_Normal_10.png' }] }
 /** "Decagrammaton: Hod (Grand Assault)" → "Hod". */
 const raidBoss = (name: string) => name.replace(/\s*\([^)]*\)\s*$/, '').split(': ').pop()!.trim()
 
@@ -117,7 +124,7 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
     bucket(`bucket('raids').select('type','name','season','start_date','end_date','image').where('server','GL').where('end_date','>','${since}').limit(100).run()`).catch(() => [] as BucketRow[]),
   ])
   const skip = new Set(['PermanentEvent', 'Guide mission'])
-  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean; challenge?: string; page?: string }[] = []
+  const rows: { id: string; title: string; s: number; e: number; file?: string; rerun?: boolean; minor?: boolean; challenge?: string; page?: string; items?: RewardItem[] }[] = []
   for (const r of evs) {
     const s = +new Date(String(r.start_date ?? '')), e = +new Date(String(r.end_date ?? ''))
     const title = String(r.name_en ?? '').trim()
@@ -145,11 +152,14 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
       s, e,
       file: r.image as string | undefined,
       challenge: RAID_DESC[String(r.type)] ?? '⟦d.baRaid⟧',
+      items: RAID_ITEMS[String(r.type)]?.map(i => ({ ...i })),
     })
   }
   const thumbs = await fileThumbs(rows.map(r => r.file).filter((f): f is string => !!f), 320).catch(() => new Map<string, string>())
   const rewards = await baPageRewards(rows.filter(r => r.page && !r.challenge).map(r => r.page!)).catch(() => new Map<string, RewardItem[]>())
-  return rows.map(r => ({
+  return rows.map(r => {
+    const items = r.items ?? rewards.get(r.page ?? '') ?? []
+    return {
     id: r.id,
     gameId,
     kind: r.challenge ? 'challenge' as const : 'event' as const,
@@ -158,12 +168,12 @@ async function blueArchiveBucket(gameId: string): Promise<GameEvent[]> {
     image: r.file ? thumbs.get(r.file) : undefined,
     start: new Date(r.s).toISOString(),
     end: new Date(r.e).toISOString(),
-    items: rewards.get(r.page ?? '') ?? [],
+    items,
     featured: [],
-    pulls: pullsIn('bluearchive', (rewards.get(r.page ?? '') ?? []).map(i => `${i.name} x${i.amount}`)).pulls,
+    pulls: pullsIn('bluearchive', items.map(i => `${i.name} x${i.amount}`)).pulls,
     minor: r.minor || undefined,
     source: 'api' as const,
-  }))
+  } })
 }
 
 /**
