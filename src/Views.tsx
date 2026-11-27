@@ -10,6 +10,7 @@ import type { Game, GameEvent, Patch } from './types'
 import { regionsOf, serverOf } from './servers'
 import { upcomingList, type UpcomingGame } from './upcoming'
 import { notExpired } from './sources/codes'
+import { SEASON_ICON, seasonNow } from './seasonal'
 
 const DAY = 86_400_000
 
@@ -119,6 +120,9 @@ export function MyGachas({ ctx, goGame }: { ctx: Ctx; goGame: (id: string) => vo
             </select>
           </label>
           {install && <button className="btn sm primary" onClick={install}>{t('install')}</button>}
+          {/* Adornos de temporada (seasonal.ts): el interruptor solo sale cuando hay alguno que apagar. */}
+          {seasonNow() && <button className={`btn sm ghost ${state.festive !== false ? 'on' : ''}`} aria-pressed={state.festive !== false} title={t('festive.tip')}
+            onClick={() => setState(s => ({ ...s, festive: s.festive === false }))}>{SEASON_ICON[seasonNow()!]} {t(state.festive !== false ? 'festive.on' : 'festive.off')}</button>}
         </div>
         {(install || ios) && <p className="muted install-hint">{t(install ? 'install.hint' : 'install.ios')}</p>}
         {msg && <p className="muted">{msg}</p>}

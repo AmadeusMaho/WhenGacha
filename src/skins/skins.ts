@@ -102,6 +102,9 @@ export const FONDOS: Record<string, string[]> = {
     '4k-fate-stay-night', 'archer-fate-stay-night', 'pc-flames', 'fate-grand-order-anime-sitonai-girl', 'okita-souji',
     'mashu-kyrielight-fate', 'mash-kyrielight', 'oda-nobunaga-fate'
   ],
+  navidad: [
+    'christmas-trees', 'anime-christmas', 'genshin-christmas'
+  ],
 }
 // </fondos>
 
@@ -112,6 +115,12 @@ const OFFICIAL: Record<string, string> = {
 const cdn = (skin: string): LiveClip[] => (FONDOS[skin] ?? []).map(n => ({
   video: `${LIVE_CDN}/${skin}/live-${n}.mp4`, poster: `/skins/${skin}/live-${n}.webp`, official: OFFICIAL[`${skin}/${n}`],
 }))
+
+/**
+ * Fondos de temporada de la skin base (Festive.tsx): `FONDOS.navidad`, que el dueño llena con Wallpaureka como los de cualquier skin ("Navidad
+ * (skin estándar)"). Vacío = la skin base sigue con su degradado de siempre.
+ */
+export const seasonBackgrounds = (id: string): LiveClip[] => cdn(id)
 
 /*
  * Fondos de la línea de tiempo (ver README, "Fondos de la línea de tiempo"). Cada visita a la pestaña muestra el siguiente.

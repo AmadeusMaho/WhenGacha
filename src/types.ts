@@ -144,6 +144,8 @@ export interface AppState {
   notify: boolean
   /** horas antes del fin del evento para avisar */
   leadHours: number
+  /** Adornos de temporada en la skin base (seasonal.ts): `false` = apagados; sin valor = encendidos en su fecha. */
+  festive?: boolean
   /** Pestaña "Tiradas": ajustes por juego (id → solo lo que cambiaste; el resto sale de pullPlan.ts). */
   planner: Record<string, Partial<PlanCfg>>
   /** Servidor elegido por juego (id → servers.ts); sin entrada, el servidor de la fuente. */

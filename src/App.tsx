@@ -1,5 +1,6 @@
 import './install' // registra el evento de instalación al cargar (el botón está en los ajustes de avisos)
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useSeason } from './seasonal'
 import ConsentBanner from './ConsentBanner'
 import { consentEnabled, reopenConsent } from './ads'
 import { flushSync } from 'react-dom'
@@ -22,6 +23,9 @@ import { Planner } from './Planner'
 import { estimatedEvents } from './pullPlan'
 import { withServers } from './servers'
 
+/** Adornos de temporada (seasonal.ts): su código y su CSS solo se descargan cuando hay temporada. */
+const Festive = lazy(() => import('./Festive'))
+
 /** Donación de PayPal: solo si el servidor no tiene KOFI_URL (el botón del pie usa Ko-fi cuando la hay). Déjalo vacío para ocultar el botón. */
 /** Servidor de Discord de la comunidad (botón del pie). */
 const DISCORD_URL = 'https://discord.gg/zz3XtbTrqP'
@@ -42,6 +46,7 @@ export default function App() {
   const { status, sync } = useAutoSync(state, setState)
   useImages(state)
   const donateUrl = useKofiUrl() || DONATE_URL // skins: sin ellas, deja solo DONATE_URL
+  const season = useSeason(state.festive !== false)
   const [tab, setTab] = useState<Tab>(() => (state.tracked.length ? 'timeline' : 'mine'))
   const navRef = useRef<HTMLElement>(null)
   // Coloca el indicador bajo la pestaña activa; se recalcula al cambiar de pestaña, de idioma (otro ancho) o de tamaño de ventana.
@@ -145,8 +150,9 @@ export default function App() {
   return (
     <div className="app">
       <div className="aurora" aria-hidden />
+      {season && <Suspense fallback={null}><Festive season={season} /></Suspense>}
       <header>
-        <div className="brand"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /><h1>WhenGacha</h1><SupporterBadge /> {/* skins */}</div>
+        <div className="brand"><span className="logo-wrap"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /></span><h1>WhenGacha</h1><SupporterBadge /> {/* skins */}</div>
         <nav ref={navRef}>
           {/* Indicador que se desliza bajo la pestaña activa (posición medida en useLayoutEffect). */}
           <span className="nav-ind" aria-hidden />
