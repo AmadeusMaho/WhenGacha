@@ -510,8 +510,8 @@ tocan tamaños ni rellenos (la cabecera sigue en una fila; comprobado en las 11 
 - WuWa: degradado blanco a dorado y la **frecuencia** bajo el nombre (la cinta dorada animada del reproductor, `ui/freq.svg`); insignia de cristal con filo dorado y puntas.
 - Genshin: degradado crema a dorado con contorno oscuro y el destello de cuatro puntas sobre la W; insignia crema con filete dorado.
 - ZZZ: inclinado, con sombra amarilla y la cinta de rayas amarillas y negras debajo; insignia amarilla inclinada.
-- HSR: degradado blanco, lavanda y dorado y el **Expreso Astral** sobre la vía bajo el nombre (SVG propio con su silueta: locomotora aerodinámica
-  negra azulada con remates dorados, foco con haz, proa en punta y aletas; vuela, sin ruedas); insignia azul noche con filete dorado.
+- HSR: degradado blanco, lavanda y dorado y un **planeta con anillo** detrás de "Gacha" (el Expreso Astral sobre la vía se probó y se quitó);
+  insignia azul noche con filete dorado.
 - NIKKE: en cursiva, con la raya azul y la mira del AR sobre la W; insignia azul "Claim" con la esquina cortada.
 - Uma: rosa con contorno blanco y sombra verde, como su logo; insignia en cápsula rosa.
 - Arknights: ya tenía el anillo y "PRTS // RHODES ISLAND"; insignia amarilla de PRTS.
