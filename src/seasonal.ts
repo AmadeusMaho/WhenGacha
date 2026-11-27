@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react'
  */
 export type Season = 'christmas'
 
-/** Temporadas por fecha (mes 1–12, día). Navidad: del 1 de diciembre a Reyes (6 de enero), cruzando el año. */
+/** Temporadas por fecha (mes 1–12, día). Navidad: del 26 de noviembre a Reyes (6 de enero), cruzando el año (el dueño la adelantó el 27 nov 2026). */
 const SEASONS: { id: Season; from: [number, number]; to: [number, number] }[] = [
-  { id: 'christmas', from: [12, 1], to: [1, 6] },
+  { id: 'christmas', from: [11, 26], to: [1, 6] },
 ]
 
 /** Icono de cada temporada (en el interruptor de los ajustes). */
@@ -49,7 +49,7 @@ const baseSkin = () => !document.documentElement.hasAttribute('data-skin')
 
 /**
  * Temporada activa: hay temporada, el ajuste no la apaga y la skin es la base. Pone `data-season` en <html> (el CSS de festive.css cuelga de
- * ahí) y lo quita al cambiar de skin. Revisa la fecha cada hora (una pestaña abierta el 30 nov se enciende sola el 1 dic).
+ * ahí) y lo quita al cambiar de skin. Revisa la fecha cada hora (una pestaña abierta el 25 nov se enciende sola el 26).
  */
 export function useSeason(enabled: boolean): Season | null {
   const [season, setSeason] = useState<Season | null>(null)

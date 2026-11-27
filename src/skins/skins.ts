@@ -105,7 +105,8 @@ export const FONDOS: Record<string, string[]> = {
     'mashu-kyrielight-fate', 'mash-kyrielight', 'oda-nobunaga-fate'
   ],
   navidad: [
-    'christmas-trees', 'anime-christmas', 'genshin-christmas'
+    'christmas-trees', 'anime-christmas', 'genshin-christmas', 'enterprise-christmas', 'niko-holiday', 'erato-christmas', 'hu-tao-winter',
+    'fu-hua-snow', 'shorekeeper-snowy', 'vertin-snowfall', 'lucia-snowfall', 'miyako-winter'
   ],
 }
 // </fondos>
