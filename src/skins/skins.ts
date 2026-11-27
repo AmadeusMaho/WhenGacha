@@ -37,12 +37,14 @@ const stills = (skin: string, names: string[]): LiveClip[] => names.map(n => ({ 
 
 /*
  * Fondos animados en Cloudflare R2 (11 nov 2026): el despliegue tiene un límite de 20 MB y los vídeos no caben en public/.
- * Bucket `whengacha-fondos` (URL pública r2.dev); cada nombre de FONDOS es `<skin>/live-<nombre>.mp4` en el bucket (copia local en
+ * Bucket `whengacha-fondos` (dominio propio fondos.whengacha.site; antes la URL pública r2.dev); cada nombre de FONDOS es `<skin>/live-<nombre>.mp4` en el bucket (copia local en
  * ../fondos-skins/r2/). Su fotograma fijo `live-<nombre>.webp` (~45 KB) va en public/skins/<skin>/: es el póster, el fondo con "ahorro de datos"
  * y el de reserva si R2 no responde (LiveWallpaper.tsx). Ver README, "Fondos en R2". Créditos de los de fans: public/acerca.html.
  * Para añadir o quitar fondos: la app de fondos local del dueño (scripts/fondos/abrir.cmd; no está en el repositorio).
  */
-export const LIVE_CDN = 'https://pub-f0ae309961c44cf990b8708e645b1aa8.r2.dev'
+// Dominio propio del bucket (27 nov 2026): sin el límite de velocidad de la URL r2.dev (que sigue activa) y con la caché de Cloudflare
+// (cf-cache-status: HIT). Gratis: R2 no cobra la salida y el subdominio está en la zona whengacha.site.
+export const LIVE_CDN = 'https://fondos.whengacha.site'
 // <fondos> (lo edita la app de fondos local; se puede tocar a mano manteniendo este formato)
 export const FONDOS: Record<string, string[]> = {
   wuwa: [

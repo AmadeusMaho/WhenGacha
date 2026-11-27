@@ -213,9 +213,11 @@ de `imageio-ffmpeg` y `npx wrangler`) e `index.html`. Edita solo el bloque `// <
 de los créditos; si se tocan a mano, hay que mantener ese formato.
 
 El despliegue tiene un **límite de 20 MB**, así que **ningún vídeo de fondo va en `public/`**: todos se sirven desde **Cloudflare R2**,
-bucket `whengacha-fondos` de la cuenta del dueño, con su URL pública `r2.dev` (`LIVE_CDN` en `skins.ts`, sin `/` al final). La lista de qué vídeo va en cada skin es `FONDOS`, en el mismo archivo.
-`r2.dev` tiene un límite de velocidad y Cloudflare lo presenta como algo para pruebas; si hace falta, se conecta un dominio propio al bucket
-(exige pasar los DNS del dominio de Namecheap a Cloudflare) y solo cambia `LIVE_CDN`.
+bucket `whengacha-fondos` de la cuenta del dueño, servido desde su **dominio propio `https://fondos.whengacha.site`** (`LIVE_CDN` en `skins.ts`, sin `/`
+al final; conectado el 27 nov 2026 en R2 → bucket → Configuración → Dominios personalizados, registro CNAME `fondos` creado por Cloudflare). La lista de
+qué vídeo va en cada skin es `FONDOS`, en el mismo archivo. Antes se usaba la URL pública `r2.dev`, que tiene un límite de velocidad, no pasa por la
+caché y Cloudflare la presenta como algo para pruebas: sigue activa (no la uses en código nuevo). Con el dominio propio los vídeos se cachean en
+Cloudflare (`cf-cache-status: HIT`) y no hay coste: R2 no cobra la salida.
 - **Copia local de lo que hay en el bucket**: `../fondos-skins/r2/<skin>/live-<n>.mp4` (65 vídeos, ~128 MB). El bucket tiene las mismas
   rutas (`<skin>/live-<n>.mp4`). Los `.webp` (fotograma fijo, ~45 KB) están en `public/skins/<skin>/`, que es de donde se leen
   (póster, fondo con "ahorro de datos" o "reducir movimiento", y reserva si R2 falla; desde el 13 nov 2026 el móvil reproduce el vídeo).
