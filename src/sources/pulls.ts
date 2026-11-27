@@ -39,7 +39,8 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   // "up to 200 FREE recruitments!" (5.º aniversario, nov 2026): reclutamientos gratis diarios = 1 tirada cada uno.
   bluearchive: [{ item: /^pyroxenes?$/i, per: 120 }, { item: /^single recruitment tickets?$/i, per: 1 }, { item: /^ten recruitment tickets?$/i, per: 0.1 }, { item: /^free recruitments?$/i, per: 1 }],
   // Limbus Company: extracción simple = 130 Lunacy (limbuscompany.wiki.gg, página "Lunacy").
-  limbus: [{ item: /^lunacy$/i, per: 130 }],
+  // Decaextraction Ticket = 10 extracciones (el del 10.º aniversario, con 3★ garantizado; Steam, 17 nov 2026); Extraction Ticket = 1.
+  limbus: [{ item: /^lunacy$/i, per: 130 }, { item: /^decaextraction tickets?$/i, per: 0.1 }, { item: /^extraction tickets?$/i, per: 1 }],
   // Fate/Grand Order: 3 Saint Quartz por invocación (fategrandorder.fandom.com, "Saint Quartz"); Summon Ticket = 1.
   fgo: [{ item: /^saint quartz$/i, per: 3 }, { item: /^summon tickets?$/i, per: 1 }],
   // Honkai Impact 3rd: los suministros limitados cuestan 280 Crystals; cada Supply Card = 1 tirada (honkaiimpact3.fandom.com, "Supply").

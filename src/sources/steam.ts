@@ -16,8 +16,12 @@ export const STEAM_APPS: Partial<Record<string, number>> = {
   infinitynikki: 3164330,
   // Sword Master Story (20 nov 2026): ficha de Steam "Coming soon", aún sin avisos. Sus notas de actualización entrarán solas cuando las publique.
   swordmaster: 4239590,
+  // Limbus (26 nov 2026; descartado el 12 nov): los avisos grandes son imágenes, pero los regalos y campañas van en texto («Project Moon 10th
+  // Anniversary Gift»: «Lunacy x1300 & 3★ Guarantee Decaextraction Ticket», «Claim Period: After the Nov. 19th, 2026 (Thu) Scheduled Update ~
+  // Dec. 17th, 2026 (Thu) 10:00 (KST)»). Eldritch Tools sigue dando eventos y banners; Steam añade lo que no tiene.
+  limbus: 1973530,
   // Probados y descartados (12 nov 2026): Epic Seven (5019180; repite los avisos de STOVE, que ya se leen, con HTML suelto), Honkai 3rd (1671200;
-  // "From 12:00, OCT 29 to 12:00, NOV 19", formato que el lector aún no entiende), Limbus (1973530), Blue Archive (3557620) y Uma (3224770):
+  // "From 12:00, OCT 29 to 12:00, NOV 19", formato que el lector aún no entiende), Blue Archive (3557620) y Uma (3224770):
   // sus avisos de Steam no traen periodos legibles. BLEACH y MHO no están en Steam.
 }
 
@@ -26,6 +30,19 @@ export const STEAM_APPS: Partial<Record<string, number>> = {
  * (eventos): sin esto, los eventos salían en hora de Asia. DNA va en hora de América (UTC-5), como dna.ts y el selector de servidor.
  */
 const SERVER_TIME: Partial<Record<string, string>> = { dna: 'UTC-5' }
+
+/**
+ * Retoques del texto de un aviso antes del lector, por juego. Limbus (26 nov 2026): «(KST)» → «(UTC+9)» (el lector solo entiende UTC/GMT);
+ * «After the Nov. 19th, 2026 (Thu) Scheduled Update» → ese día a las 12:00, cuando acaba la actualización semanal (10:00–12:00 KST, limbus.ts);
+ * el «3★ Guarantee Decaextraction Ticket» sin cifra pasa a «Guaranteed 3★ Decaextraction Ticket x1» para que cuente (10 tiradas, pulls.ts).
+ */
+const TWEAKS: Partial<Record<string, (s: string) => string>> = {
+  limbus: s => s.replace(/\(KST\)/g, '(UTC+9)')
+    .replace(/After the ([A-Z][a-z]{2,8}\.? \d{1,2}(?:st|nd|rd|th)?,? \d{4}) (\([A-Za-z]{3}\) )?Scheduled Update/g, '$1 $212:00')
+    .replace(/\s*&\s*3★ Guaranteed? Decaextraction Ticket(?! x)/g, ', Guaranteed 3★ Decaextraction Ticket x1'),
+}
+/** Rótulos de una lista que el lector puede tomar por nombre ("Content: Lunacy x1300 …"): el evento se llama como el aviso. */
+const LABEL = /^(?:contents?|rewards?|claim period|period|details?)\s*:/i
 
 const API = 'https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/'
 const DAY = 86_400_000
@@ -69,16 +86,24 @@ export async function syncSteamNews(gameId: string): Promise<GameSync> {
         id: n.gid, timestamp: new Date(n.date * 1000).toISOString(),
         // "After the October 20, 2026 update (UTC+8) – December 1, 2026, 05:00 (server time)": la zona de la actualización no es la del cierre;
         // se quita para que la línea use la del servidor.
-        content: SERVER_TIME[gameId]
+        content: (TWEAKS[gameId] ?? (x => x))(SERVER_TIME[gameId]
           ? `**${n.title}**\n${steamText(n.contents)}`.replace(/((?:update|maintenance))\s*\(UTC[+-]\d{1,2}\)(?=[^\n]*\(server time\))/gi, '$1')
             .replace(/\(server time\)/gi, `(${SERVER_TIME[gameId]})`)
-          : `**${n.title}**\n${steamText(n.contents)}`,
+          : `**${n.title}**\n${steamText(n.contents)}`),
         attachments: img ? [{ url: `${CLAN_IMG}${img}`, content_type: 'image/png' }] : undefined,
       }
     })
   const s = parseNotices(gameId, messages)
   // Títulos sin el "◆" de las cabeceras de DNA; fuera los rótulos que no son eventos ("Phase Ⅱ", "[Bard's Tome" sin cerrar).
-  const events = s.events.map(e => ({ ...e, title: e.title.replace(/[\s◆◇■□✦]+$/u, '').trim() }))
+  // Un rótulo como nombre ("Content: Lunacy x1300 & …"): el título del aviso que lo trae, sin "Notice:".
+  const named = s.events.map(e => {
+    if (!LABEL.test(e.title)) return e
+    const key = e.title.replace(LABEL, '').trim().slice(0, 12)
+    const from = messages.find(m => m.content.includes(key))
+    const title = from && /^\*\*(.+?)\*\*/.exec(from.content)?.[1]
+    return title ? { ...e, title: title.replace(/^(?:notice|announcement)\s*:\s*/i, '').trim() } : e
+  })
+  const events = named.map(e => ({ ...e, title: e.title.replace(/[\s◆◇■□✦]+$/u, '').trim() }))
     .filter(e => e.title.length > 2 && !/^phase\b/i.test(e.title) && e.title.split('[').length === e.title.split(']').length)
   return { ...s, events }
 }

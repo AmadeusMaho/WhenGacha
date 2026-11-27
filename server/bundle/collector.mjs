@@ -20852,10 +20852,20 @@ var RULES = {
 			per: 1
 		}
 	],
-	limbus: [{
-		item: /^lunacy$/i,
-		per: 130
-	}],
+	limbus: [
+		{
+			item: /^lunacy$/i,
+			per: 130
+		},
+		{
+			item: /^decaextraction tickets?$/i,
+			per: .1
+		},
+		{
+			item: /^extraction tickets?$/i,
+			per: 1
+		}
+	],
 	fgo: [{
 		item: /^saint quartz$/i,
 		per: 3
@@ -22280,7 +22290,7 @@ var isGreeting = (c) => GREETING.test(c) || /^[^.!?:\d]{1,30},$/.test(c);
 * Rótulos de apartado que no son el nombre de nada: "▌ Event Period", "Recruitment Period", "Details", "Rewards". Si se tomaban como cabecera,
 * el evento se llamaba "Event Period".
 */
-var LABEL$3 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|details?|rewards?|notes?|overview|rules|requirements?|(?:unlock\s+)?conditions?|how to (?:join|participate|play))\s*:?$/i;
+var LABEL$4 = /^(?:[\w-]+\s+){0,2}(?:period|duration|time|dates?|schedule|details?|rewards?|notes?|overview|rules|requirements?|(?:unlock\s+)?conditions?|how to (?:join|participate|play))\s*:?$/i;
 /**
 * Nombre dentro de una frase. `loose` añade el patrón "X will be available", que solo vale en la propia línea del periodo (en una frase cualquiera
 * daba nombres como "A new hotfix for Stella Sora").
@@ -22438,12 +22448,12 @@ function pickRegion(lines) {
 }
 /** "◈ [Rewards]" seguido de "[Pristine Hourglass], [Secret Letter Clue], [Coin]": nombres sin cantidad (amount 0 = sin cifra en la ficha). */
 function bracketRewards$1(section) {
-	const at = section.findIndex((l) => LABEL$3.test(l) && /reward/i.test(l));
+	const at = section.findIndex((l) => LABEL$4.test(l) && /reward/i.test(l));
 	if (at < 0) return [];
 	const out = [];
 	for (const l of section.slice(at + 1)) {
 		if (!l) continue;
-		if (LABEL$3.test(l)) break;
+		if (LABEL$4.test(l)) break;
 		for (const m of l.matchAll(/\[([^[\]]{2,40})\]/g)) {
 			const q = /^(.*?[A-Za-z)])\s*[×x*]?\s*(\d[\d,]*)$/.exec(m[1].trim());
 			const name = q ? q[1].trim().replace(/(?<!s)s$/, "") : m[1].trim();
@@ -22606,7 +22616,7 @@ function parseNotices(gameId, messages) {
 		const year = new Date(m.timestamp).getUTCFullYear();
 		const msgZone = zoneOf(raw.join(" ")) ?? SERVER_ZONE[gameId] ?? 0;
 		const image = imageOf(m);
-		const firstLine = raw.findIndex((l) => clean$8(l) && !isGreeting(clean$8(l)) && !LABEL$3.test(clean$8(l)));
+		const firstLine = raw.findIndex((l) => clean$8(l) && !isGreeting(clean$8(l)) && !LABEL$4.test(clean$8(l)));
 		let heading = firstLine >= 0 && clean$8(raw[firstLine]).length <= 90 ? clean$8(raw[firstLine]) : "";
 		let headAt = Math.max(firstLine, 0);
 		let fromHead = false;
@@ -22617,7 +22627,7 @@ function parseNotices(gameId, messages) {
 			if (!c) continue;
 			const r = rangeIn(c, year, msgZone, +new Date(m.timestamp), zoneOf(raw.join(" ")) === void 0 ? DAY_HOURS[gameId] : void 0);
 			if (!r) {
-				if (LABEL$3.test(c)) {
+				if (LABEL$4.test(c)) {
 					label = c;
 					continue;
 				}
@@ -22644,7 +22654,7 @@ function parseNotices(gameId, messages) {
 				return -1;
 			})();
 			const prev = prevAt >= 0 ? clean$8(raw[prevAt]) : "";
-			const near = prev && prev.length <= 60 && !/[.!?,:;]$/.test(prev) && !isGreeting(prev) && !LABEL$3.test(prev) && !rangeIn(prev, year, msgZone) && /^[A-Z0-9"“「]/.test(prev) ? prev : "";
+			const near = prev && prev.length <= 60 && !/[.!?,:;]$/.test(prev) && !isGreeting(prev) && !LABEL$4.test(prev) && !rangeIn(prev, year, msgZone) && /^[A-Z0-9"“「]/.test(prev) ? prev : "";
 			const bannerName = BANNER_IN.exec(c)?.[1].trim();
 			const lineName = bannerName ?? (inline && !/period|duration|time|date|schedule|unlocks?|opens?/i.test(inline) ? inline : sentenceName(c));
 			let name = closeBracket(tidyName(lineName ?? (near || heading)).replace(/[\s\p{Extended_Pictographic}️]+$/u, ""), raw.join("\n"));
@@ -22681,7 +22691,7 @@ function parseNotices(gameId, messages) {
 				heading !== name && tidyName(heading) === name ? heading : ""
 			].join(" | ");
 			const kind = !/\bfree\b.{0,20}(recruit|pulls?|summons?|draws?)/i.test(ctx) && /recruit|banner|pick-?up|rate[- ]?up|gacha|headhunting|resonance|limited.*(trekker|student)|\b(?:exclusive|event|limited|rerun) arrests?\b|\bsummon(?:ing)? event\b|probability of summoning/i.test(ctx) ? "banner" : "event";
-			let nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean$8(l).length <= 90 && !LABEL$3.test(clean$8(l)));
+			let nextHead = raw.findIndex((l, j) => j > i && isHeading(l) && clean$8(l).length <= 90 && !LABEL$4.test(clean$8(l)));
 			if (near && !lineName) {
 				const nextRange = raw.findIndex((l, j) => j > i && !!clean$8(l) && !!rangeIn(clean$8(l), year, msgZone));
 				if (nextRange > 0) {
@@ -23999,7 +24009,8 @@ async function syncEpic7(gameId) {
 *  - Códigos: "Redeem Codes" de Game8 (archives/557781), mismo formato que CZN/Endfield (`syncGame8Codes`).
 *  - Avisos oficiales: canal de Discord "dna" de DISCORD_CHANNELS (el oficial de DNA seguido en nuestro servidor); mandan sobre Game8 (index.ts).
 *  - La wiki de Fandom (duetnightabyss.fandom.com) se dejó de actualizar en marzo de 2026: solo se usa para los iconos (Phoxene, Hourglass).
-* 3 páginas de Game8 por ciclo (caché de 6 h en el proxy).
+*  - Segunda lista de eventos (26 nov 2026): gacha.gg (`ggEvents`), para cuando Game8 rechaza la IP del servidor; añade los que Game8 no tenga.
+* 3 páginas de Game8 y 1 de gacha.gg por ciclo (caché de 6 h y 12 h en el proxy).
 *
 * Servidores: Asia/SEA/HMT (UTC+8), Europa (UTC+1) y América (UTC-5) cambian a la misma hora LOCAL ("July 23, 2026, 10:00 - August 4, 2026, 05:00"
 * en los tres, aviso oficial). La app usa el de América, el más cercano a su público: inicio 10:00 y fin 05:00 (UTC-5).
@@ -24082,6 +24093,61 @@ async function events$2(gameId) {
 	}
 	if (!out.length) throw new Error("game8 DNA: no se encontraron eventos");
 	return out;
+}
+/** «18 November to 4 December 2026», «29 December 2026 to 5 January 2027» → [inicio, fin] (hora de América, como Game8); null si no encaja. */
+function ggRange(s) {
+	const m = /(\d{1,2}) ([A-Z][a-z]+)(?: (\d{4}))? to (\d{1,2}) ([A-Z][a-z]+) (\d{4})/.exec(s);
+	if (!m) return null;
+	const am = MONTHS$20.indexOf(m[2].toLowerCase()), bm = MONTHS$20.indexOf(m[5].toLowerCase());
+	if (am < 0 || bm < 0) return null;
+	const by = +m[6];
+	return [at$5(m[3] ? +m[3] : am > bm ? by - 1 : by, am, +m[1], 10), at$5(by, bm, +m[4], 5)];
+}
+/**
+* Lista de eventos de gacha.gg («Every event so far»: `<li>` con el nombre y «Dates: 18 November to 4 December 2026 (on now)»; robots.txt
+* "Allow: /"). Solo el día, como Game8. Segunda lista desde el 26 nov 2026: Game8 rechaza las IP de servidores (su WAF) y sin la tarea del PC DNA
+* se quedaba sin eventos; además el canal de Discord seguido no publica nada. Solo los vigentes o recién acabados.
+*/
+function ggEvents(gameId, doc, now = Date.now()) {
+	const out = [];
+	for (const li of doc.querySelectorAll("li")) {
+		const spans = [...li.children];
+		const name = text$13(spans[0]);
+		const r = /^Dates\s*:/i.test(text$13(spans[1])) ? ggRange(text$13(spans[1])) : null;
+		if (!name || !r || r[1] < now - 3 * DAY$39 || !(r[1] > r[0]) || r[1] - r[0] > 150 * DAY$39) continue;
+		out.push({
+			id: `${gameId}:event:gg:${name}:${new Date(r[0]).toISOString().slice(0, 10)}`,
+			gameId,
+			kind: "event",
+			title: name,
+			start: new Date(r[0]).toISOString(),
+			end: new Date(r[1]).toISOString(),
+			items: [],
+			featured: [],
+			pulls: 0,
+			source: "api",
+			precision: "approx",
+			minor: /^(Traces in the Sand|Silken Serenade)\b/i.test(name) || void 0
+		});
+	}
+	return out;
+}
+async function ggList(gameId) {
+	const res = await fetch(viaProxy("https://www.gacha.gg/duet-night-abyss/events"));
+	if (!res.ok) throw new Error(`gacha.gg DNA → HTTP ${res.status}`);
+	const list = ggEvents(gameId, new DOMParser().parseFromString(await res.text(), "text/html"));
+	if (!list.length) throw new Error("gacha.gg DNA: no se encontraron eventos");
+	return list;
+}
+/**
+* Los de gacha.gg que Game8 no tiene: mismo nombre (o uno empieza por el otro: gacha.gg dice "Immersive Theatre" y Game8 "Immersive Theatre:
+* Ensemble Act") y fin a ±2 días = el mismo evento. Los "Immersive Theatre" a secas no se añaden nunca: el nombre completo llega de Game8 o de
+* Steam y la temporada del modo, de `dnaTheatre`.
+*/
+function withGg(g8, gg) {
+	const k = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+	const same = (a, b) => k(a) === k(b) || k(a).startsWith(k(b)) || k(b).startsWith(k(a));
+	return [...g8, ...gg.filter((e) => !/^immersive theatre$/i.test(e.title) && !g8.some((o) => o.kind === "event" && same(o.title, e.title) && Math.abs(Date.parse(o.end) - Date.parse(e.end)) <= 2 * DAY$39))];
 }
 /** Banners Myriad limitados (cosméticos) y la versión en que salieron. */
 async function banners$3(gameId) {
@@ -24188,16 +24254,18 @@ function dnaTheatre(gameId, now = Date.now()) {
 	});
 }
 async function syncDna(gameId) {
-	const [ev, bn, cd] = await Promise.allSettled([
+	const [ev, bn, cd, gg] = await Promise.allSettled([
 		events$2(gameId),
 		banners$3(gameId),
-		syncGame8Codes("dna")
+		syncGame8Codes("dna"),
+		ggList(gameId)
 	]);
-	if (ev.status === "rejected" && bn.status === "rejected") throw ev.reason;
+	if (ev.status === "rejected" && bn.status === "rejected" && gg.status === "rejected") throw ev.reason;
+	if (gg.status === "rejected") console.warn("[dna] gacha.gg:", gg.reason?.message);
 	const codes = cd.status === "fulfilled" ? cd.value : [];
 	return {
 		events: [
-			...ev.status === "fulfilled" ? ev.value : [],
+			...withGg(ev.status === "fulfilled" ? ev.value : [], gg.status === "fulfilled" ? gg.value : []),
 			...bn.status === "fulfilled" ? bn.value.events : [],
 			...dnaTheatre(gameId)
 		],
@@ -26593,7 +26661,7 @@ function daphneRange(s, year) {
 	return b > a ? [a, b] : null;
 }
 /** Rótulos de periodo y apartados de una sección (no son eventos). */
-var LABEL$2 = /^(?:(?:full )?event|featured|sale|exchange|campaign|survey|mission pass availability|season)\s+(?:period|dates)$|^how to claim$|^request$|^phase \d+$|^implementation date$|^\[updated[^\]]*\]$/i;
+var LABEL$3 = /^(?:(?:full )?event|featured|sale|exchange|campaign|survey|mission pass availability|season)\s+(?:period|dates)$|^how to claim$|^request$|^phase \d+$|^implementation date$|^\[updated[^\]]*\]$/i;
 /** Periodos que no son un evento: ventas, pases e intercambios. */
 var SKIP_LABEL = /^(?:sale|exchange|mission pass availability)\s+period$/i;
 /** Secciones de tienda y extras del banner. */
@@ -26740,8 +26808,8 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 		let ownerAt = -1;
 		for (let j = prev.length - 1; j >= 0; j--) {
 			const h = blocks[prev[j]];
-			if (h.h <= 2 && LABEL$2.test(h.t)) break;
-			if (!LABEL$2.test(h.t)) {
+			if (h.h <= 2 && LABEL$3.test(h.t)) break;
+			if (!LABEL$3.test(h.t)) {
 				owner = h;
 				ownerAt = prev[j];
 				break;
@@ -26753,11 +26821,11 @@ function daphnePost(gameId, post, adventurers, now = Date.now()) {
 		if (range[1] < now - 3 * DAY$29) return;
 		const from = ownerAt >= 0 ? ownerAt + 1 : 0;
 		const lvl = owner?.h ?? 2;
-		const stop = blocks.findIndex((x, j) => j > from && "h" in x && x.h <= lvl && !LABEL$2.test(x.t));
+		const stop = blocks.findIndex((x, j) => j > from && "h" in x && x.h <= lvl && !LABEL$3.test(x.t));
 		const section = blocks.slice(from, stop < 0 ? blocks.length : stop);
 		const own = [];
 		let inPass = false;
-		for (const x of section) if ("h" in x) inPass = /pass/i.test(x.t) && !LABEL$2.test(x.t);
+		for (const x of section) if ("h" in x) inPass = /pass/i.test(x.t) && !LABEL$3.test(x.t);
 		else if ("p" in x && !inPass) own.push(x.p);
 		const rewards = daphneRewards(own);
 		const desc = own.find((p) => !daphneRange(p, year) && !/^\*/.test(p) && p.length > 20);
@@ -26828,13 +26896,22 @@ async function syncDaphne(gameId) {
 var STEAM_APPS = {
 	dna: 3950020,
 	infinitynikki: 3164330,
-	swordmaster: 4239590
+	swordmaster: 4239590,
+	limbus: 1973530
 };
 /**
 * Zona de "(server time)" por juego. El lector usa una sola zona por aviso y los de DNA mezclan "(UTC+8)" (mantenimiento) con "(server time)"
 * (eventos): sin esto, los eventos salían en hora de Asia. DNA va en hora de América (UTC-5), como dna.ts y el selector de servidor.
 */
 var SERVER_TIME = { dna: "UTC-5" };
+/**
+* Retoques del texto de un aviso antes del lector, por juego. Limbus (26 nov 2026): «(KST)» → «(UTC+9)» (el lector solo entiende UTC/GMT);
+* «After the Nov. 19th, 2026 (Thu) Scheduled Update» → ese día a las 12:00, cuando acaba la actualización semanal (10:00–12:00 KST, limbus.ts);
+* el «3★ Guarantee Decaextraction Ticket» sin cifra pasa a «Guaranteed 3★ Decaextraction Ticket x1» para que cuente (10 tiradas, pulls.ts).
+*/
+var TWEAKS = { limbus: (s) => s.replace(/\(KST\)/g, "(UTC+9)").replace(/After the ([A-Z][a-z]{2,8}\.? \d{1,2}(?:st|nd|rd|th)?,? \d{4}) (\([A-Za-z]{3}\) )?Scheduled Update/g, "$1 $212:00").replace(/\s*&\s*3★ Guaranteed? Decaextraction Ticket(?! x)/g, ", Guaranteed 3★ Decaextraction Ticket x1") };
+/** Rótulos de una lista que el lector puede tomar por nombre ("Content: Lunacy x1300 …"): el evento se llama como el aviso. */
+var LABEL$2 = /^(?:contents?|rewards?|claim period|period|details?)\s*:/i;
 var API$7 = "https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/";
 var DAY$28 = 864e5;
 /** Las imágenes de los avisos van como "{STEAM_CLAN_IMAGE}/123/abc.png". */
@@ -26853,19 +26930,29 @@ async function syncSteamNews(gameId) {
 	};
 	const res = await fetch(viaProxy(`${API$7}?appid=${app}&count=15&maxlength=0&format=json`));
 	if (!res.ok) throw new Error(`steam ${gameId} → HTTP ${res.status}`);
-	const s = parseNotices(gameId, ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$28).map((n) => {
+	const messages = ((await res.json())?.appnews?.newsitems ?? []).filter((n) => n.feedname === "steam_community_announcements" && Date.now() - n.date * 1e3 < 45 * DAY$28).map((n) => {
 		const img = /\{STEAM_CLAN_IMAGE\}(\S+?\.(?:png|jpe?g|gif|webp))/i.exec(n.contents)?.[1];
 		return {
 			id: n.gid,
 			timestamp: (/* @__PURE__ */ new Date(n.date * 1e3)).toISOString(),
-			content: SERVER_TIME[gameId] ? `**${n.title}**\n${steamText(n.contents)}`.replace(/((?:update|maintenance))\s*\(UTC[+-]\d{1,2}\)(?=[^\n]*\(server time\))/gi, "$1").replace(/\(server time\)/gi, `(${SERVER_TIME[gameId]})`) : `**${n.title}**\n${steamText(n.contents)}`,
+			content: (TWEAKS[gameId] ?? ((x) => x))(SERVER_TIME[gameId] ? `**${n.title}**\n${steamText(n.contents)}`.replace(/((?:update|maintenance))\s*\(UTC[+-]\d{1,2}\)(?=[^\n]*\(server time\))/gi, "$1").replace(/\(server time\)/gi, `(${SERVER_TIME[gameId]})`) : `**${n.title}**\n${steamText(n.contents)}`),
 			attachments: img ? [{
 				url: `${CLAN_IMG$4}${img}`,
 				content_type: "image/png"
 			}] : void 0
 		};
-	}));
-	const events = s.events.map((e) => ({
+	});
+	const s = parseNotices(gameId, messages);
+	const events = s.events.map((e) => {
+		if (!LABEL$2.test(e.title)) return e;
+		const key = e.title.replace(LABEL$2, "").trim().slice(0, 12);
+		const from = messages.find((m) => m.content.includes(key));
+		const title = from && /^\*\*(.+?)\*\*/.exec(from.content)?.[1];
+		return title ? {
+			...e,
+			title: title.replace(/^(?:notice|announcement)\s*:\s*/i, "").trim()
+		} : e;
+	}).map((e) => ({
 		...e,
 		title: e.title.replace(/[\s◆◇■□✦]+$/u, "").trim()
 	})).filter((e) => e.title.length > 2 && !/^phase\b/i.test(e.title) && e.title.split("[").length === e.title.split("]").length);

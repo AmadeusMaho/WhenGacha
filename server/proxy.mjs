@@ -226,7 +226,7 @@ const SOURCES = [
   { name: 'lootandwaifus', ttl: HOUR, test: u => u.hostname === 'lootandwaifus.com' && /^\/(nikke-banner-history|trickcal-chibi-go-banner-history|guides\/trickcal-revive-codes|guides\/make-drama-mad-codes)\/$/.test(u.pathname) },
   // Horizon Walker (19 nov 2026): gacha.gg (robots.txt "Allow: /" salvo /api/): tiendas de evento (recompensas e iconos), retratos de carta y armas.
   // Sus fechas van atrasadas; las de Steam mandan. 3 páginas por ciclo, caché de 12 h.
-  { name: 'gachagg', ttl: 12 * HOUR, test: u => u.hostname === 'www.gacha.gg' && /^\/horizon-walker\/(events|characters|weapons)$/.test(u.pathname) && !u.search },
+  { name: 'gachagg', ttl: 12 * HOUR, test: u => u.hostname === 'www.gacha.gg' && /^\/(?:horizon-walker\/(?:events|characters|weapons)|duet-night-abyss\/events)$/.test(u.pathname) && !u.search },
   // MAke Drama: MAD (19 nov 2026): MAD Viewer, base de datos de fans con los datos del juego (robots.txt "Allow: /"). Cuatro JSON por ciclo (eventos, banners, temporadas de Arena y Total War, Infinity Archive).
   { name: 'madviewer', ttl: 6 * HOUR, test: u => u.hostname === 'mad.altterisk.cc' && /^\/data\/(events|gacha_banners|rewards|archive)\.json$/.test(u.pathname) && !u.search },
   // Códigos de MAke Drama: MAD (26 nov 2026): MEmu (robots.txt "Allow: /"), con la caducidad de cada código. Una página.

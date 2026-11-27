@@ -1555,3 +1555,20 @@ misma red y se revisan a diario) y, si no coincidían, con Game8 y PocketGamer.
   semanas y un cupón dura eso. La lista a mano (`BA_CODES`, mediawiki.ts) queda vacía. Como el resto del foro, solo desde la tarea del PC.
 - **Pendiente de decidir** (solo una fuente, sin fechas): AFK Journey (game.guide: AFKJ2YRS2026 y 4 de un solo uso; PocketGamer da otros), NIKKE, PGR, P5X y Umamusume (game.guide lista códigos de 2025
   y de lanzamiento "añadidos el 24 ago 2026", fecha en que importó la lista: no son nuevos).
+
+## Más fuentes para los juegos con Discord muerto (26 nov 2026)
+
+Revisión con los mensajes reales de los 17 canales: Limbus (#news), DNA (#update-feed, #twitter-feed) y Sword Master (#announcements) no han publicado
+nada desde que se siguieron (solo el mensaje de "seguir canal"). Lo que se añadió:
+- **Limbus → Steam** (`STEAM_APPS.limbus`, descartado el 12 nov): los avisos grandes siguen siendo imágenes, pero regalos y campañas van en texto.
+  Retoques propios (`TWEAKS` en steam.ts): «(KST)» → «(UTC+9)», «After the Nov. 19th, 2026 (Thu) Scheduled Update» → ese día a las 12:00 KST, y el
+  «3★ Guarantee Decaextraction Ticket» sin cifra pasa a contar (×1 = 10 tiradas; `RULES.limbus`: también Extraction Ticket = 1). Si el lector toma un
+  rótulo por nombre ("Content: Lunacy x1300 …"), el evento se llama como el aviso (`LABEL`). Primer resultado: «Project Moon 10th Anniversary Gift»
+  (19 nov 12:00 → 17 dic 10:00 KST, Lunacy ×1300 + Decaextraction Ticket = 20 tiradas). Eldritch Tools y la wiki siguen dando el resto.
+- **DNA → gacha.gg** (`ggEvents` en dna.ts, `/duet-night-abyss/events`, robots.txt "Allow: /"): segunda lista de eventos (nombre + «18 November to
+  4 December 2026»), porque Game8 rechaza las IP de servidores y sin la tarea del PC DNA no tenía eventos (con Game8 caído: 14 en vez de 0). Se
+  añaden solo los que Game8 no tenga (mismo nombre o prefijo y fin a ±2 días); los "Immersive Theatre" a secas no (el nombre completo viene de Game8 o
+  Steam). Steam de DNA ya estaba (notas de versión; la última, 20 oct).
+- **Sword Master Story**: sin novedades. Steam sigue sin avisos (ya está en `STEAM_APPS`), gacha.gg y game.guide no lo tienen, y una búsqueda no da
+  ninguna web con calendario. Sigue con parches de la App Store y códigos de ucngame.
+- Ojo al probar fuera del proxy: wiki.gg (Limbus) responde 403 a un User-Agent de navegador desde Node; con el del proxy ("WhenGacha/1.0 …") va bien.

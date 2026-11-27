@@ -13,7 +13,8 @@ import { syncGame8Codes } from './codes'
  *  - Códigos: "Redeem Codes" de Game8 (archives/557781), mismo formato que CZN/Endfield (`syncGame8Codes`).
  *  - Avisos oficiales: canal de Discord "dna" de DISCORD_CHANNELS (el oficial de DNA seguido en nuestro servidor); mandan sobre Game8 (index.ts).
  *  - La wiki de Fandom (duetnightabyss.fandom.com) se dejó de actualizar en marzo de 2026: solo se usa para los iconos (Phoxene, Hourglass).
- * 3 páginas de Game8 por ciclo (caché de 6 h en el proxy).
+ *  - Segunda lista de eventos (26 nov 2026): gacha.gg (`ggEvents`), para cuando Game8 rechaza la IP del servidor; añade los que Game8 no tenga.
+ * 3 páginas de Game8 y 1 de gacha.gg por ciclo (caché de 6 h y 12 h en el proxy).
  *
  * Servidores: Asia/SEA/HMT (UTC+8), Europa (UTC+1) y América (UTC-5) cambian a la misma hora LOCAL ("July 23, 2026, 10:00 - August 4, 2026, 05:00"
  * en los tres, aviso oficial). La app usa el de América, el más cercano a su público: inicio 10:00 y fin 05:00 (UTC-5).
@@ -79,6 +80,57 @@ async function events(gameId: string): Promise<GameEvent[]> {
   }
   if (!out.length) throw new Error('game8 DNA: no se encontraron eventos')
   return out
+}
+
+/** «18 November to 4 December 2026», «29 December 2026 to 5 January 2027» → [inicio, fin] (hora de América, como Game8); null si no encaja. */
+export function ggRange(s: string): [number, number] | null {
+  const m = /(\d{1,2}) ([A-Z][a-z]+)(?: (\d{4}))? to (\d{1,2}) ([A-Z][a-z]+) (\d{4})/.exec(s)
+  if (!m) return null
+  const am = MONTHS.indexOf(m[2].toLowerCase()), bm = MONTHS.indexOf(m[5].toLowerCase())
+  if (am < 0 || bm < 0) return null
+  const by = +m[6], ay = m[3] ? +m[3] : am > bm ? by - 1 : by
+  return [at(ay, am, +m[1], 10), at(by, bm, +m[4], 5)]
+}
+
+/**
+ * Lista de eventos de gacha.gg («Every event so far»: `<li>` con el nombre y «Dates: 18 November to 4 December 2026 (on now)»; robots.txt
+ * "Allow: /"). Solo el día, como Game8. Segunda lista desde el 26 nov 2026: Game8 rechaza las IP de servidores (su WAF) y sin la tarea del PC DNA
+ * se quedaba sin eventos; además el canal de Discord seguido no publica nada. Solo los vigentes o recién acabados.
+ */
+export function ggEvents(gameId: string, doc: Document, now = Date.now()): GameEvent[] {
+  const out: GameEvent[] = []
+  for (const li of doc.querySelectorAll('li')) {
+    const spans = [...li.children]
+    const name = text(spans[0])
+    const r = /^Dates\s*:/i.test(text(spans[1])) ? ggRange(text(spans[1])) : null
+    if (!name || !r || r[1] < now - 3 * DAY || !(r[1] > r[0]) || r[1] - r[0] > 150 * DAY) continue
+    out.push({
+      id: `${gameId}:event:gg:${name}:${new Date(r[0]).toISOString().slice(0, 10)}`, gameId, kind: 'event', title: name,
+      start: new Date(r[0]).toISOString(), end: new Date(r[1]).toISOString(), items: [], featured: [], pulls: 0, source: 'api', precision: 'approx',
+      minor: /^(Traces in the Sand|Silken Serenade)\b/i.test(name) || undefined,
+    })
+  }
+  return out
+}
+
+async function ggList(gameId: string): Promise<GameEvent[]> {
+  const res = await fetch(viaProxy('https://www.gacha.gg/duet-night-abyss/events'))
+  if (!res.ok) throw new Error(`gacha.gg DNA → HTTP ${res.status}`)
+  const list = ggEvents(gameId, new DOMParser().parseFromString(await res.text(), 'text/html'))
+  if (!list.length) throw new Error('gacha.gg DNA: no se encontraron eventos')
+  return list
+}
+
+/**
+ * Los de gacha.gg que Game8 no tiene: mismo nombre (o uno empieza por el otro: gacha.gg dice "Immersive Theatre" y Game8 "Immersive Theatre:
+ * Ensemble Act") y fin a ±2 días = el mismo evento. Los "Immersive Theatre" a secas no se añaden nunca: el nombre completo llega de Game8 o de
+ * Steam y la temporada del modo, de `dnaTheatre`.
+ */
+function withGg(g8: GameEvent[], gg: GameEvent[]): GameEvent[] {
+  const k = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '')
+  const same = (a: string, b: string) => k(a) === k(b) || k(a).startsWith(k(b)) || k(b).startsWith(k(a))
+  return [...g8, ...gg.filter(e => !/^immersive theatre$/i.test(e.title)
+    && !g8.some(o => o.kind === 'event' && same(o.title, e.title) && Math.abs(Date.parse(o.end) - Date.parse(e.end)) <= 2 * DAY))]
 }
 
 /** Banners Myriad limitados (cosméticos) y la versión en que salieron. */
@@ -147,11 +199,13 @@ export function dnaTheatre(gameId: string, now = Date.now()): GameEvent[] {
 }
 
 export async function syncDna(gameId: string): Promise<GameSync> {
-  const [ev, bn, cd] = await Promise.allSettled([events(gameId), banners(gameId), syncGame8Codes('dna')])
-  if (ev.status === 'rejected' && bn.status === 'rejected') throw ev.reason
+  const [ev, bn, cd, gg] = await Promise.allSettled([events(gameId), banners(gameId), syncGame8Codes('dna'), ggList(gameId)])
+  if (ev.status === 'rejected' && bn.status === 'rejected' && gg.status === 'rejected') throw ev.reason
+  if (gg.status === 'rejected') console.warn('[dna] gacha.gg:', (gg.reason as Error)?.message)
   const codes: PromoCode[] = cd.status === 'fulfilled' ? cd.value : []
+  const list = withGg(ev.status === 'fulfilled' ? ev.value : [], gg.status === 'fulfilled' ? gg.value : [])
   return {
-    events: [...(ev.status === 'fulfilled' ? ev.value : []), ...(bn.status === 'fulfilled' ? bn.value.events : []), ...dnaTheatre(gameId)],
+    events: [...list, ...(bn.status === 'fulfilled' ? bn.value.events : []), ...dnaTheatre(gameId)],
     patches: bn.status === 'fulfilled' ? bn.value.patches : [],
     codes,
   }
