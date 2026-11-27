@@ -466,3 +466,29 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   en "Todas"). "Todas": la banda sonora de FGO (OST I–III, orquesta, recopilaciones) y una lista por cada otra serie de Fate.
 - Revisada con `skin-contrast.js` en las cuatro pestañas, Cuadrícula, ventana del evento y menú de skins, escritorio y 375 px: sin avisos
   (salvo los juegos "wip" desactivados de la base y la cabecera blanca, que el script marca como imagen).
+
+## Skin Persona 5: The Phantom X (27 nov 2026)
+
+- **`persona5x.css`**: el estilo de los menús de Persona 5. Rojo puro, negro y blanco (rojo de adorno `#e5202e`, `#d41420` con texto blanco = 5,4:1,
+  `#ff4d58` como texto sobre negro = 6,4:1). Pestañas y botones como bloques inclinados (`skewX(-9deg)`) con filo blanco; lo elegido, rojo con la
+  sombra negra desplazada y un poco girado; paneles negros con filo blanco y la sombra ROJA desplazada; títulos en Anton con una estrella roja y
+  un tajo rojo; el nombre de la web con la primera letra recortada (`::first-letter`); la insignia Premium como un recorte blanco girado (solo
+  color y giro: en móvil no se tocan sus medidas ni las de la marca, que `sobrio.css` deja en una fila de 94 px). Fuentes Anton y Archivo (OFL).
+- **Destacados**: retrato en un estallido recortado (clip-path de 16 puntas) sobre rojo con trama de semitono, con un filo blanco detrás y el
+  nombre en un recorte blanco girado; cada ficha se inclina a un lado. **Cabeceras de la ventana del evento**: cinta roja inclinada con sombra negra.
+- **Recursos** (`public/skins/persona5x/`): de la web oficial persona5x.com y su **Fan Kit** (fondo de estrellas, placa roja rasgada, iconos
+  redondos de personajes, seis fondos de pantalla como fondos fijos de las pestañas mientras `FONDOS.persona5x` esté vacío; el dueño decidió
+  usarlos). Spriters Resource tiene la interfaz extraída de P5 pero pide verificación anti-bots: no se usó. Los rótulos en letras recortadas
+  (`rn-*.webp`: TAKE YOUR TIME, SCHEDULE, STEAL YOUR HEART) son propios, hechos con un script de Pillow y fuentes de Windows (cada letra en su
+  recorte, con otra fuente, girada y con sombra).
+- **Reproductor** (`.tv-persona5x` en skins.css; 2.ª versión el mismo día, con capturas de P5 del dueño): la app de mensajería **IM** del juego
+  sujeta por una mano. Móvil inclinado de pantalla roja con marco blanco grueso, logo IM (CSS), el título como mensaje recibido (bocadillo negro
+  con el avatar de Lufel en su recuadro amarillo), el vídeo recto y sin nada encima, y los modos como la respuesta (tira blanca con la opción
+  elegida en rojo). La mano (`hand-l.webp`, el pulgar por el canto izquierdo) está recortada de la captura del dueño, con la punta en pico; los dedos de la
+  derecha se probaron y se quitaron (no combinaban). Medido: ni la mano ni su filo blanco tocan el vídeo (escritorio y 375 px). En móvil, todo lo de alrededor más pequeño.
+  **Música**: como FGO, tres modos: Todas (banda sonora de P5X, P5, Royal, Strikers, Tactica y Dancing), Populares (solo P5X: sus pocas pistas
+  oficiales sueltas y la OST que sube "P5X Archives", de más a menos vistas) y "Todo P5" (lo más visto de toda la saga, de los "- Topic" oficiales).
+- **CHALDEAS en móvil** (mismo día, "un poco grande"): el globo no puede bajar de 284 px (la diagonal del vídeo), así que el título sube al
+  casquete inferior del globo, los mandos quedan pegados debajo y el aro ecuatorial sobresale menos: ~40 px menos de alto.
+- Revisada con `skin-contrast.js` en las cuatro pestañas (Línea y Cuadrícula), ventana del evento, menú de skins, reproductor, escritorio y 375 px:
+  sin avisos. **Pendiente del dueño**: los fondos animados (Wallpaureka ya tiene el id `persona5x`).

@@ -12,6 +12,8 @@ export interface SkinDef {
   /** Juego del catálogo (para el icono del selector). */
   game: string
   name: string
+  /** Nombre corto para el título del reproductor de música, si el completo no cabe en su silueta (Persona 5X: "Persona 5"). */
+  short?: string
   /** Fuentes de Google Fonts que usa (familias con sus pesos, formato css2). */
   fonts?: string
   /** Fondo animado de la línea de tiempo: vídeo (sin audio) y su fotograma fijo (ahorro de datos, "reducir movimiento", vídeo bloqueado).
@@ -104,6 +106,7 @@ export const FONDOS: Record<string, string[]> = {
     '4k-fate-stay-night', 'archer-fate-stay-night', 'pc-flames', 'fate-grand-order-anime-sitonai-girl', 'okita-souji',
     'mashu-kyrielight-fate', 'mash-kyrielight', 'oda-nobunaga-fate'
   ],
+  persona5x: [],
   navidad: [
     'christmas-trees', 'anime-christmas', 'genshin-christmas', 'niko-holiday', 'hu-tao-winter'
   ],
@@ -155,6 +158,10 @@ export const SKINS: SkinDef[] = [
   // Si FONDOS.fgo se vaciara, fondos fijos de Chaldea del mismo Drive (CHALDEAS, Rayshift, pasillo, taller de Da Vinci y el exterior). En "Mis gachas", My Room, quieta.
   { id: 'fgo', game: 'fgo', name: 'Fate/Grand Order', fonts: 'family=Cinzel:wght@600;700;800&family=Noto+Sans+JP:wght@400;500;700', live: FONDOS.fgo?.length ? cdn('fgo') : stills('fgo', ['chaldeas', 'rayshift', 'corridor', 'workshop', 'chaldea']),
     tabLive: { mine: { poster: '/skins/fgo/still-myroom.webp', fixed: true } } },
+  // persona5x.css (27 nov 2026): skin "Persona 5: The Phantom X". Piezas de la web oficial (persona5x.com) y su Fan Kit en public/skins/persona5x/
+  // (ver la cabecera del CSS). Los fondos animados los elige el dueño con Wallpaureka (FONDOS.persona5x); mientras esté vacío, seis fondos del Fan Kit.
+  { id: 'persona5x', game: 'persona5x', name: 'Persona 5: The Phantom X', short: 'Persona 5', fonts: 'family=Anton&family=Archivo:ital,wght@0,500;0,600;0,700;0,800;1,800',
+    live: FONDOS.persona5x?.length ? cdn('persona5x') : stills('persona5x', ['01', '02', '04', '06', '07', '09']) },
 ]
 
 const KEY = 'whengacha:skin'

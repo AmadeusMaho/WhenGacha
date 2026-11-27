@@ -18,6 +18,7 @@ import './arknights.css'
 import './bluearchive.css'
 import './pgr.css'
 import './fgo.css'
+import './persona5x.css'
 import { setTiltEnabled, subscribeTilt, tiltEnabled } from './akTilt'
 import './nikkeShots'
 import { baDark, setBaDark, subscribeBaDark } from './baDark'
@@ -162,8 +163,8 @@ export default function SkinPicker({ tab, donateUrl }: { tab?: string; donateUrl
   return (
     <>
     {/* `key`: al cambiar de skin el reproductor se reinicia cerrado (otra lista; no debe empezar a sonar sola). */}
-    {music && <SkinMusic key={music.id} skin={music.id} name={music.name} lang={lang} />}
-    {tryDef && <SkinMusic key={`try:${tryDef.id}`} skin={tryDef.id} name={tryDef.name} lang={lang} preview />}
+    {music && <SkinMusic key={music.id} skin={music.id} name={music.short ?? music.name} lang={lang} />}
+    {tryDef && <SkinMusic key={`try:${tryDef.id}`} skin={tryDef.id} name={tryDef.short ?? tryDef.name} lang={lang} preview />}
     <div className="skin" ref={box}>
       {/* Dorado como la insignia Premium (15 nov 2026): que el botón de las skins se vea entre los de la cabecera en todas las skins. */}
       <button className="btn sm lang-btn skin-btn" onClick={toggle} aria-haspopup="menu" aria-expanded={open} title={s.title} aria-label={s.title}>

@@ -1,0 +1,311 @@
+/* ===== Skin "Persona 5: The Phantom X" (27 nov 2026) =====
+   El estilo de los menús de Persona 5: rojo puro, negro y blanco, sin grises; bloques recortados e inclinados con la sombra negra desplazada,
+   letras recortadas de nota de rescate, estrellas y destellos. Rojo de adorno #e5202e; rojo con texto blanco encima #d41420 (5.4:1); rojo como
+   texto sobre negro #ff4d58 (6.4:1). Texto #fff / #d6d6d6 sobre negro.
+   public/skins/persona5x/ (web oficial persona5x.com y su Fan Kit, © SEGA / ATLUS / Perfect World; el dueño decidió usarlas, 27 nov 2026):
+   - stars.webp / stars-m.webp = el fondo de estrellas de la web (common/bg.webp y navi/bg-navi.webp), reducidos.
+   - plate.webp = la placa roja rasgada del Fan Kit (fankit/fankit-base.webp): ventana del evento, apoyo y pie.
+   - hand-l.webp = la mano (pulgar) que sujeta el móvil del reproductor, recortadas de una captura de la app IM de Persona 5 que aportó
+     el dueño (27 nov 2026; scratchpad hand/cut.py: por filas, porque el fondo era tan negro como el contorno).
+   - nav-*.webp = iconos redondos del Fan Kit (snsicon06 Wonder, 02 Lufel, 08, 10; nav-music = 07, Lufel con capucha, avatar del reproductor), a 96 px.
+   - still-*.webp = seis fondos del Fan Kit (wallpaper01, 02, 04, 06, 07, 09) a 1600 px: fondos de las pestañas mientras FONDOS.persona5x esté vacío.
+   - rn-*.webp = rótulos propios en letras recortadas (TAKE YOUR TIME, SCHEDULE, STEAL YOUR HEART), hechos con fuentes de Windows
+     (scratchpad ransom.py; ver README).
+   Fuentes: Anton (rótulos) y Archivo (texto), de Google Fonts (OFL). La web del juego dibuja todos sus rótulos como imágenes.
+   Solo aplica con <html data-skin="persona5x">. */
+
+html[data-skin="persona5x"] {
+  --p5-red: #e5202e;    /* adornos */
+  --p5-red-b: #d41420;  /* fondo con texto blanco (5.4:1) */
+  --p5-red-t: #ff4d58;  /* texto rojo sobre negro (6.4:1) */
+  --p5-ink: #0b0b0b;
+  --p5-panel: rgba(10, 10, 10, .9);
+  --p5-panel2: rgba(18, 18, 18, .94);
+  --p5-head: 'Anton', 'Archivo', 'Impact', sans-serif;
+  --p5-skew: -9deg;
+  --bg: #080808;
+  --panel: var(--p5-panel);
+  --panel2: var(--p5-panel2);
+  --line: rgba(255, 255, 255, .16);
+  --text: #fff;
+  --muted: #d6d6d6;
+  --acc: var(--p5-red-t);
+  --acc2: #ff8a92;
+  color-scheme: dark;
+}
+html[data-skin="persona5x"] body { background: var(--bg); font-family: 'Archivo', 'Segoe UI', system-ui, sans-serif; font-weight: 500; }
+html[data-skin="persona5x"] :is(h1, h2, h3, h4, b, strong) { font-weight: 800; }
+html[data-skin="persona5x"] :is(h2, .sec-title, .stats b, .plan-total b, .modal-title h2, .month b) { font-family: var(--p5-head); font-weight: 400; letter-spacing: .03em; }
+html[data-skin="persona5x"] ::selection { background: var(--p5-red-b); color: #fff; }
+html[data-skin="persona5x"] * { scrollbar-color: var(--p5-red) #000; }
+
+/* ===== Fondo: las estrellas de la web oficial, con rayos rojos que salen de abajo a la izquierda y una viñeta ===== */
+html[data-skin="persona5x"] .aurora { background: #070707; }
+html[data-skin="persona5x"] .aurora::after { display: block; content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 35%, rgba(0, 0, 0, .8)),
+    repeating-conic-gradient(from -8deg at 0 110%, rgba(229, 32, 46, .22) 0 4deg, transparent 4deg 13deg),
+    url(/skins/persona5x/stars.webp) 0 0 / 1560px auto repeat; }
+@media (max-width: 700px) { html[data-skin="persona5x"] .aurora::after {
+  background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 35%, rgba(0, 0, 0, .8)),
+    repeating-conic-gradient(from -8deg at 0 110%, rgba(229, 32, 46, .2) 0 5deg, transparent 5deg 16deg), url(/skins/persona5x/stars-m.webp) 0 0 / 490px auto repeat; } }
+html[data-skin="persona5x"] .skin-live { filter: brightness(.52) saturate(1.05) contrast(1.05); }
+/* Sobre el fondo de la pestaña: semitono negro (trama de puntos) y la viñeta, bajo el contenido. */
+html[data-skin="persona5x"] body:has(> .skin-live)::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(rgba(0, 0, 0, .55) 1.2px, transparent 1.6px) 0 0 / 6px 6px, radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, rgba(0, 0, 0, .75)); }
+html[data-skin="persona5x"] main { position: relative; }
+
+/* ===== Cabecera: negra con el tajo rojo debajo. El nombre en Anton con la primera letra recortada (nota de rescate). =====
+   En móvil (≤ 700 px) no se tocan tamaños ni rellenos de la marca, la insignia ni los botones (sobrio.css los ajusta para la fila de 94 px). */
+html[data-skin="persona5x"] .app > header { background: #050505; border-bottom: 0; box-shadow: 0 8px 22px rgba(0, 0, 0, .6); }
+html[data-skin="persona5x"] .app > header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 6px; pointer-events: none;
+  background: linear-gradient(176deg, var(--p5-red) 0 55%, transparent 56%) 0 0 / 46% 100% no-repeat, linear-gradient(#fff, #fff) 0 0 / 100% 2px no-repeat; }
+html[data-skin="persona5x"] .brand h1 { font-family: var(--p5-head); font-weight: 400; color: #fff; letter-spacing: .02em; text-transform: uppercase; }
+html[data-skin="persona5x"] .brand h1::first-letter { display: inline-block; padding: 0 .08em; margin-right: .04em; background: var(--p5-red-b); color: #fff;
+  font-family: 'Archivo', sans-serif; font-weight: 800; font-style: italic; box-shadow: 2px 2px 0 #fff; }
+html[data-skin="persona5x"] .brand .logo { box-shadow: 0 0 0 2px #fff, 3px 3px 0 2px var(--p5-red); }
+/* Insignia Premium: recorte blanco con texto negro, girado como una letra de nota de rescate. Solo color y giro (el giro no ocupa sitio). */
+html[data-skin="persona5x"] .premium-badge { border-radius: 0; background: #fff; color: #0b0b0b; border: 0; box-shadow: 2px 2px 0 var(--p5-red); transform: rotate(-5deg);
+  font-family: 'Archivo', sans-serif; font-weight: 800; text-shadow: none; }
+html[data-skin="persona5x"] .premium-badge::after { background: linear-gradient(90deg, transparent, rgba(229, 32, 46, .35), transparent); }
+
+/* Pestañas: bloques negros inclinados con el icono redondo de un personaje; la elegida, roja con texto blanco, filo blanco y la sombra
+   negra desplazada, un poco más grande (como el cursor de los menús del juego). */
+html[data-skin="persona5x"] header nav { gap: 6px; padding: 0 4px; background: transparent; border: 0; box-shadow: none; backdrop-filter: none; overflow: visible; }
+html[data-skin="persona5x"] header nav .nav-ind { display: none; }
+html[data-skin="persona5x"] header nav button { position: relative; border: 0 !important; border-radius: 0 !important; background: #0b0b0b !important; color: #fff !important;
+  box-shadow: inset 0 0 0 2px #fff !important; transform: skewX(var(--p5-skew)); padding: 7px 16px 7px 44px !important; font-family: var(--p5-head); font-weight: 400;
+  font-size: 1rem; letter-spacing: .05em; text-transform: uppercase; transition: transform .15s cubic-bezier(.3, 1.6, .5, 1), background-color .12s; }
+html[data-skin="persona5x"] header nav button:not(.on):hover { background: #fff !important; color: #0b0b0b !important; transform: skewX(var(--p5-skew)) rotate(-2deg); }
+html[data-skin="persona5x"] header nav button.on { background: var(--p5-red-b) !important; color: #fff !important; z-index: 1;
+  box-shadow: inset 0 0 0 2px #fff, 4px 4px 0 #000, 5px 5px 0 1px #fff !important; transform: skewX(var(--p5-skew)) rotate(-3deg) scale(1.06); }
+html[data-skin="persona5x"] header nav button::before { content: ""; position: absolute; left: 9px; top: 50%; width: 28px; height: 28px; border-radius: 50%;
+  transform: translateY(-50%) skewX(calc(var(--p5-skew) * -1)); background: #000 center / cover no-repeat; box-shadow: 0 0 0 2px #fff; }
+html[data-skin="persona5x"] header nav button:nth-of-type(1)::before { background-image: url(/skins/persona5x/nav-timeline.webp); }
+html[data-skin="persona5x"] header nav button:nth-of-type(2)::before { background-image: url(/skins/persona5x/nav-mine.webp); }
+html[data-skin="persona5x"] header nav button:nth-of-type(3)::before { background-image: url(/skins/persona5x/nav-patches.webp); }
+html[data-skin="persona5x"] header nav button:nth-of-type(4)::before { background-image: url(/skins/persona5x/nav-pulls.webp); }
+html[data-skin="persona5x"] header nav button.on::before { box-shadow: 0 0 0 2px #fff, 2px 2px 0 2px #000; }
+html[data-skin="persona5x"] header nav button:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+@media (max-width: 700px) {
+  html[data-skin="persona5x"] header nav { gap: 5px; padding: 2px 4px; }
+  html[data-skin="persona5x"] header nav button { padding: 6px 4px 6px 25px !important; font-size: .8rem; letter-spacing: .02em; --p5-skew: -7deg; }
+  html[data-skin="persona5x"] header nav button.on { transform: skewX(var(--p5-skew)) rotate(-2deg) scale(1.03); box-shadow: inset 0 0 0 2px #fff, 3px 3px 0 #000 !important; }
+  html[data-skin="persona5x"] header nav button::before { left: 4px; width: 18px; height: 18px; box-shadow: 0 0 0 1.5px #fff; } }
+
+/* ===== Botones: losas negras inclinadas con filo blanco; el principal, rojo con la sombra negra y el ▶ de "See More" ===== */
+html[data-skin="persona5x"] .btn { border-radius: 0; border: 2px solid #fff; background: #0b0b0b; color: #fff; box-shadow: none; text-shadow: none;
+  transform: skewX(var(--p5-skew)); transition: transform .14s cubic-bezier(.3, 1.6, .5, 1), background-color .12s, color .12s; }
+html[data-skin="persona5x"] .btn::after { display: none; }
+html[data-skin="persona5x"] .btn:hover:not(:disabled) { background: #fff !important; color: #0b0b0b; border-color: #fff; transform: skewX(var(--p5-skew)) rotate(-2deg); }
+html[data-skin="persona5x"] .btn:active:not(:disabled) { transform: skewX(var(--p5-skew)) translate(2px, 2px); }
+html[data-skin="persona5x"] :is(.btn.primary, .site-foot a.btn.donate), html[data-skin="persona5x"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) {
+  background: var(--p5-red-b) !important; color: #fff; border-color: #fff; box-shadow: 3px 3px 0 #000; font-weight: 800; }
+html[data-skin="persona5x"] :is(.btn.primary, .site-foot a.btn.donate):hover:not(:disabled) { box-shadow: 5px 5px 0 #000, 6px 6px 0 1px #fff; }
+html[data-skin="persona5x"] .btn.primary:not(.icon)::after { display: inline; content: "▶"; position: static; margin-left: .45em; background: none; font-size: .8em; }
+html[data-skin="persona5x"] :is(.btn.primary, .site-foot a.btn.donate) .spark { color: #fff; }
+html[data-skin="persona5x"] .btn:disabled { opacity: 1; background: #1a1a1a; border-color: #777; color: #bdbdbd; }
+html[data-skin="persona5x"] .btn.mark .spark { color: #ffd23f; }
+html[data-skin="persona5x"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+html[data-skin="persona5x"] header .btn { background: #0b0b0b; }
+html[data-skin="persona5x"] header .btn.on { background: var(--p5-red-b) !important; color: #fff; }
+html[data-skin="persona5x"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 0; border: 2px solid #fff; background: #000; color: #fff; }
+html[data-skin="persona5x"] :is(input, select):focus { border-color: var(--p5-red); box-shadow: 3px 3px 0 var(--p5-red); outline: none; }
+html[data-skin="persona5x"] :is(input, textarea)::placeholder { color: #b5b5b5; opacity: 1; }
+html[data-skin="persona5x"] :is(input[type="checkbox"], input[type="range"]) { accent-color: var(--p5-red); }
+
+/* ===== Chips y filtros: recortes negros con filo blanco; el elegido, blanco con texto negro y la sombra roja ===== */
+html[data-skin="persona5x"] :is(.chip, .ichip, .seg, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip, .pick-search) {
+  border-radius: 0; border: 1.5px solid rgba(255, 255, 255, .75); background: #0b0b0b; color: #fff; box-shadow: none; }
+html[data-skin="persona5x"] :is(.chip, .ichip, .soon-toggle, .fopt, .up-chip, .codes-chip, .jump-chip):hover { border-color: #fff; background: #222 !important; transform: rotate(-1.5deg); }
+html[data-skin="persona5x"] .seg { padding: 2px; gap: 3px; }
+html[data-skin="persona5x"] .seg button { border-radius: 0; color: #e0e0e0; }
+html[data-skin="persona5x"] :is(.chip.on, .seg button.on, .ichip.on:not(.banner):not(.event):not(.challenge), .fopt.on),
+html[data-skin="persona5x"] :is(.chip.on, .seg button.on):hover { background: #fff !important; color: #0b0b0b; border-color: #fff; box-shadow: 3px 3px 0 var(--p5-red); transform: rotate(-2deg); }
+html[data-skin="persona5x"] .codes-chip :is(.cc-txt, .cc-chev) { color: #fff !important; }
+
+/* ===== Etiquetas: recortes rectos; lo urgente, rojo con texto blanco ===== */
+html[data-skin="persona5x"] .tag { border-radius: 0; border: 1.5px solid #fff; background: #000; color: #fff; font-weight: 800; }
+html[data-skin="persona5x"] .tag.great { color: #ffd23f; border-color: #ffd23f; }
+html[data-skin="persona5x"] .tag.good { color: #7dffa8; }
+html[data-skin="persona5x"] .tag.mid { color: #ffd23f; }
+html[data-skin="persona5x"] .tag.bad { color: var(--p5-red-t); }
+html[data-skin="persona5x"] .pill.hot { border-radius: 0; background: var(--p5-red-b); color: #fff; transform: rotate(-4deg); box-shadow: 2px 2px 0 #000; }
+html[data-skin="persona5x"] .pill.new { border-radius: 0; background: #fff; color: #0b0b0b; transform: rotate(3deg); }
+html[data-skin="persona5x"] .today-flag { border-radius: 0; background: var(--p5-red-b); color: #fff; font-family: var(--p5-head); font-weight: 400; letter-spacing: .05em;
+  transform: rotate(-4deg); box-shadow: 2px 2px 0 #000; }
+html[data-skin="persona5x"] .soon-card em { border-radius: 0; background: #000; color: #ffd23f; }
+html[data-skin="persona5x"] .soon-card.urgent em { background: var(--p5-red-b); color: #fff; transform: rotate(-3deg); display: inline-block; }
+
+/* ===== Títulos: Anton en mayúsculas con una estrella roja delante y un tajo rojo que corre hasta el borde ===== */
+html[data-skin="persona5x"] h3 { color: #fff; font-family: var(--p5-head); font-weight: 400; text-transform: uppercase; letter-spacing: .06em; font-size: 1.08rem; }
+html[data-skin="persona5x"] h3::before { content: ""; flex: none; width: 17px; height: 17px; background: var(--p5-red);
+  clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); filter: drop-shadow(1px 1px 0 #fff); }
+html[data-skin="persona5x"] h3:not(:has(> button, > .btn, > a))::after { content: ""; flex: 1 1 0; min-width: 0; height: 5px; margin-left: 6px;
+  background: linear-gradient(100deg, var(--p5-red) 0 60%, transparent 61%) 0 0 / 120px 100% no-repeat, linear-gradient(#fff, #fff) 0 100% / 100% 1px no-repeat; }
+html[data-skin="persona5x"] h3 small { color: #d6d6d6; font-family: 'Archivo', sans-serif; text-transform: none; letter-spacing: .01em; }
+html[data-skin="persona5x"] h3:has(> .sec-ico)::before { display: none; }
+html[data-skin="persona5x"] h3 > .sec-ico { color: var(--p5-red-t); }
+html[data-skin="persona5x"] :is(.bcard, .ecard, .soon-card, .up-card) h3 { font-family: 'Archivo', sans-serif; font-weight: 800; text-transform: none; letter-spacing: 0; font-size: inherit; }
+html[data-skin="persona5x"] :is(.bcard, .ecard, .soon-card, .up-card) h3::before, html[data-skin="persona5x"] :is(.bcard, .ecard, .soon-card, .up-card) h3::after { display: none; }
+
+/* ===== Paneles: negro con filo blanco y la sombra roja desplazada (las capas de los menús del juego) ===== */
+html[data-skin="persona5x"] :is(.tl, .gcard, .psec, .gsec, .up-card, .soon-card, .current, .next-patch, .modal, .support-dialog, .skin-panel, .lang-menu, .sheet, .consent, .ecard, .bcard) {
+  border-radius: 0; border: 2px solid #fff; background-color: var(--p5-panel); box-shadow: 6px 6px 0 rgba(212, 20, 32, .9); }
+html[data-skin="persona5x"] :is(.psec, .gsec, .current, .next-patch, .gcard, .up-card) { position: relative; }
+html[data-skin="persona5x"] :is(.gcard-body, .ecard-body, .modal-body, .grid.even .codes[open] > ul) { background: #0b0b0b; }
+html[data-skin="persona5x"] :is(.gcard-hero, .ecard-img) { background-color: #120203; }
+html[data-skin="persona5x"] :is(.gcard-hero .fade, .ecard-img .fade) { background: linear-gradient(transparent 20%, rgba(11, 11, 11, .97)); }
+html[data-skin="persona5x"] .ecard.bnr .fade { background: linear-gradient(transparent 70%, rgba(11, 11, 11, .97)); }
+html[data-skin="persona5x"] :is(.modal-hero-fade, .modal-hero.bnr .modal-hero-fade, .modal-hero.wide-art .modal-hero-fade) { background: linear-gradient(transparent 35%, rgba(11, 11, 11, .98)); }
+html[data-skin="persona5x"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card) { transition: transform .16s cubic-bezier(.3, 1.6, .5, 1), box-shadow .16s; }
+html[data-skin="persona5x"] :is(.gcard, .ecard, .bcard, .up-card, .soon-card):hover { transform: rotate(-1deg) translateY(-3px); box-shadow: 9px 9px 0 var(--p5-red-b), 9px 9px 0 2px #000; }
+html[data-skin="persona5x"] .soon-card.urgent { box-shadow: 6px 6px 0 var(--p5-red-b), inset 4px 0 0 var(--p5-red); }
+html[data-skin="persona5x"] .gsec-head { background: #0b0b0b; border-radius: 0; box-shadow: inset 6px 0 0 var(--p5-red), inset 0 -2px 0 #fff; }
+html[data-skin="persona5x"] .gsec-head h2 { text-transform: uppercase; }
+html[data-skin="persona5x"] .gsec-head .fold { border-radius: 0; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) { background-color: #0b0b0b; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) button { border-radius: 0; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) button.on { background: var(--p5-red-b); color: #fff; box-shadow: inset 4px 0 0 #fff; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) button.on :is(i, span, small) { color: #fff; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) button:not(.on):hover { background: #fff; color: #0b0b0b; }
+html[data-skin="persona5x"] :is(.lang-menu, .skin-panel) button:not(.on):hover :is(i, span, small) { color: #0b0b0b; }
+html[data-skin="persona5x"] .skin-panel :is(.skin-try, .skin-lock) { color: var(--p5-red-t); border-color: rgba(255, 77, 88, .6); opacity: 1; }
+html[data-skin="persona5x"] .skin-panel button:not(.on):hover :is(.skin-try, .skin-lock) { color: #b3101b; }
+html[data-skin="persona5x"] .skin-panel .skin-title { color: #fff !important; font-family: var(--p5-head); font-weight: 400; text-transform: uppercase; letter-spacing: .06em; box-shadow: inset 0 -3px 0 var(--p5-red); }
+html[data-skin="persona5x"] :is(.support-dialog, .skin-panel, .consent, .modal-body, .psec, .gsec, .current, .next-patch, .gcard-body) :is(a:not(.btn), .linkbtn, .link-btn) { color: #ff8a92 !important; }
+
+/* Filas de listas: placas negras; al pasar el ratón, blancas con texto negro (el resaltado de los menús del juego). */
+html[data-skin="persona5x"] :is(.list li, .hist li) { margin: 0 0 4px; padding: 7px 10px; border-radius: 0; background: #111; border: 0; box-shadow: inset 3px 0 0 #fff; }
+html[data-skin="persona5x"] :is(.list li, .hist li):hover { background: #1c1c1c; box-shadow: inset 5px 0 0 var(--p5-red); }
+html[data-skin="persona5x"] .progress { border-radius: 0; background: #2a2a2a; transform: skewX(var(--p5-skew)); }
+html[data-skin="persona5x"] .progress i { border-radius: 0; background: repeating-linear-gradient(120deg, var(--p5-red) 0 8px, #b3101b 8px 12px) !important; box-shadow: none !important; }
+html[data-skin="persona5x"] .stats > div { border-radius: 0; background: #111; border: 1.5px solid rgba(255, 255, 255, .7); }
+html[data-skin="persona5x"] .stats b { color: #fff; }
+html[data-skin="persona5x"] .gsec-head .stats b { color: var(--p5-red-t); }
+html[data-skin="persona5x"] :is(.ev-loc, .gcard-head p) { color: #ffd23f; }
+
+/* ===== Línea de tiempo: marco negro con la sombra roja; barras negras inclinadas con el canto del tipo (banner rojo, evento blanco, desafío amarillo) ===== */
+html[data-skin="persona5x"] [style*="--c:"] { --c: #e5202e !important; --c2: #141414 !important; }
+html[data-skin="persona5x"] .tl.tl { background: rgba(6, 6, 6, .72); backdrop-filter: blur(2px); }
+html[data-skin="persona5x"] :is(.tl-corner, .tl-label, .tl-axis) { background: #0b0b0b; }
+html[data-skin="persona5x"] .tl-axis { box-shadow: inset 0 -2px 0 #fff; }
+html[data-skin="persona5x"] .tl-lane { border-color: rgba(255, 255, 255, .08); }
+html[data-skin="persona5x"] .grid-line { background: rgba(255, 255, 255, .06); }
+html[data-skin="persona5x"] .grid-line.month-line { background: linear-gradient(180deg, var(--p5-red), rgba(255, 255, 255, .12) 50px); }
+html[data-skin="persona5x"] .tick { color: #d6d6d6; font-family: var(--p5-head); letter-spacing: .04em; }
+html[data-skin="persona5x"] .month b { color: #fff; text-transform: uppercase; }
+html[data-skin="persona5x"] .month { border-left: 3px solid var(--p5-red); }
+html[data-skin="persona5x"] .tl-corner { overflow: hidden; }
+html[data-skin="persona5x"] .tl-corner::before { content: ""; position: absolute; inset: 6px 8px; pointer-events: none; background: url(/skins/persona5x/rn-sched.webp) center / contain no-repeat; }
+html[data-skin="persona5x"] .tl-label { box-shadow: inset 4px 0 0 var(--p5-red), inset -2px 0 0 #fff; }
+html[data-skin="persona5x"] .tl-label-in strong { font-family: var(--p5-head); font-weight: 400; letter-spacing: .03em; text-transform: uppercase; color: #fff; }
+html[data-skin="persona5x"] .tl-label-in small { color: #d0d0d0; }
+html[data-skin="persona5x"] .tl-label .avatar { border-radius: 50%; box-shadow: 0 0 0 2px #fff, 2px 2px 0 2px var(--p5-red); }
+html[data-skin="persona5x"] .tl-label .fold { border-radius: 0; background: #000; border: 1.5px solid #fff; }
+html[data-skin="persona5x"] .tl-label .fold:hover { background: var(--p5-red-b); color: #fff; }
+html[data-skin="persona5x"] .bar { border-radius: 0; border: 1.5px solid rgba(255, 255, 255, .55); background: #111 !important;
+  clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%); }
+html[data-skin="persona5x"] .bar-clip { border-radius: 0; }
+html[data-skin="persona5x"] .bar.banner { border-left: 5px solid var(--p5-red); }
+html[data-skin="persona5x"] .bar.event { border-left: 5px solid #fff; }
+html[data-skin="persona5x"] .bar.challenge { border-left: 5px solid #ffd23f; }
+html[data-skin="persona5x"] .bar:hover { border-color: #fff; background: #1d1d1d !important; }
+html[data-skin="persona5x"] .bar.live { box-shadow: inset 0 0 0 1px rgba(229, 32, 46, .7); }
+html[data-skin="persona5x"] .bar-prog { background: repeating-linear-gradient(120deg, rgba(229, 32, 46, .9) 0 6px, rgba(150, 10, 20, .9) 6px 10px); opacity: .95; }
+html[data-skin="persona5x"] .bar.past { opacity: 1; filter: grayscale(1) brightness(.62); }
+html[data-skin="persona5x"] .bar .bar-txt .when.upcoming { color: #e0e0e0 !important; }
+html[data-skin="persona5x"] .bar.live .bar-txt { position: relative; z-index: 2; text-shadow: 0 1px 2px #000, 0 0 6px #000; }
+html[data-skin="persona5x"] .now-line { background: var(--p5-red) !important; box-shadow: 0 0 0 1px #fff, 0 0 10px rgba(229, 32, 46, .9); }
+html[data-skin="persona5x"] .sec-band { border-top: 0; background: linear-gradient(#fff, #fff) 0 0 / 100% 1px no-repeat !important; }
+html[data-skin="persona5x"] .sec-band .sec-title { display: inline-block; padding: 3px 14px 3px 10px; color: #fff !important; text-transform: uppercase; font-size: .9rem;
+  background: #000; box-shadow: inset 0 0 0 2px #fff, 3px 3px 0 var(--p5-red); transform: skewX(-12deg); }
+html[data-skin="persona5x"] .sec-band.banner .sec-title { background: var(--p5-red-b); box-shadow: inset 0 0 0 2px #fff, 3px 3px 0 #000; }
+html[data-skin="persona5x"] .sec-band.challenge .sec-title { color: #ffd23f !important; }
+html[data-skin="persona5x"] .patch-mark { opacity: 1; color: var(--p5-red-t); }
+html[data-skin="persona5x"] .month-band { background: rgba(255, 255, 255, .03); }
+html[data-skin="persona5x"] .lane-empty { color: #c8c8c8; font-style: italic; }
+
+/* ===== Destacados (ventana del evento): retrato en un estallido recortado sobre rojo con estrellas, y el nombre en un recorte blanco
+   inclinado, como los retratos del "All-Out Attack". Cada ficha se inclina a un lado distinto. ===== */
+html[data-skin="persona5x"] .featured { gap: 12px 10px; padding: 4px 2px 6px; }
+html[data-skin="persona5x"] .portrait { position: relative; width: 92px; gap: 0; transform: rotate(-3deg); transition: transform .16s cubic-bezier(.3, 1.6, .5, 1); }
+html[data-skin="persona5x"] .portrait:nth-child(even) { transform: rotate(2.5deg); }
+html[data-skin="persona5x"] .portrait:hover { transform: rotate(0) scale(1.08); z-index: 1; }
+html[data-skin="persona5x"] .portrait img { width: 92px; height: 96px; border: 0; border-radius: 0; object-position: 50% 10%;
+  background: radial-gradient(rgba(0, 0, 0, .38) 1.3px, transparent 1.7px) 0 0 / 6px 6px, linear-gradient(160deg, #f0303c, #9a0711);
+  clip-path: polygon(6% 4%, 30% 9%, 50% 0, 68% 8%, 96% 2%, 92% 30%, 100% 52%, 93% 72%, 98% 98%, 70% 92%, 48% 100%, 26% 93%, 2% 98%, 7% 72%, 0 48%, 8% 26%);
+  filter: drop-shadow(0 0 0 #fff); }
+html[data-skin="persona5x"] .portrait:hover img { transform: none; }
+html[data-skin="persona5x"] .portrait::before { content: ""; position: absolute; left: -4px; top: -4px; width: 100px; height: 104px; z-index: -1; background: #fff;
+  clip-path: polygon(6% 4%, 30% 9%, 50% 0, 68% 8%, 96% 2%, 92% 30%, 100% 52%, 93% 72%, 98% 98%, 70% 92%, 48% 100%, 26% 93%, 2% 98%, 7% 72%, 0 48%, 8% 26%); }
+html[data-skin="persona5x"] .portrait span { position: relative; z-index: 1; margin: -12px 4px 0; padding: 3px 5px; background: #fff; color: #0b0b0b; font-weight: 800; font-size: .76rem; line-height: 1.15;
+  transform: rotate(-2deg); box-shadow: 3px 3px 0 #000; }
+html[data-skin="persona5x"] .portrait small { margin-top: 5px; padding: 1px 5px; background: #000; color: #e6e6e6; font-size: .68rem; }
+/* Retratos de banner de "Mis gachas". */
+html[data-skin="persona5x"] .bport { border-radius: 0; border: 2px solid #fff; box-shadow: 3px 3px 0 var(--p5-red); }
+html[data-skin="persona5x"] .bport:hover { transform: rotate(-2deg) scale(1.04); }
+html[data-skin="persona5x"] .bport .p-time { border-radius: 0; background: #000; color: #fff; border: 0; box-shadow: inset 3px 0 0 var(--p5-red); backdrop-filter: none; }
+html[data-skin="persona5x"] .bport .p-time.hot { background: var(--p5-red-b); color: #fff; }
+
+/* ===== Ventana del evento: filo rojo arriba, la placa roja rasgada del Fan Kit bajo el título y las cabeceras de sección como cinta roja inclinada ===== */
+html[data-skin="persona5x"] .modal { background: #0b0b0b; box-shadow: 8px 8px 0 var(--p5-red-b), 8px 8px 0 2px #000, 0 24px 60px rgba(0, 0, 0, .7); }
+html[data-skin="persona5x"] .modal-hero { position: relative; background: linear-gradient(160deg, #5a0006, #0b0b0b 70%); }
+html[data-skin="persona5x"] .modal-hero::after { content: ""; position: absolute; left: -30px; bottom: -40px; width: 230px; height: 250px; pointer-events: none; opacity: .5;
+  background: url(/skins/persona5x/plate.webp) center / contain no-repeat; transform: rotate(-78deg); mix-blend-mode: screen; }
+html[data-skin="persona5x"] .modal-title h2 { text-transform: uppercase; text-shadow: 3px 3px 0 #000, 0 0 12px rgba(0, 0, 0, .8); }
+html[data-skin="persona5x"] .modal-title small { color: #fff; background: var(--p5-red-b); padding: 1px 6px; display: inline-block; transform: rotate(-2deg); }
+html[data-skin="persona5x"] .modal-body h3 { width: fit-content; max-width: 100%; box-sizing: border-box; margin-left: -6px; padding: 5px 26px 5px 12px; color: #fff;
+  background: linear-gradient(100deg, var(--p5-red-b) 0 calc(100% - 16px), transparent calc(100% - 15px)); filter: drop-shadow(3px 3px 0 #000);
+  transform: rotate(-1.5deg); transform-origin: left center; }
+html[data-skin="persona5x"] .modal-body h3::before { background: #fff; filter: none; }
+html[data-skin="persona5x"] .modal-body h3::after { display: none; }
+html[data-skin="persona5x"] .modal-body h3 small { color: #fff; }
+
+/* Ventana de apoyo y pie: la placa roja de fondo. */
+html[data-skin="persona5x"] .support-dialog { background: linear-gradient(rgba(11, 11, 11, .9), rgba(11, 11, 11, .9)), url(/skins/persona5x/plate.webp) right -60px top -40px / 260px auto no-repeat, #0b0b0b; }
+html[data-skin="persona5x"] .support-dialog h2 { font-family: var(--p5-head); font-weight: 400; text-transform: uppercase; letter-spacing: .03em; box-shadow: inset 0 -3px 0 var(--p5-red); padding-bottom: 6px; }
+html[data-skin="persona5x"] .site-foot { position: relative; border-top: 0; box-shadow: inset 0 2px 0 #fff; }
+html[data-skin="persona5x"] .site-foot::before { content: ""; position: absolute; left: 0; top: -26px; width: 230px; height: 30px; pointer-events: none;
+  background: url(/skins/persona5x/rn-take.webp) left center / contain no-repeat; }
+
+/* ===== Textos con color fijo de la hoja base ===== */
+html[data-skin="persona5x"] :is(.code-until, .prec) { color: #ffd23f; }
+html[data-skin="persona5x"] .link-btn { color: #ff8a92; }
+html[data-skin="persona5x"] .stars { color: #ffd23f; text-shadow: none; }
+html[data-skin="persona5x"] .cc-new { background: var(--p5-red-b); color: #fff; }
+html[data-skin="persona5x"] .plan .plan-total b { color: #fff; }
+html[data-skin="persona5x"] .plan :is(.plan-step, .plan-sum-n b) { color: var(--p5-red-t); border-color: var(--p5-red-t); }
+html[data-skin="persona5x"] .gcard-head :is(h2, span) { text-shadow: 0 1px 3px #000, 0 0 10px rgba(0, 0, 0, .9); }
+html[data-skin="persona5x"] .gcard-hero { background-image: linear-gradient(135deg, #6d0009, #0b0b0b 70%); }
+html[data-skin="persona5x"] .gcard-head h2 { font-family: var(--p5-head); font-weight: 400; text-transform: uppercase; letter-spacing: .03em; }
+html[data-skin="persona5x"] .up-ver { color: var(--p5-red-t); }
+html[data-skin="persona5x"] .up-chip b { color: var(--p5-red-t) !important; }
+html[data-skin="persona5x"] .bcard.bcard { background-image: linear-gradient(160deg, #6d0009, #0b0b0b 55%); }
+html[data-skin="persona5x"] .ecard-body small { color: var(--p5-red-t); }
+
+/* ===== Movimiento: al cambiar de pestaña, el contenido entra con un tajo rojo en diagonal (como las transiciones de los menús del juego) ===== */
+html[data-skin="persona5x"] main { animation: p5-in .42s cubic-bezier(.2, .8, .2, 1) backwards; }
+html[data-skin="persona5x"] main::before { content: ""; position: fixed; left: 0; top: 0; width: 100vw; height: 100vh; z-index: 950; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, var(--p5-red) 30% 44%, #fff 44% 45.5%, #000 45.5% 52%, transparent 52%);
+  animation: p5-slash .5s cubic-bezier(.6, 0, .3, 1) both; }
+@keyframes p5-in { from { opacity: 0; } }
+@keyframes p5-slash { from { transform: translateX(-100%); } to { transform: translateX(100%); visibility: hidden; } }
+html[data-skin="persona5x"].has-vt main { animation: none; }
+html[data-skin="persona5x"].has-vt main::before { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin="persona5x"] main { animation: none; }
+  html[data-skin="persona5x"] main::before { display: none; }
+  html[data-skin="persona5x"] :is(.btn, header nav button, .portrait, .gcard, .ecard, .bcard, .up-card, .soon-card) { transition: none; } }
+
+/* Catálogo de "Mis gachas": fichas negras con filo blanco; la elegida, con la sombra roja y la ✓ en un recorte rojo. */
+html[data-skin="persona5x"] .pick { border-radius: 0; border: 2px solid rgba(255, 255, 255, .7); background-color: rgba(10, 10, 10, .9); }
+html[data-skin="persona5x"] .pick:not(:disabled):hover { border-color: #fff; transform: rotate(-1deg) translateY(-2px); box-shadow: 5px 5px 0 #fff; }
+html[data-skin="persona5x"] .pick.on { border-color: #fff; box-shadow: 5px 5px 0 var(--p5-red-b); }
+html[data-skin="persona5x"] .pick .check { border-radius: 0; transform: skewX(var(--p5-skew)); background: #000; box-shadow: inset 0 0 0 1.5px #fff; color: #fff; }
+html[data-skin="persona5x"] .pick.on .check { background: var(--p5-red-b); color: #fff; transform: skewX(var(--p5-skew)) rotate(-6deg) scale(1.1); }
+html[data-skin="persona5x"] .pick:not(.on):hover .check { transform: skewX(var(--p5-skew)) rotate(90deg); }
+html[data-skin="persona5x"] .pick .avatar { box-shadow: 0 0 0 2px #fff; }
+html[data-skin="persona5x"] .pick.wip .pick-txt { opacity: 1; color: #c8c8c8; }
+/* Móvil: la columna de juegos mide ~50 px; en la esquina, la estrella roja en lugar del rótulo SCHEDULE (no se leía). */
+@media (max-width: 700px) { html[data-skin="persona5x"] .tl-corner::before { inset: 50% auto auto 50%; width: 24px; height: 24px; transform: translate(-50%, -50%) rotate(-8deg);
+  background: var(--p5-red); clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); } }

@@ -765,4 +765,93 @@ html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303
 .tv-fgo .tv-knob.on svg { color: #04204a; filter: none; }
 /* El globo sobresale arriba (barra) y por los lados (anillos): se aparta un poco de la esquina de la pantalla. */
 .music-dock.tv-fgo.right { right: 30px; } .music-dock.tv-fgo.left { left: 30px; }
-@media (max-width: 700px) { .music-dock.tv-fgo { --g: 284px; } .music-dock.tv-fgo.right { right: 22px; } .music-dock.tv-fgo.left { left: 22px; } }
+/* Móvil (27 nov 2026, dueño: "un poco grande"): el globo no puede bajar de 284 px (la diagonal del vídeo de 200, que es el mínimo de YouTube),
+   así que se recoge lo de alrededor: el título sube al casquete inferior del globo (bajo el vídeo, donde la esfera aún mide ~200 px de ancho),
+   los mandos quedan pegados debajo sobre el pedestal, el aro ecuatorial sobresale menos y el aparato va más cerca de la esquina. */
+@media (max-width: 700px) {
+  .music-dock.tv-fgo { --g: 284px; padding-bottom: 7px; }
+  .music-dock.tv-fgo .tv-slot { margin: 7px 16px 0; }
+  .fgo-ring.r1 { --rd: calc(var(--g) + 22px); }
+  .music-dock.tv-fgo::after { top: calc(var(--g) - 10px); }
+  .music-dock.tv-fgo.right { right: 14px; } .music-dock.tv-fgo.left { left: 14px; } }
+
+/* --- Persona 5: The Phantom X (27 nov 2026; 2.ª versión el mismo día, a petición del dueño con capturas de P5): la app de mensajería
+   "IM" del juego, con el móvil SUJETO POR UNA MANO. Móvil inclinado de pantalla roja con el marco blanco grueso y el filo negro; arriba a la
+   izquierda el logo "IM" (letras blancas en losa negra con la I roja, en CSS); el título es un mensaje: bocadillo negro recortado con el avatar
+   en su recuadro amarillo inclinado (Lufel del Fan Kit, nav-music.webp) y la colita en zigzag; el vídeo es la pantalla, recto y sin nada encima;
+   los modos son la RESPUESTA (bocadillo blanco con la opción elegida resaltada en rojo, como "Seems like it." / "Really?"); la mano izquierda
+   (pulgar por el canto) está recortada de una captura de la app IM de P5 que aportó el dueño (hand-l.webp; ver README); solo toca el marco
+   y el borde rojo, nunca el vídeo.
+   Capas: .tv-deco = el móvil (girado; su ::before es el logo IM); ::before del aparato = la mano. --- */
+.music-dock.tv-persona5x { --tv-on: #fff; --tv-icon: #fff; --tv-r: 0;
+  --tv-body: transparent; --tv-body-sh: none;
+  --tv-bezel: #000; --tv-bezel-sh: 0 0 0 2px #000; --tv-bezel-r: 0; --tv-screen-r: 0; --tv-screen-bg: #000;
+  --tv-btn: #000; --tv-btn-ink: #fff; --tv-btn-sh: inset 0 0 0 2px #fff; --tv-btn-r: 0; --tv-power: #ff4d58; --tv-power-glow: transparent;
+  --tv-slot: #000; --tv-slot-ink: #fff; --tv-slot-sh: none; --tv-slot-r: 0; --tv-slot-ico: ''; --tv-font: 'Archivo', 'Segoe UI', sans-serif;
+  /* 15 columnas sin hueco: arriba el sitio del logo IM y los tres botones (2 columnas cada uno, ≈ 27 px); el mensaje y el vídeo a todo el ancho;
+     la respuesta con los tres modos iguales (5 columnas cada uno). */
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  grid-template-areas: ". . . . . . . . . nx nx ej ej pwr pwr" "lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd lcd" "scr scr scr scr scr scr scr scr scr scr scr scr scr scr scr" "k1 k1 k1 k1 k1 k2 k2 k2 k2 k2 k3 k3 k3 k3 k3";
+  row-gap: 8px; column-gap: 0; padding: 14px 16px 18px; margin-bottom: 10px; }
+/* El móvil: pantalla roja con salpicaduras blancas, marco blanco grueso y filo negro, un poco girado (el vídeo NO gira). */
+.tv-persona5x .tv-deco { inset: -4px -6px -8px -6px; z-index: 0; transform: rotate(-2.5deg);
+  background: radial-gradient(circle at 8% 62%, #fff 0 2px, transparent 2.5px), radial-gradient(circle at 5% 66%, #fff 0 1.2px, transparent 1.7px),
+    radial-gradient(circle at 92% 88%, #fff 0 1.5px, transparent 2px), linear-gradient(170deg, #c4000c, #a3000a);
+  box-shadow: 0 0 0 7px #fff, 0 0 0 10px #000, 12px 16px 0 6px rgba(0, 0, 0, .55); }
+/* Logo "IM": losa negra con filo blanco, la I roja y la M blanca, girado. */
+.tv-persona5x .tv-deco::before { content: 'M'; position: absolute; left: -10px; top: -14px; padding: 0 6px 0 19px; transform: rotate(-10deg);
+  font: 400 30px/1.05 'Anton', 'Impact', sans-serif; color: #fff; letter-spacing: 0;
+  background: linear-gradient(#e5202e, #e5202e) 7px 5px / 7px calc(100% - 10px) no-repeat, linear-gradient(#fff, #fff) 5px 3px / 11px calc(100% - 6px) no-repeat, #000;
+  box-shadow: 0 0 0 3px #fff, 3px 3px 0 3px #000; }
+.tv-persona5x .tv-bezel { padding: 0; }
+/* La mano izquierda sujeta el canto con el pulgar hacia arriba (fuera del vídeo: solo sobre el marco y por fuera). Los dedos de la derecha se
+   probaron y se quitaron (dueño: no combinaban); la punta del pulgar se recortó en pico (traía un trozo del marco de la captura). */
+.music-dock.tv-persona5x::before { content: ''; position: absolute; z-index: 2; pointer-events: none; background: center / 100% 100% no-repeat;
+  /* Filo blanco alrededor (sobre la web oscura, el negro de la mano se perdía) y sombra en bloque. */
+  filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(5px 6px 0 rgba(0, 0, 0, .55)); }
+.music-dock.tv-persona5x::before { left: -118px; bottom: -34px; width: 130px; height: 228px; background-image: url(/skins/persona5x/hand-l.webp); }
+/* El título es un mensaje recibido: avatar en recuadro amarillo inclinado + bocadillo negro recortado con su colita en zigzag. */
+.tv-persona5x .tv-slot { position: relative; width: auto; justify-self: stretch; height: 24px; margin: 0 12px 0 34px; /* el avatar empieza justo donde empieza el vídeo; sin el width: 100% de .tv-mini: con los márgenes se salía de la pantalla */ padding: 0 10px; overflow: visible; text-transform: none; letter-spacing: .01em; font-weight: 800; font-size: .66rem;
+  transform: rotate(-1deg) skewX(-8deg); box-shadow: 0 0 0 2px #fff, 3px 3px 0 2px #000; }
+/* El texto se recorta dentro del bocadillo (con puntos suspensivos): el bocadillo no puede llevar overflow: hidden por el avatar y la colita. */
+.tv-persona5x .tv-slot span { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: skewX(8deg); }
+/* Colita en zigzag del bocadillo, hacia el avatar. */
+.tv-persona5x .tv-slot::after { content: ''; position: absolute; left: -11px; top: 7px; width: 12px; height: 11px; background: #000;
+  clip-path: polygon(100% 0, 30% 30%, 60% 45%, 0 100%, 100% 70%); }
+.tv-persona5x .tv-slot::before { content: ''; position: absolute; left: -34px; top: -3px; width: 26px; height: 28px; transform: skewX(8deg) rotate(-6deg);
+  background: url(/skins/persona5x/nav-music.webp) center / 22px 22px no-repeat, #f2e600; box-shadow: 0 0 0 2px #fff, 0 0 0 4px #000; }
+/* Botones de arriba: como los modos de abajo (dueño, 27 nov 2026): bloques negros inclinados con filo y icono blancos; al pasar el ratón,
+   blancos con icono negro (apagar, rojo con icono blanco). */
+.tv-persona5x :is(.tv-power, .tv-eject) { justify-self: end; width: 22px; height: 20px; transform: rotate(-3deg) skewX(-8deg); font-weight: 800;
+  background: #0b0b0b; color: #fff; box-shadow: inset 0 0 0 2px #fff, 2px 2px 0 #000; }
+.tv-persona5x :is(.tv-power, .tv-eject) > * { transform: skewX(8deg); }
+.tv-persona5x :is(.tv-power, .tv-eject):hover { background: #fff; color: #0b0b0b; }
+.tv-persona5x .tv-power:hover { background: #d41420; color: #fff; }
+.tv-persona5x .tv-power:hover svg { filter: none; }
+/* Los modos: bloques NEGROS con filo blanco y texto blanco (blancos se confundían con el marco blanco del móvil, dueño 27 nov 2026); el elegido,
+   rojo con filo blanco y la sombra negra, como la opción resaltada de la respuesta del chat. Al pasar el ratón, blanco con texto negro. */
+.tv-persona5x .tv-knob { justify-self: stretch; align-self: stretch; display: flex; align-items: center; justify-content: center; height: 26px; margin: 0 2px; padding: 0 2px; min-width: 0;
+  background: #0b0b0b; box-shadow: inset 0 0 0 2px #fff; color: #fff; font-size: .62rem; font-weight: 800; letter-spacing: 0;
+  transform: rotate(-2deg) skewX(-8deg); transition: background-color .12s, color .12s; }
+.tv-persona5x .tv-knob::before { display: none; }
+.tv-persona5x .tv-knob span { position: static; width: auto; height: auto; clip-path: none; overflow: hidden; text-overflow: ellipsis; max-width: none; transform: skewX(8deg); }
+.tv-persona5x .tv-knob svg { display: none; } /* solo texto, como las respuestas del chat */
+.tv-persona5x .tv-knob:hover:not(.on) { background: #fff; color: #0b0b0b; }
+.tv-persona5x .tv-knob:hover:not(.on) span { filter: none; color: #0b0b0b; }
+.tv-persona5x .tv-knob.on { z-index: 1; background: #d41420; box-shadow: inset 0 0 0 2px #fff, 3px 3px 0 #000; transform: rotate(-3deg) skewX(-8deg) scale(1.05); }
+.tv-persona5x .tv-knob.on :is(svg, span) { color: #fff; }
+.tv-persona5x .tv-knob:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .tv-persona5x .tv-knob { transition: none; } }
+.music-dock.tv-persona5x.right { right: 24px; } .music-dock.tv-persona5x.left { left: 116px; }
+/* Móvil (≤ 700 px): el vídeo sigue a 200×200 (mínimo de YouTube); se encoge todo lo de alrededor: márgenes, logo IM, manos y mandos. */
+@media (max-width: 700px) {
+  .music-dock.tv-persona5x { row-gap: 5px; padding: 10px 11px 12px; margin-bottom: 8px; }
+  .tv-persona5x .tv-deco { inset: -3px -4px -6px -4px; box-shadow: 0 0 0 5px #fff, 0 0 0 7px #000, 8px 10px 0 4px rgba(0, 0, 0, .5); }
+  .tv-persona5x .tv-deco::before { left: -8px; top: -11px; padding: 0 5px 0 15px; font-size: 22px;
+    background: linear-gradient(#e5202e, #e5202e) 6px 4px / 5px calc(100% - 8px) no-repeat, linear-gradient(#fff, #fff) 4px 2px / 9px calc(100% - 4px) no-repeat, #000; }
+  .music-dock.tv-persona5x::before { left: -93px; bottom: -24px; width: 100px; height: 176px; } /* borde derecho + filo = 9 px < 11 de relleno: no toca el vídeo */
+  .tv-persona5x .tv-slot { height: 21px; font-size: .62rem; margin: 0 10px 0 30px; }
+  .tv-persona5x .tv-slot::before { left: -30px; width: 22px; height: 24px; background-size: 18px 18px, auto; }
+  .tv-persona5x :is(.tv-power, .tv-eject) { width: 20px; height: 18px; }
+  .tv-persona5x .tv-knob { height: 22px; font-size: .58rem; }
+  .music-dock.tv-persona5x.right { right: 16px; } .music-dock.tv-persona5x.left { left: 88px; } }

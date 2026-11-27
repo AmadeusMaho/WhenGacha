@@ -397,13 +397,63 @@ const MUSIC: Record<string, Music> = {
       ['PLBO2h-GzDvIb_sEfsgTjrzq7_dW34cOrj', 49], // Fate/strange Fake, NightBunny8
     ] },
   },
+  persona5x: {
+    // Vista previa: empieza con «Ambitions and Visions», el tema de apertura de P5X (también es su canción más vista).
+    first: 'djfP0FKXhqw',
+    // "Todo P5" (27 nov 2026, dueño: como FGO, una lista del juego y otra de toda la saga): las canciones oficiales más vistas de TODO Persona 5
+    // (P5, Royal, Scramble/Strikers, Tactica, Dancing in Starlight y The Phantom X), de "Lyn - Topic" y "ATLUS Sound Team - Topic" (el audio de la
+    // distribuidora) y los vídeos de atlustube. Todas con oEmbed 200. De más a menos vistas:
+    // Last Surprise (36.5 M), Rivers In the Desert (20.9 M), Take Over (18.7 M), I believe (13.5 M), Wake Up, Get Up, Get Out There (11.1 M),
+    // Colors Flying High (10.9 M), The Whims of Fate (7.1 M), Last Surprise -Scramble- (6.3 M), Daredevil (6.2 M), Throw Away Your Mask (5.4 M),
+    // No More What Ifs (5.3 M), Ambitions and Visions (4.4 M), Beneath the Mask -rain- (4.0 M), Blooming Villain (3.5 M), Axe to Grind (3.4 M),
+    // Will Power (3.2 M), What you wish for (2.2 M), Beneath the Mask -instrumental- (2.2 M), OP de P5X × P3P (1.9 M), Show Stealer (1.6 M), Price (1.6 M),
+    // OP de P5X (1.6 M), Life Goes On (1.3 M), Jaldabaoth (1.1 M), Keeper of Lust (931 k), Swear to My Bones (899 k), Our Beginning (899 k), Life Will Change (305 k)
+    top: [
+      'ZNGqBDRJgvo', 'lvuHvXsZPrk', 'lk8BMgl9vp0', 'LkuyO0cU3tQ', 'azNG-AU0eGg', '5iksTXMTh-8', '69Km895ntNc', 'cS_CPy7YcaA', 'RZB8WMuf2aQ', 'k8z07I1fzbQ',
+      'GOTDmQ_gGwI', 'djfP0FKXhqw', 'U2Qd9TRY1Ro', '6aShp3H7xiU', '6XhQfVjlEBY', 'Msq4a0d9rCk', '_g7lIAnLYKI', 'w7Cm74nDhac', 'Pz3Q-DlzGGA', 'AvXAaRMNqww',
+      'yG-_Zn648fw', 'rdwRWnYHiNU', 'CgxbVc4SiI4', 'oP-sMzxQbyA', 'QKunUv9-p6U', 'IVOUYIr1V5I', 'C4_GRMYF9HI', '2AWc3DRmj1U',
+    ],
+    topName: { es: ['Todo P5', 'Las más vistas de toda la saga Persona 5'], en: ['All P5', 'The most viewed songs of the whole Persona 5 series'],
+      zh: ['全部P5', '整个女神异闻录5系列观看次数最多的歌曲'] },
+    // Solo el juego ("Populares"): P5X casi no tiene pistas oficiales sueltas en YouTube (el tema de apertura, Show Stealer, las tres películas de
+    // apertura de atlustube y dos remixes del canal oficial de Occidente). Van ellas y la banda sonora del juego que sube "P5X Archives" (sus listas
+    // Original Soundtrack 1–4, sin repetir Ambitions and Visions ni Show Stealer), todo junto de más a menos vistas. Todas con oEmbed 200 (27 nov 2026):
+    // Ambitions and Visions (4.4 M), OP de la colaboración con P3P (1.9 M), Show Stealer (1.6 M), OP (1.6 M), OP (Show Stealer ver.) (508 k), Wake Up Your Hero (179 k), Desire Surrender (135 k), Fatal Desire (128 k), Shadow Loop (117 k), Last Strike (116 k), Gone With The Storm (74 k), Wiping All Out -P5X Remix- (65 k), Star Shine (60 k), Colorful Life (56 k), Blooming Villain -X- (53 k), Duel for Real (46 k), Rage Education (43 k), It's Going Down Now -P5X Remix- (40 k), Last Surprise -new year- Extended Ver. (38 k), Crimson Spotlight (23 k), Break the Dawn (17 k), Apertura (14 k), L'Inesorabile (13 k), The Concrete Hive (9 k), 一歩踏み出すうたうたい [A Singer Who Steps Forward] (7 k), The Weight of Blue (7 k), Cerulean Echoes (6 k), Distorsione (5 k), Pheromone Cocoons (5 k), Last Surprise -spring festival- (5 k), Mind Control (5 k), Distorsione -night version- (5 k), Wonder Light (4 k), Fight what I Fear (4 k), Salt Water Youth (4 k), Sandy Shuffle (4 k), The Day We Reel In (3 k), Overtaking!! (3 k), The Last Dambuster (3 k), Ravenbill Requiem (3 k), Étoile en Embrasse (3 k), Narumi Nashimoto - わたし色アイドル [My Color Idol] (3 k), Pheromone Cocoons -intro- (3 k), Frostbloom Vow (3 k), Aria of Soul -remix- (3 k), Self Disguise (3 k), Deep Zone (3 k), Harmonious pulse (3 k), Rule Breaker (3 k), Phantom Dash (3 k), The Grand Finale Unmasked (3 k), Written in the Sea (2 k), Wake Up Your Hero -instrumental version- (2 k), Endless Explore (2 k), Melted Motive (2 k), The Choker's Promise (2 k), Fake Idol (2 k), Blue Ripples (2 k), Broken Arrow (2 k), Shadow Loop -instrumental version- (2 k), Sweet Remedy (2 k), Seize The Light (2 k), Snowlight Serenade (2 k), Whispers of Winter Chimes (2 k), Paradisum (2 k), Action (2 k), Galactic Showdown (2 k), Last Strike -instrumental version- (2 k), Power Glide (2 k), わたし色アイドル [My Color Idol] -instrumental- (2 k), Broken Arrow -another version- (1 k), Fight! Oh! (1 k), Seeker (1 k), Alright -new year- (1 k), Pastorale Poems (1 k), Tipsy Night (1 k), Action -intro- (1 k), Intricate Common (1 k), Dream Angel (1 k), Wonder Light -instrumental version- (1 k), Seize The Light -acoustic version- (1 k), Pastorale Poems -hidden version- (1 k)
+    game: [
+      'djfP0FKXhqw', 'Pz3Q-DlzGGA', 'AvXAaRMNqww', 'rdwRWnYHiNU', '3jZqqvdpyjs', 'cYv6SimYrlI', 'taS8fKBAZ-c', 'OoMJXFomKDo', 'J_juCCvvYbg', 'oIqu3dq9pUM',
+      'thEwurDYrQk', 'an90Uh-VKkc', 'L6-dUimTZlY', '3t6qnmzXkAM', 'm6Co8zZ9S8c', '_Fqkd07i97k', 'v9_-EDcrwQU', 'nLIniuzcdG4', 'WTSz6HqqYf0', 'RtsEGmkkbw0',
+      'dwR_XLiHJOI', 'Wvc0LzVy_SQ', 'N2wvmgeB4uA', 'QD2_x2fLXS8', '-bPX6zqS7Vk', '91Ox9q-1OS8', '727KJNwkHjI', 'Ggqw4AghPlI', 'VtHfBq_RrUY', 'FBtJn2AY8Mk',
+      'Da1vVgzfC4g', 'zXeq5cWpduk', 'IPSsgYVTj5k', 'v-7WuIRl8uI', '5_3ZD3ON8Cw', 'rylXwBKlFdk', 'ASIPTN6QmqM', 'nyl95Exo4EU', 'sRPXnGukzMw', 'YBBEXhlpOq0',
+      'QTEzVd9ulKU', 'OGm0SaqOXAU', '8pRYApnVm-I', 'gpQDJC3d8QI', 'QotiiSUxsqM', 'M0RntbRQGWw', 'K3_zt8D_Rl4', 'v_gCBizLsuE', '8irjxyCggQM', 'JOp9A9U1Nus',
+      'wJUJK2ltJv8', 'k1u5CtwqCmU', 'EZpeKAYfvWA', 'eeMu44GsSHs', '0k7n3akNxgc', 'o2dLedPI5gg', 'wkyNtwU3jgA', 'RtAxjlWKoYg', '9zfVjytVkyw', 'uMj2cQR5IcQ',
+      'zQzP5GpLZew', 'JTrHRQJVhfI', 'Z5l-zobcPk0', 'dKPQWYUlta8', 'hle2iPttH7g', 'kxEbrFbtGuY', '35m4ciKXtS0', 'y1k4cZuN3-I', '4Zm81QnbJSM', 'RM61QkRIp-o',
+      'OeIwyqjBS2E', '_I3BitdPb4k', 'VwJR6csQuTg', 'qrY0P2Mfcbg', 'ldbtkjfSJvY', 'ihl6l9gdgOo', 'fRZe6n5kO4c', 'xqnJJuffEC4', '5l7YrHrw-Zk', 'cImpj9lOcLM',
+      'MNWWgNFQ68k', 'MBqY_fumX4o',
+    ],
+    // Toda la banda sonora (27 nov 2026): P5X (las cuatro Original Soundtrack de "P5X Archives" y la de PSC), Persona 5, Royal (y el álbum de Lyn),
+    // Strikers, Tactica y Dancing in Starlight; las recopilaciones más completas de cada uno (sin las de BGM "extendida"). Todas con oEmbed 200.
+    all: { lists: [
+      ['PL2jG_QMflHmhfTQepaQ60cauMpYNRz3bK', 21], // P5X Original Soundtrack 1, P5X Archives
+      ['PL2jG_QMflHmh4nQYHqSJZ_UDxJ71JaZ3e', 16], // P5X Original Soundtrack 2
+      ['PL2jG_QMflHmhXvaWU8zwde4tj57XX_hZa', 14], // P5X Original Soundtrack 3
+      ['PL2jG_QMflHmgOehY-cuzEEbcOngOxRTmC', 27], // P5X Original Soundtrack 4
+      ['PLKnNtzNfg7jf74LoY_5_omAjXcxZh1TiJ', 50], // Persona 5: The Phantom X, PSC
+      ['PLvp_vWH_ksPJHslszRcHghgtuTooXP1QX', 113], // Persona 5 OST, Bfr's OST
+      ['PLZuZrScKjWOMAEEBEGTmAGtmmlg6QY7bC', 181], // P5, P5R & P5S OST, MCshawarmaUpload
+      ['PLdi1k-fvyUmyYF6et3USlTdEb7IaiGccz', 140], // Persona 5 Royal Full OST, Justin
+      ['PLlk3cLMic-feskSLcWbE-iW9b2sKmHjXl', 33], // Lyn, Persona 5 Royal: Original Soundtrack (álbum)
+      ['PL1Ujbrns4Hh5K3Sv3Oxg_bsCJnEyKASA4', 54], // Persona 5 Strikers OST
+      ['PL1Lw0Mpxj4BfckV1s5WRnbMgWbsv_qVz9', 105], // Persona 5 Tactica Original Soundtrack (álbum)
+      ['PLKnNtzNfg7je4gaCGnTA-mD4vq7jHoP6W', 23], // Persona 5 Dancing in Starlight, PSC
+    ] },
+  },
 }
 
 /** Skins con reproductor temático compacto (además de ZZZ, que tiene la tele): HSR funda de vinilo, Genshin pergamino, NIKKE el teléfono del
  *  comandante, WuWa el sintonizador de Frecuencia, Arknights ficha de PRTS, Uma entrada del Winning Live, Blue Archive una conversación de MomoTalk,
  *  PGR el reproductor de CD del juego (caja, disco girando y brazo), FGO CHALDEAS (el globo en la esfera armilar, sobre su
- *  plataforma holográfica). Las que no estén aquí usan la ventanita sencilla. */
-const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive', 'pgr', 'fgo'])
+ *  plataforma holográfica), Persona 5X el móvil del Ladrón Fantasma (chat de bocadillos recortados). Las que no estén aquí usan la ventanita sencilla. */
+const MINI = new Set(['hsr', 'genshin', 'nikke', 'wuwa', 'arknights', 'uma', 'bluearchive', 'pgr', 'fgo', 'persona5x'])
 
 /** Capas de cada aro de CHALDEAS (FGO): más capas = más grosor de canto. */
 const FGO_LAYERS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]

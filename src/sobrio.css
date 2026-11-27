@@ -46,12 +46,15 @@
 /* ====== SOLO MÓVIL (≤ 700 px): cabecera compacta, controles en menos filas, tarjetas de banner más bajas ====== */
 @media (max-width: 700px) {
   /* cabecera: logo + acciones en la primera fila, pestañas en la segunda */
-  header { padding: 8px 12px; gap: 6px 8px; }
-  .brand { order: 1; gap: 8px; }
+  header { padding: 8px 12px; gap: 6px 4px; }
+  /* La marca cede espacio (con la insignia Premium) en vez de mandar las acciones a otra fila: logo + acciones siempre en la primera. */
+  .brand { order: 1; gap: 6px; min-width: 0; }
   .brand .logo { width: 30px; height: 30px; border-radius: 10px; }
-  .brand h1 { font-size: 1.1rem; }
-  .head-actions { order: 2; margin-left: auto; gap: 6px; }
-  .head-actions .btn.sm { padding: 5px 9px; }
+  .brand h1 { font-size: 1.1rem; white-space: nowrap; flex: none; }
+  /* Insignia Premium mini al lado del nombre: así no manda las acciones a otra fila (antes bajaba toda la cabecera). */
+  .brand .premium-badge { flex: none; margin-left: -3px; padding: 0 4px; font-size: .45rem; letter-spacing: 0; line-height: 1.5; }
+  .head-actions { order: 2; margin-left: auto; gap: 4px; flex: none; }
+  .head-actions .btn.sm { padding: 5px 6px; }
   .sync-t { display: none; }
   .spin svg { display: block; }
   header nav { order: 3; width: 100%; padding: 3px; }
