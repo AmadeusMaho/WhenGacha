@@ -110,6 +110,17 @@ const RULES: Record<string, { item: RegExp; per: number }[]> = {
   swordmaster: [{ item: /^ruby summ?on tickets?$/i, per: 1 }],
   suikoden: [{ item: /^fantasy stones?$/i, per: 150 }, { item: /^season \d+ gacha tickets?$/i, per: 1 }],
   mongil: [{ item: /^compass(es)? of destiny$/i, per: 1 }, { item: /^starlight crystals?$/i, per: 160 }],
+  // Solo Leveling: ARISE (27 nov 2026; guías de progameguides, oneesports y sportskeeda, mismas cifras): 250 Essence Stones por tirada; el Rate Up Draw
+  // Ticket y el Custom Draw Ticket = 1 tirada.
+  sla: [{ item: /^essence stones?$/i, per: 250 }, { item: /^(special )?(rate up|custom) draw tickets?$/i, per: 1 }],
+  // Pokémon Masters EX (Serebii, "Sync Pair Scout"): 300 Gems por scout (3000 el de 10); Scout Ticket = 1.
+  pmex: [{ item: /^gems?$/i, per: 300 }, { item: /^(.+ )?scout tickets?$/i, per: 1 }],
+  // Yu-Gi-Oh! Master Duel: 100 Gems por pack (1000 el de 10, en la tienda); cada "Pack Ticket" = 1 pack.
+  masterduel: [{ item: /^gems?$/i, per: 100 }, { item: /pack tickets?$/i, per: 1 }],
+  // Dragon Ball Legends (guías de sportskeeda y playerassist, mismas cifras): 100 Chrono Crystals por invocación (1000 la de 10).
+  dblegends: [{ item: /^chrono crystals?$/i, per: 100 }],
+  // Pokémon TCG Pocket: 12 Pack Hourglass = 1 sobre (la "tirada" del juego); Pack Stamina recarga 1 sobre cada 12 h.
+  ptcgp: [{ item: /^pack hourglass(es)?$/i, per: 12 }, { item: /booster$|^promo pack\b/i, per: 1 }],
 }
 
 const num = (s: string) => Number(s.replace(/,/g, ''))

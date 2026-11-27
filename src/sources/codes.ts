@@ -123,7 +123,8 @@ export function pocketGamerCodes(doc: Document): PromoCode[] {
   // "Active Stella Sora codes" (h2) o, en otras páginas, h2 "Epic Seven codes" + h3 "Active codes".
   // Aniimo (18 nov 2026): h2 "Aniimo codes" y, debajo, "Active" / "Expired" en negrita (un <strong> suelto), sin cabecera propia.
   // Sword Master Story (20 nov 2026): "Active Sword Master Story coupons".
-  const head = [...doc.querySelectorAll('h2, h3')].find(h => /active/i.test(text(h)) && /codes?|coupons?/i.test(text(h)))
+  // Solo Leveling: ARISE (27 nov 2026): "Working Solo Leveling Arise codes".
+  const head = [...doc.querySelectorAll('h2, h3')].find(h => /active|working/i.test(text(h)) && /codes?|coupons?/i.test(text(h)))
     ?? [...doc.querySelectorAll('strong, b')].find(h => /^active(?: codes?)?:?$/i.test(text(h)))
   if (!head) throw new Error('pocketgamer: no se encontró la lista de códigos activos')
   const out: PromoCode[] = []

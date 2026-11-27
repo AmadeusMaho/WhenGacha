@@ -122,6 +122,34 @@ const SOURCES = [
   { name: 'netmarble', ttl: 3 * HOUR, test: u => u.hostname === 'forum.netmarble.com' && u.searchParams.get('menuSeq') === '6' && (
     (u.pathname === '/api/game/monster2/official/forum/stardive_gl/article/list' && Number(u.searchParams.get('rows')) <= 12 && [...u.searchParams.keys()].every(k => ['menuSeq', 'start', 'rows'].includes(k)))
     || (/^\/api\/game\/monster2\/official\/forum\/stardive_gl\/article\/\d{1,6}$/.test(u.pathname) && [...u.searchParams.keys()].every(k => k === 'menuSeq'))) },
+  // Solo Leveling: ARISE (27 nov 2026): el mismo foro y la misma API pública; tablones "Events" (34, eventos y banners Rate Up) y "Notices" (32, la hora
+  // real de cada mantenimiento). Lista (máx. 12) y aviso suelto. robots.txt sin reglas.
+  { name: 'netmarble-sla', ttl: 3 * HOUR, test: u => u.hostname === 'forum.netmarble.com' && ['34', '32'].includes(u.searchParams.get('menuSeq') ?? '') && (
+    (u.pathname === '/api/game/sololv/official/forum/slv_en/article/list' && Number(u.searchParams.get('rows')) <= 12 && [...u.searchParams.keys()].every(k => ['menuSeq', 'start', 'rows'].includes(k)))
+    || (/^\/api\/game\/sololv\/official\/forum\/slv_en\/article\/\d{5,7}$/.test(u.pathname) && [...u.searchParams.keys()].every(k => k === 'menuSeq'))) },
+  // Solo Leveling: arte oficial (cazadores y artes principales) de la API de contenidos de su web (cms-api.netmarble.com, la que usa
+  // sololeveling.netmarble.com; ~60 KB). Solo esa consulta exacta.
+  { name: 'netmarble-cms', ttl: 24 * HOUR, test: u => u.hostname === 'cms-api.netmarble.com' && u.pathname === '/api/content/234' && u.search === '?categorySeqStr=1120,1189&languageCd=en' },
+  // Pokémon Masters EX (27 nov 2026): avisos oficiales (lista con "Date/Time" exacto en PT, 10 por página con `cursor`, y aviso suelto: destacados y
+  // recompensas) + Serebii (lista de eventos y de scouts, que adelanta los próximos, y cada scout con sus destacados y retratos). robots.txt: sin reglas
+  // (oficial) y solo /hidden/ranch/ y /crossword/ (Serebii).
+  { name: 'pmex', ttl: 3 * HOUR, test: u => u.hostname === 'pokemonmasters-game.com' && (
+    (u.pathname === '/en-US/announcements' && (!u.search || /^\?cursor=[a-z0-9]{8,32}$/.test(u.search)))
+    || (/^\/en-US\/announcements\/(Event|BSearch|Campaign)_\d{4}_\d[A-Z]_\d{1,2}$/.test(u.pathname) && !u.search)) },
+  { name: 'serebii', ttl: 6 * HOUR, test: u => u.hostname === 'www.serebii.net' && !u.search && (
+    /^\/pokemonmasters\/(events|syncpairscout)\.shtml$/.test(u.pathname) || /^\/pokemonmasters\/scout\/[a-z0-9-]{8,120}\.shtml$/.test(u.pathname)
+    // TCG Pocket (27 nov 2026): la lista de eventos y cada evento (recompensas de sus misiones con icono).
+    || u.pathname === '/tcgpocket/events.shtml' || /^\/tcgpocket\/events\/[a-z0-9-]{4,120}\.shtml$/.test(u.pathname)) },
+  // Dragon Ball Legends (27 nov 2026): base de datos de la comunidad dblegends.net (robots.txt sin reglas). /summons y /events llevan todo su catálogo en
+  // JSON (inicio y fin en Unix); /banner/<id> los destacados con retrato (1,2 MB: solo los banners vigentes con cristales, caché de 24 h).
+  { name: 'dblegends', ttl: 3 * HOUR, test: u => u.hostname === 'dblegends.net' && !u.search && (u.pathname === '/summons' || u.pathname === '/events') },
+  { name: 'dblegends-banner', ttl: 24 * HOUR, test: u => u.hostname === 'dblegends.net' && !u.search && /^\/banner\/\d{3,8}$/.test(u.pathname) },
+  // Yu-Gi-Oh! Master Duel (27 nov 2026): API pública de masterduelmeta.com (robots.txt solo cierra /cdn-cgi/): packs con hora exacta y noticias.
+  { name: 'masterduelmeta', ttl: 3 * HOUR, test: u => u.hostname === 'www.masterduelmeta.com' && (
+    (u.pathname === '/api/v1/sets' && u.search === '?sort=-release&limit=20') || (u.pathname === '/api/v1/articles' && u.search === '?sort=-date&limit=30')) },
+  // Pokémon TCG Pocket (27 nov 2026): Game8, la portada del juego (expansiones con su salida exacta) y la lista de eventos. pokemon-zone.com pone un
+  // desafío de Cloudflare al cliente del proxy: no se usa.
+  { name: 'game8-ptcgp', ttl: 6 * HOUR, test: u => u.hostname === 'game8.co' && (u.pathname === '/games/Pokemon-TCG-Pocket' || u.pathname === '/games/Pokemon-TCG-Pocket/archives/483037') && !u.search },
   // Azur Lane: avisos de mantenimiento de su web oficial (WordPress; robots.txt sin reglas). La lista de noticias y cada aviso, sin parámetros.
   { name: 'yostar-al', ttl: 6 * HOUR, test: u => u.hostname === 'azurlane.yo-star.com' && (u.pathname === '/news/' || /^\/news\/20\d\d\/\d\d\/\d\d\/maintenance-notice[a-z0-9-]*\/$/.test(u.pathname)) && !u.search },
   // Honkai Impact 3rd: avisos oficiales de HoYoLAB (cuenta oficial del juego, gids=1): la lista de "Notices" (máx. 10) y cada aviso suelto.
@@ -139,7 +167,7 @@ const SOURCES = [
     || (/^\/en-EN\/news\/\d{1,6}$/.test(u.pathname) && !u.search)) },
   // Códigos de Sword of Convallaria, Path to Nowhere, MONGIL, Wizardry Variants Daphne, Stella Sora, StarSavior, Aniimo (respaldo de Game8), Resident Evil
   // Survival Unit y Sword Master Story ("coupon-codes") de PocketGamer (robots.txt "Allow: /"). Una página por juego.
-  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && (/^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne|aniimo|stella-sora|star-savior|chaos-zero-nightmare|arknights-endfield|duet-night-abyss|afk-journey|resident-evil-survival-unit|bleach-soul-resonance)\/codes\/$/.test(u.pathname) || u.pathname === '/swordmaster-story/coupon-codes/') && !u.search },
+  { name: 'pocketgamer', ttl: 6 * HOUR, test: u => u.hostname === 'www.pocketgamer.com' && (/^\/(sword-of-convallaria|path-to-nowhere|mongil-star-dive|wizardry-variants-daphne|aniimo|stella-sora|star-savior|chaos-zero-nightmare|arknights-endfield|duet-night-abyss|afk-journey|resident-evil-survival-unit|bleach-soul-resonance|solo-leveling-arise)\/codes\/$/.test(u.pathname) || u.pathname === '/swordmaster-story/coupon-codes/') && !u.search },
   // Wizardry Variants Daphne: feed RSS oficial de noticias en inglés (páginas 1 y 2, texto completo) y la lista oficial de aventureros (retratos).
   { name: 'wizardry', ttl: 3 * HOUR, test: u => u.hostname === 'wizardry.info' && u.pathname === '/en/daphne/news/feed/' && (!u.search || /^\?paged=[12]$/.test(u.search)) },
   { name: 'wizardry-adv', ttl: 24 * HOUR, test: u => u.hostname === 'wizardry.info' && /^\/en\/daphne\/adventurers\/(?:page\/[2-5]\/)?$/.test(u.pathname) && !u.search },
@@ -311,7 +339,7 @@ const BLOCK_PAUSE = 24 * HOUR
 const pauseFor = fails => (fails >= BLOCK_AFTER ? BLOCK_PAUSE : Math.min(10 * MIN * 2 ** Math.max(0, fails - 1), 2 * HOUR))
 
 /** Peticiones a gachafocus de una en una y con esta separación, para no hacer ráfagas (sus reglas de Cloudflare no son públicas). */
-const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'bbs-api-os.hoyolab.com': 3000, 'mobilematters.gg': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'www.gacha.gg': 3000, 'mad.altterisk.cc': 2000, 'ucngame.com': 3000, 'www.memuplay.com': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'gametora.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */, 'persona5x.com': 5000, 'forum.nexon.com': 4000, 'www.arknights.global': 3000, 'imivi.github.io': 2000, 'feheroes.fandom.com': 6000 /* su API corta tras 2–3 consultas seguidas (feh.ts) */ }
+const GAP = { 'bannerhistory.app': 5000, 'api.atlasacademy.io': 1000, 'grandorder.gamepress.gg': 5000, 'api.onstove.com': 3000, 'webapi.browndust2.com': 2000, 'gachafocus.com.br': 2000,  'gachalife-production.up.railway.app': 3000, 'hw-media-cdn-mingchao.kurogame.com': 3000, 'media-cdn-zspms.kurogame.net': 3000, 're1999.bluepoch.com': 3000, 'nikke.gg': 5000, 'neverness.gg': 5000, 'discord.com': 1500, 'game8.co': 5000, 'grayravens.com': 3000, 'lootandwaifus.com': 3000, 'iopwiki.com': 20_000 /* Crawl-delay de su robots.txt (antes 2 s: nos frenaba en Botkeep) */, 'gamewith.ai': 3000, 'gamewith.net': 3000, 'forum.netmarble.com': 2000, 'azurlane.yo-star.com': 3000, 'bbs-api-os.hoyolab.com': 3000, 'mobilematters.gg': 3000, 'ptn.aisnogames.com': 3000, 'www.pocketgamer.com': 3000, 'www.kaiden.gg': 3000, 'wizardry.info': 3000, 'poster-api.starforce.tw': 2000, 'website.xdcdn.net': 1000, 'www.game.guide': 3000, 'www.gacha.gg': 3000, 'mad.altterisk.cc': 2000, 'ucngame.com': 3000, 'www.memuplay.com': 3000, 'l11-web-api.biligames.com': 3000, 'gf2-web-us-api.sunborngame.com': 2000, 'sg-community.playerinfinite.com': 3000, 'stellasora.global': 3000, 'api.steampowered.com': 1500, 'www.prydwen.gg': 10_000 /* Crawl-delay de su robots.txt */, 'www.gematsu.com': 10_000 /* ídem */, 'gamingonphone.com': 3000, 'www.siliconera.com': 3000, 'gametora.com': 3000, 'itunes.apple.com': 3500 /* ~20/min */, 'persona5x.com': 5000, 'forum.nexon.com': 4000, 'www.arknights.global': 3000, 'imivi.github.io': 2000, 'feheroes.fandom.com': 6000 /* su API corta tras 2–3 consultas seguidas (feh.ts) */, 'pokemonmasters-game.com': 3000, 'www.serebii.net': 6000 /* corta conexiones seguidas (socket hang up) */, 'dblegends.net': 4000, 'www.masterduelmeta.com': 3000 }
 const gates = new Map() // host -> promesa de la última petición en cola
 function throttle(host) {
   const gap = GAP[host]

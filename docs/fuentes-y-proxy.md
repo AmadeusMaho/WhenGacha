@@ -1572,3 +1572,60 @@ nada desde que se siguieron (solo el mensaje de "seguir canal"). Lo que se añad
 - **Sword Master Story**: sin novedades. Steam sigue sin avisos (ya está en `STEAM_APPS`), gacha.gg y game.guide no lo tienen, y una búsqueda no da
   ninguna web con calendario. Sigue con parches de la App Store y códigos de ucngame.
 - Ojo al probar fuera del proxy: wiki.gg (Limbus) responde 403 a un User-Agent de navegador desde Node; con el del proxy ("WhenGacha/1.0 …") va bien.
+
+## Cinco juegos nuevos: Solo Leveling, Pokémon Masters EX, Master Duel, Dragon Ball Legends y TCG Pocket (27 nov 2026)
+
+Pedidos por el dueño junto con Aether Gazer y SAO Integral Factor, que **no se añaden** (sin fuente buena, ver abajo). Todas las fuentes se revisaron
+desde este PC con el UA propio; robots.txt de cada una leído (ninguno cierra lo que se pide).
+
+| Juego (id) | Fuente | Qué da | Qué no |
+|---|---|---|---|
+| Solo Leveling: ARISE (`sla`, `sla.ts`) | Foro de Netmarble, foro `slv_en` (misma API que MONGIL): tablones Events (34) y Notices (32) | Banners Rate Up con su cazador y los ya programados (Sian Halat desde el 03/12), eventos con hora UTC+0, "Key Rewards" por evento (sin cifras), hora real del fin del mantenimiento ("11/18 23:50 - 11/19 08:30 (UTC+0)") para los "After maintenance". Códigos de PocketGamer ("Working … codes"). Retratos e iconos de su Fandom (`solo-leveling-arise.fandom.com`) | Cifras de las recompensas (el aviso solo nombra). Idioma: cada aviso trae `managerLanguageCds`; el francés va aparte ("fr_FR") |
+| Pokémon Masters EX (`pmex`, `pmex.ts`) | Avisos oficiales (pokemonmasters-game.com, "Date/Time" en PT, 2 páginas) + Serebii (eventos, scouts y cada scout) | Scouts con sus pares 5★ (aviso) y retrato (Serebii, solo la tabla de 5★), eventos con "Gems ×1,000", lo próximo que solo trae Serebii ("≈", 06:00–05:59 UTC) | Códigos (el juego no tiene). Serebii a veces corta la conexión (socket hang up) en algún scout: se reintenta en el ciclo siguiente |
+| Yu-Gi-Oh! Master Duel (`masterduel`, `masterduel.ts`) | API de masterduelmeta.com: `/api/v1/sets?sort=-release&limit=20` y `/api/v1/articles?sort=-date&limit=30` | Packs con salida exacta (banners; los Secret Pack como secundarios), eventos de las noticias ("Event Duration / Nov 26 ~ Dec 4", hora de `countdownDate` si la hay; si no, 06:00 UTC "≈"), recompensas de los logins | Códigos. Game8 (parado en dic 2025) y konami.com (parado en oct 2026) no sirven |
+| Dragon Ball Legends (`dblegends`, `dblegends.ts`) | dblegends.net (base de datos de la comunidad): `/summons` y `/events` con todo el catálogo en JSON (Unix), `/banner/<id>` | Banners y eventos con hora exacta, destacados con retrato (`/assets/card_icons/…`), imágenes | Recompensas y códigos (no hay). legends.dbz.space estaba caído (522) ese día. Sin arte horizontal oficial para la portada |
+| Pokémon TCG Pocket (`ptcgp`, `ptcgp.ts`) | Game8: portada del juego (expansiones: "has been released on October 28, 2026 at 6 PM PDT") y archives/483037 (eventos) | Expansiones como banners hasta la siguiente; eventos con imagen | Horas de los eventos (solo días: 06:00 UTC, "≈"). Códigos (no hay) |
+
+**Fechas de Game8 comprobadas (TCG Pocket, 27 nov 2026)**: coinciden con los datos del juego de pokemon-zone (Vee Vee! Eevee 21 nov 06:00 UTC → 15 dic,
+Winter Holidays 26 nov → 26 dic 06:00 UTC; Dual Fusion 29 oct 01:00 UTC = "6 PM PDT"). Serebii pone algunos un día antes (fecha de EE. UU.). Aun así los
+eventos de Game8 van con "≈" y en Solo Leveling y Master Duel no se usa Game8 (desactualizado).
+
+**pokemon-zone.com no se usa**: responde a curl pero pone un desafío de Cloudflare ("cf-mitigated: challenge") al cliente HTTPS de Node del proxy. No se
+intenta saltar. Su calendario tiene horas exactas de misiones, tiendas y la próxima expansión; si algún día responde al proxy, sería el mejor complemento.
+El calendario de Game8 (`/api/calendars/<id>.json`) exige la sesión de un navegador: tampoco se usa.
+
+**Horas exactas e iconos (segunda pasada, 27 nov 2026, petición del dueño):**
+- **TCG Pocket**: Game8 solo da días; la hora sale de la regla del juego, documentada en Bulbapedia ("began at 06:00 UTC on the specified start date and
+  concluded at 05:59 UTC on the specified end date") y comprobada con los datos del juego de pokemon-zone en tres eventos. Recompensas con icono y
+  cantidad de cada evento de Serebii (tcgpocket/events/<evento>.shtml); tiradas = Pack Hourglass/12 + sobres regalados. ptcgpocket.gg (calendario con
+  horas UTC) no se usa: su robots.txt cierra el sitio a los rastreadores de IA. pokemon.com corta a los clientes automáticos ("Pardon Our Interruption").
+- **Master Duel**: horas del texto de masterduelmeta si las da ("Oct 26 00:00 to Nov 1 00:00 EST", "12:59 JST"), su `countdownDate` (inicio) y el
+  de otra noticia del mismo evento para el fin ("Top Decks! Planet Run" = fin de Planet Run); si no, la hora de Konami: 13:00 JST de apertura y 12:59
+  JST de cierre (Planet Run 04:00 → 03:59 UTC, Duelist Cup hasta las 03:59 UTC, Nijisanji "12:59 JST", caducidad de los Selection Pack a las 03:59 UTC).
+  Lo publicado tras el mantenimiento empieza con la salida de los packs de ese día. Konami no publica la hora del fin de los Tryout Duel: va la de cierre
+  habitual (12:59 JST). Steam (appid 1449850) solo publica packs y parches, sin horas de eventos. Gems: icono de Yugipedia ("Gem-Master Duel.png");
+  billetes de un pack: la imagen del pack.
+- **Pokémon Masters EX**: lo que solo trae Serebii toma 06:00 → 05:59 UTC (Serebii dice "06:00 UTC" y los 20 avisos oficiales revisados van de
+  10:00 p.m. a 9:59 p.m. PT). Sus scouts sin imagen llevan el retrato del destacado; los pares sin retrato en Serebii, el icono del entrenador.
+- **Solo Leveling**: los avisos de mantenimiento salen cada 4 semanas y el tablón Notices mezcla idiomas: se leen hasta 5 páginas (12 avisos cada una)
+  hasta tener los 2 últimos (el del 22 oct estaba en la 4.ª). Nombres de objetos limpios para la wiki ("[Legendary] Skill Rune Chest" →
+  "Legendary Skill Rune Chest", sin "(Limited Time)").
+- **Solo Leveling, imágenes**: los avisos solo traen la cabecera genérica "Events" (.gif) y la miniatura genérica del tablón; la única imagen propia es
+  la del cuerpo en los avisos de banner (el arte del cazador que debuta, "_d.jpg"), que se usa para ese banner y sus eventos. El resto: el arte oficial
+  de cada cazador y los artes principales del juego de la API de contenidos de su web (cms-api.netmarble.com/api/content/234, categorías 1120 y 1189,
+  la que usa sololeveling.netmarble.com; 1 consulta de ~60 KB, caché de 24 h). Ninguna fuente tiene arte propio de cada evento (DotGG copia las mismas
+  imágenes del foro; su Fandom no tiene páginas de eventos ni los "<Cazador> Rate Up Banner.png" de los banners de nov 2026). Los cazadores aún sin arte
+  en la web (Agnes Rivera, 27 nov) salen con su retrato de la wiki.
+- **Dragon Ball Legends**: destacados de todos los banners vigentes (hasta 12 páginas por ciclo, caché de 24 h); arte de portada, la imagen para
+  compartir de su web oficial (dble.bn-ent.net/shared/img/ogp.png). Los de "100x Ticket" y los gratuitos no tienen destacados ni en la fuente.
+
+**Lo que sigue sin icono o sin destacado (no existe en ninguna fuente permitida)**: Solo Leveling, cofres y objetos de evento que su Fandom no tiene
+("Legendary Skill Rune Chest", "Legendary Blessing Stone Chest", "Core Selection Chest", "Upgraded Wheel Event Tickets", "Seals of Unity", "Polish of
+Change"); Master Duel y TCG Pocket, sin destacados en los packs/expansiones (son cartas, no personajes); Pokémon Masters EX, los Variety Scout (no tienen
+destacado).
+
+**Sin añadir:**
+- **Aether Gazer** (Yostar, global): la web oficial es una aplicación sin noticias legibles, la wiki de Fandom no existe en inglés (solo la china) y la de
+  Biligame es del servidor chino. Solo hay códigos (PocketGamer). Salida: seguir su Discord oficial (discord.gg/aethergazerglobal) con el bot propio.
+- **SAO Integral Factor**: sigue activo, pero las webs oficiales son imágenes y la única fuente con texto es Steam (appid 2371630), con 4–5 avisos al año
+  (pisos nuevos, colaboraciones) y sin scouts ni horas.

@@ -31,6 +31,11 @@ import { syncArknightsNews, withArknightsNews } from './yostarak'
 import { withImivi } from './imivi'
 import { syncMakeDrama } from './makedrama'
 import { syncFeh } from './feh'
+import { syncSla } from './sla'
+import { syncPmex } from './pmex'
+import { syncMasterDuel } from './masterduel'
+import { syncDbLegends } from './dblegends'
+import { syncPocket } from './ptcgp'
 import { syncResu, syncSwordMaster } from './mobilegames'
 import { azurPolish, syncAzurLane } from './azurlane'
 import { syncFgo } from './fgo'
@@ -262,7 +267,9 @@ const LAUNCH_UTC_HOUR: Record<string, number> = { wuwa: 3, genshin: 3, starrail:
  * Iconos de recompensas de los juegos sin wiki (el recolector los busca en la wiki del juego, `withItemIcons` de collector.ts): MHO, la lista de objetos
  * de GameWith; BLEACH, los iconos oficiales de su web. Se aplica después de unir Discord, así también los avisos oficiales salen con icono.
  */
-const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS, stellasora: async () => SS_ICONS, starsavior: async () => STARSAVIOR_ICONS, horizonwalker: async () => HORIZONWALKER_ICONS }
+const ITEM_ICONS: Partial<Record<string, () => Promise<Map<string, string>>>> = { mho: mhoIcons, bleach: async () => BLEACH_ICONS, daphne: async () => DAPHNE_ICONS, aniimo: async () => ANIIMO_ICONS, stellasora: async () => SS_ICONS, starsavior: async () => STARSAVIOR_ICONS, horizonwalker: async () => HORIZONWALKER_ICONS,
+  // Pokémon Masters EX (27 nov 2026): el icono de las Gems de Serebii (pokemonmasters/items/gems.png).
+  pmex: async () => new Map([['gems', 'https://www.serebii.net/pokemonmasters/items/gems.png']]) }
 async function withItemIcons(id: string, s: GameSync): Promise<GameSync> {
   const load = ITEM_ICONS[id]
   if (!load || !s.events.some(e => e.items.some(i => !i.icon))) return s
@@ -581,6 +588,13 @@ async function syncSourceRaw(game: Game): Promise<GameSync> {
     case 'makedrama': return syncMakeDrama(id)
     // Fire Emblem Heroes: tablas Cargo de su wiki en una sola petición (feh.ts; la API corta tras 2–3 consultas seguidas).
     case 'feh': return syncFeh(id)
+    // 27 nov 2026: Solo Leveling (foro de Netmarble), Pokémon Masters EX (avisos oficiales + Serebii), Master Duel (masterduelmeta), Dragon Ball Legends
+    // (dblegends.net) y TCG Pocket (pokemon-zone + Game8). Cada uno en su archivo.
+    case 'sla': return syncSla(id)
+    case 'pmex': return syncPmex(id)
+    case 'masterduel': return syncMasterDuel(id)
+    case 'dblegends': return syncDbLegends(id)
+    case 'ptcgp': return syncPocket(id)
     // RE Survival Unit y Sword Master Story: sin web de avisos; parche de la App Store y códigos (mobilegames.ts). Eventos por Discord/Steam.
     case 'resu': return syncResu(id)
     case 'swordmaster': return syncSwordMaster(id)

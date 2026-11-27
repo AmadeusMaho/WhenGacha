@@ -312,6 +312,17 @@ const ECON: Record<string, Econ> = {
     ] },
   aniimo: { currency: 'Glimmer', icon: 'Glimmer', iconUrl: 'https://img.game8.co/4622704/d376c11890317af3680c75d5276f4e89.png/show', ticket: 'Lightweave Ticket', per: 38, pass: 0, pity: 0, sources: [daily(30)] },
   mongil: { currency: 'Starlight Crystal', icon: 'Starlight Crystal', ticket: 'Compass of Destiny', per: 160, pass: 0, pity: 90, sources: [daily(75)] },
+  // Juegos añadidos el 27 nov 2026. Ninguna fuente permitida publica cifras fiables de las diarias de estos juegos: sin `sources`, cada jugador pone las suyas.
+  // Solo Leveling: ARISE: 250 Essence Stones por tirada; garantía del destacado a las 80 (Draw Support: +5,8 % desde la 64; aviso oficial del 19 nov 2026).
+  sla: { currency: 'Essence Stone', icon: 'Essence Stone', ticket: 'Rate Up Draw Ticket', per: 250, pass: 0, pity: 80, sources: [] },
+  // Pokémon Masters EX: 300 Gems por scout; cada scout da 3 Scout Points y con 400 se elige el par (Serebii): 134 scouts.
+  pmex: { currency: 'Gem', ticket: 'Scout Ticket', per: 300, pass: 0, pity: 134, sources: [] },
+  // Yu-Gi-Oh! Master Duel: 100 Gems por pack; sin garantía por número de packs.
+  masterduel: { currency: 'Gem', per: 100, pass: 0, pity: 0, sources: [] },
+  // Dragon Ball Legends: 100 Chrono Crystals por invocación; sin garantía fija (la de cada banner va en su paso de Step-Up).
+  dblegends: { currency: 'Chrono Crystal', per: 100, pass: 0, pity: 0, sources: [] },
+  // Pokémon TCG Pocket: un sobre = 12 Pack Hourglass (o la stamina, que da 2 al día).
+  ptcgp: { currency: 'Pack Hourglass', per: 12, pass: 0, pity: 0, sources: [] },
 }
 
 /** Juegos sin economía conocida (los que añades a mano): moneda genérica a 160 por tirada, que se puede cambiar. */

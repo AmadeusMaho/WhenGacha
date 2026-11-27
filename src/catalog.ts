@@ -65,6 +65,14 @@ const ART: Record<string, string> = {
   // Sword Master Story (20 nov 2026): fondo de su página de Steam (page_bg_raw, 1438×810), revisado a mano.
   swordmaster: 'https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/4239590/c83d5fb0ef6bc12c99ab0912b8cab7d1e3050765/page_bg_raw.jpg?t=1794557640',
   azurlane: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/c8/35/66/c83566fd-b5ec-310d-8879-45b2db6e286f/111.jpg/1280x1280bb.jpg',
+  // 27 nov 2026. Solo Leveling y Master Duel: captura horizontal de la App Store. Pokémon Masters EX y TCG Pocket: sus capturas son verticales;
+  // la imagen para compartir de su web oficial. Dragon Ball Legends: sus capturas de la App Store son verticales; la imagen para compartir de su web
+  // oficial (dble.bn-ent.net, ogp.png, 1200×630, lleva el logo).
+  dblegends: 'https://dble.bn-ent.net/shared/img/ogp.png',
+  sla: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/63/38/f2/6338f209-99be-1a8b-61d0-808c798caf8d/86cee440-35bc-4127-9877-18b550c391e0_IOS_2208x1242_2_EN.jpg/1280x1280bb.jpg',
+  masterduel: 'https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/81/67/fe/8167fed4-5512-778c-ca59-62b85daae1fd/iPhone_SS_6.9inch_2868x1320_01.png/1280x1280bb.jpg',
+  pmex: 'https://cdn.pokemonmasters-game.com/stylesheets/images/4ff2a1ce05ad1da061ea12b388ae70da987fbcc010d952029a2c9b1b9c36a7a4.jpg',
+  ptcgp: 'https://tcgpocket.pokemon.com/images/meta/en/share-fb.jpg',
 }
 
 const def = (id: string, name: string, short: string, publisher: string, color: string, color2: string, patchCycleDays: number,
@@ -165,6 +173,22 @@ export const CATALOG: Game[] = [
   // Aether Raids, versiones y lo que ya está cargado de los días siguientes (src/sources/feh.ts). Un solo servidor mundial. Sin códigos de canje.
   def('feh', 'Fire Emblem Heroes', 'FEH', 'Nintendo', '#e8c15a', '#2a2350', 0, 'feheroes.fandom.com', 'Fire Emblem Heroes', 'feh',
     'https://is1-ssl.mzstatic.com/image/thumb/Purple211/v4/96/db/1c/96db1c94-c09f-e15b-0ebb-c7f269a6beb6/AppIcon-0-0-1x_U007emarketing-0-7-0-85-220.png/256x256bb.jpg'),
+  // Solo Leveling: ARISE: avisos oficiales del foro de Netmarble (eventos y banners Rate Up, horas UTC+0; fin real de cada mantenimiento) + códigos de
+  // PocketGamer (src/sources/sla.ts). Retratos de su wiki de Fandom.
+  def('sla', 'Solo Leveling: ARISE', 'SLA', 'Netmarble', '#7c8cff', '#141a3d', 28, 'solo-leveling-arise.fandom.com', 'Solo Leveling: ARISE', 'sla',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/46/20/37/46203761-c3c5-ea96-a101-13625065b67d/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Pokémon Masters EX: avisos oficiales (hora exacta en PT) + Serebii (los próximos, destacados con retrato) (src/sources/pmex.ts). Sin códigos.
+  def('pmex', 'Pokémon Masters EX', 'PMEX', 'DeNA', '#ffcb3d', '#1d3570', 0, '', 'Pokémon Masters EX', 'pmex',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/20/74/50/207450ae-f3f0-cc6e-da09-2cbe9a6090b1/KenyaAppIcon-1x_U007emarketing-0-8-0-85-220-0.png/256x256bb.jpg'),
+  // Yu-Gi-Oh! Master Duel: API de masterduelmeta.com (packs con hora exacta y eventos de sus noticias) (src/sources/masterduel.ts). Sin códigos.
+  def('masterduel', 'Yu-Gi-Oh! Master Duel', 'YGOMD', 'Konami', '#c9a227', '#2a1640', 0, '', 'Yu-Gi-Oh! Master Duel', 'masterduel',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/7a/3b/45/7a3b450d-accc-a441-5fb1-8bf288766a63/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Dragon Ball Legends: dblegends.net (banners y eventos con hora exacta, destacados con retrato) (src/sources/dblegends.ts). Sin códigos.
+  def('dblegends', 'Dragon Ball Legends', 'DBL', 'Bandai Namco', '#ff9a2e', '#3a1508', 0, '', 'Dragon Ball Legends', 'dblegends',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cf/d8/23/cfd82328-b684-41ae-2a49-9910f12c732a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
+  // Pokémon TCG Pocket: expansiones de pokemon-zone.com (la próxima con hora exacta) + eventos de Game8 (src/sources/ptcgp.ts). Sin códigos.
+  def('ptcgp', 'Pokémon TCG Pocket', 'PTCGP', 'The Pokémon Company', '#5ec8f2', '#14325a', 0, '', 'Pokémon TCG Pocket', 'ptcgp',
+    'https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/cc/36/be/cc36be7e-34a8-367e-5ebb-343175027e2a/AppIcon-0-0-1x_U007emarketing-0-8-0-85-220.png/256x256bb.jpg'),
   // `wip`: mientras su copia no tenga eventos vigentes, sale como "En construcción" y no se puede seguir.
   // Resident Evil Survival Unit y Sword Master Story: sin web de avisos con fechas (src/sources/mobilegames.ts). Parche de la App Store, códigos y,
   // si el dueño sigue sus anuncios, eventos por Discord (canales "resu" y "swordmaster"). Sword Master Story: también Steam en cuanto publique avisos.
