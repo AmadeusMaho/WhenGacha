@@ -106,7 +106,10 @@ export const FONDOS: Record<string, string[]> = {
     '4k-fate-stay-night', 'archer-fate-stay-night', 'pc-flames', 'fate-grand-order-anime-sitonai-girl', 'okita-souji',
     'mashu-kyrielight-fate', 'mash-kyrielight', 'oda-nobunaga-fate'
   ],
-  persona5x: [],
+  persona5x: [
+    'persona-5-tokyo-rainy-night', 'akira-kurusu-arsene', 'pc-ann-takamaki', 'persona-let-us-start-the-game-video', 'persona-5',
+    'persona-5-2', 'persona-5-the-phantom-x'
+  ],
   navidad: [
     'christmas-trees', 'anime-christmas', 'genshin-christmas', 'niko-holiday', 'hu-tao-winter'
   ],
