@@ -492,3 +492,12 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   casquete inferior del globo, los mandos quedan pegados debajo y el aro ecuatorial sobresale menos: ~40 px menos de alto.
 - Revisada con `skin-contrast.js` en las cuatro pestañas (Línea y Cuadrícula), ventana del evento, menú de skins, reproductor, escritorio y 375 px:
   sin avisos. **Pendiente del dueño**: los fondos animados (Wallpaureka ya tiene el id `persona5x`).
+
+## Título de la canción en los reproductores (27 nov 2026)
+
+- Todos los reproductores muestran en su título la **canción que suena** en vez del nombre del juego: la ventana de YouTube la manda en sus
+  mensajes (`infoDelivery` → `videoData.title`, junto al `video_id` que ya se usaba). Mientras no llega, sale el nombre de la skin (o su `short`).
+- Si no cabe, el texto **va y vuelve despacio** (`Marquee` en `SkinMusic.tsx`, ~22 px/s con pausa en cada extremo; `.mq` en `skins.css`); con
+  "reducir movimiento" se queda quieto con puntos suspensivos. Va en `<bdi>`, no en `<span>`: las reglas de cada skin para `.tv-slot span`
+  (prefijos como "CHALDEAS · ", inclinaciones, recortes) no deben alcanzarlo. `.tv-slot` lleva `contain: inline-size` para que un título largo no
+  ensanche el aparato (pasó: el de Persona llegó a 359 px).

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Lang } from '../i18n'
 
@@ -526,6 +526,29 @@ function srcOf(m: Music, mode: Mode, list: string | undefined, preview = false, 
  * `preview` (15 nov 2026): vista previa de la skin sin Premium (menú del pincel). El reproductor sale ya abierto y suena la canción más
  * popular ("Populares"), sin el botón ♪ de la cabecera y sin guardar el modo elegido. Suena porque el menú se abrió con un clic.
  */
+/**
+ * Título que se desplaza (27 nov 2026, dueño): si el texto no cabe en su caja, va y vuelve despacio para leerlo entero (unos 22 px/s, con una
+ * pausa en cada extremo). Si cabe, o con "reducir movimiento", se queda quieto (recortado con puntos suspensivos). Se vuelve a medir al
+ * cambiar el texto y el tamaño de la caja.
+ */
+function Marquee({ text }: { text: string }) {
+  const box = useRef<HTMLElement>(null)
+  const inner = useRef<HTMLElement>(null)
+  const [d, setD] = useState(0)
+  useLayoutEffect(() => {
+    const b = box.current, i = inner.current
+    if (!b || !i) return
+    const measure = () => setD(Math.max(0, Math.ceil(i.getBoundingClientRect().width - b.getBoundingClientRect().width)))
+    measure()
+    const ro = new ResizeObserver(measure); ro.observe(b)
+    return () => ro.disconnect()
+  }, [text])
+  const style = d > 2 ? { '--mq': `${-d}px`, '--mq-t': `${(d / 22 + 3).toFixed(1)}s` } as React.CSSProperties : undefined
+  // <bdi> y no <span>: las reglas de cada skin para ".tv-slot span" (prefijo, inclinación, recorte) no deben alcanzar al texto que se
+  // desplaza; además aísla bien los títulos en japonés o chino.
+  return <bdi ref={box} className={`mq${d > 2 ? ' on' : ''}`} style={style}><bdi ref={inner} className="mq-in">{text}</bdi></bdi>
+}
+
 export default function SkinMusic({ skin, name, lang, preview = false }: { skin: string; name: string; lang: Lang; preview?: boolean }) {
   const s = TXT[lang] ?? TXT.es
   const [open, setOpen] = useState(preview)
@@ -544,15 +567,19 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
   // lista, YouTube dice primero el vídeo con que empieza la lista y enseguida el que se le pidió (playVideoAt), y eso metía la cinta dos
   // veces y cargaba dos miniaturas seguidas en el disco de PGR (16 nov 2026).
   const [vid, setVid] = useState<string>()
+  const [titles, setTitles] = useState<Record<string, string>>({})
   useEffect(() => {
     if (!open) { setVid(undefined); return }
     let pending: string | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     const onMsg = (e: MessageEvent) => {
       if (e.source !== frame.current?.contentWindow || typeof e.data !== 'string') return
-      let d: { info?: { videoData?: { video_id?: string } } } | null = null
+      let d: { info?: { videoData?: { video_id?: string; title?: string } } } | null = null
       try { d = JSON.parse(e.data) } catch { return }
       const id = d?.info?.videoData?.video_id
+      // Título de la canción (27 nov 2026): llega en el mismo videoData, a veces en un mensaje posterior al del id.
+      const t = d?.info?.videoData?.title?.trim()
+      if (id && t) setTitles(o => (o[id] === t ? o : { ...o, [id]: t }))
       if (!id || !/^[\w-]{11}$/.test(id) || id === pending) return
       pending = id
       clearTimeout(timer)
@@ -653,6 +680,8 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
     : k === 'top' && m.topName ? (m.topName[lang] ?? m.topName.es) : [s.topShort, s.top]
   // La ventana de YouTube pide que le digamos que escuchamos sus eventos para mandar "onReady".
   const listen = () => frame.current?.contentWindow?.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*')
+  // Lo que pone el título del aparato: la canción que suena (si YouTube ya la dijo); si no, el nombre del juego.
+  const song = (vid && titles[vid]) || name
   const player = <iframe key={`${skin}:${mode}:${mode === 'all' ? list : chunk}`} ref={frame} className="music-frame" src={src} title={`${s.title} · ${name}`} width="200" height="200" onLoad={listen}
     allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen />
   return (
@@ -695,9 +724,9 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
             </button>
             {/* ZZZ (15 nov 2026): al empezar cada canción entra una cinta VHS en la ranura del vídeo y después se enciende el título (la `key`
                 con el vídeo que suena repite la animación). Va en el aparato de debajo, nunca encima de la pantalla (YouTube no deja taparla). */}
-            <div className="tv-slot" title={`${s.title} · ${name}`}>
+            <div className="tv-slot" title={`${s.title} · ${song}`}>
               {skin === 'zzz' && vid && <i className="tv-vhs" key={`t:${vid}`} aria-hidden><b className="tv-vhs-top"><b className="tv-vhs-front" /></b></i>}
-              <span key={skin === 'zzz' ? `n:${vid ?? ''}` : undefined}>{name}</span>
+              <span key={skin === 'zzz' ? `n:${vid ?? ''}` : undefined}><Marquee text={song} /></span>
             </div>
             <button className="tv-eject tv-next" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>
             <button className="tv-eject" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
@@ -708,7 +737,7 @@ export default function SkinMusic({ skin, name, lang, preview = false }: { skin:
       {open && skin !== 'zzz' && !MINI.has(skin) && createPortal(
         <div className={`music-dock ${side}${preview ? ' preview' : ''}`} role="region" aria-label={`${s.title} · ${name}`}>
           <div className="music-head">
-            <span className="music-title" title={`${s.title} · ${name}`}><b>♪ {name}</b></span>
+            <span className="music-title" title={`${s.title} · ${song}`}><b>♪ <Marquee text={song} /></b></span>
             <button className="music-ctl" onClick={next} title={s.next} aria-label={s.next}>{NEXT}</button>
             <button className="music-ctl" onClick={flip} title={s.side} aria-label={s.side}>⇄</button>
             <button className="music-ctl" onClick={() => setOpen(false)} title={s.close} aria-label={s.close}>✕</button>

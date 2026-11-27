@@ -814,7 +814,7 @@ html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303
 .tv-persona5x .tv-slot { position: relative; width: auto; justify-self: stretch; height: 24px; margin: 0 12px 0 34px; /* el avatar empieza justo donde empieza el vídeo; sin el width: 100% de .tv-mini: con los márgenes se salía de la pantalla */ padding: 0 10px; overflow: visible; text-transform: none; letter-spacing: .01em; font-weight: 800; font-size: .66rem;
   transform: rotate(-1deg) skewX(-8deg); box-shadow: 0 0 0 2px #fff, 3px 3px 0 2px #000; }
 /* El texto se recorta dentro del bocadillo (con puntos suspensivos): el bocadillo no puede llevar overflow: hidden por el avatar y la colita. */
-.tv-persona5x .tv-slot span { display: block; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: skewX(8deg); }
+.tv-persona5x .tv-slot span { display: flex; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transform: skewX(8deg); }
 /* Colita en zigzag del bocadillo, hacia el avatar. */
 .tv-persona5x .tv-slot::after { content: ''; position: absolute; left: -11px; top: 7px; width: 12px; height: 11px; background: #000;
   clip-path: polygon(100% 0, 30% 30%, 60% 45%, 0 100%, 100% 70%); }
@@ -855,3 +855,18 @@ html[data-skin="pgr"] .music-modes button.on { box-shadow: inset 0 -2px 0 #e0303
   .tv-persona5x :is(.tv-power, .tv-eject) { width: 20px; height: 18px; }
   .tv-persona5x .tv-knob { height: 22px; font-size: .58rem; }
   .music-dock.tv-persona5x.right { right: 16px; } .music-dock.tv-persona5x.left { left: 88px; } }
+
+/* Título de la canción que suena (SkinMusic.tsx, Marquee; 27 nov 2026): si no cabe, va y vuelve despacio con una pausa en cada extremo. */
+.mq { display: inline-block; width: 100%; min-width: 0; overflow: hidden; vertical-align: bottom; white-space: nowrap; text-overflow: ellipsis;
+  contain: inline-size; } /* sin ancho propio: un título largo no ensancha el aparato (con él, el de Persona medía 359 px) */
+.music-title b .mq { width: calc(100% - 1.3em); } /* tras el "♪ " */
+/* En los aparatos, el título va en una fila flexible: el prefijo de cada skin (--tv-slot-ico, "CHALDEAS · ", "MomoTalk · "…) se queda
+   fijo y el texto ocupa el resto. */
+.tv-slot { contain: inline-size; } /* el título del aparato no aporta ancho: un título largo no lo ensancha */
+.tv-slot > span { display: flex; align-items: center; justify-content: inherit; flex: 1 1 auto; min-width: 0; }
+.tv-slot > span::before { flex: none; white-space: pre; }
+.tv-slot .mq { flex: 0 1 auto; width: auto; contain: none; }
+.mq-in { display: inline-block; width: max-content; } /* siempre bloque en línea y a su ancho natural: así se mide el texto entero */
+.mq.on .mq-in { animation: mq-slide var(--mq-t, 8s) ease-in-out infinite alternate; }
+@keyframes mq-slide { 0%, 18% { transform: none; } 82%, 100% { transform: translateX(var(--mq)); } }
+@media (prefers-reduced-motion: reduce) { .mq-in { display: inline; } .mq.on .mq-in { animation: none; } }
