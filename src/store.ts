@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { CATALOG, initialState } from './catalog'
 import { fetchSnapshot } from './net'
 import { staleMs, syncSource } from './sources'
+import { notExpired } from './sources/codes'
 import type { AppState } from './types'
 
 const KEY = 'whengacha:v2'
@@ -67,12 +68,13 @@ export function useAutoSync(state: AppState, setState: React.Dispatch<React.SetS
         // La marca "<juego>:" dice que ya se hizo esa primera pasada (así quien ya lo seguía antes de esta función tampoco ve todos sus códigos como nuevos).
         const firstSync = !(`${g.id}:` in next.codeSeen)
         const seen = { ...next.codeSeen, [`${g.id}:`]: 0 }
-        for (const c of r.value.codes) seen[`${g.id}:${c.code.toUpperCase()}`] ??= firstSync ? 0 : Date.now()
+        const codes = notExpired(r.value.codes)
+        for (const c of codes) seen[`${g.id}:${c.code.toUpperCase()}`] ??= firstSync ? 0 : Date.now()
         next = {
           ...next,
           events: [...keep, ...r.value.events],
           patches: [...keepPatches, ...r.value.patches],
-          codes: { ...next.codes, [g.id]: r.value.codes },
+          codes: { ...next.codes, [g.id]: codes },
           codeSeen: seen,
           synced: { ...next.synced, [g.id]: Date.now() },
         }

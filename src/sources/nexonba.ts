@@ -1,5 +1,5 @@
 import { viaProxy } from '../net'
-import type { GameEvent, Kind } from '../types'
+import type { GameEvent, Kind, PromoCode } from '../types'
 import type { GameSync } from './ennead'
 import { pullsIn } from './pulls'
 import { summarize } from './summary'
@@ -13,8 +13,10 @@ import { summarize } from './summary'
  *    «🔹 Event Period - 11/17 (Tue) 2:00 AM – 11/30 (Mon) 6:59 PM (UTC)»; «After Maintenance» = fin real del mantenimiento de ese día.
  *  - Tablón "Updates" (3217): avisos de mantenimiento («1. Date: 11/10 (Tue) 2:00 AM – 7:00 AM 9:00 AM (UTC)»: al alargarlo tachan la hora y añaden
  *    la nueva, así que vale la última antes de "(UTC)").
- * Los avisos de reclutamiento no: los banners ya llegan de la wiki con hora exacta. Por ciclo: 2 listas (caché 3 h) y los avisos de las últimas 5
- * semanas (como mucho 16, caché 24 h: solo se piden los nuevos).
+ *  - Cupones (26 nov 2026): los avisos de canje del tablón "Events" (`baCoupons`: código, recompensas y plazo). Sustituyen a la lista puesta a
+ *    mano (BA_CODES en mediawiki.ts), que se quedaba vieja: Discord trae el código solo dentro de la imagen.
+ * Los avisos de reclutamiento no: los banners ya llegan de la wiki con hora exacta. Por ciclo: 3 listas (las dos primeras páginas de "Events" y la
+ * de "Updates", caché 3 h) y los avisos de las últimas 5 semanas (como mucho 19, caché 24 h: solo se piden los nuevos).
  */
 const API = 'https://forum.nexon.com/api/v1'
 const ALIAS = 'bluearchive-en'
@@ -121,8 +123,49 @@ export function baForumEvents(gameId: string, t: Thread, maint: Map<string, numb
   return out
 }
 
-async function list(board: number): Promise<Thread[]> {
-  const qs = new URLSearchParams({ alias: ALIAS, pageNo: '1', paginationType: 'PAGING', pageSize: '15', blockSize: '5', hideType: 'WEB' })
+/** Palabras en mayúsculas de los avisos que no son cupones. */
+const NOT_COUPON = /^(?:UTC|FAQ|SCHALE|PYROXENES?|KIVOTOS|NOTICE|EVENT|COUPON|REWARDS?)$/
+/**
+ * Cupones de un aviso de canje del tablón "Events" («5-Year Anniversary Celebration Coupon Notice», «… Final Special Coupon!»): el código va solo en
+ * una línea (o en la columna "Coupon Code" de la tabla, que `lines` deja igual), sus recompensas debajo («Pyroxene x600») y el plazo en
+ * «You can redeem the coupon once per account until 11/24 (Tue) 2:59 PM (UTC)» (o, si no, el fin del «Event Period»). Solo los que siguen vigentes.
+ */
+export function baCoupons(t: Thread, now = Date.now()): PromoCode[] {
+  if (!t.content || !/coupon/i.test(t.title)) return []
+  const ls = lines(t.content).filter(l => !l.startsWith('@@IMG'))
+  const ref = t.createDate * 1000
+  const deadline = (re: RegExp) => {
+    for (const l of ls) {
+      const m = re.exec(l)
+      const time = m && hm(m[2])
+      if (m && time) return dayOf(m[1], ref) + (time[0] * 60 + time[1]) * 60_000
+    }
+    return undefined
+  }
+  const until = deadline(/until\s+(\d{1,2}\/\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\(UTC\)/i)
+    ?? deadline(/[–~-]\s*(\d{1,2}\/\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\(UTC\)/i)
+  // Sin plazo legible no se ofrece (los cupones de BA duran unas dos semanas): mejor nada que uno caducado.
+  if (until === undefined || until < now) return []
+  const label = `Until ${new Date(until).toUTCString().slice(5, 16)} (UTC)`
+  const out: PromoCode[] = []
+  ls.forEach((l, i) => {
+    if (!/^[A-Z0-9]{6,24}$/.test(l) || !/[A-Z]/.test(l) || NOT_COUPON.test(l) || out.some(c => c.code === l)) return
+    const rewards: string[] = []
+    for (const r of ls.slice(i + 1)) {
+      const m = /^(.+?)\s*[x×]\s?([\d,]+)$/.exec(r)
+      if (m) rewards.push(`${m[1]} ×${m[2]}`)
+      // «5-Year Anniversary Celebration Coupon Gift» o «🔹 Event Rewards» van entre el código y sus premios.
+      else if (rewards.length || !/reward|gift/i.test(r)) break
+    }
+    out.push({ code: l, rewards: [...rewards.slice(0, 6), label] })
+  })
+  return out
+}
+
+async function list(board: number, page = 1): Promise<Thread[]> {
+  const qs = new URLSearchParams({ alias: ALIAS, pageNo: String(page), paginationType: 'PAGING', pageSize: '15', blockSize: '5', hideType: 'WEB' })
+  // Las páginas siguientes piden la clave del bloque (la que devuelve la primera; es fija mientras se pide de 5 en 5).
+  if (page > 1) { qs.set('blockStartNo', '1'); qs.set('blockStartKey', '253402300799,9223372036854775807') }
   const r = await fetch(viaProxy(`${API}/board/${board}/threads?${qs}`))
   if (!r.ok) throw new Error(`foro de Nexon ${board} → HTTP ${r.status}`)
   return ((await r.json())?.threads ?? []) as Thread[]
@@ -135,7 +178,9 @@ async function thread(id: string): Promise<Thread | null> {
 
 /** Eventos del foro (solo con OFFICIAL_SITES=1 en el proxy; si no, falla y Blue Archive sigue con la wiki y Discord). */
 export async function syncBaForum(gameId: string, now = Date.now()): Promise<GameSync> {
-  const [events, updates] = await Promise.all([list(3218), list(3217)])
+  // Segunda página de "Events" (26 nov 2026): los 15 de la primera son unas dos semanas y un cupón dura eso (el del 5.º aniversario, del 8 nov,
+  // ya no salía el 24). Es 1 petición más por ciclo (caché 3 h).
+  const [events, updates, older] = await Promise.all([list(3218), list(3217), list(3218, 2).catch(() => [] as Thread[])])
   const recent = (t: Thread) => now - t.createDate * 1000 < 35 * DAY
   const wantUpd = updates.filter(t => recent(t) && /maintenance notice/i.test(t.title)).slice(0, 4)
   const wantEv = events.filter(t => recent(t) && !/recruitment notice|ending soon|community contest|coupon/i.test(t.title)).slice(0, 12)
@@ -146,6 +191,10 @@ export async function syncBaForum(gameId: string, now = Date.now()): Promise<Gam
   const firstImgs = posts.map(p => /<img[^>]*src="([^"]+)"/i.exec(p.content ?? '')?.[1]).filter(Boolean) as string[]
   const banner = firstImgs.find((u, i) => firstImgs.indexOf(u) !== i)
   const out = posts.flatMap(p => baForumEvents(gameId, p, maint, banner)).filter(e => Date.parse(e.end) > now - 3 * DAY)
-  if (!out.length) throw new Error('foro de Nexon: sin eventos vigentes')
-  return { events: out, patches: [], codes: [], pcOnly: true }
+  // Cupones: los avisos de canje de las últimas 5 semanas (como mucho 3; caché de 24 h por aviso).
+  const ids = new Set<string>()
+  const wantCp = [...events, ...older].filter(t => recent(t) && /coupon/i.test(t.title) && !ids.has(t.threadId) && !!ids.add(t.threadId)).slice(0, 3)
+  const codes = (await full(wantCp)).flatMap(t => baCoupons(t, now)).filter((c, i, all) => all.findIndex(x => x.code === c.code) === i)
+  if (!out.length && !codes.length) throw new Error('foro de Nexon: sin eventos vigentes')
+  return { events: out, patches: [], codes, pcOnly: true }
 }

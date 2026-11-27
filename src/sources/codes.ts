@@ -32,7 +32,42 @@ const GAME8_CODES: Record<string, string> = {
   aniimo: 'Aniimo/archives/619365',
 }
 
-export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES
+/**
+ * Listas de game.guide (/<juego>-codes; robots.txt solo cierra /api/): las revisa a diario y separa activos y caducados. `#active-codes` →
+ * `.rcp-row` con el código en `.rcp-code` y las recompensas en `.rcp-row-reward` ("100 Spiritual Jade, 2 Spiritual Power Nourishers").
+ * BLEACH (12 nov 2026) y NTE (26 nov 2026: la wiki de Fandom seguía con DREAMWALK0603, TOMATO100 y RACENOLIMIT, que Game8 da por caducados el
+ * 1 nov, y no tenía CALLELYMS ni NTENIGHT1021). 1 página por juego, caché de 6 h en el proxy.
+ */
+export async function syncGameGuideCodes(page: string): Promise<PromoCode[]> {
+  const res = await fetch(viaProxy(`https://www.game.guide/${page}`))
+  if (!res.ok) throw new Error(`game.guide ${page} → HTTP ${res.status}`)
+  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
+  const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  // El bloque de activos es el que contiene el título "Active Codes"; el de caducados va aparte.
+  const head = doc.querySelector('#active-codes')
+  let box: Element | null = head?.parentElement ?? null
+  while (box && !box.querySelector('.rcp-row')) box = box.parentElement
+  // Sin ninguno activo no hay filas en el bloque: lista vacía, no error.
+  if (head && (!box || box.querySelector('#expired-codes'))) return []
+  if (!box) throw new Error(`game.guide ${page}: no se encontró la lista de códigos activos`)
+  const out: PromoCode[] = []
+  for (const row of box.querySelectorAll('.rcp-row')) {
+    const code = text(row.querySelector('.rcp-code'))
+    if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
+    const cell = row.querySelector('.rcp-row-reward')?.cloneNode(true) as Element | undefined
+    cell?.querySelectorAll('time').forEach(t => t.remove())
+    // "100 Spiritual Jade, 2 Spiritual Power Nourishers" → "Spiritual Jade ×100"; "Free rewards" no dice nada.
+    // Coma con espacio detrás: "20,000 Fons" es una cifra, no dos recompensas.
+    const rewards = text(cell).split(/\s*,\s+/).map(r => r.replace(/^(\d[\d,]*)\s+(.+)$/, '$2 ×$1')).filter(r => r && !/^free rewards?$/i.test(r))
+    out.push({ code, rewards: rewards.slice(0, 6) })
+  }
+  return out
+}
+
+/** Juegos cuya lista principal es la de game.guide; su wiki (PAGES) queda de respaldo. */
+const GAMEGUIDE: Record<string, string> = { nte: 'neverness-to-everness-codes' }
+
+export const hasWikiCodes = (api: string) => api in PAGES || api in GAME8_CODES || api in GAMEGUIDE
 
 /**
  * Listas de códigos de PocketGamer (pocketgamer.com/<juego>/codes/; robots.txt "Allow: /"), para juegos sin wiki ni Game8 que las mantenga
@@ -144,15 +179,34 @@ export async function syncMobileMattersCodes(slug: string): Promise<PromoCode[]>
  */
 const PG_FALLBACK: Record<string, string> = { czn: 'chaos-zero-nightmare', endfield: 'arknights-endfield', dna: 'duet-night-abyss' }
 
-/** Fuera los que ya pasaron su "Until November 17" (Game8 los deja en la tabla de activos unos días). Un día de margen por la zona horaria. */
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+/**
+ * Fin de la caducidad de un código («Until …» en sus recompensas), en ms; sin hora, el final de ese día (UTC). Formatos de las fuentes
+ * (26 nov 2026): "November 17", "November 30th, 2026", "Dec 30", "DEC 11", "24 Nov 2026 (UTC)", "2026/12/31", "2026-12-07". Sin año, el más
+ * cercano a hoy ("March 31st" en noviembre es el del año que viene).
+ */
+export function codeUntil(c: PromoCode, now = Date.now()): number | undefined {
+  const raw = c.rewards.find(r => /^(?:valid )?until\b|^expires?\b/i.test(r))?.replace(/^(?:valid )?until|^expires?(?: on)?/i, '').trim()
+  if (!raw) return undefined
+  let y: number | undefined, m: number | undefined, d: number | undefined
+  let k = /(\d{4})[/-](\d{1,2})[/-](\d{1,2})/.exec(raw)
+  if (k) [y, m, d] = [+k[1], +k[2] - 1, +k[3]]
+  else if ((k = /\b([A-Za-z]{3,9})\.? (\d{1,2})(?:st|nd|rd|th)?\b(?:,? (\d{4}))?/.exec(raw)) && MONTHS.includes(k[1].slice(0, 3).toLowerCase()))
+    [m, d, y] = [MONTHS.indexOf(k[1].slice(0, 3).toLowerCase()), +k[2], k[3] ? +k[3] : undefined]
+  else if ((k = /\b(\d{1,2}) ([A-Za-z]{3,9})\.?,? (\d{4})?/.exec(raw)) && MONTHS.includes(k[2].slice(0, 3).toLowerCase()))
+    [d, m, y] = [+k[1], MONTHS.indexOf(k[2].slice(0, 3).toLowerCase()), k[3] ? +k[3] : undefined]
+  if (m === undefined || d === undefined) return undefined
+  const end = (yy: number) => Date.UTC(yy, m!, d!, 23, 59, 59)
+  if (y !== undefined) return end(y)
+  const cur = new Date(now).getUTCFullYear()
+  return [cur - 1, cur, cur + 1].map(end).reduce((a, b) => (Math.abs(b - now) < Math.abs(a - now) ? b : a))
+}
+
+/** Fuera los que ya pasaron su «Until …» (Game8 y otras listas los dejan entre los activos unos días). Un día de margen por la zona horaria. */
 export function notExpired(codes: PromoCode[], now = Date.now()): PromoCode[] {
   return codes.filter(c => {
-    const m = /^Until ([A-Z][a-z]+) (\d{1,2})(?:, (\d{4}))?$/.exec(c.rewards.find(r => r.startsWith('Until ')) ?? '')
-    if (!m) return true
-    const year = m[3] ? [+m[3]] : [new Date(now).getUTCFullYear() - 1, new Date(now).getUTCFullYear(), new Date(now).getUTCFullYear() + 1]
-    const at = year.map(y => Date.parse(`${m[1]} ${m[2]}, ${y} 23:59 UTC`)).filter(t => !isNaN(t))
-      .reduce((best, t) => (isNaN(best) || Math.abs(t - now) < Math.abs(best - now) ? t : best), NaN)
-    return isNaN(at) || now < at + 86_400_000
+    const at = codeUntil(c, now)
+    return at === undefined || now < at + 86_400_000
   })
 }
 
@@ -208,6 +262,10 @@ function rewardsOf(cell: string): string[] {
 }
 
 export async function syncWikiCodes(api: string): Promise<PromoCode[]> {
+  if (GAMEGUIDE[api]) {
+    const gg = await syncGameGuideCodes(GAMEGUIDE[api]).catch(err => { console.warn(`[códigos] ${api} game.guide:`, (err as Error)?.message); return null })
+    if (gg) return gg
+  }
   const cfg = PAGES[api]
   if (!cfg) return syncGame8Codes(api)
   const qs = new URLSearchParams({ action: 'parse', page: cfg.page, prop: 'wikitext', format: 'json', origin: '*' })

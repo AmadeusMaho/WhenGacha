@@ -12,8 +12,11 @@ import type { GameSync } from './ennead'
  *    github.com/anyabot/MAD-Viewer). Dos JSON: `/data/events.json` (eventos con inicio y fin exactos en KST, fin de las fases, cartel, Partners
  *    destacados, tienda de canje, caja de premios y asistencia, con nombre e icono de cada objeto en `refs`) y `/data/gacha_banners.json` (banners
  *    "Rate-Up Summon (Yomi)" con su periodo, precio —120 Seeds— y kilometraje —200—).
- *  - **Códigos**: lootandwaifus ("MAke Drama: MAD free codes", tabla "Working codes"; actualizada en nov 2026). game.guide y gacha.gg dicen que no
- *    hay ninguno activo y el aviso de lootandwaifus sobre "solo Corea" es de antes de la salida global: se toma su lista tal cual.
+ *  - **Códigos** (cambiado el 26 nov 2026): MEmu ("All Working MAke Drama : MAD Codes", tabla Codes | Rewards | Expire con hora de caducidad en
+ *    UTC+9) es la lista; ucngame ("Valid until November 12th, 2026") pone la fecha a los que MEmu deja sin ella. Se quitan los caducados y los
+ *    que ninguna de las dos fecha siguen solo si MEmu los lista. lootandwaifus ya no se usa: su tabla es la del servidor coreano, sin tocar desde
+ *    el 10 nov, y daba como activos 261111DAY, MAD1STONE, 2026MADGLOBAL… ya caducados (y le faltaba MADSTEAM50K). game.guide y gacha.gg dicen que
+ *    no hay ninguno activo, pero no conocen MADSTEAM50K.
  *  - **Modos con temporada** (MAD Viewer, `/data/rewards.json` y `/data/archive.json`): Arena y Total War (Nemesis), una semana cada 28 días, e
  *    Infinity Archive, 28 días; con sus recompensas en Seeds. Los datos del juego ya traen las temporadas programadas (Arena hasta feb 2027):
  *    son lo próximo con fecha exacta (`madModes`).
@@ -21,10 +24,11 @@ import type { GameSync } from './ennead'
  *    página legible; NamuWiki rechaza las lecturas automáticas y las notas de LanceDEX se cargan por JavaScript) y MAD Viewer solo trae el banner
  *    que ya está en el juego. Los banners duran 14 días y cambian los jueves; sin nombre anunciado no se inventa el siguiente.
  * Iconos: MAD Viewer sirve los del juego (`/icons/char/Icon_CH0003.webp`, `/icons/item/<icono>.webp`, `/icons/banner/<cartel>.webp`).
- * 4 JSON de MAD Viewer y 1 página de lootandwaifus por ciclo (caché de 6 h en el proxy).
+ * 4 JSON de MAD Viewer, 1 página de MEmu y 1 de ucngame por ciclo (caché de 6 h en el proxy).
  */
 const MADV = 'https://mad.altterisk.cc'
-const LOOT_CODES = 'https://lootandwaifus.com/guides/make-drama-mad-codes/'
+const MEMU_CODES = 'https://www.memuplay.com/blog/make-drama-mad-codes.html'
+const UCN_CODES = 'https://ucngame.com/codes/make-drama-mad-codes/'
 /** Seeds por invocación (precio de los banners Rate-Up en gacha_banners.json; "A single pull costs 120 gems", gacha.gg). */
 export const MAD_SEEDS_PER_PULL = 120
 
@@ -218,18 +222,59 @@ export function madMissions(gameId: string, r: MadRewards, names: Map<string, st
   return out
 }
 
-/** Tabla "Working codes" de lootandwaifus (rejilla `.modular-table`, varios códigos por fila y sin recompensas); se para en "Expired codes". */
-export function madCodes(doc: Document): PromoCode[] {
-  const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-  const head = [...doc.querySelectorAll('h2')].find(h => /working codes|active codes/i.test(text(h)))
-  if (!head) throw new Error('lootandwaifus MAD: no se encontró la lista de códigos')
-  const out: PromoCode[] = []
+const MONTH = '(January|February|March|April|May|June|July|August|September|October|November|December)'
+/** «December 20, 2026 11:59 PM (UTC+9)» / «November 12th, 2026» → fin de ese día en Corea (las horas de MEmu son siempre 23:59 KST). */
+function untilKst(s: string): { at: number; label: string } | undefined {
+  const m = new RegExp(`${MONTH} (\\d{1,2})(?:st|nd|rd|th)?,? (\\d{4})`, 'i').exec(s)
+  if (!m) return undefined
+  return { at: Date.parse(`${m[1]} ${m[2]}, ${m[3]} 23:59:59 GMT+0900`), label: `Until ${m[1]} ${m[2]}, ${m[3]}` }
+}
+const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+
+/** Fechas de caducidad de ucngame: «2026MADGLOBAL | Redeem this gift code for … (Valid until November 8th, 2026)». */
+export function madUcnDates(doc: Document): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const tr of doc.querySelectorAll('table tr')) {
+    const tds = tr.querySelectorAll('td')
+    const code = text(tds[0]).toUpperCase()
+    const u = /valid until (.+)/i.exec(text(tds[1]))
+    const at = u && untilKst(u[1])
+    if (/^[A-Z0-9]{4,30}$/.test(code) && at) out.set(code, at.at)
+  }
+  return out
+}
+
+/**
+ * Tabla de MEmu (Codes | Rewards | Expire, bajo "All Working … Codes"). Se quitan los que ya caducaron por su fecha o, si MEmu no la da,
+ * por la de ucngame (`ucn`).
+ */
+export function madCodes(doc: Document, ucn = new Map<string, number>(), now = Date.now()): PromoCode[] {
+  const head = [...doc.querySelectorAll('h2')].find(h => /working|active/i.test(text(h)) && !/expired/i.test(text(h)))
+  if (!head) throw new Error('MEmu MAD: no se encontró la lista de códigos')
+  let table: Element | null = null
   for (let n = head.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) {
-    for (const cell of n.querySelectorAll('.modular-table-cell')) {
-      if (cell.classList.contains('modular-table-header-cell')) continue
-      const code = cell.getAttribute('data-copy-text')?.trim() || text(cell)
-      if (/^[A-Za-z0-9]{4,30}$/.test(code) && !out.some(c => c.code.toUpperCase() === code.toUpperCase())) out.push({ code, rewards: [] })
+    table = n.tagName === 'TABLE' ? n : n.querySelector('table')
+    if (table) break
+  }
+  if (!table) throw new Error('MEmu MAD: no se encontró la tabla de códigos')
+  const out: PromoCode[] = []
+  for (const tr of table.querySelectorAll('tr')) {
+    const tds = tr.querySelectorAll('td')
+    const code = text(tds[0])
+    if (!/^[A-Za-z0-9]{4,30}$/.test(code) || /^codes?$/i.test(code) || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
+    const own = untilKst(text(tds[2]))
+    const at = own?.at ?? ucn.get(code.toUpperCase())
+    if (at !== undefined && at < now) continue
+    const cell = tds[1]
+    // Una recompensa por línea (<br>) o separadas por « / ».
+    const parts = ['']
+    for (const n of cell?.childNodes ?? []) {
+      if ((n as Element).tagName === 'BR') parts.push('')
+      else parts[parts.length - 1] += n.textContent ?? ''
     }
+    const lines = parts.flatMap(p => p.split(/\s\/\s/)).map(p => p.replace(/\s+/g, ' ').trim())
+    const rewards = lines.filter(Boolean).map(r => r.replace(/\s*[x×]\s?([\d,]+)$/i, ' ×$1')).slice(0, 6)
+    out.push({ code, rewards: own ? [...rewards, own.label] : rewards })
   }
   return out
 }
@@ -240,11 +285,20 @@ async function get(url: string): Promise<Response> {
   return res
 }
 
+/** MEmu con las fechas de ucngame (si ucngame falla, solo las de MEmu). */
+async function madCodesFrom(now: number): Promise<PromoCode[]> {
+  const dom = (h: string) => new DOMParser().parseFromString(h, 'text/html')
+  const [memu, ucn] = await Promise.allSettled([get(MEMU_CODES).then(r => r.text()), get(UCN_CODES).then(r => r.text())])
+  if (memu.status === 'rejected') throw memu.reason
+  if (ucn.status === 'rejected') console.warn('[makedrama] fechas de ucngame:', (ucn.reason as Error)?.message)
+  return madCodes(dom(memu.value), ucn.status === 'fulfilled' ? madUcnDates(dom(ucn.value)) : new Map(), now)
+}
+
 export async function syncMakeDrama(gameId: string, now = Date.now()): Promise<GameSync> {
   const [ev, ban, codes, rw, ar] = await Promise.allSettled([
     get(`${MADV}/data/events.json`).then(r => r.json()),
     get(`${MADV}/data/gacha_banners.json`).then(r => r.json()),
-    get(LOOT_CODES).then(r => r.text()).then(h => madCodes(new DOMParser().parseFromString(h, 'text/html'))),
+    madCodesFrom(now),
     get(`${MADV}/data/rewards.json`).then(r => r.json()),
     get(`${MADV}/data/archive.json`).then(r => r.json()),
   ])

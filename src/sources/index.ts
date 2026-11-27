@@ -1,4 +1,4 @@
-import type { Game, GameEvent, RewardItem } from '../types'
+import type { Game, GameEvent, PromoCode, RewardItem } from '../types'
 import { GACHAFOCUS, syncGachafocus } from './gachafocus'
 import { syncGame, syncHoyoCodes, type GameSync } from './ennead'
 import { hasWikiCodes, syncPocketGamerCodes, syncWikiCodes } from './codes'
@@ -492,9 +492,13 @@ export async function syncSource(game: Game): Promise<GameSync> {
   const s = { ...s1, events: modeDescriptions(dedupeEvents(s1.events.map(e => (e.description ? { ...e, description: shortDescription(e.description) } : e)))) }
   const aligned = s.patches.length ? { ...s, patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ''], game.patchCycleDays) } : s
   // Códigos de canje: HoYoverse ya los trae (ennead); HI3 también sale de ennead y WuWa, R:1999 y NTE de la página de códigos de su wiki.
+  // HI3 (26 nov 2026): el de cumpleaños que llega por Discord tapaba los 6 de ennead (FLAVOR1–4, QPAS261QC8, SPECIALTREATS): se juntan.
+  if (game.api === 'honkai3') {
+    const hoyo = await syncHoyoCodes('honkai').catch(() => [] as PromoCode[])
+    return { ...aligned, codes: [...aligned.codes, ...hoyo].filter((x, i, all) => all.findIndex(y => y.code.toUpperCase() === x.code.toUpperCase()) === i) }
+  }
   if (aligned.codes.length || !game.api) return aligned
-  const codes = game.api === 'honkai3' ? await syncHoyoCodes('honkai').catch(() => [])
-    : hasWikiCodes(game.api) ? await syncWikiCodes(game.api).catch(() => [])
+  const codes = hasWikiCodes(game.api) ? await syncWikiCodes(game.api).catch(() => [])
     : []
   return codes.length ? { ...aligned, codes } : aligned
 }

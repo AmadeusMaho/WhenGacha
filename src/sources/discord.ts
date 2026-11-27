@@ -791,7 +791,9 @@ export function codesFrom(msgs: { text: string; at: number }[]): PromoCode[] {
     const named = /\bcodes?\b/i.test(text)
     if (Date.now() - at > 45 * DAY || (!named && !gifts.length) || /\b(expired|no longer valid)\b/i.test(text)) continue
     const found = new Set<string>(gifts)
-    if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1])
+    // Tras "Code:" solo cuenta lo que parece un código (mayúsculas o con cifras): «"Code, Connect, Launch!": Complete the circuit…» (Infinity
+    // Nikki, nov 2026) daba "Complete".
+    if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) if (/^[A-Z0-9]+$/.test(m[1]) || /\d/.test(m[1])) found.add(m[1])
     for (const line of named ? text.split('\n') : []) {
       const c = line.replace(/[*_`>|]+/g, '').trim()
       if (/^[A-Z0-9]{6,24}$/.test(c) && /[A-Z]/.test(c) && !NOT_CODE.test(c)) found.add(c)

@@ -20447,7 +20447,39 @@ var GAME8_CODES = {
 	mho: "Monster-Hunter-Outlanders/archives/634765",
 	aniimo: "Aniimo/archives/619365"
 };
-var hasWikiCodes = (api) => api in PAGES || api in GAME8_CODES;
+/**
+* Listas de game.guide (/<juego>-codes; robots.txt solo cierra /api/): las revisa a diario y separa activos y caducados. `#active-codes` →
+* `.rcp-row` con el código en `.rcp-code` y las recompensas en `.rcp-row-reward` ("100 Spiritual Jade, 2 Spiritual Power Nourishers").
+* BLEACH (12 nov 2026) y NTE (26 nov 2026: la wiki de Fandom seguía con DREAMWALK0603, TOMATO100 y RACENOLIMIT, que Game8 da por caducados el
+* 1 nov, y no tenía CALLELYMS ni NTENIGHT1021). 1 página por juego, caché de 6 h en el proxy.
+*/
+async function syncGameGuideCodes(page) {
+	const res = await fetch(viaProxy(`https://www.game.guide/${page}`));
+	if (!res.ok) throw new Error(`game.guide ${page} → HTTP ${res.status}`);
+	const doc = new DOMParser().parseFromString(await res.text(), "text/html");
+	const text = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+	const head = doc.querySelector("#active-codes");
+	let box = head?.parentElement ?? null;
+	while (box && !box.querySelector(".rcp-row")) box = box.parentElement;
+	if (head && (!box || box.querySelector("#expired-codes"))) return [];
+	if (!box) throw new Error(`game.guide ${page}: no se encontró la lista de códigos activos`);
+	const out = [];
+	for (const row of box.querySelectorAll(".rcp-row")) {
+		const code = text(row.querySelector(".rcp-code"));
+		if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
+		const cell = row.querySelector(".rcp-row-reward")?.cloneNode(true);
+		cell?.querySelectorAll("time").forEach((t) => t.remove());
+		const rewards = text(cell).split(/\s*,\s+/).map((r) => r.replace(/^(\d[\d,]*)\s+(.+)$/, "$2 ×$1")).filter((r) => r && !/^free rewards?$/i.test(r));
+		out.push({
+			code,
+			rewards: rewards.slice(0, 6)
+		});
+	}
+	return out;
+}
+/** Juegos cuya lista principal es la de game.guide; su wiki (PAGES) queda de respaldo. */
+var GAMEGUIDE = { nte: "neverness-to-everness-codes" };
+var hasWikiCodes = (api) => api in PAGES || api in GAME8_CODES || api in GAMEGUIDE;
 /**
 * Listas de códigos de PocketGamer (pocketgamer.com/<juego>/codes/; robots.txt "Allow: /"), para juegos sin wiki ni Game8 que las mantenga
 * (revisado el 13 nov 2026). Cada lista: un `<h2>` "Active … codes" y, debajo, `<li><strong>CÓDIGO</strong> - recompensas</li>` hasta el
@@ -20548,17 +20580,60 @@ var PG_FALLBACK = {
 	endfield: "arknights-endfield",
 	dna: "duet-night-abyss"
 };
-/** Fuera los que ya pasaron su "Until November 17" (Game8 los deja en la tabla de activos unos días). Un día de margen por la zona horaria. */
+var MONTHS$24 = [
+	"jan",
+	"feb",
+	"mar",
+	"apr",
+	"may",
+	"jun",
+	"jul",
+	"aug",
+	"sep",
+	"oct",
+	"nov",
+	"dec"
+];
+/**
+* Fin de la caducidad de un código («Until …» en sus recompensas), en ms; sin hora, el final de ese día (UTC). Formatos de las fuentes
+* (26 nov 2026): "November 17", "November 30th, 2026", "Dec 30", "DEC 11", "24 Nov 2026 (UTC)", "2026/12/31", "2026-12-07". Sin año, el más
+* cercano a hoy ("March 31st" en noviembre es el del año que viene).
+*/
+function codeUntil(c, now = Date.now()) {
+	const raw = c.rewards.find((r) => /^(?:valid )?until\b|^expires?\b/i.test(r))?.replace(/^(?:valid )?until|^expires?(?: on)?/i, "").trim();
+	if (!raw) return void 0;
+	let y, m, d;
+	let k = /(\d{4})[/-](\d{1,2})[/-](\d{1,2})/.exec(raw);
+	if (k) [y, m, d] = [
+		+k[1],
+		+k[2] - 1,
+		+k[3]
+	];
+	else if ((k = /\b([A-Za-z]{3,9})\.? (\d{1,2})(?:st|nd|rd|th)?\b(?:,? (\d{4}))?/.exec(raw)) && MONTHS$24.includes(k[1].slice(0, 3).toLowerCase())) [m, d, y] = [
+		MONTHS$24.indexOf(k[1].slice(0, 3).toLowerCase()),
+		+k[2],
+		k[3] ? +k[3] : void 0
+	];
+	else if ((k = /\b(\d{1,2}) ([A-Za-z]{3,9})\.?,? (\d{4})?/.exec(raw)) && MONTHS$24.includes(k[2].slice(0, 3).toLowerCase())) [d, m, y] = [
+		+k[1],
+		MONTHS$24.indexOf(k[2].slice(0, 3).toLowerCase()),
+		k[3] ? +k[3] : void 0
+	];
+	if (m === void 0 || d === void 0) return void 0;
+	const end = (yy) => Date.UTC(yy, m, d, 23, 59, 59);
+	if (y !== void 0) return end(y);
+	const cur = new Date(now).getUTCFullYear();
+	return [
+		cur - 1,
+		cur,
+		cur + 1
+	].map(end).reduce((a, b) => Math.abs(b - now) < Math.abs(a - now) ? b : a);
+}
+/** Fuera los que ya pasaron su «Until …» (Game8 y otras listas los dejan entre los activos unos días). Un día de margen por la zona horaria. */
 function notExpired(codes, now = Date.now()) {
 	return codes.filter((c) => {
-		const m = /^Until ([A-Z][a-z]+) (\d{1,2})(?:, (\d{4}))?$/.exec(c.rewards.find((r) => r.startsWith("Until ")) ?? "");
-		if (!m) return true;
-		const at = (m[3] ? [+m[3]] : [
-			new Date(now).getUTCFullYear() - 1,
-			new Date(now).getUTCFullYear(),
-			new Date(now).getUTCFullYear() + 1
-		]).map((y) => Date.parse(`${m[1]} ${m[2]}, ${y} 23:59 UTC`)).filter((t) => !isNaN(t)).reduce((best, t) => isNaN(best) || Math.abs(t - now) < Math.abs(best - now) ? t : best, NaN);
-		return isNaN(at) || now < at + 864e5;
+		const at = codeUntil(c, now);
+		return at === void 0 || now < at + 864e5;
 	});
 }
 async function syncGame8Codes(api) {
@@ -20617,6 +20692,13 @@ function rewardsOf$1(cell) {
 	return out;
 }
 async function syncWikiCodes(api) {
+	if (GAMEGUIDE[api]) {
+		const gg = await syncGameGuideCodes(GAMEGUIDE[api]).catch((err) => {
+			console.warn(`[códigos] ${api} game.guide:`, err?.message);
+			return null;
+		});
+		if (gg) return gg;
+	}
 	const cfg = PAGES[api];
 	if (!cfg) return syncGame8Codes(api);
 	const qs = new URLSearchParams({
@@ -22698,7 +22780,9 @@ function codesFrom(msgs) {
 		const named = /\bcodes?\b/i.test(text);
 		if (Date.now() - at > 45 * DAY$44 || !named && !gifts.length || /\b(expired|no longer valid)\b/i.test(text)) continue;
 		const found = new Set(gifts);
-		if (named) for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) found.add(m[1]);
+		if (named) {
+			for (const m of text.matchAll(/\bcodes?\b[^\n:：-]{0,30}[:：-]\s*`?([A-Za-z0-9]{5,24})`?/gi)) if (/^[A-Z0-9]+$/.test(m[1]) || /\d/.test(m[1])) found.add(m[1]);
+		}
 		for (const line of named ? text.split("\n") : []) {
 			const c = line.replace(/[*_`>|]+/g, "").trim();
 			if (/^[A-Z0-9]{6,24}$/.test(c) && /[A-Z]/.test(c) && !NOT_CODE.test(c)) found.add(c);
@@ -23066,7 +23150,7 @@ var MAINT_END_NEXT_DAY = [3, 0];
 var RELEVANT = /Events after the .+ Update|Contents Schedule after|Routine Maintenance and Update|Notice of Live Update|Rewards\b/i;
 /** Cupones de canje ("🎁 November 2026 Coupon", "🌝Full Moon Coupon"); no los descuentos de la tienda web. */
 var COUPON = /Coupon/i;
-var NOT_COUPON = /Web ?Shop|Webstore|Web Store|Discount|Withdrawal|Collab|Restriction/i;
+var NOT_COUPON$1 = /Web ?Shop|Webstore|Web Store|Discount|Withdrawal|Collab|Restriction/i;
 var monthIdx = (s) => MONTHS$21.findIndex((m) => m.startsWith(s.toLowerCase().slice(0, 3)));
 /** Año de una fecha sin año ("November 18") a partir de la fecha del aviso: si cae >6 meses antes, es del año siguiente. */
 function yearFor(mo, ref) {
@@ -23429,7 +23513,7 @@ async function syncBd2(gameId) {
 		...f,
 		icon: icons.get(f.name.toLowerCase()) ?? f.icon
 	}));
-	const couponItems = items.filter((i) => COUPON.test(i.subject) && !NOT_COUPON.test(i.subject)).slice(0, 3);
+	const couponItems = items.filter((i) => COUPON.test(i.subject) && !NOT_COUPON$1.test(i.subject)).slice(0, 3);
 	const codes = [];
 	for (const it of couponItems) {
 		const c = await notice(it.id).then(readCoupon, () => null);
@@ -25034,28 +25118,7 @@ async function syncMho(gameId) {
 *  - Rotatorios: ninguno con calendario publicado.
 * 1 página de game.guide por ciclo (caché de 6 h en el proxy).
 */
-var PAGE$1 = "https://www.game.guide/bleach-soul-resonance-codes";
-var text$10 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-async function syncBleachCodes() {
-	const res = await fetch(viaProxy(PAGE$1));
-	if (!res.ok) throw new Error(`game.guide Bleach → HTTP ${res.status}`);
-	let box = new DOMParser().parseFromString(await res.text(), "text/html").querySelector("#active-codes")?.parentElement ?? null;
-	while (box && !box.querySelector(".rcp-row")) box = box.parentElement;
-	if (!box || box.querySelector("#expired-codes")) throw new Error("game.guide Bleach: no se encontró la lista de códigos activos");
-	const out = [];
-	for (const row of box.querySelectorAll(".rcp-row")) {
-		const code = text$10(row.querySelector(".rcp-code"));
-		if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
-		const cell = row.querySelector(".rcp-row-reward")?.cloneNode(true);
-		cell?.querySelectorAll("time").forEach((t) => t.remove());
-		const rewards = text$10(cell).split(/\s*,\s*/).map((r) => r.replace(/^(\d[\d,]*)\s+(.+)$/, "$2 ×$1")).filter((r) => r && !/^free rewards?$/i.test(r));
-		out.push({
-			code,
-			rewards: rewards.slice(0, 6)
-		});
-	}
-	return out;
-}
+var syncBleachCodes = () => syncGameGuideCodes("bleach-soul-resonance-codes");
 /**
 * Iconos de las recompensas: no hay wiki ni lista de objetos. Los únicos oficiales son los de las recompensas de prerregistro de la web global
 * (playbleachsr.com, `reg_0.png`…`reg_2.png` en el CDN de A PLUS JAPAN; CORS abierto). "Jades" (códigos) es el mismo Spiritual Jade.
@@ -25524,7 +25587,7 @@ var MONTHS$14 = [
 	"nov",
 	"dec"
 ];
-var text$9 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
+var text$10 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
 async function page$3(id) {
 	const res = await fetch(viaProxy(`${GW}/${id}`));
 	if (!res.ok) throw new Error(`gamewith SoC ${id} → HTTP ${res.status}`);
@@ -25558,7 +25621,7 @@ function characterIcons(doc) {
 	for (const td of doc.querySelectorAll("td")) {
 		const img = td.querySelector("img");
 		const src = img?.getAttribute("data-original") || img?.getAttribute("src") || "";
-		const name = text$9(td);
+		const name = text$10(td);
 		if (/\/sword-of-convallaria\/gacha\/c\d+\.png$/.test(src) && name && !out.has(name.toLowerCase())) out.set(name.toLowerCase(), src);
 	}
 	return out;
@@ -25569,7 +25632,7 @@ async function gwBanners(gameId, now) {
 	const doc = await page$3(68920);
 	const icons = characterIcons(doc);
 	lastIcons = icons;
-	const head = [...doc.querySelectorAll("h3")].find((h) => /current banners/i.test(text$9(h)));
+	const head = [...doc.querySelectorAll("h3")].find((h) => /current banners/i.test(text$10(h)));
 	let table = null;
 	for (let n = head?.nextElementSibling; n && !/^H[23]$/.test(n.tagName); n = n.nextElementSibling) if (n.tagName === "TABLE" || n.querySelector("table")) {
 		table = n.tagName === "TABLE" ? n : n.querySelector("table");
@@ -25580,7 +25643,7 @@ async function gwBanners(gameId, now) {
 	for (const tr of table.querySelectorAll("tr")) {
 		const cells = [...tr.children].filter((c) => c.tagName === "TD");
 		if (cells.length < 2) continue;
-		const name = text$9(cells[0]), end = socUntil(text$9(cells[1]), now);
+		const name = text$10(cells[0]), end = socUntil(text$10(cells[1]), now);
 		if (!name || !end || end < now - 3 * DAY$33) continue;
 		const gear = /gear|astral imprint|weapon/i.test(name);
 		const who = gear ? "" : name.replace(/\s*(?:Rate[- ]?Up|Rerun|Debut|Chance Up|Banner|Summon)\b.*$/i, "").trim();
@@ -25617,14 +25680,14 @@ async function gwBanners(gameId, now) {
 async function gwUpcoming(gameId, after) {
 	if (!after) return [];
 	const doc = await page$3(70901);
-	const head = [...doc.querySelectorAll("h2")].find((h) => /^upcoming characters$/i.test(text$9(h)));
+	const head = [...doc.querySelectorAll("h2")].find((h) => /^upcoming characters$/i.test(text$10(h)));
 	let name = "";
 	for (let n = head?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) if (n.tagName === "H3") {
-		name = text$9(n).replace(/[?？]+$/, "").trim();
+		name = text$10(n).replace(/[?？]+$/, "").trim();
 		break;
 	}
 	if (!name || /every|server|ahead|release/i.test(name)) return [];
-	const cell = [...doc.querySelectorAll("tr > th, tr > td")].find((c) => text$9(c).toLowerCase() === name.toLowerCase());
+	const cell = [...doc.querySelectorAll("tr > th, tr > td")].find((c) => text$10(c).toLowerCase() === name.toLowerCase());
 	const icon = /https:\/\/img\.gamewith\.net\/[^'"\s]+\.(?:png|jpe?g|webp)/.exec(cell?.innerHTML ?? "")?.[0];
 	const start = Date.parse(after.end) + 1e3;
 	return [{
@@ -25648,14 +25711,14 @@ async function gwUpcoming(gameId, after) {
 	}];
 }
 async function gwEvents(gameId, now) {
-	const list = [...(await page$3(68934)).querySelectorAll("h2")].find((h) => /ongoing events/i.test(text$9(h)));
+	const list = [...(await page$3(68934)).querySelectorAll("h2")].find((h) => /ongoing events/i.test(text$10(h)));
 	const out = [];
 	for (let n = list?.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
 		if (n.tagName !== "H3") continue;
-		const title = text$9(n);
+		const title = text$10(n);
 		let end = null, description, image;
 		for (let s = n.nextElementSibling; s && !/^H[23]$/.test(s.tagName); s = s.nextElementSibling) {
-			const t = text$9(s);
+			const t = text$10(s);
 			end ??= /event period/i.test(t) ? socUntil(t, now) : null;
 			if (!description && s.tagName === "P" && t.length > 40) description = t;
 			const src = (s.tagName === "IMG" ? s : s.querySelector("img"))?.getAttribute("data-original") || void 0;
@@ -25888,7 +25951,7 @@ var PRYDWEN$1 = {
 		regions: ["global"]
 	}
 };
-var text$8 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+var text$9 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
 /** Rareza máxima de la tarjeta ("5-star", "SSR", "S-Class"...) como número de estrellas. */
 var stars = (s) => /5|SSR|S-?class|S$/i.test(s) ? 5 : /4|SR|A-?class/i.test(s) ? 4 : void 0;
 async function syncPrydwen(gameId, key) {
@@ -25902,7 +25965,7 @@ async function syncPrydwen(gameId, key) {
 	const iconBase = cfg.icons && [...doc.querySelectorAll("img[src*=\"/characters/\"]")].map((i) => /^(https:\/\/cdn\.prydwen\.gg\/images\/[a-z0-9-]+\/characters\/)[a-z0-9_]+_icon\.webp$/.exec(i.getAttribute("src") ?? "")?.[1]).find(Boolean);
 	doc.querySelectorAll("article[data-banner-card]").forEach((card) => {
 		const timer = card.querySelector("[data-banner-timer]");
-		const name = text$8(card.querySelector(".banner-name"));
+		const name = text$9(card.querySelector(".banner-name"));
 		if (!timer || !name) return;
 		const region = cfg.regions.find((r) => timer.dataset[`start${cap(r)}`] && timer.dataset[`end${cap(r)}`]);
 		if (!region) return;
@@ -25910,8 +25973,8 @@ async function syncPrydwen(gameId, key) {
 		const end = cfg.fixEnd ? cfg.fixEnd(timer.dataset[`end${cap(region)}`]) : new Date(timer.dataset[`end${cap(region)}`]).toISOString();
 		if (+new Date(end) < from || +new Date(end) <= +new Date(start)) return;
 		const weapon = card.getAttribute("data-category") === "weapon";
-		const phase = text$8(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
-		const rank = stars(text$8(card.querySelector(".rarity")));
+		const phase = text$9(card.closest("[data-banner-block]")?.querySelector(".phase-summary h3"));
+		const rank = stars(text$9(card.querySelector(".rarity")));
 		const slug = /\/characters\/([a-z0-9-]+)\/?$/.exec(card.querySelector("a.banner-card-link")?.getAttribute("href") ?? "")?.[1];
 		const art = card.querySelector("img.lightcone-card-image")?.getAttribute("src");
 		const featured = weapon ? [{
@@ -26155,7 +26218,7 @@ var MONTHS$13 = [
 	"nov",
 	"dec"
 ];
-var text$7 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
+var text$8 = (el) => el?.textContent?.replace(/[\s ]+/g, " ").trim() ?? "";
 var abs = (src) => src ? src.startsWith("/") ? BASE$7 + src : src : void 0;
 async function page$2(path) {
 	const res = await fetch(viaProxy(`${BASE$7}${path}`));
@@ -26185,7 +26248,7 @@ var faceOf = (href) => {
 };
 /** Destacados del panel de un banner ("Boosted": enlaces `character-card-trigger` con `data-name` y `data-grade`). */
 function boostedOf(li) {
-	return [...([...li.querySelectorAll("h4")].find((x) => /boosted/i.test(text$7(x)))?.nextElementSibling ?? li).querySelectorAll("a[data-name]")].map((a) => ({
+	return [...([...li.querySelectorAll("h4")].find((x) => /boosted/i.test(text$8(x)))?.nextElementSibling ?? li).querySelectorAll("a[data-name]")].map((a) => ({
 		name: a.getAttribute("data-name").trim(),
 		icon: faceOf(a.getAttribute("href")),
 		rarity: a.getAttribute("data-grade") === "SSR" ? 5 : a.getAttribute("data-grade") === "SR" ? 4 : 3
@@ -26195,7 +26258,7 @@ function boostedOf(li) {
 var cast = (root) => [...root.querySelectorAll("li")].map((li) => {
 	const a = li.querySelector("a[href*=\"/characters/\"]");
 	return {
-		name: text$7(li).replace(/\s*Not yet released$/i, ""),
+		name: text$8(li).replace(/\s*Not yet released$/i, ""),
 		rarity: 5,
 		icon: faceOf(a?.getAttribute("href")) ?? abs(li.querySelector("img[src*=\"/characters/\"]")?.getAttribute("src"))
 	};
@@ -26215,15 +26278,15 @@ function parseBanners(gameId, doc, now = Date.now()) {
 	const dated = [];
 	const unscheduled = [];
 	for (const sec of doc.querySelectorAll("#section-banners > section")) {
-		const head = text$7(sec.querySelector("h2"));
+		const head = text$8(sec.querySelector("h2"));
 		if (/always available/i.test(head)) continue;
 		for (const li of sec.querySelectorAll("li[data-expandable-row]")) {
 			const btn = li.querySelector("button");
-			const spans = [...btn?.querySelectorAll("span.block") ?? []].map(text$7).filter(Boolean);
-			const title = text$7(btn?.querySelector("span.font-bold")) || spans[0];
+			const spans = [...btn?.querySelectorAll("span.block") ?? []].map(text$8).filter(Boolean);
+			const title = text$8(btn?.querySelector("span.font-bold")) || spans[0];
 			if (!title) continue;
 			const image = abs(li.querySelector(".ks-row__panel img[src*=\"/gacha/\"]")?.getAttribute("src") ?? btn?.querySelector("img[src*=\"/gacha/\"]")?.getAttribute("src"));
-			const note = text$7(li.querySelector(".ks-row__panel p"));
+			const note = text$8(li.querySelector(".ks-row__panel p"));
 			if (/off the schedule/i.test(head)) {
 				if (/not been announced|to be announced|TBA/i.test(note)) unscheduled.push({
 					title,
@@ -26258,13 +26321,13 @@ function parseBanners(gameId, doc, now = Date.now()) {
 /** Event RPG de /events/ (tarjetas con enlace, "Starts"/"Ends" y caras). */
 function parseEventList(doc) {
 	return [...doc.querySelectorAll("a[href^=\"/suikoden-star-leap/events/\"]")].flatMap((a) => {
-		const title = text$7(a.querySelector("h3"));
-		const dd = [...a.querySelectorAll("dd")].map(text$7);
+		const title = text$8(a.querySelector("h3"));
+		const dd = [...a.querySelectorAll("dd")].map(text$8);
 		const start = dd[0] && jst(dd[0]), end = dd[1] && jst(dd[1]);
 		if (!title || !start || !end) return [];
 		const bg = /url\('([^']+)'\)/.exec(a.querySelector("[style*=\"background-image\"]")?.getAttribute("style") ?? "")?.[1];
 		const imgs = [...a.querySelector("ul")?.querySelectorAll("li") ?? []].map((li) => ({
-			name: text$7(li),
+			name: text$8(li),
 			rarity: 5,
 			icon: abs(li.querySelector("img")?.getAttribute("src"))
 		})).filter((f) => f.name);
@@ -26283,8 +26346,8 @@ function parseEventPage(doc) {
 	const lines = [];
 	const items = [];
 	for (const tr of doc.querySelectorAll("#reward-totals tbody tr")) {
-		const name = text$7(tr.querySelector("th"));
-		const cells = [...tr.querySelectorAll("td")].map(text$7);
+		const name = text$8(tr.querySelector("th"));
+		const cells = [...tr.querySelectorAll("td")].map(text$8);
 		const amount = Number((cells[cells.length - 1] ?? "").replace(/[^\d]/g, ""));
 		if (!name || !amount) continue;
 		lines.push(`${name} x${amount}`);
@@ -26297,11 +26360,11 @@ function parseEventPage(doc) {
 	const r = pullsIn("suikoden", lines);
 	const order = new Map(r.items.map((i, k) => [i.name.toLowerCase(), k]));
 	items.sort((a, b) => (order.get(a.name.toLowerCase()) ?? 99) - (order.get(b.name.toLowerCase()) ?? 99));
-	const body = text$7(doc.querySelector("#story") ?? doc.body);
+	const body = text$8(doc.querySelector("#story") ?? doc.body);
 	const next = /Next episode\s+([A-Z][a-z]{2} \d{1,2}, \d{4}, \d{1,2}:\d{2})/.exec(body)?.[1];
-	const gh = [...doc.querySelectorAll("h3")].find((h) => /event guests/i.test(text$7(h)));
+	const gh = [...doc.querySelectorAll("h3")].find((h) => /event guests/i.test(text$8(h)));
 	const ul = gh?.nextElementSibling?.tagName === "UL" ? gh.nextElementSibling : gh?.parentElement?.querySelector("ul");
-	const unreleased = ul ? cast(ul).filter((_, k) => /not yet released/i.test(text$7(ul.querySelectorAll("li")[k]))) : [];
+	const unreleased = ul ? cast(ul).filter((_, k) => /not yet released/i.test(text$8(ul.querySelectorAll("li")[k]))) : [];
 	return {
 		items: items.slice(0, 10),
 		pulls: r.pulls,
@@ -26314,7 +26377,7 @@ function parseTower(gameId, doc, now = Date.now()) {
 	const out = [];
 	for (const card of doc.querySelectorAll("div.ks-panel")) {
 		if (!card.querySelector("h3 a[href*=\"/tower/transient-chamber\"]")) continue;
-		const r = jstRange(([...card.querySelectorAll("dd")].map(text$7).find((t) => /^Open\s/i.test(t)) ?? "").replace(/^Open\s+/i, ""));
+		const r = jstRange(([...card.querySelectorAll("dd")].map(text$8).find((t) => /^Open\s/i.test(t)) ?? "").replace(/^Open\s+/i, ""));
 		if (!r || r[1] < now - DAY$30 || out.some((e) => Date.parse(e.start) === r[0])) continue;
 		const items = [...card.querySelectorAll("[data-floating-tooltip-title]")].map((b) => ({
 			name: b.getAttribute("data-floating-tooltip-title") ?? "",
@@ -26343,11 +26406,11 @@ function parseGifts(gameId, doc, now = Date.now()) {
 	const posted = Date.parse(doc.querySelector("article time[datetime], time[datetime]")?.getAttribute("datetime") ?? "");
 	const out = [];
 	for (const table of doc.querySelectorAll("article table")) {
-		const head = [...table.querySelectorAll("th")].map(text$7);
+		const head = [...table.querySelectorAll("th")].map(text$8);
 		const gi = head.findIndex((h) => /^gift/i.test(h)), ri = head.findIndex((h) => /^rewards?/i.test(h)), ci = head.findIndex((h) => /claim by/i.test(h));
 		if (gi < 0 || ri < 0 || ci < 0) continue;
 		for (const tr of table.querySelectorAll("tr")) {
-			const td = [...tr.querySelectorAll("td")].map(text$7);
+			const td = [...tr.querySelectorAll("td")].map(text$8);
 			if (td.length < 3) continue;
 			const end = jst(td[ci]);
 			if (!end || end < now - DAY$30) continue;
@@ -26509,7 +26572,7 @@ var TZ$1 = 9;
 var DAPHNE_ICONS = /* @__PURE__ */ new Map([["gems of org", "https://wizardry-static.synapse-lm.com/items/DJlaeJ5YRzq4/2a7373e3eb9b4886cb79fe9acd4a19a5b65d736b405bdc245858c4fea511fb75.png"], ["unique remains", "https://wizardry-static.synapse-lm.com/items/57YzAd1Wxavd/22d08e555a8233a14a814851293fcdb57676c6221e64c0681d5504e9bbe5f9d7.png"]]);
 var iconOf = (name) => DAPHNE_ICONS.get(name.toLowerCase()) ?? (/^unique remains\b/i.test(name) ? DAPHNE_ICONS.get("unique remains") : void 0);
 var clean$7 = (s) => s.replace(/[\s ]+/g, " ").trim();
-var text$6 = (el) => clean$7(el?.textContent ?? "");
+var text$7 = (el) => clean$7(el?.textContent ?? "");
 var iso$10 = (t) => new Date(t).toISOString();
 /** Texto plano de un trozo de HTML (entidades incluidas). Documento completo: linkedom deja los fragmentos sueltos fuera de `<body>`. */
 var plain$1 = (html) => clean$7(new DOMParser().parseFromString(`<!doctype html><html><body>${html}</body></html>`, "text/html").body?.textContent ?? "");
@@ -26546,7 +26609,7 @@ function blocksOf$2(html) {
 			const tag = c.tagName.toUpperCase();
 			if (/^H[1-6]$/.test(tag)) out.push({
 				h: +tag[1],
-				t: text$6(c)
+				t: text$7(c)
 			});
 			else if (tag === "IMG") {
 				const src = c.getAttribute("src");
@@ -26599,8 +26662,8 @@ function daphneFeed(xml) {
 }
 function daphneAdventurers(doc) {
 	return [...doc.querySelectorAll("a.c-adventures__block")].map((a) => ({
-		nick: text$6(a.querySelector(".c-adventures__block-nickname")),
-		name: text$6(a.querySelector(".c-adventures__block-title")),
+		nick: text$7(a.querySelector(".c-adventures__block-nickname")),
+		name: text$7(a.querySelector(".c-adventures__block-title")),
 		image: a.querySelector(".c-adventures__block-image img")?.getAttribute("src")?.replace(/&amp;/g, "&") ?? void 0,
 		legend: /\blegend\b/.test(a.getAttribute("class") ?? "")
 	})).filter((x) => x.name);
@@ -27131,7 +27194,7 @@ function g8Range(s, now) {
 	const ey = +m[3] < +m[1] ? sy + 1 : sy;
 	return [Date.UTC(sy, +m[1] - 1, +m[2], G8_START_UTC), Date.UTC(ey, +m[3] - 1, +m[4], 23, 59, 59)];
 }
-var text$5 = (el) => clean$6(el?.textContent ?? "");
+var text$6 = (el) => clean$6(el?.textContent ?? "");
 var imgOf$1 = (el) => {
 	const img = el?.querySelector("img");
 	return img?.getAttribute("data-src") || (img?.getAttribute("src")?.startsWith("http") ? img.getAttribute("src") : void 0);
@@ -27142,21 +27205,21 @@ function aniimoGame8(html, now = Date.now()) {
 	let section = "";
 	for (const el of doc.querySelectorAll("h2, h3, tr")) {
 		if (el.tagName !== "TR") {
-			section = text$5(el);
+			section = text$6(el);
 			continue;
 		}
 		if (!/ongoing|upcoming/i.test(section)) continue;
 		const cells = [...el.children].filter((c) => c.tagName === "TD");
 		if (cells.length < 2) continue;
-		const r = g8Range(text$5(el), now);
+		const r = g8Range(text$6(el), now);
 		if (!r) continue;
-		const title = clean$6(text$5(cells[0]).replace(/\d{1,2}\/\d{1,2}\s*~\s*\d{1,2}\/\d{1,2}.*$/, ""));
+		const title = clean$6(text$6(cells[0]).replace(/\d{1,2}\/\d{1,2}\s*~\s*\d{1,2}\/\d{1,2}.*$/, ""));
 		if (!title) continue;
 		const items = [];
 		const featured = [];
 		for (const div of cells[1].querySelectorAll(".align")) {
 			if (div.querySelector(".align") || !div.querySelector("img")) continue;
-			const t = text$5(div);
+			const t = text$6(div);
 			const name = clean$6(t.replace(/×\s*[\d,]+.*$/, ""));
 			if (!name) continue;
 			const icon = imgOf$1(div);
@@ -28301,7 +28364,7 @@ function p5xDate(s) {
 	return Date.UTC(+m[3], mo, +m[2], h - (m[7] ? +m[7] : 0), min, min === 59 ? 59 : 0) + (min === 59 ? 999 : 0);
 }
 /** BBCode → texto por líneas, sin etiquetas. */
-var text$4 = (bb) => bb.replace(/\[img[^\]]*\][^[]*\[\/img\]/gi, "").replace(/\[\/?(?:p|h\d|b|i|u|list|\*|url[^\]]*)\]/gi, "\n").replace(/\[[^\]]{1,20}\]/g, "").split("\n").map(clean$3).filter(Boolean);
+var text$5 = (bb) => bb.replace(/\[img[^\]]*\][^[]*\[\/img\]/gi, "").replace(/\[\/?(?:p|h\d|b|i|u|list|\*|url[^\]]*)\]/gi, "\n").replace(/\[[^\]]{1,20}\]/g, "").split("\n").map(clean$3).filter(Boolean);
 var images = (bb) => [...bb.matchAll(/\[img src="([^"]+)"\]/gi)].map((m) => m[1].replace("{STEAM_CLAN_IMAGE}", CLAN_IMG));
 /** Periodo de una línea: "Duration: Until …", "Season Duration: Until …", "Available Until: Until …", "Claim by: …", "From … until/to …". */
 function rangeOf(line, posted) {
@@ -28338,9 +28401,9 @@ function sectionsOf(bb) {
 		const own = carry.length ? carry : head.length ? head : tail;
 		carry = (carry.length || head.length) && tail.length ? tail : [];
 		return {
-			title: clean$3(text$4(h).join(" ")),
+			title: clean$3(text$5(h).join(" ")),
 			imgs: own,
-			lines: text$4(body)
+			lines: text$5(body)
 		};
 	}).filter((s) => s.title);
 }
@@ -28868,8 +28931,10 @@ async function syncSteam(gameId, now, maint) {
 *    «🔹 Event Period - 11/17 (Tue) 2:00 AM – 11/30 (Mon) 6:59 PM (UTC)»; «After Maintenance» = fin real del mantenimiento de ese día.
 *  - Tablón "Updates" (3217): avisos de mantenimiento («1. Date: 11/10 (Tue) 2:00 AM – 7:00 AM 9:00 AM (UTC)»: al alargarlo tachan la hora y añaden
 *    la nueva, así que vale la última antes de "(UTC)").
-* Los avisos de reclutamiento no: los banners ya llegan de la wiki con hora exacta. Por ciclo: 2 listas (caché 3 h) y los avisos de las últimas 5
-* semanas (como mucho 16, caché 24 h: solo se piden los nuevos).
+*  - Cupones (26 nov 2026): los avisos de canje del tablón "Events" (`baCoupons`: código, recompensas y plazo). Sustituyen a la lista puesta a
+*    mano (BA_CODES en mediawiki.ts), que se quedaba vieja: Discord trae el código solo dentro de la imagen.
+* Los avisos de reclutamiento no: los banners ya llegan de la wiki con hora exacta. Por ciclo: 3 listas (las dos primeras páginas de "Events" y la
+* de "Updates", caché 3 h) y los avisos de las últimas 5 semanas (como mucho 19, caché 24 h: solo se piden los nuevos).
 */
 var API$6 = "https://forum.nexon.com/api/v1";
 var ALIAS = "bluearchive-en";
@@ -28983,15 +29048,56 @@ function baForumEvents(gameId, t, maint, banner) {
 	}
 	return out;
 }
-async function list(board) {
+/** Palabras en mayúsculas de los avisos que no son cupones. */
+var NOT_COUPON = /^(?:UTC|FAQ|SCHALE|PYROXENES?|KIVOTOS|NOTICE|EVENT|COUPON|REWARDS?)$/;
+/**
+* Cupones de un aviso de canje del tablón "Events" («5-Year Anniversary Celebration Coupon Notice», «… Final Special Coupon!»): el código va solo en
+* una línea (o en la columna "Coupon Code" de la tabla, que `lines` deja igual), sus recompensas debajo («Pyroxene x600») y el plazo en
+* «You can redeem the coupon once per account until 11/24 (Tue) 2:59 PM (UTC)» (o, si no, el fin del «Event Period»). Solo los que siguen vigentes.
+*/
+function baCoupons(t, now = Date.now()) {
+	if (!t.content || !/coupon/i.test(t.title)) return [];
+	const ls = lines$3(t.content).filter((l) => !l.startsWith("@@IMG"));
+	const ref = t.createDate * 1e3;
+	const deadline = (re) => {
+		for (const l of ls) {
+			const m = re.exec(l);
+			const time = m && hm(m[2]);
+			if (m && time) return dayOf(m[1], ref) + (time[0] * 60 + time[1]) * 6e4;
+		}
+	};
+	const until = deadline(/until\s+(\d{1,2}\/\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\(UTC\)/i) ?? deadline(/[–~-]\s*(\d{1,2}\/\d{1,2})\s*\([A-Za-z]{3}\)\s*(\d{1,2}:\d{2}\s*[AP]M)\s*\(UTC\)/i);
+	if (until === void 0 || until < now) return [];
+	const label = `Until ${new Date(until).toUTCString().slice(5, 16)} (UTC)`;
+	const out = [];
+	ls.forEach((l, i) => {
+		if (!/^[A-Z0-9]{6,24}$/.test(l) || !/[A-Z]/.test(l) || NOT_COUPON.test(l) || out.some((c) => c.code === l)) return;
+		const rewards = [];
+		for (const r of ls.slice(i + 1)) {
+			const m = /^(.+?)\s*[x×]\s?([\d,]+)$/.exec(r);
+			if (m) rewards.push(`${m[1]} ×${m[2]}`);
+			else if (rewards.length || !/reward|gift/i.test(r)) break;
+		}
+		out.push({
+			code: l,
+			rewards: [...rewards.slice(0, 6), label]
+		});
+	});
+	return out;
+}
+async function list(board, page = 1) {
 	const qs = new URLSearchParams({
 		alias: ALIAS,
-		pageNo: "1",
+		pageNo: String(page),
 		paginationType: "PAGING",
 		pageSize: "15",
 		blockSize: "5",
 		hideType: "WEB"
 	});
+	if (page > 1) {
+		qs.set("blockStartNo", "1");
+		qs.set("blockStartKey", "253402300799,9223372036854775807");
+	}
 	const r = await fetch(viaProxy(`${API$6}/board/${board}/threads?${qs}`));
 	if (!r.ok) throw new Error(`foro de Nexon ${board} → HTTP ${r.status}`);
 	return (await r.json())?.threads ?? [];
@@ -29002,7 +29108,11 @@ async function thread(id) {
 }
 /** Eventos del foro (solo con OFFICIAL_SITES=1 en el proxy; si no, falla y Blue Archive sigue con la wiki y Discord). */
 async function syncBaForum(gameId, now = Date.now()) {
-	const [events, updates] = await Promise.all([list(3218), list(3217)]);
+	const [events, updates, older] = await Promise.all([
+		list(3218),
+		list(3217),
+		list(3218, 2).catch(() => [])
+	]);
 	const recent = (t) => now - t.createDate * 1e3 < 35 * DAY$23;
 	const wantUpd = updates.filter((t) => recent(t) && /maintenance notice/i.test(t.title)).slice(0, 4);
 	const wantEv = events.filter((t) => recent(t) && !/recruitment notice|ending soon|community contest|coupon/i.test(t.title)).slice(0, 12);
@@ -29012,11 +29122,13 @@ async function syncBaForum(gameId, now = Date.now()) {
 	const firstImgs = posts.map((p) => /<img[^>]*src="([^"]+)"/i.exec(p.content ?? "")?.[1]).filter(Boolean);
 	const banner = firstImgs.find((u, i) => firstImgs.indexOf(u) !== i);
 	const out = posts.flatMap((p) => baForumEvents(gameId, p, maint, banner)).filter((e) => Date.parse(e.end) > now - 3 * DAY$23);
-	if (!out.length) throw new Error("foro de Nexon: sin eventos vigentes");
+	const ids = /* @__PURE__ */ new Set();
+	const codes = (await full([...events, ...older].filter((t) => recent(t) && /coupon/i.test(t.title) && !ids.has(t.threadId) && !!ids.add(t.threadId)).slice(0, 3))).flatMap((t) => baCoupons(t, now)).filter((c, i, all) => all.findIndex((x) => x.code === c.code) === i);
+	if (!out.length && !codes.length) throw new Error("foro de Nexon: sin eventos vigentes");
 	return {
 		events: out,
 		patches: [],
-		codes: [],
+		codes,
 		pcOnly: true
 	};
 }
@@ -29390,8 +29502,11 @@ async function withImivi(s, gameId, now = Date.now()) {
 *    github.com/anyabot/MAD-Viewer). Dos JSON: `/data/events.json` (eventos con inicio y fin exactos en KST, fin de las fases, cartel, Partners
 *    destacados, tienda de canje, caja de premios y asistencia, con nombre e icono de cada objeto en `refs`) y `/data/gacha_banners.json` (banners
 *    "Rate-Up Summon (Yomi)" con su periodo, precio —120 Seeds— y kilometraje —200—).
-*  - **Códigos**: lootandwaifus ("MAke Drama: MAD free codes", tabla "Working codes"; actualizada en nov 2026). game.guide y gacha.gg dicen que no
-*    hay ninguno activo y el aviso de lootandwaifus sobre "solo Corea" es de antes de la salida global: se toma su lista tal cual.
+*  - **Códigos** (cambiado el 26 nov 2026): MEmu ("All Working MAke Drama : MAD Codes", tabla Codes | Rewards | Expire con hora de caducidad en
+*    UTC+9) es la lista; ucngame ("Valid until November 12th, 2026") pone la fecha a los que MEmu deja sin ella. Se quitan los caducados y los
+*    que ninguna de las dos fecha siguen solo si MEmu los lista. lootandwaifus ya no se usa: su tabla es la del servidor coreano, sin tocar desde
+*    el 10 nov, y daba como activos 261111DAY, MAD1STONE, 2026MADGLOBAL… ya caducados (y le faltaba MADSTEAM50K). game.guide y gacha.gg dicen que
+*    no hay ninguno activo, pero no conocen MADSTEAM50K.
 *  - **Modos con temporada** (MAD Viewer, `/data/rewards.json` y `/data/archive.json`): Arena y Total War (Nemesis), una semana cada 28 días, e
 *    Infinity Archive, 28 días; con sus recompensas en Seeds. Los datos del juego ya traen las temporadas programadas (Arena hasta feb 2027):
 *    son lo próximo con fecha exacta (`madModes`).
@@ -29399,10 +29514,11 @@ async function withImivi(s, gameId, now = Date.now()) {
 *    página legible; NamuWiki rechaza las lecturas automáticas y las notas de LanceDEX se cargan por JavaScript) y MAD Viewer solo trae el banner
 *    que ya está en el juego. Los banners duran 14 días y cambian los jueves; sin nombre anunciado no se inventa el siguiente.
 * Iconos: MAD Viewer sirve los del juego (`/icons/char/Icon_CH0003.webp`, `/icons/item/<icono>.webp`, `/icons/banner/<cartel>.webp`).
-* 4 JSON de MAD Viewer y 1 página de lootandwaifus por ciclo (caché de 6 h en el proxy).
+* 4 JSON de MAD Viewer, 1 página de MEmu y 1 de ucngame por ciclo (caché de 6 h en el proxy).
 */
 var MADV = "https://mad.altterisk.cc";
-var LOOT_CODES = "https://lootandwaifus.com/guides/make-drama-mad-codes/";
+var MEMU_CODES = "https://www.memuplay.com/blog/make-drama-mad-codes.html";
+var UCN_CODES = "https://ucngame.com/codes/make-drama-mad-codes/";
 var iso$3 = (s) => {
 	const t = Date.parse(s);
 	return new Date(new Date(t).getUTCSeconds() === 59 ? t + 1e3 : t).toISOString();
@@ -29656,18 +29772,58 @@ function madMissions(gameId, r, names, now = Date.now()) {
 	}
 	return out;
 }
-/** Tabla "Working codes" de lootandwaifus (rejilla `.modular-table`, varios códigos por fila y sin recompensas); se para en "Expired codes". */
-function madCodes(doc) {
-	const text = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
-	const head = [...doc.querySelectorAll("h2")].find((h) => /working codes|active codes/i.test(text(h)));
-	if (!head) throw new Error("lootandwaifus MAD: no se encontró la lista de códigos");
+var MONTH = "(January|February|March|April|May|June|July|August|September|October|November|December)";
+/** «December 20, 2026 11:59 PM (UTC+9)» / «November 12th, 2026» → fin de ese día en Corea (las horas de MEmu son siempre 23:59 KST). */
+function untilKst(s) {
+	const m = new RegExp(`${MONTH} (\\d{1,2})(?:st|nd|rd|th)?,? (\\d{4})`, "i").exec(s);
+	if (!m) return void 0;
+	return {
+		at: Date.parse(`${m[1]} ${m[2]}, ${m[3]} 23:59:59 GMT+0900`),
+		label: `Until ${m[1]} ${m[2]}, ${m[3]}`
+	};
+}
+var text$4 = (el) => el?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+/** Fechas de caducidad de ucngame: «2026MADGLOBAL | Redeem this gift code for … (Valid until November 8th, 2026)». */
+function madUcnDates(doc) {
+	const out = /* @__PURE__ */ new Map();
+	for (const tr of doc.querySelectorAll("table tr")) {
+		const tds = tr.querySelectorAll("td");
+		const code = text$4(tds[0]).toUpperCase();
+		const u = /valid until (.+)/i.exec(text$4(tds[1]));
+		const at = u && untilKst(u[1]);
+		if (/^[A-Z0-9]{4,30}$/.test(code) && at) out.set(code, at.at);
+	}
+	return out;
+}
+/**
+* Tabla de MEmu (Codes | Rewards | Expire, bajo "All Working … Codes"). Se quitan los que ya caducaron por su fecha o, si MEmu no la da,
+* por la de ucngame (`ucn`).
+*/
+function madCodes(doc, ucn = /* @__PURE__ */ new Map(), now = Date.now()) {
+	const head = [...doc.querySelectorAll("h2")].find((h) => /working|active/i.test(text$4(h)) && !/expired/i.test(text$4(h)));
+	if (!head) throw new Error("MEmu MAD: no se encontró la lista de códigos");
+	let table = null;
+	for (let n = head.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) {
+		table = n.tagName === "TABLE" ? n : n.querySelector("table");
+		if (table) break;
+	}
+	if (!table) throw new Error("MEmu MAD: no se encontró la tabla de códigos");
 	const out = [];
-	for (let n = head.nextElementSibling; n && n.tagName !== "H2"; n = n.nextElementSibling) for (const cell of n.querySelectorAll(".modular-table-cell")) {
-		if (cell.classList.contains("modular-table-header-cell")) continue;
-		const code = cell.getAttribute("data-copy-text")?.trim() || text(cell);
-		if (/^[A-Za-z0-9]{4,30}$/.test(code) && !out.some((c) => c.code.toUpperCase() === code.toUpperCase())) out.push({
+	for (const tr of table.querySelectorAll("tr")) {
+		const tds = tr.querySelectorAll("td");
+		const code = text$4(tds[0]);
+		if (!/^[A-Za-z0-9]{4,30}$/.test(code) || /^codes?$/i.test(code) || out.some((c) => c.code.toUpperCase() === code.toUpperCase())) continue;
+		const own = untilKst(text$4(tds[2]));
+		const at = own?.at ?? ucn.get(code.toUpperCase());
+		if (at !== void 0 && at < now) continue;
+		const cell = tds[1];
+		const parts = [""];
+		for (const n of cell?.childNodes ?? []) if (n.tagName === "BR") parts.push("");
+		else parts[parts.length - 1] += n.textContent ?? "";
+		const rewards = parts.flatMap((p) => p.split(/\s\/\s/)).map((p) => p.replace(/\s+/g, " ").trim()).filter(Boolean).map((r) => r.replace(/\s*[x×]\s?([\d,]+)$/i, " ×$1")).slice(0, 6);
+		out.push({
 			code,
-			rewards: []
+			rewards: own ? [...rewards, own.label] : rewards
 		});
 	}
 	return out;
@@ -29677,11 +29833,19 @@ async function get$1(url) {
 	if (!res.ok) throw new Error(`${url} → HTTP ${res.status}`);
 	return res;
 }
+/** MEmu con las fechas de ucngame (si ucngame falla, solo las de MEmu). */
+async function madCodesFrom(now) {
+	const dom = (h) => new DOMParser().parseFromString(h, "text/html");
+	const [memu, ucn] = await Promise.allSettled([get$1(MEMU_CODES).then((r) => r.text()), get$1(UCN_CODES).then((r) => r.text())]);
+	if (memu.status === "rejected") throw memu.reason;
+	if (ucn.status === "rejected") console.warn("[makedrama] fechas de ucngame:", ucn.reason?.message);
+	return madCodes(dom(memu.value), ucn.status === "fulfilled" ? madUcnDates(dom(ucn.value)) : /* @__PURE__ */ new Map(), now);
+}
 async function syncMakeDrama(gameId, now = Date.now()) {
 	const [ev, ban, codes, rw, ar] = await Promise.allSettled([
 		get$1(`${MADV}/data/events.json`).then((r) => r.json()),
 		get$1(`${MADV}/data/gacha_banners.json`).then((r) => r.json()),
-		get$1(LOOT_CODES).then((r) => r.text()).then((h) => madCodes(new DOMParser().parseFromString(h, "text/html"))),
+		madCodesFrom(now),
 		get$1(`${MADV}/data/rewards.json`).then((r) => r.json()),
 		get$1(`${MADV}/data/archive.json`).then((r) => r.json())
 	]);
@@ -31252,12 +31416,10 @@ async function baPageRewards(pages) {
 /**
 * Cupones de Blue Archive Global puestos a mano: el aviso oficial (#game-news de Discord) trae el código solo dentro de la imagen,
 * así que discord.ts no puede leerlo. Cada uno desaparece solo al caducar (`until`).
+* Desde el 26 nov 2026 los lee solo `baCoupons` (nexonba.ts) de los avisos de canje del foro de Nexon: esta lista queda vacía, solo para un cupón
+* que el foro no publique (el foro se lee solo desde la tarea del PC; un cupón añadido aquí también sale en las copias del servidor).
 */
-var BA_CODES = [{
-	code: "5YEARSWITHSENSEI",
-	rewards: ["Pyroxene ×600", "Beautiful Bouquet ×5"],
-	until: "2026-11-24T14:59:00Z"
-}];
+var BA_CODES = [];
 var baCodes = () => BA_CODES.filter((c) => +new Date(c.until) > Date.now()).map((c) => ({
 	code: c.code,
 	rewards: [...c.rewards, `Until ${new Date(c.until).toUTCString().slice(5, 16)} (UTC)`]
@@ -35706,8 +35868,15 @@ async function syncSource(game) {
 		...s,
 		patches: alignPatches(s.patches, s.events, LAUNCH_UTC_HOUR[game.api ?? ""], game.patchCycleDays)
 	} : s;
+	if (game.api === "honkai3") {
+		const hoyo = await syncHoyoCodes("honkai").catch(() => []);
+		return {
+			...aligned,
+			codes: [...aligned.codes, ...hoyo].filter((x, i, all) => all.findIndex((y) => y.code.toUpperCase() === x.code.toUpperCase()) === i)
+		};
+	}
 	if (aligned.codes.length || !game.api) return aligned;
-	const codes = game.api === "honkai3" ? await syncHoyoCodes("honkai").catch(() => []) : hasWikiCodes(game.api) ? await syncWikiCodes(game.api).catch(() => []) : [];
+	const codes = hasWikiCodes(game.api) ? await syncWikiCodes(game.api).catch(() => []) : [];
 	return codes.length ? {
 		...aligned,
 		codes
@@ -35905,7 +36074,7 @@ async function collect(id) {
 		updated: Date.now(),
 		events,
 		patches: s.patches,
-		codes: s.codes,
+		codes: notExpired(s.codes),
 		...s.pcOnly ? { pcOnly: true } : {}
 	};
 }

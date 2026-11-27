@@ -1,6 +1,5 @@
-import { viaProxy } from '../net'
-import { pocketGamerExpired } from './codes'
-import type { GameEvent, PromoCode } from '../types'
+import { pocketGamerExpired, syncGameGuideCodes } from './codes'
+import type { GameEvent } from '../types'
 import type { GameSync } from './ennead'
 
 /**
@@ -14,30 +13,7 @@ import type { GameSync } from './ennead'
  *  - Rotatorios: ninguno con calendario publicado.
  * 1 página de game.guide por ciclo (caché de 6 h en el proxy).
  */
-const PAGE = 'https://www.game.guide/bleach-soul-resonance-codes'
-const text = (el: Element | null | undefined) => el?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-
-export async function syncBleachCodes(): Promise<PromoCode[]> {
-  const res = await fetch(viaProxy(PAGE))
-  if (!res.ok) throw new Error(`game.guide Bleach → HTTP ${res.status}`)
-  const doc = new DOMParser().parseFromString(await res.text(), 'text/html')
-  // El bloque de activos es el que contiene el título "Active Codes"; el de caducados va aparte.
-  const head = doc.querySelector('#active-codes')
-  let box: Element | null = head?.parentElement ?? null
-  while (box && !box.querySelector('.rcp-row')) box = box.parentElement
-  if (!box || box.querySelector('#expired-codes')) throw new Error('game.guide Bleach: no se encontró la lista de códigos activos')
-  const out: PromoCode[] = []
-  for (const row of box.querySelectorAll('.rcp-row')) {
-    const code = text(row.querySelector('.rcp-code'))
-    if (!/^[A-Za-z0-9]{4,30}$/.test(code) || out.some(c => c.code.toUpperCase() === code.toUpperCase())) continue
-    const cell = row.querySelector('.rcp-row-reward')?.cloneNode(true) as Element | undefined
-    cell?.querySelectorAll('time').forEach(t => t.remove())
-    // "100 Spiritual Jade, 2 Spiritual Power Nourishers" → "Spiritual Jade ×100"; "Free rewards" no dice nada.
-    const rewards = text(cell).split(/\s*,\s*/).map(r => r.replace(/^(\d[\d,]*)\s+(.+)$/, '$2 ×$1')).filter(r => r && !/^free rewards?$/i.test(r))
-    out.push({ code, rewards: rewards.slice(0, 6) })
-  }
-  return out
-}
+export const syncBleachCodes = () => syncGameGuideCodes('bleach-soul-resonance-codes')
 
 /**
  * Iconos de las recompensas: no hay wiki ni lista de objetos. Los únicos oficiales son los de las recompensas de prerregistro de la web global

@@ -638,7 +638,7 @@ Un solo servidor con el horario de Corea (KST): sin selector en `servers.ts`. Po
 
 `src/sources/makedrama.ts`. Wemade Connect; Corea desde el 4 jun 2026 y global (mismo servicio, mismas fechas) desde el 8 oct 2026. **Juego +18**: las capturas
 de Steam son explícitas y NO se usan; el arte del catálogo es el fondo de su web oficial (mad.wemadeconnect.com) y los retratos son los iconos de cara.
-Horas en KST, sin selector de servidor. Por ciclo: 2 JSON de MAD Viewer (`madviewer`, caché de 6 h) y 1 página de lootandwaifus.
+Horas en KST, sin selector de servidor. Por ciclo: 4 JSON de MAD Viewer (`madviewer`, caché de 6 h), 1 página de MEmu (`memuplay`) y 1 de ucngame.
 - **Eventos, recompensas y banners**: MAD Viewer (mad.altterisk.cc, base de datos de fans hecha con los datos del juego; robots.txt "Allow: /"):
   `/data/events.json` (inicio y fin exactos, fin de las fases, cartel, destacados, tienda, caja de premios y asistencia, con nombre e icono de cada objeto)
   y `/data/gacha_banners.json` («Rate-Up Summon (Yomi)», periodo, 120 Seeds y 200 de kilometraje). Recompensas = asistencia + tienda (por su límite) +
@@ -648,7 +648,11 @@ Horas en KST, sin selector de servidor. Por ciclo: 2 JSON de MAD Viewer (`madvie
   billetes Rate-Up por conseguir y subir a la destacada; a la vista, sin tiradas porque solo pagan si la consigues). Sin cartel: las pestañas del juego
   son ilustraciones subidas de tono; el del banner lleva el retrato.
 - **Iconos**: los del juego en MAD Viewer (`/icons/char/Icon_CH0003.webp`, `/icons/item/…`, `/icons/banner/…`): todo con icono.
-- **Códigos**: lootandwaifus (tabla "Working codes", sin recompensas). game.guide y gacha.gg dicen que no hay activos: las listas no coinciden.
+- **Códigos** (cambiado el 26 nov 2026): MEmu (memuplay.com/blog/make-drama-mad-codes.html, robots.txt "Allow: /"; tabla Codes | Rewards | Expire
+  con la caducidad en UTC+9) es la lista, y ucngame pone fecha a los que MEmu deja sin ella («Valid until November 11th, 2026»); se quitan los
+  caducados. lootandwaifus se dejó: su tabla es la del servidor coreano, sin tocar desde el 10 nov, y daba como activos 261111DAY, MAD1STONE,
+  2026MADGLOBAL… ya caducados, sin MADSTEAM50K. game.guide y gacha.gg dicen que no hay ninguno (no conocen MADSTEAM50K). ucngame da a MADSTEAM50K
+  el 20 nov y MEmu el 20 dic 23:59 KST (igual que makedrama.wiki): manda la fecha de MEmu.
 - **Modos con temporada** (`/data/rewards.json` y `/data/archive.json` de MAD Viewer): Arena y Total War (una semana cada 28 días) e Infinity Archive (28
   días), con hora exacta y también las temporadas ya programadas (Arena hasta feb 2027): son lo próximo con fecha. Arena y Total War pagan según el
   puesto: salen sin tiradas y en la calculadora son elecciones; Infinity Archive da 1200 Seeds fijos.
@@ -1523,3 +1527,31 @@ variables cambian en cada compilación.
 - El Originite Prime cuenta como 180 Orundum (igual que wiki.ts); los Distinction Certificates no suman tiradas.
 - Planificador: 4 Headhunting Permits al mes en la tienda de certificados (fuente "store" de imivi, 44 en 11 meses), que no contábamos.
 - No están en sus datos: el Contingency Contract (no lo cuenta) y los 24 tiros gratis de cada banner limitado (los muestra aparte).
+
+## Revisión de códigos de todos los juegos (26 nov 2026)
+
+Aviso del dueño: los de MAke Drama salían caducados y faltaba el nuevo. Se compararon todas las listas con gacha.gg / game.guide (los dos son de la
+misma red y se revisan a diario) y, si no coincidían, con Game8 y PocketGamer.
+- **MAke Drama**: lootandwaifus → MEmu + fechas de ucngame (ver su apartado). Queda MADSTEAM50K (hasta el 20 dic).
+- **Caducidad en todos los juegos**: `notExpired`/`codeUntil` (codes.ts) entienden ahora todos los «Until …» de las fuentes ("November 30th, 2026",
+  "Dec 30", "DEC 11", "24 Nov 2026 (UTC)", "2026/12/31"; sin año, el más cercano a hoy) y se aplican a todos los juegos: al cerrar cada copia
+  (`collect`), al guardar los códigos en la app (`store.ts`) y al pintarlos (`Views.tsx`), así una copia vieja o la del navegador tampoco los enseña.
+  Antes solo entendía "November 17": el cupón de Blue Archive (hasta el 24 nov) seguía en la copia porque `carryCodes` lo conservaba.
+- **NTE**: la wiki de Fandom estaba parada (DREAMWALK0603, TOMATO100 y RACENOLIMIT, caducados el 1 nov según Game8; sin CALLELYMS ni NTENIGHT1021).
+  Ahora game.guide primero (`syncGameGuideCodes`, el mismo lector de BLEACH) y la wiki de respaldo. Proxy `gameguide`: ruta nueva.
+- **Honkai Impact 3rd**: el código de cumpleaños de Discord tapaba los 6 de ennead (FLAVOR1–4, QPAS261QC8, SPECIALTREATS): ahora se juntan.
+- **Infinity Nikki**: el lector de Discord tomaba "Complete" por un código («"Code, Connect, Launch!": Complete the circuit…»); tras "Code:" solo
+  cuenta lo que va en mayúsculas o lleva cifras.
+- game.guide: las recompensas se cortaban en la coma de las cifras ("20,000 Fons" → "20" y "Fons ×000").
+- **Sin cambios, a propósito**: CZN (game.guide y PocketGamer mantienen CZNNOVEMBERGIFT y 10211STANNIVERSARY, que Game8 da hasta el 17 y el 19 nov);
+  DNA (game.guide copia la lista de PocketGamer, retirada el 3 oct; Game8 ya trae los de la 1.8 y mantiene DNAGIFT, DNAGLOBAL…); Genshin, HSR y ZZZ
+  (ennead coincide con game.guide salvo códigos viejos sueltos).
+- **Blue Archive**: la lista de game.guide (HEAVYCALIBER310, BOLTCATCH831, THESKYOFUNITY0526, DOKIDOKIRAID) es vieja. El aviso oficial del foro de
+  Nexon (hilo 3394597, «Magical Girl Heavy Caliber Update Celebration: Final Special Coupon!») da HEAVYCALIBER310, BOLTCATCH831 y MAGICALVIGILANTE
+  hasta el 24 mar 2026 01:59 UTC. No se añaden.
+  **Cupones desde el foro** (`baCoupons` en nexonba.ts): se leen los avisos de canje del tablón "Events" (título con "Coupon", últimas 5
+  semanas, como mucho 3): el código va solo en una línea o en la columna "Coupon Code", las recompensas debajo («Pyroxene x600») y el plazo en
+  «until 11/24 (Tue) 2:59 PM (UTC)». Se pide también la 2.ª página de "Events" (`blockStartKey`): los 15 avisos de la primera son unas dos
+  semanas y un cupón dura eso. La lista a mano (`BA_CODES`, mediawiki.ts) queda vacía. Como el resto del foro, solo desde la tarea del PC.
+- **Pendiente de decidir** (solo una fuente, sin fechas): AFK Journey (game.guide: AFKJ2YRS2026 y 4 de un solo uso; PocketGamer da otros), NIKKE, PGR, P5X y Umamusume (game.guide lista códigos de 2025
+  y de lanzamiento "añadidos el 24 ago 2026", fecha en que importó la lista: no son nuevos).

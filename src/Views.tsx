@@ -9,6 +9,7 @@ import { GameAvatar, Img, ReorderList, Tag, cssVar, fmtDate, fmtDateY, heroOf, u
 import type { Game, GameEvent, Patch } from './types'
 import { regionsOf, serverOf } from './servers'
 import { upcomingList, type UpcomingGame } from './upcoming'
+import { notExpired } from './sources/codes'
 
 const DAY = 86_400_000
 
@@ -151,7 +152,7 @@ const shortIn = (ms: number) => (ms >= DAY ? `${Math.round(ms / DAY)}d` : `${Mat
 
 /** Códigos de un juego que aún no copiaste y aparecieron hace menos de 3 días. */
 function freshCodes(state: Ctx['state'], gameId: string, now: number) {
-  return (state.codes[gameId] ?? []).filter(c => {
+  return notExpired(state.codes[gameId] ?? [], now).filter(c => {
     const k = `${gameId}:${c.code.toUpperCase()}`
     return !(state.copied ?? {})[k] && now - ((state.codeSeen ?? {})[k] ?? 0) < NEW_CODE_MS
   }).length
@@ -321,7 +322,7 @@ function ServerChip({ g, ctx }: { g: Game; ctx: Ctx }) {
 
 function Codes({ g, ctx }: { g: Game; ctx: Ctx }) {
   const { state, setState, now } = ctx
-  const codes = state.codes[g.id] ?? []
+  const codes = notExpired(state.codes[g.id] ?? [], now)
   if (!codes.length) return null
   const copiedMap = state.copied ?? {}
   const seenMap = state.codeSeen ?? {}

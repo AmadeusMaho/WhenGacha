@@ -88,7 +88,7 @@ export async function collect(id: string): Promise<Snapshot> {
   const withArt = await withWikiImages(game, s.events).catch(() => s.events)
   const withFaces = await withFeaturedIcons(game, withArt).catch(() => withArt)
   const events = await withItemIcons(game, withFaces).catch(() => withFaces)
-  return { id, updated: Date.now(), events, patches: s.patches, codes: s.codes, ...(s.pcOnly ? { pcOnly: true } : {}) }
+  return { id, updated: Date.now(), events, patches: s.patches, codes: notExpired(s.codes), ...(s.pcOnly ? { pcOnly: true } : {}) }
 }
 
 /**
