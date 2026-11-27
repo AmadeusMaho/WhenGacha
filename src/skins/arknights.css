@@ -587,3 +587,11 @@ html[data-skin="arknights"] {
   html[data-skin="arknights"] :is(:disabled, [aria-disabled="true"]) { cursor: var(--ak-cur-no); }
   html[data-skin="arknights"] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(:disabled), textarea:not(:disabled)) { cursor: text; }
 }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* El nombre es una rejilla (con la línea PRTS debajo): ahí ::first-letter no aplica. La insignia: placa amarilla de PRTS con la esquina
+   cortada y el texto en Bender. */
+html[data-skin="arknights"] .premium-badge { border-radius: 0; color: #15171a; background: var(--ak-yel); font-family: 'AK Bender', 'Barlow', sans-serif; letter-spacing: .08em;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%); box-shadow: none; }

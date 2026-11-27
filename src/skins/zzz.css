@@ -259,3 +259,17 @@ html[data-skin="zzz"] .bport { border: 3px solid var(--zz-edge); border-radius: 
   html[data-skin="zzz"] .brand h1 { font-size: 1.05rem; }
   html[data-skin="zzz"] .mbar .seg button { padding-left: 9px; padding-right: 9px; }
 }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: blanco grueso con la sombra amarilla desplazada y el filo negro, como un rótulo pintado en la calle. */
+html[data-skin="zzz"] .brand h1 { text-shadow: 2px 2px 0 #000, 3px 3px 0 var(--zz-yellow); -webkit-text-stroke: .5px #000; }
+/* Insignia: la etiqueta amarilla inclinada de los menús ("NEW", "LIMITED"), texto negro. */
+html[data-skin="zzz"] .premium-badge { border-radius: 0; color: #0d0d0d; background: var(--zz-yellow); transform: skewX(-12deg);
+  box-shadow: 2px 2px 0 #000, 0 0 0 1px #0d0d0d; }
+html[data-skin="zzz"] .premium-badge::after { background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .75) 50%, transparent 70%); }
+/* Rasgo del logo: inclinado como el logo de ZZZ, con una franja de cinta amarilla de rayas por detrás de la parte de abajo. */
+html[data-skin="zzz"] .brand h1 { position: relative; z-index: 0; transform: skewX(-8deg); }
+html[data-skin="zzz"] .brand h1::before { content: ""; position: absolute; z-index: -1; left: -4px; right: -6px; bottom: 1px; height: 38%; pointer-events: none;
+  background: repeating-linear-gradient(-45deg, var(--zz-yellow) 0 6px, #0d0d0d 6px 9px); transform: rotate(-1.5deg); opacity: .9; }

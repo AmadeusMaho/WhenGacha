@@ -501,3 +501,23 @@ Dos modos (selector "Todas | Populares" bajo el título, con iconos propios en e
   "reducir movimiento" se queda quieto con puntos suspensivos. Va en `<bdi>`, no en `<span>`: las reglas de cada skin para `.tv-slot span`
   (prefijos como "CHALDEAS · ", inclinaciones, recortes) no deben alcanzarlo. `.tv-slot` lleva `contain: inline-size` para que un título largo no
   ensanche el aparato (pasó: el de Persona llegó a 359 px).
+
+## Nombre de la web e insignia Premium por skin (27 nov 2026)
+
+Cada skin le da a "WhenGacha" un rasgo del logo de su juego y a la insignia Premium la forma de una pieza de su interfaz (bloque final de cada
+CSS, "Nombre de la web e insignia Premium"). Los adornos van en `::before`/`::after` con posición absoluta y no ocupan sitio: en móvil no se
+tocan tamaños ni rellenos (la cabecera sigue en una fila; comprobado en las 11 skins a 375 px).
+- WuWa: degradado blanco a dorado y la **frecuencia** bajo el nombre (la cinta dorada animada del reproductor, `ui/freq.svg`); insignia de cristal con filo dorado y puntas.
+- Genshin: degradado crema a dorado con contorno oscuro y el destello de cuatro puntas sobre la W; insignia crema con filete dorado.
+- ZZZ: inclinado, con sombra amarilla y la cinta de rayas amarillas y negras debajo; insignia amarilla inclinada.
+- HSR: degradado blanco, lavanda y dorado y el **Expreso Astral** sobre la vía bajo el nombre (SVG propio con su silueta: locomotora aerodinámica
+  negra azulada con remates dorados, foco con haz, proa en punta y aletas; vuela, sin ruedas); insignia azul noche con filete dorado.
+- NIKKE: en cursiva, con la raya azul y la mira del AR sobre la W; insignia azul "Claim" con la esquina cortada.
+- Uma: rosa con contorno blanco y sombra verde, como su logo; insignia en cápsula rosa.
+- Arknights: ya tenía el anillo y "PRTS // RHODES ISLAND"; insignia amarilla de PRTS.
+- Blue Archive: degradado azul en cursiva con el halo flotando encima; insignia azul inclinada.
+- PGR: separación roja y cian tenue y "// WHENGACHA" en la lengua del Punishing (solo escritorio); insignia carbón con franja roja.
+- FGO: dorado en Cinzel con el doble filete y el rombo de Chaldea; insignia azul noche con filete dorado.
+- Persona 5X: Anton con la primera letra recortada (nota de rescate); insignia como recorte blanco girado.
+`skin-contrast.js` entiende ahora el texto con degradado (`background-clip: text`): mide el tono del degradado con menos contraste contra el
+fondo real (antes tomaba el degradado como fondo y daba 1:1).

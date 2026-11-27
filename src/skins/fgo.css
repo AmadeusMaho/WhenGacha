@@ -342,3 +342,20 @@ html[data-skin="fgo"] main { animation: fg-in .5s cubic-bezier(.2, .8, .2, 1) ba
 html[data-skin="fgo"].has-vt main { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   html[data-skin="fgo"] :is(main, body::after, .modal-hero::after) { animation: none; } }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: grabado en dorado (Cinzel con degradado de oro y su halo azul). */
+html[data-skin="fgo"] .brand h1 { background: linear-gradient(180deg, #fff6d6 15%, var(--fg-gold) 55%, var(--fg-gold-d)); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; text-shadow: none; filter: drop-shadow(0 0 6px rgba(140, 200, 255, .45)); }
+/* Insignia: placa azul noche con el filete dorado y el texto dorado en Cinzel, como los rótulos de Chaldea. */
+html[data-skin="fgo"] .premium-badge { border-radius: 2px; color: var(--fg-gold); background: linear-gradient(180deg, #132a56, #070f24); font-family: var(--fg-head);
+  box-shadow: inset 0 0 0 1px var(--fg-gold), 0 0 10px rgba(236, 201, 107, .3); }
+html[data-skin="fgo"] .premium-badge::after { background: linear-gradient(105deg, transparent 30%, rgba(236, 201, 107, .45) 50%, transparent 70%); }
+/* Rasgo del logo: el doble filete dorado con el rombo al centro bajo el nombre, como el emblema de Chaldea. */
+html[data-skin="fgo"] .brand h1 { position: relative; }
+html[data-skin="fgo"] .brand h1::after { content: ""; position: absolute; left: 0; right: 0; bottom: -5px; height: 7px; pointer-events: none;
+  background: linear-gradient(45deg, transparent 40%, var(--fg-gold) 41% 59%, transparent 60%) center / 7px 7px no-repeat,
+    linear-gradient(90deg, transparent, var(--fg-gold) 30% 42%, transparent 46% 54%, var(--fg-gold) 58% 70%, transparent) left 2px / 100% 1px no-repeat,
+    linear-gradient(90deg, transparent 15%, rgba(236, 201, 107, .55) 40% 44%, transparent 47% 53%, rgba(236, 201, 107, .55) 56% 60%, transparent 85%) left 5px / 100% 1px no-repeat; }

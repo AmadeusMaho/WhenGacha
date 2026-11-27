@@ -253,3 +253,24 @@ html[data-skin="hsr"] :is(input[type="text"], input[type="search"], input[type="
 /* Pestaña "Tiradas": las filas del desglose ya llevan su icono; sin el punto de estación de la skin (quedaba recargado). */
 html[data-skin="hsr"] .plan-break li { padding-left: 10px; }
 html[data-skin="hsr"] .plan-break li::before { display: none; }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: blanco que se tiñe de lavanda y dorado, con el halo de las estrellas. */
+html[data-skin="hsr"] .brand h1 { background: linear-gradient(100deg, #fff 35%, var(--hs-lav) 70%, var(--hs-gold)); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 7px rgba(185, 168, 255, .45)); }
+/* Insignia: el rótulo de 5★ del juego, azul noche con el filete dorado y el texto dorado. */
+html[data-skin="hsr"] .premium-badge { border-radius: 2px; color: var(--hs-gold); background: linear-gradient(180deg, #262e66, #11152f);
+  box-shadow: inset 0 0 0 1px rgba(243, 199, 106, .85), 0 0 12px rgba(243, 199, 106, .25); }
+html[data-skin="hsr"] .premium-badge::after { background: linear-gradient(105deg, transparent 30%, rgba(243, 199, 106, .4) 50%, transparent 70%); }
+/* Rasgo del logo: el EXPRESO ASTRAL sobre la vía que corre bajo el nombre. Dibujo propio (SVG) con su silueta según el arte del juego
+   (wiki de HSR, 27 nov 2026): locomotora de vapor aerodinámica negra azulada con remates dorados, caldera alargada con aros, el foco grande
+   delante con su haz, la proa en punta abajo, aletas que barren hacia atrás y luces azules; vuela, sin ruedas. La vía: dos raíles lavanda. */
+html[data-skin="hsr"] .brand h1 { position: relative; }
+html[data-skin="hsr"] .brand h1::before { content: ""; position: absolute; right: -4px; bottom: -14px; width: 50px; height: 17px; z-index: 1; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 22'%3E %3Cdefs%3E%3ClinearGradient id='b' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%233b4778'/%3E%3Cstop offset='.45' stop-color='%231a2140'/%3E%3Cstop offset='1' stop-color='%230b0f22'/%3E%3C/linearGradient%3E %3CradialGradient id='l'%3E%3Cstop offset='0' stop-color='%23fffbe6'/%3E%3Cstop offset='.4' stop-color='%23ffe7a6' stop-opacity='.9'/%3E%3Cstop offset='1' stop-color='%23ffd37a' stop-opacity='0'/%3E%3C/radialGradient%3E%3C/defs%3E %3Cpath d='M47 6 L64 7.4 L64 8.6 L47 9.6 Z' fill='%23ffe9b0' opacity='.55'/%3E %3Cpath d='M10 16 L26 13 L40 14 L28 19.5 L14 20.5 Z' fill='%230b0f22' stroke='%23e0b35a' stroke-width='.7'/%3E %3Cpath d='M4 12 Q4 6 10 6 L40 5.4 Q47 5.4 48.5 8.6 Q49.4 11.5 46 13.8 L8 14.6 Q4 14.4 4 12 Z' fill='url%28%23b%29' stroke='%23e0b35a' stroke-width='.8'/%3E %3Cpath d='M44 12.6 L52 15.6 L46 17.4 L38 15 Z' fill='%23141a33' stroke='%23e0b35a' stroke-width='.7'/%3E %3Crect x='2' y='3' width='11' height='9.6' rx='1.2' fill='%23151b36' stroke='%23e0b35a' stroke-width='.8'/%3E %3Crect x='4' y='5' width='3' height='3' rx='.5' fill='%23b9a8ff'/%3E%3Crect x='8.4' y='5' width='3' height='3' rx='.5' fill='%23b9a8ff'/%3E %3Crect x='28' y='2.2' width='4' height='3.6' rx='.6' fill='%23151b36' stroke='%23e0b35a' stroke-width='.7'/%3E %3Cg stroke='%23e0b35a' stroke-width='.9'%3E%3Cpath d='M18 5.8 V14.2'/%3E%3Cpath d='M24 5.6 V14'/%3E%3Cpath d='M36 5.5 V13.8'/%3E%3C/g%3E %3Cg fill='%238fd3ff'%3E%3Ccircle cx='21' cy='12.2' r='.9'/%3E%3Ccircle cx='30' cy='12' r='.9'/%3E%3Ccircle cx='40' cy='11.8' r='.9'/%3E%3C/g%3E %3Ccircle cx='46.6' cy='7.8' r='4.4' fill='url%28%23l%29'/%3E%3Ccircle cx='46.6' cy='7.8' r='1.9' fill='%23fffbe6' stroke='%23e0b35a' stroke-width='.6'/%3E %3C/svg%3E") center / contain no-repeat; filter: drop-shadow(0 0 3px rgba(243, 199, 106, .55)); }
+html[data-skin="hsr"] .brand h1::after { content: ""; position: absolute; left: 4px; right: -4px; bottom: -11px; height: 4px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(185, 168, 255, .9) 25%) 0 0 / 100% 1px no-repeat,
+    linear-gradient(90deg, transparent, rgba(185, 168, 255, .9) 25%) 0 100% / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, rgba(185, 168, 255, .55) 0 1px, transparent 1px 5px); -webkit-mask: linear-gradient(90deg, transparent, #000 25%); mask: linear-gradient(90deg, transparent, #000 25%); }

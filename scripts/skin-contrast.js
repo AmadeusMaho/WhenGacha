@@ -13,6 +13,8 @@
     const layers = []; let img = false
     for (let n = el; n; n = n.parentElement) {
       const s = getComputedStyle(n)
+      // Texto con degradado (background-clip: text): ese degradado es el color de las letras, no un fondo (se mide aparte, abajo).
+      if ((s.backgroundClip === 'text' || s.webkitBackgroundClip === 'text') && n === el) { const c = parse(s.backgroundColor); if (c && c.a > 0) layers.push(c); continue }
       const bi = s.backgroundImage
       // Degradado: se toma su primer color (donde suele ir el texto, a la izquierda/arriba). Imagen: se marca para revisarla a ojo.
       const grad = /^(linear|radial)-gradient/.test(bi) && !/url\(/.test(bi) ? parse(bi) : null
@@ -43,8 +45,11 @@
       let op = 1; for (let n = el; n; n = n.parentElement) op *= +getComputedStyle(n).opacity
       const fg0 = parse(s.color); if (!fg0) continue
       const { bg, img } = bgOf(el)
-      const fg = mix({ ...fg0, a: fg0.a * op }, bg)
-      const cr = ratio(fg, bg)
+      // Con texto en degradado (background-clip: text), cuenta el tono del degradado con MENOS contraste (27 nov 2026).
+      const clipText = s.backgroundClip === 'text' || s.webkitBackgroundClip === 'text'
+      const stops = clipText ? (s.backgroundImage.match(/rgba?\([^)]+\)/g) || []).map(parse).filter(Boolean) : []
+      const cr = stops.length ? Math.min(...stops.map(c => ratio(mix({ ...c, a: c.a * op }, bg), bg)))
+        : ratio(mix({ ...fg0, a: fg0.a * op }, bg), bg)
       const size = parseFloat(s.fontSize), bold = +s.fontWeight >= 700
       const need = (size >= 24 || (size >= 18.66 && bold)) ? 3 : 4.5
       if (cr < need) out.push({ cr: +cr.toFixed(2), need, text: t.textContent.trim().slice(0, 40), sel: el.tagName.toLowerCase() + (el.className && typeof el.className === 'string' ? '.' + el.className.trim().split(/\s+/).join('.') : ''), fg: s.color, img: img ? (img.className || img.tagName) : '' })

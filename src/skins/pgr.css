@@ -526,3 +526,17 @@ html[data-skin="pgr"] .lane-empty { font-family: var(--pg-head); letter-spacing:
   html[data-skin="pgr"] .tl-corner::after { display: none; }
   html[data-skin="pgr"] .tl-corner { background-position: -99px 0, -999px 0, 0 0 !important; }
   html[data-skin="pgr"] .tl-label::after { font-size: 2.2rem; } }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: blanco con la separación roja y cian fija y tenue (la señal de los visores), que en el "fallo" al pasar el ratón se dispara. */
+html[data-skin="pgr"] .brand h1 { text-shadow: 1px 0 rgba(224, 48, 60, .8), -1px 0 rgba(111, 211, 255, .6); }
+/* Insignia: placa carbón con la franja roja a la izquierda y dos esquinas cortadas, como "◆ In Event". */
+html[data-skin="pgr"] .premium-badge { border-radius: 0; color: #fff; background: #15171b; box-shadow: inset 3px 0 0 var(--pg-red), inset 0 0 0 1px rgba(255, 255, 255, .3);
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px); }
+html[data-skin="pgr"] .premium-badge::after { background: linear-gradient(105deg, transparent 30%, rgba(255, 107, 114, .4) 50%, transparent 70%); }
+/* Rasgo del logo: el rótulo cifrado "// GRAY RAVEN" en la lengua del Punishing, pequeño bajo el nombre (solo en escritorio). */
+html[data-skin="pgr"] .brand h1 { position: relative; }
+@media (min-width: 701px) { html[data-skin="pgr"] .brand h1::after { content: "// WHENGACHA"; position: absolute; left: 1px; bottom: -10px; pointer-events: none; white-space: nowrap;
+  font: .5rem/1 'PGR Virus', 'Barlow', sans-serif; letter-spacing: .3em; color: rgba(255, 107, 114, .7); } }

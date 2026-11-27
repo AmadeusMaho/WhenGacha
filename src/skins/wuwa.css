@@ -282,3 +282,19 @@ html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary {
   background: linear-gradient(180deg, #ffffff, #d9e4e6) !important; border: 1px solid #fff !important; border-radius: 999px !important; color: #13211f; font-weight: 600; }
 html[data-skin="wuwa"] .skin-panel .skin-unlock .btn.primary:hover:not(:disabled) { background: linear-gradient(180deg, #fff, #e8eff0) !important; color: #13211f; filter: none; }
 html[data-skin="wuwa"] .skin-panel .skin-unlock .btn:disabled { opacity: .55; }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: blanco que se vuelve dorado pálido hacia la derecha, con un halo suave (la luz de la Frecuencia). */
+html[data-skin="wuwa"] .brand h1 { background: linear-gradient(90deg, #fff 30%, var(--ww-gold)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px rgba(241, 220, 155, .35)); }
+/* Insignia: placa de cristal oscuro con filo dorado y las esquinas cortadas, como las etiquetas de rareza del juego. */
+html[data-skin="wuwa"] .premium-badge { border-radius: 0; color: var(--ww-gold); background: linear-gradient(180deg, rgba(34, 51, 60, .95), rgba(11, 22, 27, .95));
+  box-shadow: inset 0 0 0 1px rgba(241, 220, 155, .75), 0 0 10px rgba(241, 220, 155, .25);
+  clip-path: polygon(5px 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 5px 100%, 0 50%); }
+html[data-skin="wuwa"] .premium-badge::after { background: linear-gradient(105deg, transparent 30%, rgba(241, 220, 155, .45) 50%, transparent 70%); }
+/* Rasgo del logo: la FRECUENCIA bajo el nombre, la misma cinta dorada de hebras que ondulan del reproductor (ui/freq.svg, animada). */
+html[data-skin="wuwa"] .brand h1 { position: relative; }
+html[data-skin="wuwa"] .brand h1::after { content: ""; position: absolute; left: -2px; right: 0; bottom: -9px; height: 11px; pointer-events: none;
+  background: url(/skins/wuwa/ui/freq.svg) center / 100% 100% no-repeat; filter: drop-shadow(0 0 3px rgba(255, 230, 112, .5)); }

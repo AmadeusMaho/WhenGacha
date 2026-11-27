@@ -430,3 +430,18 @@ html[data-skin="bluearchive"][data-ba-dark] :is(.list li, .hist li) { background
 html[data-skin="bluearchive"][data-ba-dark] .stats > div { background: rgba(34, 52, 90, .7); }
 html[data-skin="bluearchive"] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, rgba(255, 255, 255, .78); }
 html[data-skin="bluearchive"][data-ba-dark] .soon-card.urgent { background: url(/skins/bluearchive/stripe.webp) left top / 100% 5px no-repeat, rgba(27, 42, 68, .74); }
+
+/* ===== Nombre de la web e insignia Premium con el estilo del juego (27 nov 2026, dueño: "como en Persona, en todas las skins") =====
+   El nombre lleva un tratamiento propio del juego (la letra recortada es solo de Persona) y la insignia toma la forma de una pieza de su interfaz. Solo colores, bordes,
+   recortes y giros: en móvil no se tocan tamaños ni rellenos (sobrio.css deja la cabecera en una fila de 94 px). */
+/* Nombre: cursiva con el degradado azul a celeste del logo del juego y un brillo blanco. */
+html[data-skin="bluearchive"] .brand h1 { background: linear-gradient(100deg, var(--ba-navy) 10%, var(--ba-blue-t) 55%, #1fa2ff); -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; }
+html[data-skin="bluearchive"][data-ba-dark] .brand h1 { background-image: linear-gradient(100deg, #fff 20%, #8fd0ff 70%, #4fb4ff); }
+/* Insignia: el botón azul inclinado del juego, texto blanco en cursiva. */
+html[data-skin="bluearchive"] .premium-badge { border-radius: 4px; color: #fff; background: linear-gradient(180deg, #0b6bd6, #0a5bb8); transform: skewX(-10deg);
+  font-family: 'Exo 2', 'Noto Sans JP', sans-serif; font-style: italic; box-shadow: 0 2px 0 #07478a; }
+/* Rasgo del logo: el halo de Blue Archive flotando sobre el nombre. */
+html[data-skin="bluearchive"] .brand h1 { position: relative; }
+html[data-skin="bluearchive"] .brand h1::after { content: ""; position: absolute; left: 50%; top: -6px; width: 30px; height: 8px; margin-left: -15px; pointer-events: none;
+  border: 2px solid #3aa6ff; border-radius: 50%; transform: rotate(-6deg); box-shadow: 0 0 6px rgba(58, 166, 255, .8), inset 0 0 4px rgba(58, 166, 255, .6); }
