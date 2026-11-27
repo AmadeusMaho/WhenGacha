@@ -29,38 +29,100 @@ export default function Festive({ season }: { season: Season }) {
 }
 
 /**
- * Arbolito detrás del nombre (27 nov 2026; sustituye a las guirnaldas, que no convencían): un pino pequeño que asoma por detrás del final de
- * "WhenGacha", con estrella y 8 lucecitas. Es un SVG fijo dentro del <h1>, detrás de las letras (festive.css): no mide nada ni usa JavaScript
- * después de montarse. Las luces titilan solo con `opacity` (lo anima la GPU sin volver a pintar la página); con "reducir movimiento", fijas.
+ * Arbolito junto al nombre (27 nov 2026; sustituye a las guirnaldas, y la 2.ª versión, más elaborada, al pino de tres triángulos que "parecía un
+ * emoji"): cuatro pisos con el borde de ramas festoneado, sombra debajo y luz por la izquierda, nieve en las puntas, espumillón dorado, bolas con
+ * brillo, lucecitas, estrella con halo y dos regalos al pie. Es un SVG fijo dentro del <h1>, junto a las letras (festive.css): las formas se
+ * calculan una vez al cargar el módulo y no hay JavaScript después. Solo titilan las lucecitas, con `opacity` (la GPU, sin repintar la página);
+ * con "reducir movimiento", fijas.
  */
-/** Lucecitas: posición en el dibujo (30×40) y color, repartidas por los tres pisos como una serie enrollada. */
+/** Piso del árbol (dibujo de 48×64, eje en x = 24): lados algo curvos y el borde de abajo en `n` festones, como puntas de ramas. */
+function tier(yt: number, yb: number, w: number, n: number): { d: string; tips: [number, number, number][] } {
+  const l = 24 - w, step = (2 * w) / n, k = yt + (yb - yt) * 0.45
+  let d = `M24 ${yt} C${24 - w * 0.35} ${k} ${24 - w * 0.8} ${yb - 3} ${l} ${yb}`
+  const tips: [number, number, number][] = []
+  for (let i = 0; i < n; i++) {
+    const x0 = l + i * step, xm = x0 + step / 2
+    d += ` Q${xm.toFixed(2)} ${yb + 3.4} ${(x0 + step).toFixed(2)} ${yb}`
+    tips.push([xm, yb + 1.9, step])
+  }
+  d += ` C${24 + w * 0.8} ${yb - 3} ${24 + w * 0.35} ${k} 24 ${yt} Z`
+  return { d, tips }
+}
+const TIERS = [tier(27, 54, 20, 6), tier(19, 43, 16, 5), tier(12, 31, 12, 4), tier(6, 20, 8, 3)]
+/** Bolas: posición, radio y color (rojo, oro, azul, plata). */
+const BAUBLES: [number, number, number, string][] = [
+  [19, 17, 1.7, '#d93a3a'], [28.5, 27, 1.9, '#f2b33d'], [17, 36, 2, '#3a7bd5'], [31.5, 39, 2, '#d93a3a'],
+  [21, 49, 2.2, '#f2b33d'], [35, 50, 2, '#c9ced8'], [11.5, 50, 2, '#3a7bd5'],
+]
+/** Regalitos al pie: x, y, ancho, alto, color de la caja y de la cinta. Pequeños y de distintos tamaños, como apilados de cualquier manera. */
+const GIFTS: [number, number, number, number, string, string][] = [
+  [7, 56.5, 7, 6.5, '#c8323a', '#f2c14e'], [15.5, 59, 5, 4.5, '#f2b33d', '#c8323a'],
+  [28.5, 58.5, 4.5, 5, '#2f9a5d', '#eef3ff'], [33.5, 56, 7.5, 7, '#3a6fc4', '#eef3ff'],
+]
+/** Lucecitas de la serie (titilan), repartidas por los cuatro pisos. */
 const TREE_LIGHTS: [number, number, string][] = [
-  [12, 13.5, '#ffd166'], [18.5, 14.5, '#e8433f'],
-  [9, 21.5, '#5cc8ff'], [15.5, 20.5, '#ffd166'], [22, 22.5, '#e8433f'],
-  [6.5, 31, '#ffd166'], [14, 30, '#5cc8ff'], [22.5, 31.5, '#ffd166'],
+  [25.5, 14, '#ffe08a'], [16.5, 27.5, '#ffe08a'], [23.5, 24.5, '#ff9f8a'], [33.5, 33, '#ffe08a'], [12.5, 43, '#9fd8ff'],
+  [26, 40.5, '#ffe08a'], [39, 46.5, '#ff9f8a'], [17, 53, '#ffe08a'], [29.5, 53.5, '#9fd8ff'], [7.5, 52.5, '#ffe08a'],
 ]
 
 function Tree({ title }: { title: HTMLElement }) {
   return createPortal(
-    <svg className="xmas-tree" viewBox="0 0 30 40" aria-hidden>
+    <svg className="xmas-tree" viewBox="0 0 48 64" aria-hidden>
       <defs>
         <linearGradient id="xt-leaf" x1="0" x2="1">
-          <stop offset="0" stopColor="#2f8a52" />
-          <stop offset=".55" stopColor="#1f6b3e" />
-          <stop offset="1" stopColor="#164f2e" />
+          <stop offset="0" stopColor="#2f8c53" />
+          <stop offset=".5" stopColor="#1f6b3e" />
+          <stop offset="1" stopColor="#13482a" />
         </linearGradient>
+        {/* Luz por la izquierda: un velo claro que se apaga hacia el centro. */}
+        <linearGradient id="xt-shine" x1="0" x2="1">
+          <stop offset="0" stopColor="#bff5cf" stopOpacity=".28" />
+          <stop offset=".45" stopColor="#bff5cf" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="xt-halo">
+          <stop offset="0" stopColor="#ffe9a8" stopOpacity=".75" />
+          <stop offset="1" stopColor="#ffe9a8" stopOpacity="0" />
+        </radialGradient>
       </defs>
-      <rect x="13" y="33" width="4" height="6" rx="1" fill="#6b4428" />
-      <path d="M15 16 L2 34 Q15 37 28 34 Z" fill="url(#xt-leaf)" />
-      <path d="M15 9 L4.5 25 Q15 27.5 25.5 25 Z" fill="url(#xt-leaf)" />
-      <path d="M15 3.5 L7 16.5 Q15 18.5 23 16.5 Z" fill="url(#xt-leaf)" />
-      {/* Nieve en las puntas de cada piso */}
-      <path d="M2.5 33.6 Q15 36.4 27.5 33.6" className="xt-snow" />
-      <path d="M5 24.7 Q15 27 25 24.7" className="xt-snow" />
-      {TREE_LIGHTS.map(([x, y, c], i) => (
-        <circle key={i} className="xt-light" cx={x} cy={y} r="1.25" fill={c} style={{ animationDelay: `${-(i * 0.73) % 3.2}s` }} />
+      {/* Tronco */}
+      <rect x="21" y="52" width="6" height="8" rx="1" fill="#6b4428" />
+      {/* Pisos, de abajo arriba: sombra, follaje, luz y nieve en las puntas */}
+      {TIERS.map((t, i) => (
+        <g key={i}>
+          <path d={t.d} transform="translate(0 1.6)" fill="#0d3320" />
+          <path d={t.d} fill="url(#xt-leaf)" />
+          <path d={t.d} fill="url(#xt-shine)" />
+          {t.tips.filter((_, j) => j % 2 === i % 2).map(([x, y, s], j) => (
+            <ellipse key={j} cx={x} cy={y} rx={s * 0.32} ry="1.05" fill="#eef3ff" opacity=".88" />
+          ))}
+        </g>
       ))}
-      <path className="xt-star" d="M15 0 L16.2 2.6 L19 2.9 L16.9 4.8 L17.5 7.6 L15 6.2 L12.5 7.6 L13.1 4.8 L11 2.9 L13.8 2.6 Z" />
+      {/* Espumillón dorado enrollado (cuentas) */}
+      <path className="xt-tinsel" d="M15.5 21.5 Q24 26.5 33 21" />
+      <path className="xt-tinsel" d="M11 33 Q24 39 37.5 32" />
+      <path className="xt-tinsel" d="M7.5 45 Q24 51.5 41 44" />
+      {BAUBLES.map(([x, y, r, c], i) => (
+        <g key={i}>
+          <circle cx={x} cy={y} r={r} fill={c} />
+          <circle cx={x - r * 0.35} cy={y - r * 0.35} r={r * 0.32} fill="#fff" opacity=".7" />
+        </g>
+      ))}
+      {TREE_LIGHTS.map(([x, y, c], i) => (
+        <circle key={i} className="xt-light" cx={x} cy={y} r=".95" fill={c} style={{ animationDelay: `${-(i * 0.73) % 3.2}s` }} />
+      ))}
+      {/* Regalitos al pie, delante de las ramas de abajo: caja, cinta en cruz y lazo */}
+      {GIFTS.map(([x, y, w, h, box, ribbon], i) => (
+        <g key={i}>
+          <rect x={x} y={y} width={w} height={h} rx=".7" fill={box} />
+          <rect x={x} y={y} width={w} height={h * 0.28} rx=".5" fill="#000" opacity=".12" />
+          <path d={`M${x + w / 2} ${y} V${y + h} M${x} ${y + h * 0.45} H${x + w}`} stroke={ribbon} strokeWidth=".9" />
+          <ellipse cx={x + w / 2 - 1.1} cy={y - 0.6} rx="1.2" ry=".75" fill="none" stroke={ribbon} strokeWidth=".8" />
+          <ellipse cx={x + w / 2 + 1.1} cy={y - 0.6} rx="1.2" ry=".75" fill="none" stroke={ribbon} strokeWidth=".8" />
+        </g>
+      ))}
+      {/* Estrella con su halo */}
+      <circle cx="24" cy="5" r="7" fill="url(#xt-halo)" />
+      <path className="xt-star" d="M24 0 L25.6 3.4 L29.3 3.8 L26.5 6.3 L27.3 10 L24 8.1 L20.7 10 L21.5 6.3 L18.7 3.8 L22.4 3.4 Z" />
     </svg>,
     title,
   )
