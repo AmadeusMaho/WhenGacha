@@ -223,8 +223,10 @@ function EndingSoon({ state, games, now, open, showMinor }: Pick<Ctx, 'state' | 
       <h3>
         {t('soon.title')} {items.length > 0 && <small>{items.length}</small>}
         {items.length > 1 && (
-          <button className="soon-toggle" onClick={() => setExpanded(x => !x)} aria-expanded={expanded}>
-            {expanded ? t('soon.collapse') : t('soon.expand')} <span aria-hidden>{expanded ? '▴' : '▾'}</span>
+          // Mismo botón que "Ir a…" (`.btn.goto-btn`: acento de la skin y la forma que cada skin da a `.btn`), con su flechita.
+          <button className={`btn sm goto-btn soon-more ${expanded ? 'on' : ''}`} onClick={() => setExpanded(x => !x)} aria-expanded={expanded}>
+            {expanded ? t('soon.collapse') : t('soon.expand')}
+            <svg className="goto-caret" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
           </button>
         )}
       </h3>

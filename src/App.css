@@ -676,17 +676,21 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 /* "Ir a…" (Timeline.tsx): un <select> con aspecto de botón; la lista que se abre es la del sistema (en móvil, su selector nativo). */
 /* Botón redondo de icono y su menú (Timeline.tsx, GotoMenu). El menú reutiliza `.lang-menu` (fondo, bordes, hover y skins); aquí solo su forma. */
 .goto-wrap { position: relative; flex: none; }
-/* Antes un círculo gris de solo icono que pasaba desapercibido: ahora `.btn` con texto, teñido con el acento de cada skin (`--acc`, que toda skin
-   define con un tono legible sobre su fondo). Las skins que pintan `.btn` con !important le dan además su forma (cortes de Arknights, etc.). */
-.btn.goto-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 10px; font-weight: 700; white-space: nowrap;
-  color: var(--acc) !important; border: 1px solid color-mix(in srgb, var(--acc) 55%, transparent) !important;
-  background: color-mix(in srgb, var(--acc) 13%, transparent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--acc) 0%, transparent); transition: background .2s, border-color .2s, box-shadow .25s, transform .2s var(--ease); }
-.btn.goto-btn:hover:not(:disabled), .btn.goto-btn.on { border-color: var(--acc) !important; background: color-mix(in srgb, var(--acc) 22%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 18%, transparent); }
+/* Antes un círculo gris de solo icono que pasaba desapercibido: ahora `.btn` con texto. En la skin base, como los demás botones (sin color propio:
+   el dueño no quiso el rosa del acento); en las skins de juego, teñido con su acento (`--acc`, legible sobre su fondo). `:where()` deja la
+   especificidad como la de `.btn.goto-btn`, así las skins que pintan `.btn` le siguen dando su fondo y su forma (cortes de Arknights, etc.). */
+.btn.goto-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 10px; font-weight: 700; white-space: nowrap; color: var(--text); }
+.btn.goto-btn.on { background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .06)); border-color: rgba(255, 255, 255, .26); }
+:where(html[data-skin]) .btn.goto-btn { color: var(--acc) !important; border: 1px solid color-mix(in srgb, var(--acc) 55%, transparent) !important;
+  background: color-mix(in srgb, var(--acc) 13%, transparent); transition: background .2s, border-color .2s, box-shadow .25s, transform .2s var(--ease); }
+:where(html[data-skin]) .btn.goto-btn:hover:not(:disabled), :where(html[data-skin]) .btn.goto-btn.on { border-color: var(--acc) !important;
+  background: color-mix(in srgb, var(--acc) 22%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 18%, transparent); }
 .goto-btn:focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; }
 .goto-caret { opacity: .8; transition: transform .2s var(--ease); }
 .goto-btn.on .goto-caret { transform: rotate(180deg); }
-@media (max-width: 420px) { .goto-t { display: none; } .btn.goto-btn { padding: 5px 9px; } }
+@media (max-width: 420px) { .goto-t { display: none; } .btn.goto-btn:not(.soon-more) { padding: 5px 9px; } }
+/* "Ver todos" de la lista de 72 h: el mismo botón que "Ir a…", sin heredar las mayúsculas ni el espaciado del título <h3>. */
+.btn.soon-more { margin-left: auto; padding: 3px 10px 3px 11px; font-size: .75rem; letter-spacing: 0; text-transform: none; }
 /* Skins de fondo claro: su `--acc` es un relleno, no un color de texto; ahí va su tono legible (≥ 4.5:1 sobre su fondo). */
 html[data-skin="uma"] .btn.goto-btn { color: var(--um-green-d) !important; border-color: color-mix(in srgb, var(--um-green) 70%, transparent) !important; background: color-mix(in srgb, var(--um-green) 16%, #fff) !important; }
 html[data-skin="genshin"] .btn.goto-btn { color: var(--gi-ink) !important; border-color: var(--acc) !important; background: color-mix(in srgb, var(--acc) 28%, var(--gi-cream)) !important; }

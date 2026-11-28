@@ -133,8 +133,8 @@ html[data-skin="nikke"] .btn.mark .spark { color: #7a5200; }
 html[data-skin="nikke"] .btn.mark.primary .spark { color: #ffd36b; }
 html[data-skin="nikke"] .btn.mark:not(.primary) { background: #dfe5eb !important; border-color: #b9c3ce; color: #4f5763; }
 /* Sobre el fondo oscuro (Filtros, "Ver todos"): como el botón "CAMPAIGN": oscuro translúcido con borde claro fino. */
-html[data-skin="nikke"] :is(.mbar .btn:not(.primary), .soon-toggle) { border-radius: 4px; color: #f2f4f7; border: 1px solid rgba(255, 255, 255, .3); background: rgba(24, 26, 31, .88); box-shadow: none; }
-html[data-skin="nikke"] :is(.mbar .btn:not(.primary), .soon-toggle):hover { background: #393c43 !important; color: #fff; border-color: rgba(255, 255, 255, .5); }
+html[data-skin="nikke"] :is(.mbar .btn:not(.primary), .soon-toggle, .btn.soon-more) { border-radius: 4px; color: #f2f4f7; border: 1px solid rgba(255, 255, 255, .3); background: rgba(24, 26, 31, .88); box-shadow: none; }
+html[data-skin="nikke"] :is(.mbar .btn:not(.primary), .soon-toggle, .btn.soon-more):hover { background: #393c43 !important; color: #fff; border-color: rgba(255, 255, 255, .5); }
 html[data-skin="nikke"] :is(.btn, .chip, .ichip, .seg button, .bar, .pick):focus-visible { outline: 2px solid var(--nk-blue); outline-offset: 2px; }
 html[data-skin="nikke"] :is(select, input:not([type="checkbox"]):not([type="range"])) { border-radius: 3px; border: 1px solid rgba(255, 255, 255, .3); background: rgba(16, 18, 22, .9); color: #f2f4f7; }
 html[data-skin="nikke"] :is(input, select):focus { border-color: var(--nk-blue); box-shadow: 0 0 0 2px rgba(26, 163, 240, .3); outline: none; }
