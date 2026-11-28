@@ -1,6 +1,7 @@
 import './install' // registra el evento de instalación al cargar (el botón está en los ajustes de avisos)
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useSeason } from './seasonal'
+import { seasonNow, useSeason } from './seasonal'
+import { usePreview, useSkin } from './skins/skins' // skins: sin ellas, el interruptor de adornos sale siempre que haya temporada
 import ConsentBanner from './ConsentBanner'
 import { consentEnabled, reopenConsent } from './ads'
 import { flushSync } from 'react-dom'
@@ -150,7 +151,7 @@ export default function App() {
   return (
     <div className="app">
       <div className="aurora" aria-hidden />
-      {season && <Suspense fallback={null}><Festive season={season} /></Suspense>}
+      {season && <Suspense fallback={null}><Festive season={season} snow={state.snow ?? 'auto'} /></Suspense>}
       <header>
         <div className="brand"><span className="logo-wrap"><img className="logo" src="/logo.webp" alt="" width="40" height="40" /></span><h1>WhenGacha</h1><SupporterBadge /> {/* skins */}</div>
         <nav ref={navRef}>
@@ -162,6 +163,7 @@ export default function App() {
           </button>)}
         </nav>
         <div className="head-actions">
+          <FestiveToggle on={state.festive !== false} onToggle={() => setState(s => ({ ...s, festive: s.festive === false }))} />
           <SkinPicker tab={tab} donateUrl={donateUrl} /> {/* skins */}
           <LangSwitch />
           <button className={`btn sm ${status.busy ? 'busy' : ''}`} onClick={() => sync(true)} title={t('sync.title')}>
@@ -187,6 +189,31 @@ export default function App() {
       </footer>
       <ConsentBanner />
       {current && <EventModal {...ctx} event={current} closing={closing} onClose={close} />}
+    </div>
+  )
+}
+
+/**
+ * Interruptor de los adornos de temporada (seasonal.ts), en la cabecera (antes en "Mis gachas → Ajustes", con un emoji). Solo sale cuando hay
+ * temporada y la skin es la base (las de juego no llevan adornos). Icono propio: un arbolito, tachado cuando están apagados; mide lo mismo que el botón de skins (`lang-btn`).
+ */
+function FestiveToggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  const skin = useSkin(), preview = usePreview()
+  if (skin || preview || !seasonNow()) return null
+  const label = t(on ? 'festive.hide' : 'festive.show')
+  return (
+    // Envuelto como el de skins (`.skin` es un bloque): así ambos miden exactamente lo mismo en la fila de la cabecera.
+    <div className="festive-wrap">
+    <button className={`btn sm lang-btn festive-btn ${on ? 'on' : ''}`} onClick={onToggle} aria-pressed={on} aria-label={label} title={`${label}. ${t('festive.tip')}`}>
+      {/* Arbolito de trazo, del mismo tamaño y grosor que la paleta del botón de skins; apagado, con una raya que lo cruza. */}
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path className="fb-star" d="M12 1.9l.85 1.7 1.9.28-1.37 1.33.32 1.88L12 6.2l-1.7.89.32-1.88L9.25 3.88l1.9-.28z" strokeWidth="1.2" />
+        <path className="fb-tree" d="M12 7.6 7.6 12.4h2.3L6 17.3h12l-3.9-4.9h2.3z" />
+        <path d="M12 17.3v3" />
+        <circle className="fb-dot" cx="10.4" cy="14.9" r=".75" /><circle className="fb-dot" cx="13.9" cy="12.1" r=".75" /><circle className="fb-dot" cx="14.6" cy="15.6" r=".75" />
+        {!on && <path d="M3.5 3.5l17 17" className="fb-off" />}
+      </svg>
+    </button>
     </div>
   )
 }

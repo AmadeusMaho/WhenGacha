@@ -146,6 +146,8 @@ export interface AppState {
   leadHours: number
   /** Adornos de temporada en la skin base (seasonal.ts): `false` = apagados; sin valor = encendidos en su fecha. */
   festive?: boolean
+  /** Nieve de Navidad (Festive.tsx): 'auto' (sin valor) = solo en equipos potentes y no en móvil; 'on' = siempre; 'off' = nunca. */
+  snow?: 'auto' | 'on' | 'off'
   /** Pestaña "Tiradas": ajustes por juego (id → solo lo que cambiaste; el resto sale de pullPlan.ts). */
   planner: Record<string, Partial<PlanCfg>>
   /** Servidor elegido por juego (id → servers.ts); sin entrada, el servidor de la fuente. */

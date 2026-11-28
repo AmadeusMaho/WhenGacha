@@ -13,7 +13,7 @@ const BG_LIST: Record<Season, string> = { christmas: 'navidad' }
  * (este, solo CSS: festive.css). Nada recibe clics ni tapa texto. Con "reducir movimiento", luces fijas y sin nieve.
  * Se carga aparte (React.lazy en App.tsx): fuera de temporada no se descarga.
  */
-export default function Festive({ season }: { season: Season }) {
+export default function Festive({ season, snow }: { season: Season; snow: 'auto' | 'on' | 'off' }) {
   // La cabecera ya está montada: Festive se carga aparte, después del primer dibujo de App.
   const [title] = useState(() => document.querySelector<HTMLElement>('.app > header .brand h1'))
   // Fondos de la temporada (los elige el dueño en Wallpaureka); cada visita, el siguiente de la lista. Sin ninguno, el degradado de siempre.
@@ -22,7 +22,7 @@ export default function Festive({ season }: { season: Season }) {
   return (
     <>
       {bgs.length > 0 && <><LiveWallpaper skin={BG_LIST[season]} live={bgs} /><div className="xmas-veil" aria-hidden /></>}
-      <Snow />
+      {snowAllowed(snow) && <Snow />}
       {title && <Tree title={title} />}
     </>
   )
@@ -126,6 +126,19 @@ function Tree({ title }: { title: HTMLElement }) {
     </svg>,
     title,
   )
+}
+
+/**
+ * ¿Se dibuja la nieve? (28 nov 2026: en móviles y equipos modestos el canvas a 60 fps gastaba batería y daba tirones.) Con 'auto' no sale en
+ * pantallas táctiles/estrechas, con ahorro de datos, ni con pocos núcleos o poca memoria; 'on'/'off' (Mis gachas → Ajustes) mandan siempre.
+ * "Reducir movimiento" la apaga en cualquier caso (dentro de Snow).
+ */
+export function snowAllowed(mode: 'auto' | 'on' | 'off'): boolean {
+  if (mode !== 'auto') return mode === 'on'
+  const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } }
+  const mobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760
+  const weak = (nav.hardwareConcurrency ?? 8) <= 4 || (nav.deviceMemory ?? 8) <= 4 || !!nav.connection?.saveData
+  return !mobile && !weak
 }
 
 /**

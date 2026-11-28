@@ -183,11 +183,14 @@ function GotoMenu({ games, state, onPick }: { games: Game[]; state: AppState; on
 
   return (
     <div className="goto-wrap" ref={box}>
-      <button className={`goto-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-haspopup="menu" aria-expanded={open}
+      {/* Botón de la barra (`.btn`, así cada skin le da su forma) con texto y el color de acento de la skin (App.css, .goto-btn). */}
+      <button className={`btn sm goto-btn ${open ? 'on' : ''}`} onClick={() => setOpen(o => !o)} aria-haspopup="menu" aria-expanded={open}
         title={t('goto.aria')} aria-label={t('goto.aria')}>
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M4 6h10M4 12h7M4 18h10" /><path d="M18 8v10m-3-3 3 3 3-3" />
         </svg>
+        <span className="goto-t">{t('goto.label')}</span>
+        <svg className="goto-caret" viewBox="0 0 12 12" width="10" height="10" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 4.5 6 7.5 9 4.5" /></svg>
       </button>
       {open && (
         <ul className="lang-menu goto-menu" role="menu" aria-label={t('goto.aria')} ref={list} style={{ left, right: 'auto', width: W }}>
@@ -234,7 +237,7 @@ function EndingSoon({ state, games, now, open, showMinor }: Pick<Ctx, 'state' | 
               const left = +new Date(e.end) - now
               const img = e.kind === 'banner' ? bannerArt(e) : eventImage(e)
               return (
-                <button key={e.id} className={`soon-card ${left < 24 * HOUR ? 'urgent' : ''}`} style={cssVar(g)} onClick={() => open(e)}>
+                <button key={e.id} className={`soon-card ${left < 24 * HOUR ? 'urgent' : ''}`} style={cssVar(g)} onClick={() => open(e)} title={e.title}>
                   <Img className="soon-img" src={img} />
                   <span className="soon-txt"><b>{e.title}</b><small>{g?.short} · {KIND_LABEL[e.kind]}</small></span>
                   <em>{countdown(left)}</em>

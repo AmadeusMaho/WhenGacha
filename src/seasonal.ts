@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 /**
  * Adornos de temporada (26 nov 2026). Solo en la skin base (sin `data-skin` en <html>): las skins de juego tienen su propio diseño y no se tocan.
- * Se encienden y apagan solos por la fecha LOCAL de quien visita; quien no los quiera los apaga en "Mis gachas → Ajustes" (`state.festive`).
+ * Se encienden y apagan solos por la fecha LOCAL de quien visita; quien no los quiera los apaga con el botón de la cabecera (App.tsx, FestiveToggle) (`state.festive`).
  * Para probar fuera de fecha: `?temporada=navidad` (o `?temporada=off` para verlos apagados) en la URL; se recuerda en la pestaña (sessionStorage).
  * El código y el CSS de cada temporada (Festive.tsx, festive.css) solo se descargan cuando toca (import dinámico en App.tsx).
  */
@@ -13,8 +13,6 @@ const SEASONS: { id: Season; from: [number, number]; to: [number, number] }[] = 
   { id: 'christmas', from: [11, 26], to: [1, 6] },
 ]
 
-/** Icono de cada temporada (en el interruptor de los ajustes). */
-export const SEASON_ICON: Record<Season, string> = { christmas: '🎄' }
 
 const ALIAS: Record<string, Season | 'off'> = { navidad: 'christmas', christmas: 'christmas', off: 'off', no: 'off' }
 const KEY = 'whengacha:temporada'

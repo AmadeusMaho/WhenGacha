@@ -409,14 +409,15 @@ header { transition: background .3s, border-color .3s; }
 .soon-strip { margin: 0 0 16px; }
 .soon-strip h3 { margin: 0 0 8px; }
 .soon-list { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x proximity; scrollbar-width: thin; }
-.soon-card { --c: #888; flex: 0 0 auto; scroll-snap-align: start; display: flex; align-items: center; gap: 10px; max-width: 320px; padding: 8px 12px 8px 8px; border-radius: 16px; font: inherit; color: var(--text); text-align: left; cursor: pointer;
+.soon-card { --c: #888; flex: 0 0 290px; scroll-snap-align: start; display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 12px 8px 8px; border-radius: 16px; font: inherit; color: var(--text); text-align: left; cursor: pointer;
   background: var(--panel); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); transition: transform .3s var(--ease), box-shadow .3s, border-color .3s; }
 .soon-card:hover { transform: translateY(-3px); border-color: var(--c); box-shadow: 0 10px 24px color-mix(in srgb, var(--c) 30%, transparent); }
 .soon-card:active { transform: scale(.97); }
 .soon-img { width: 46px; height: 46px; border-radius: 12px; object-fit: cover; object-position: 50% 15%; background: #222; flex: none; }
-.soon-txt { display: grid; min-width: 0; line-height: 1.25; }
-.soon-txt b { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 190px; }
-.soon-card em { flex: none; padding: 2px 9px; border-radius: 999px; font-size: .78rem; font-weight: 700; font-style: normal; color: #fcd34d; background: rgba(251, 191, 36, .16); }
+.soon-txt { display: grid; flex: 1; min-width: 0; line-height: 1.25; }
+.soon-txt b { font-size: .88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.soon-txt small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.soon-card em { flex: none; margin-left: auto; white-space: nowrap; padding: 2px 9px; border-radius: 999px; font-size: .78rem; font-weight: 700; font-style: normal; color: #fcd34d; background: rgba(251, 191, 36, .16); }
 .soon-card.urgent em { color: #fda4af; background: rgba(244, 63, 94, .22); }
 
 /* "Mostrar más" */
@@ -675,11 +676,21 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 /* "Ir a…" (Timeline.tsx): un <select> con aspecto de botón; la lista que se abre es la del sistema (en móvil, su selector nativo). */
 /* Botón redondo de icono y su menú (Timeline.tsx, GotoMenu). El menú reutiliza `.lang-menu` (fondo, bordes, hover y skins); aquí solo su forma. */
 .goto-wrap { position: relative; flex: none; }
-.goto-btn { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border-radius: 999px; cursor: pointer;
-  color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); transition: color .2s, background .2s, border-color .2s; }
-/* Mismo color siempre (el de la pastilla de la zona horaria): `--text` es claro en skins de fondo claro como Uma y el icono desaparecía. */
-.goto-btn:hover, .goto-btn.on { border-color: currentColor; background: rgba(127, 127, 127, .14); }
+/* Antes un círculo gris de solo icono que pasaba desapercibido: ahora `.btn` con texto, teñido con el acento de cada skin (`--acc`, que toda skin
+   define con un tono legible sobre su fondo). Las skins que pintan `.btn` con !important le dan además su forma (cortes de Arknights, etc.). */
+.btn.goto-btn { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px 5px 10px; font-weight: 700; white-space: nowrap;
+  color: var(--acc) !important; border: 1px solid color-mix(in srgb, var(--acc) 55%, transparent) !important;
+  background: color-mix(in srgb, var(--acc) 13%, transparent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--acc) 0%, transparent); transition: background .2s, border-color .2s, box-shadow .25s, transform .2s var(--ease); }
+.btn.goto-btn:hover:not(:disabled), .btn.goto-btn.on { border-color: var(--acc) !important; background: color-mix(in srgb, var(--acc) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--acc) 18%, transparent); }
 .goto-btn:focus-visible { outline: 2px solid var(--acc2); outline-offset: 2px; }
+.goto-caret { opacity: .8; transition: transform .2s var(--ease); }
+.goto-btn.on .goto-caret { transform: rotate(180deg); }
+@media (max-width: 420px) { .goto-t { display: none; } .btn.goto-btn { padding: 5px 9px; } }
+/* Skins de fondo claro: su `--acc` es un relleno, no un color de texto; ahí va su tono legible (≥ 4.5:1 sobre su fondo). */
+html[data-skin="uma"] .btn.goto-btn { color: var(--um-green-d) !important; border-color: color-mix(in srgb, var(--um-green) 70%, transparent) !important; background: color-mix(in srgb, var(--um-green) 16%, #fff) !important; }
+html[data-skin="genshin"] .btn.goto-btn { color: var(--gi-ink) !important; border-color: var(--acc) !important; background: color-mix(in srgb, var(--acc) 28%, var(--gi-cream)) !important; }
+html[data-skin="bluearchive"] .btn.goto-btn, html[data-skin="bluearchive"][data-ba-dark] .btn.goto-btn { color: var(--ba-blue-t) !important; border-color: var(--ba-blue-t) !important; }
 .goto-menu { max-height: min(60vh, 420px); overflow-y: auto; overscroll-behavior: contain; }
 .goto-menu .goto-title { padding: 6px 12px 8px; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .goto-menu button { justify-content: flex-start; gap: 10px; padding: 6px 10px; text-align: left; }
@@ -697,8 +708,25 @@ html, .tl, .soon-list, .modal, .nav, nav { scrollbar-width: thin; scrollbar-colo
 .soon-strip h3 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .soon-toggle { margin-left: auto; padding: 3px 10px; border-radius: 999px; font: inherit; font-size: .75rem; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); background: rgba(255, 255, 255, .05); border: 1px solid var(--line); cursor: pointer; transition: color .2s, background .2s; }
 .soon-toggle:hover { color: var(--text); background: rgba(255, 255, 255, .1); }
-.soon-list.open { flex-wrap: wrap; overflow-x: visible; scroll-snap-type: none; }
-.soon-list.open .soon-card { flex: 1 1 260px; max-width: none; }
+/* Desplegada: rejilla de columnas iguales (antes `flex-wrap` con `flex: 1 1 260px`: la última fila se estiraba a lo ancho y el título se cortaba igual,
+   con la cuenta atrás flotando en medio). Aquí el título usa todo el ancho y, si no cabe, baja a una segunda línea; la cuenta atrás queda a la derecha. */
+.soon-list.open { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); overflow-x: visible; scroll-snap-type: none; }
+.soon-list.open .soon-card { min-height: 64px; }
+.soon-list.open .soon-txt b { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+@media (max-width: 600px) { .soon-card { flex-basis: min(290px, 82vw); } }
+
+/* Interruptor de los adornos de temporada en la cabecera (App.tsx, FestiveToggle): solo existe con la skin base. */
+.festive-wrap { position: relative; }
+.festive-btn svg { margin-block: -1px; } /* como el pincel de skins (skins.css, `.skin > .lang-btn svg`): misma altura */
+.btn.festive-btn { display: inline-flex; align-items: center; justify-content: center; color: var(--muted); }
+.festive-btn .fb-dot { fill: currentColor; stroke: none; opacity: .55; }
+.btn.festive-btn.on { color: #5fd08a; border-color: rgba(95, 208, 138, .45); background: linear-gradient(135deg, rgba(95, 208, 138, .16), rgba(31, 107, 62, .1)); }
+.festive-btn.on .fb-tree { fill: rgba(47, 140, 83, .45); }
+.festive-btn.on .fb-star { color: #f6c453; stroke: #f6c453; fill: #f6c453; }
+.festive-btn.on .fb-dot { fill: #ff8a7a; opacity: 1; }
+.btn.festive-btn:hover:not(:disabled) { color: var(--text); }
+.btn.festive-btn.on:hover:not(:disabled) { color: #7fe0a4; border-color: rgba(95, 208, 138, .7); }
+.festive-btn .fb-off { stroke: var(--bad); stroke-width: 2.2; }
 
 /* ====== Mis gachas: tarjetas (8 nov 2026) ====== */
 /* Todas del mismo tamaño: filas iguales (la más alta manda) y el contenido apilado con los códigos al pie. */
